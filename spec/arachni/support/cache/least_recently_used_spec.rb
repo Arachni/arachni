@@ -1,60 +1,59 @@
 require 'spec_helper'
 
 describe Arachni::Support::Cache::LeastRecentlyUsed do
-
-    before { @cache = described_class.new }
+    it_behaves_like 'cache'
 
     it 'prunes itself by removing Least Recently Used entries' do
-        @cache.max_size = 3
+        subject.max_size = 3
 
-        @cache[:k]  = '1'
-        @cache[:k2] = '2'
-        @cache[:k3] = '3'
-        @cache[:k4] = '4'
-        @cache.size.should == 3
+        subject[:k]  = '1'
+        subject[:k2] = '2'
+        subject[:k3] = '3'
+        subject[:k4] = '4'
+        subject.size.should == 3
 
-        @cache[:k4].should be_true
-        @cache[:k3].should be_true
-        @cache[:k2].should be_true
-        @cache[:k].should be_nil
+        subject[:k4].should be_true
+        subject[:k3].should be_true
+        subject[:k2].should be_true
+        subject[:k].should be_nil
 
-        @cache.clear
+        subject.clear
 
-        @cache.max_size = 1
-        @cache[:k]  = '1'
-        @cache[:k2] = '3'
-        @cache[:k3] = '4'
-        @cache.size.should == 1
+        subject.max_size = 1
+        subject[:k]  = '1'
+        subject[:k2] = '3'
+        subject[:k3] = '4'
+        subject.size.should == 1
 
-        @cache[:k3].should be_true
-        @cache[:k2].should be_nil
-        @cache[:k].should be_nil
+        subject[:k3].should be_true
+        subject[:k2].should be_nil
+        subject[:k].should be_nil
     end
 
     describe '#[]=' do
         it 'stores an object' do
             v = 'val'
-            (@cache[:key] = v).should == v
-            @cache[:key].should == v
+            (subject[:key] = v).should == v
+            subject[:key].should == v
         end
         it 'alias of #store' do
             v = 'val2'
-            @cache.store( :key2, v ).should == v
-            @cache[:key2].should == v
+            subject.store( :key2, v ).should == v
+            subject[:key2].should == v
         end
     end
 
     describe '#[]' do
         it 'retrieves an object by key' do
             v = 'val2'
-            @cache[:key] = v
-            @cache[:key].should == v
-            @cache.empty?.should be_false
+            subject[:key] = v
+            subject[:key].should == v
+            subject.empty?.should be_false
         end
 
         context 'when the key does not exist' do
             it 'returns nil' do
-                @cache[:some_key].should be_nil
+                subject[:some_key].should be_nil
             end
         end
     end
@@ -63,28 +62,28 @@ describe Arachni::Support::Cache::LeastRecentlyUsed do
         context 'when the key exists' do
             it 'deletes a key and return its value' do
                 v = 'my_val'
-                @cache[:my_key] = v
-                @cache.delete( :my_key ).should == v
-                @cache[:my_key].should be_nil
-                @cache.include?( :my_key ).should be_false
+                subject[:my_key] = v
+                subject.delete( :my_key ).should == v
+                subject[:my_key].should be_nil
+                subject.include?( :my_key ).should be_false
             end
         end
         context 'when the key does not exist' do
             it 'returns nil' do
-                @cache.delete( :my_key2 ).should be_nil
+                subject.delete( :my_key2 ).should be_nil
             end
         end
     end
 
     describe '#clear' do
         it 'empties the cache' do
-            @cache[:my_key2] = 'v'
-            @cache.size.should > 0
-            @cache.empty?.should be_false
-            @cache.clear
+            subject[:my_key2] = 'v'
+            subject.size.should > 0
+            subject.empty?.should be_false
+            subject.clear
 
-            @cache.size.should == 0
-            @cache.empty?.should be_true
+            subject.size.should == 0
+            subject.empty?.should be_true
         end
     end
 

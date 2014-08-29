@@ -1,17 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 require 'tmpdir'
@@ -19,27 +11,25 @@ require 'tmpdir'
 module Arachni
 module Support::Database
 
-#
 # Base class for Database data structures
 #
 # Provides helper methods for data structures to be implemented related to
 # objecting dumping, loading, unique filename generation, etc.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @abstract
-#
 class Base
 
     # @param    [Object]    serializer
     #   Any object that responds to 'dump' and 'load'.
     def initialize( serializer = Marshal )
-        @serializer = serializer
+        @serializer       = serializer
+        @filename_counter = 0
     end
 
     private
 
-    #
     # Dumps the object to a unique file and returns its path.
     #
     # The path can be used as a reference to the original value
@@ -47,48 +37,40 @@ class Base
     #
     # @param    [Object]    obj
     #
-    # @return   [String]    filepath
-    #
+    # @return   [String]
+    #   Filepath
     def dump( obj, &block )
-        f = File.open( get_unique_filename, 'w' )
+        File.open( get_unique_filename, 'wb' ) do |f|
+            serialized = serialize( obj )
+            f.write( serialized )
 
-        serialized = serialize( obj )
-        f.write( serialized )
+            block.call( serialized ) if block_given?
 
-        block.call( serialized ) if block_given?
-
-        f.path
-    ensure
-        f.close
+            f.path
+        end
     end
 
-    #
     # Loads the object stored in filepath.
     #
     # @param    [String]    filepath
     #
     # @return   [Object]
-    #
     def load( filepath )
-        unserialize( IO.read( filepath ) )
+        unserialize( IO.binread( filepath ) )
     end
 
-    #
     # Deletes a file.
     #
     # @param    [String]    filepath
-    #
     def delete_file( filepath )
         File.delete( filepath ) if File.exist?( filepath )
     end
 
-    #
     # Loads the object in file and then removes it from the file-system.
     #
     # @param    [String]    filepath
     #
     # @return   [Object]
-    #
     def load_and_delete_file( filepath )
         obj = load( filepath )
         delete_file( filepath )
@@ -113,9 +95,10 @@ class Base
     end
 
     def generate_filename
-        s = ''
-        10.times { s << ( 65 + rand( 26 ) ) }
-        ( Dir.tmpdir + "/#{self.class.name}_" + s ).gsub( '::', '_' )
+        # Should be unique enough...
+        "#{Dir.tmpdir}/#{self.class.name}_#{Process.pid}_#{object_id}_#{@filename_counter}".gsub( '::', '_' )
+    ensure
+        @filename_counter += 1
     end
 
 end

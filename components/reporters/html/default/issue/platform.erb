@@ -1,0 +1,8 @@
+<% if issue.platform_type %>
+    <p class="alert alert-info">
+        Affected platform type belongs to the
+        <strong><%= Arachni::Platform::Manager::TYPES[issue.platform_type] %></strong>
+        category, identified as
+        <strong><%= Arachni::Platform::Manager.new.fullname issue.platform_name %></strong>.
+    </p>
+<% end %>

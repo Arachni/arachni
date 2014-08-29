@@ -1,17 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 module Arachni
@@ -20,7 +12,7 @@ module Processes
 #
 # Helper for managing {RPC::Server::Dispatcher} processes.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 class Dispatchers
     include Singleton
@@ -34,17 +26,27 @@ class Dispatchers
         @dispatcher_connections = {}
     end
 
-    #
     # Connects to a Dispatcher by URL.
     #
     # @param    [String]    url URL of the Dispatcher.
     # @param    [Hash]    options Options for the RPC client.
     #
     # @return   [RPC::Client::Dispatcher]
-    #
     def connect( url, options = { } )
-        opts = OpenStruct.new( options )
-        @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( opts, url )
+        Reactor.global.run_in_thread if !Reactor.global.running?
+
+        options[:client_max_retries] = options.delete(:max_retries)
+
+        fresh = options.delete( :fresh )
+
+        opts     = OpenStruct.new
+        opts.rpc = OpenStruct.new( options )
+
+        if fresh
+            @dispatcher_connections[url] = RPC::Client::Dispatcher.new( opts, url )
+        else
+            @dispatcher_connections[url] ||= RPC::Client::Dispatcher.new( opts, url )
+        end
     end
 
     # @param    [Block] block   Block to pass an RPC client for each Dispatcher.
@@ -54,53 +56,44 @@ class Dispatchers
         end
     end
 
-    #
     # Spawns a {RPC::Server::Dispatcher} process.
     #
     # @param    [Hash]  options
     #   To be passed to {Arachni::Options#set}. Allows `address` instead of
-    #   `rpc_address` and `port` instead of `rpc_port`.
-    #
-    # @param    [Block] block
-    #   Passed {Arachni::Options} to configure the Dispatcher options.
+    #   `rpc_server_address` and `port` instead of `rpc_port`.
     #
     # @return   [RPC::Client::Dispatcher]
-    #
-    def spawn( options = {}, &block )
-        options = Options.to_hash.symbolize_keys( false ).merge( options )
+    def spawn( options = {} )
+        fork = options.delete(:fork)
 
-        options[:rpc_port]    = options.delete( :port ) if options.include?( :port )
-        options[:rpc_address] = options.delete( :address ) if options.include?( :address )
+        options = {
+            dispatcher: {
+                neighbour:        options[:neighbour],
+                node_pipe_id:     options[:pipe_id],
+                node_weight:      options[:weight],
+                external_address: options[:external_address],
+                pool_size:        options[:pool_size]
+            },
+            rpc:        {
+                server_port:    options[:port]    || available_port,
+                server_address: options[:address] || '127.0.0.1'
+            }
+        }
 
-        options[:rpc_port]    ||= available_port
+        Manager.spawn( :dispatcher, options: options, fork: fork )
 
-        url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
-
-        Manager.fork_em do
-            Options.set( options )
-            block.call( Options.instance ) if block_given?
-
-            require "#{Arachni::Options.dir['lib']}/rpc/server/dispatcher"
-
-            RPC::Server::Dispatcher.new
-        end
-
-        begin
-            Timeout.timeout( 10 ) do
-                while sleep( 0.1 )
-                    begin
-                        connect( url, max_retries: 1 ).alive?
-                        break
-                    rescue Exception
-                    end
-                end
+        url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
+        while sleep( 0.1 )
+            begin
+                connect( url, connection_pool_size: 1, max_retries: 1 ).alive?
+                break
+            rescue => e
+                # ap e
             end
-        rescue Timeout::Error
-            abort "Dispatcher '#{url}' never started!"
         end
 
         @list << url
-        connect( url )
+        connect( url, fresh: true )
     end
 
     # Same as {#spawn} but sets the pool size to `1`.
@@ -113,8 +106,8 @@ class Dispatchers
     # @param    [String]    url URL of the Dispatcher to kill.
     def kill( url )
         dispatcher = connect( url )
-        Manager.kill_many dispatcher.stats['consumed_pids']
-        Manager.kill dispatcher.proc_info['pid'].to_i
+        Manager.kill_many dispatcher.statistics['consumed_pids']
+        Manager.kill dispatcher.pid
     rescue => e
         #ap e
         #ap e.backtrace
@@ -134,8 +127,8 @@ class Dispatchers
     def self.method_missing( sym, *args, &block )
         if instance.respond_to?( sym )
             instance.send( sym, *args, &block )
-        elsif
-        super( sym, *args, &block )
+        else
+            super( sym, *args, &block )
         end
     end
 

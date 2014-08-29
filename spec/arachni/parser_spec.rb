@@ -3,134 +3,175 @@ require 'spec_helper'
 describe Arachni::Parser do
     before( :all ) do
         @utils = Arachni::Utilities
-        @opts = Arachni::Options.instance
-        @opts.url = @utils.normalize_url( web_server_url_for( :parser ) )
-        @opts.audit_links = true
-        @opts.audit_forms = true
-        @opts.audit_cookies = true
-        @opts.audit_headers = true
+        @opts  = Arachni::Options.instance
+
+        @opts.url = web_server_url_for( :parser )
 
         @url = @utils.normalize_url( @opts.url + '/?query_var_input=query_var_val' )
 
-        @opts.cookies = [
-            Arachni::Element::Cookie.new( @url,
-                { 'name_from_cookiejar' => 'val_from_cookiejar' }
-            )
-        ]
-
-        @response = Arachni::HTTP.get(
-            @url,
-            async: false,
-            remove_id: true
-        ).response
-        @parser = Arachni::Parser.new( @response, @opts )
+        @response = Arachni::HTTP::Client.get( @url, mode: :sync )
     end
+
+    before :each do
+        @opts.http.cookies = {
+            'name_from_cookiejar' => 'val_from_cookiejar'
+        }
+
+        Arachni::HTTP::Client.reset
+    end
+
+    subject(:response) { @response }
+    subject { Arachni::Parser.new( response ) }
 
     describe '#url' do
         it 'holds the effective URL of the response' do
-            @parser.url.should == @url
+            subject.url.should == @url
         end
     end
 
-    describe '#opts' do
-        it 'holds the provided opts' do
-            @parser.opts.should == @opts
+    describe '#link' do
+        it 'returns the URL of the response as a Link' do
+            subject.link.action.should == @opts.url
+            subject.link.inputs.should == { 'query_var_input' => 'query_var_val' }
         end
     end
 
-    describe '#run' do
+    describe '#body=' do
+        let(:response) do
+            Arachni::HTTP::Response.new(
+                url: @opts.url,
+                body: '<a href="/?name=val">Stuff</a>',
+                request: Arachni::HTTP::Request.new( url: @opts.url )
+            )
+        end
+
+        it 'overrides the body of the HTTP response for the parsing process' do
+            subject.body = '<a href="/?name2=val2">Stuff</a>'
+            subject.links.size.should == 1
+            subject.links.first.inputs.should == { 'name2' => 'val2' }
+        end
+
+        it 'clears the existing element cache' do
+            subject.links.size.should == 1
+            subject.links.first.inputs.should == { 'name' => 'val' }
+
+            subject.body = '<a href="/?name2=val2">Stuff</a>'
+            subject.links.size.should == 1
+            subject.links.first.inputs.should == { 'name2' => 'val2' }
+        end
+    end
+
+    describe '#page' do
         it 'returns a Page' do
-            page = @parser.run
+            page = subject.page
 
-            page.class.should == Arachni::Page
-            page.url.should == @parser.url
-            page.code.should == @response.code
-            page.method.should == @response.request.method.to_s
+            page.should be_kind_of Arachni::Page
+            page.url.should == subject.url
+            page.method.should == @response.request.method
             page.query_vars.should == { 'query_var_input' => 'query_var_val' }
             page.body.should == @response.body
-            page.response_headers.should == @response.headers_hash
-            page.paths.should == @parser.paths
+            page.response.should == @response
+            page.paths.should == subject.paths
 
-            link = Arachni::Element::Link.new( @url,
-                inputs: @parser.link_vars( @url )
-            )
+            link = Arachni::Element::Link.new( url: @url, inputs: subject.link_vars )
 
-            page.links.should == @parser.links | [link]
-            page.forms.should == @parser.forms
-            page.cookies.should == @parser.cookies | @opts.cookies | Arachni::HTTP.instance.cookie_jar.cookies
-            page.headers.should == @parser.headers
-            page.cookiejar.should == @parser.cookies | @opts.cookies
+            page.links.should == subject.links | [link]
+            page.forms.should == subject.forms
+            page.cookies.should == subject.cookies_to_be_audited
+            page.headers.should == subject.headers
+
+            page.cookie_jar.should == subject.cookie_jar
         end
+    end
 
-        it 'forces page\'s cookies\'s action to the response\'s effective URL' do
-            url = 'http://stuff.com/'
-            response = Typhoeus::Response.new(
-                effective_url: url,
+    describe '#cookie_jar' do
+        let(:response) do
+            Arachni::HTTP::Response.new(
+                url: @url,
                 body: '',
-                request: Typhoeus::Request.new( url ),
-                headers_hash: {
+                request: Arachni::HTTP::Request.new( url: @url ),
+                headers: {
                     'Content-Type' => 'text/html',
-                    'Set-Cookie'   => 'cname=cval'
+                    'Set-Cookie'   => ['cname=cval', 'name_from_cookiejar=updated']
                 }
             )
-            parser = Arachni::Parser.new( response, @opts )
-            cookies = parser.page.cookies
-            cookies.size.should == 2
-            cookies.map{ |c| c.action }.uniq.should == [url]
         end
 
-        context 'when Options.no_fingerprint is' do
-            context false do
-                it 'performs platform fingerprinting' do
-                    Arachni::Options.no_fingerprinting = false
+        it 'returns cookies that need to be transmitted to the page' do
+            subject.cookie_jar.map(&:inputs).should == [
+                 { 'cname'               => 'cval' },
+                 { 'name_from_cookiejar' => 'updated' }
+            ]
+        end
+    end
 
-                    response = Typhoeus::Response.new(
-                        effective_url: 'http://stuff.com/index.php'
-                    )
-                    parser = Arachni::Parser.new( response, @opts )
-                    parser.page.platforms.should be_any
-                end
-            end
+    describe '#cookies_to_be_audited' do
+        let(:response) do
+            Arachni::HTTP::Response.new(
+                url: @url,
+                body: '',
+                request: Arachni::HTTP::Request.new( url: @url ),
+                headers: {
+                    'Content-Type' => 'text/html',
+                    'Set-Cookie'   => ['cname=cval', 'name_from_cookiejar=updated']
+                }
+            )
+        end
 
-            context true do
-                it 'does not perform platform fingerprinting' do
-                    Arachni::Options.no_fingerprinting = true
+        it 'returns all system cookies' do
+            Arachni::HTTP::Client.cookie_jar.update( Arachni::Element::Cookie.new(
+                url:    'http://stuff/',
+                inputs: {
+                    irrelevant: 'iv',
+                    cname:      'oldvar'
+                }
+            ))
 
-                    response = Typhoeus::Response.new(
-                        effective_url: 'http://stuff.com/index2.php'
-                    )
-                    parser = Arachni::Parser.new( response, @opts )
-                    parser.page.platforms.should be_empty
-                end
-            end
+            subject.cookies_to_be_audited.map(&:inputs).should == [
+                { 'cname'               => 'cval' },
+                { 'name_from_cookiejar' => 'updated' },
+                { 'irrelevant'          => 'iv' }
+            ]
+        end
+
+        it 'forces the #action to the page URL' do
+            cookies = subject.cookies_to_be_audited
+            cookies.size.should == 2
+            cookies.map { |c| c.action }.uniq.should == [@url]
         end
     end
 
     describe '#text?' do
         context 'when the response is text based' do
-            it { @parser.text?.should be_true }
+            it { subject.text?.should be_true }
         end
 
         context 'when the response is not text based' do
-            before {
-                res = Typhoeus::Response.new( effective_url: @url )
-                @parser_2 = Arachni::Parser.new( res, @opts )
-            }
-            it { @parser_2.text?.should be_false }
+            let(:response) do
+                 Arachni::HTTP::Response.new( url: @url, headers: {
+                    'Content-Type' => 'bin/stuff'
+                })
+            end
+            it { subject.text?.should be_false }
         end
     end
 
     describe '#doc' do
         context 'when the response is text based' do
             it 'returns the parsed document' do
-                @parser.doc.class == Nokogiri::HTML::Document
+                subject.document.class == Nokogiri::HTML::Document
             end
         end
 
         context 'when the response is not text based' do
+            let(:response) do
+                Arachni::HTTP::Response.new( url: @url, headers: {
+                    'Content-Type' => 'bin/stuff'
+                })
+            end
+
             it 'returns nil' do
-                res = Typhoeus::Response.new( effective_url: @url )
-                Arachni::Parser.new( res, @opts ).doc.should be_nil
+                subject.document.should be_nil
             end
         end
 
@@ -138,196 +179,249 @@ describe Arachni::Parser do
 
     describe '#links' do
         context 'when the response was a result of redirection' do
-            it 'includes the URL in the array' do
+            let(:response) do
                 url = 'http://stuff.com/'
-                response = Typhoeus::Response.new(
-                    effective_url: url,
+                response = Arachni::HTTP::Response.new(
+                    url: url,
                     body: '',
-                    headers_hash: {
+                    headers: {
                         'Content-Type' => 'text/html',
                         'Location'     => url
                     }
                 )
-                parser = Arachni::Parser.new( response, @opts )
-                parser.links.size == 1
             end
-        end
-        context 'when the response URL contains auditable inputs' do
+
             it 'includes the URL in the array' do
-                url = 'http://stuff.com/?stuff=ba'
-                response = Typhoeus::Response.new(
-                    effective_url: url,
-                    body: '',
-                    headers_hash: {
-                        'Content-Type' => 'text/html'
-                    }
-                )
-                parser = Arachni::Parser.new( response, @opts )
-                parser.links.size == 1
-                parser.links.first.auditable.should == { 'stuff' => 'ba' }
+                subject.links.size == 1
             end
         end
-        context 'otherwise' do
-            it 'should not include it the response URL' do
-                url = 'http://stuff.com/'
-                response = Typhoeus::Response.new(
-                    effective_url: url,
+
+        context 'when the response URL contains auditable inputs' do
+            let(:response) do
+                url = 'http://stuff.com/?stuff=ba'
+                response = Arachni::HTTP::Response.new(
+                    url: url,
                     body: '',
-                    headers_hash: {
+                    headers: {
                         'Content-Type' => 'text/html'
                     }
                 )
-                parser = Arachni::Parser.new( response, @opts )
-                parser.links.should be_empty
+            end
+
+            it 'includes the URL in the array' do
+                subject.links.size == 1
+                subject.links.first.inputs.should == { 'stuff' => 'ba' }
+            end
+        end
+
+        context 'otherwise' do
+            let(:response) do
+                url = 'http://stuff.com/'
+                response = Arachni::HTTP::Response.new(
+                    url: url,
+                    body: '',
+                    headers: {
+                        'Content-Type' => 'text/html'
+                    }
+                )
+            end
+
+            it 'should not include it the response URL' do
+                subject.links.should be_empty
             end
         end
         context 'when the response is not text based' do
+            let(:response) do
+                Arachni::HTTP::Response.new( url: 'http://stuff', headers: {
+                    'Content-Type' => 'bin/stuff'
+                })
+            end
+
             it 'returns nil' do
-                res = Typhoeus::Response.new( effective_url: @url )
-                Arachni::Parser.new( res, @opts ).links.should be_empty
+                subject.links.should be_empty
+            end
+
+            context 'and the URL has query parameters' do
+                let(:response) do
+                    Arachni::HTTP::Response.new( url: @url, headers: {
+                        'Content-Type' => 'bin/stuff'
+                    })
+                end
+
+                it 'returns the URL parsed as a link' do
+                    subject.links.size.should == 1
+                    subject.links.first.should == subject.link
+                end
             end
         end
     end
 
     describe '#forms' do
         it 'returns an array of parsed forms' do
-            @parser.forms.size.should == 2
+            subject.forms.size.should == 2
 
-            form = @parser.forms.first
+            form = subject.forms.first
             form.action.should == @utils.normalize_url( @opts.url + '/form' )
             form.url.should == @url
 
-            form.auditable.should == {
-                'form_input_1' => 'form_val_1',
-                'form_input_2' => 'form_val_2'
+            form.inputs.should == {
+                "form_input_1" => "form_val_1",
+                "form_input_2" => "form_val_2"
             }
-            form.method.should == 'post'
-            form.raw.should == {
-                    'attrs' => {
-                    'method' => 'post',
-                    'action' => form.action,
-                      'name' => 'my_form'
-                },
-                 'textarea' => [],
-                   'select' => [],
-                   'button' => [],
-                    'input' => [
-                    {
-                         'type' => 'text',
-                         'name' => 'form_input_1',
-                        'value' => 'form_val_1'
-                    },
-                    {
-                         'type' => 'text',
-                         'name' => 'form_input_2',
-                        'value' => 'form_val_2'
-                    },
-                    {
-                        'type' => 'submit'
-                    }
-                ],
-                'auditable' => [
-                    {
-                         'type' => 'text',
-                         'name' => 'form_input_1',
-                        'value' => 'form_val_1'
-                    },
-                    {
-                         'type' => 'text',
-                         'name' => 'form_input_2',
-                        'value' => 'form_val_2'
-                    },
-                    {
-                        'type' => 'submit'
-                    }
-                ]
-            }
+            form.method.should == :post
 
-            form = @parser.forms.last
+            form = subject.forms.last
             form.action.should == @utils.normalize_url( @opts.url + '/form_2' )
             form.url.should == @url
-            form.auditable.should == { 'form_2_input_1' => 'form_2_val_1' }
+            form.inputs.should == { "form_2_input_1" => "form_2_val_1" }
         end
 
         context 'when passed secondary responses' do
             it 'identifies the nonces' do
                 responses = []
 
-                responses << Arachni::HTTP.get( @opts.url + 'with_nonce', async: false ).response
-                responses << Arachni::HTTP.get( @opts.url + 'with_nonce', async: false ).response
+                responses << Arachni::HTTP::Client.get( @opts.url + 'with_nonce', mode: :sync )
+                responses << Arachni::HTTP::Client.get( @opts.url + 'with_nonce', mode: :sync )
 
                 parser = Arachni::Parser.new( responses, @opts )
                 parser.forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
             end
         end
         context 'when the response is not text based' do
+            let(:response) do
+                Arachni::HTTP::Response.new( url: @url )
+            end
+
             it 'returns nil' do
-                res = Typhoeus::Response.new( effective_url: @url )
-                Arachni::Parser.new( res, @opts ).forms.should be_empty
+                subject.forms.should be_empty
             end
         end
     end
 
     describe '#cookies' do
         it 'returns an array of cookies' do
-            @parser.cookies.size.should == 3
+            subject.cookies.size.should == 3
 
-            cookies = @parser.cookies
+            cookies = subject.cookies.sort_by { |cookie| cookie.name }.reverse
 
             cookie = cookies.pop
             cookie.action.should == @url
-            cookie.auditable.should == { 'cookie_input2' => 'cookie_val2' }
-            cookie.method.should == 'get'
+            cookie.inputs.should == { 'cookie_input' => 'cookie_val' }
+            cookie.method.should == :get
+            cookie.secure?.should be_true
+            cookie.http_only?.should be_true
+            cookie.url.should == @url
+
+            cookie = cookies.pop
+            cookie.action.should == @url
+            cookie.inputs.should == { 'cookie_input2' => 'cookie_val2' }
+            cookie.method.should == :get
             cookie.secure?.should be_false
             cookie.http_only?.should be_false
             cookie.url.should == @url
 
             cookie = cookies.pop
             cookie.action.should == @url
-            cookie.auditable.should == { 'cookie_input' => 'cookie_val' }
-            cookie.method.should == 'get'
+            cookie.inputs.should == { "http_equiv_cookie_name" => "http_equiv_cookie_val" }
             cookie.secure?.should be_true
             cookie.http_only?.should be_true
+            cookie.method.should == :get
             cookie.url.should == @url
+        end
+    end
 
-            cookie = cookies.pop
-            cookie.action.should == @url
-            cookie.auditable.should == { "http_equiv_cookie_name" => "http_equiv_cookie_val" }
-            cookie.secure?.should be_true
-            cookie.http_only?.should be_true
-            cookie.method.should == 'get'
-            cookie.url.should == @url
+    describe '#link_template' do
+        context 'when the response url matches a link template' do
+
+            before(:each) do
+                Arachni::Options.audit.link_templates = /param\/(?<param>\w+)/
+            end
+
+            let(:response) do
+                url = @opts.url + 'test2/param/myvalue'
+                Arachni::HTTP::Response.new( url: url )
+            end
+
+            it "returns a #{Arachni::Element::LinkTemplate}" do
+                link = subject.link_template
+                link.action.should == response.url
+                link.url.should == response.url
+                link.inputs.should == {
+                    'param'  => 'myvalue'
+                }
+            end
+        end
+    end
+
+    describe '#link_templates' do
+        context 'when the response url matches a link template' do
+
+            before(:each) do
+                Arachni::Options.audit.link_templates = /param\/(?<param>\w+)/
+            end
+
+            let(:response) do
+                url = @opts.url
+                response = Arachni::HTTP::Response.new(
+                    url: url,
+                    body: '
+                <html>
+                    <body>
+                        <a href="' + url + '/test2/param/myvalue"></a>
+                    </body>
+                </html>'
+                )
+            end
+
+            it "returns a #{Arachni::Element::LinkTemplate}" do
+                link = subject.link_templates.first
+                link.action.should == response.url + 'test2/param/myvalue'
+                link.url.should == response.url
+                link.inputs.should == {
+                    'param'  => 'myvalue'
+                }
+            end
+        end
+    end
+
+    describe '#paths' do
+        context 'when an error occurs' do
+            it 'returns an empty array' do
+                described_class.stub(:extractors){ raise }
+                described_class.new( @response ).paths.should == []
+            end
         end
     end
 
     context 'without base' do
         describe '#base' do
             it 'returns nil' do
-                @parser.base.should == nil
+                subject.base.should == nil
             end
         end
 
         describe '#to_absolute' do
             it 'converts a relative path to absolute' do
-                @parser.to_absolute( 'relative/path' ).should == @utils.normalize_url( "#{@opts.url}/relative/path" )
+                subject.to_absolute( 'relative/path' ).should ==
+                    @utils.normalize_url( "#{@opts.url}/relative/path" )
             end
         end
 
         describe '#links' do
             it 'returns an array of links' do
-                links = @parser.links
+                links = subject.links
                 links.size.should == 2
 
                 link = links.first
-                link.action.should == @utils.normalize_url( @url )
-                link.auditable.should == { 'query_var_input' => 'query_var_val' }
-                link.method.should == 'get'
+                link.action.should == @opts.url
+                link.inputs.should == { 'query_var_input' => 'query_var_val' }
+                link.method.should == :get
                 link.url.should == @url
 
                 link = links.last
-                link.action.should == @utils.normalize_url( @opts.url + '/link?link_input=link_val' )
-                link.auditable.should == { 'link_input' => 'link_val' }
-                link.method.should == 'get'
+                link.action.should == @utils.normalize_url( @opts.url + '/link' )
+                link.inputs.should == { 'link_input' => 'link_val' }
+                link.method.should == :get
                 link.url.should == @url
             end
         end
@@ -340,74 +434,88 @@ describe Arachni::Parser do
                     "form_2",
                 ].map { |p| @utils.normalize_url( @opts.url.to_s + '/' + p ) }
 
-                (@parser.paths & paths).sort.should == paths.sort
+                (subject.paths & paths).sort.should == paths.sort
             end
         end
     end
 
     context 'with base' do
-        before {
-            @url_with_base = @utils.normalize_url( @opts.url + '/with_base?stuff=ha' )
-            res = Arachni::HTTP.instance.get(
-                @url_with_base,
-                async: false,
-                remove_id: true
-            ).response
-            @parser_with_base = Arachni::Parser.new( res, @opts )
-        }
+        let(:url) do
+            @utils.normalize_url( @opts.url + '/with_base?stuff=ha' )
+        end
+        let(:response) do
+            Arachni::HTTP::Client.get( url, mode: :sync )
+        end
 
         describe '#base' do
             it 'returns the base href attr' do
-                @parser_with_base.base.should == @utils.normalize_url( "#{@opts.url.to_s}/this_is_the_base/" )
+                subject.base.should == @utils.normalize_url( "#{@opts.url.to_s}/this_is_the_base/" )
             end
         end
 
         describe '#to_absolute' do
             it 'converts a relative path to absolute' do
-                @parser_with_base.to_absolute( 'relative/path' ).should == @utils.normalize_url( "#{@parser_with_base.base}relative/path" )
+                subject.to_absolute( 'relative/path' ).should ==
+                    @utils.normalize_url( "#{subject.base}relative/path" )
             end
         end
 
         describe '#links' do
             it 'returns an array of links' do
-                links = @parser_with_base.links
+                links = subject.links
                 links.size.should == 2
 
                 link = links.first
-                link.action.should == @url_with_base
-                link.auditable.should ==  { 'stuff' => 'ha' }
-                link.method.should == 'get'
-                link.url.should == @url_with_base
+                link.action.should == @opts.url + 'with_base'
+                link.inputs.should ==  { 'stuff' => 'ha' }
+                link.method.should == :get
+                link.url.should == url
 
                 link = links.last
-                link.action.should == @parser_with_base.base + 'link_with_base?link_input=link_val'
-                link.auditable.should == { 'link_input' => 'link_val' }
-                link.method.should == 'get'
-                link.url.should == @url_with_base
+                link.action.should == subject.base + 'link_with_base'
+                link.inputs.should == { 'link_input' => 'link_val' }
+                link.method.should == :get
+                link.url.should == url
             end
         end
 
         describe '#paths' do
             it 'returns an array of all paths found in the page as absolute URLs' do
                 paths = [
-                    "",
-                    "link_with_base?link_input=link_val",
-                ].map { |p| @parser_with_base.base + '' + p }
+                    '',
+                    'link_with_base?link_input=link_val'
+                ].map { |p| subject.base + '' + p }
 
-                (@parser_with_base.paths & paths).sort.should == paths.sort
+                (subject.paths & paths).sort.should == paths.sort
             end
         end
     end
 
     describe '#headers' do
         it 'returns an array of headers' do
-            @parser.headers.each { |h| h.class.should == Arachni::Element::Header }
+            subject.headers.each { |h| h.class.should == Arachni::Element::Header }
         end
     end
 
     describe '#link_vars' do
         it 'returns a hash of link query inputs' do
-            @parser.link_vars( @url ).should == { "query_var_input" => "query_var_val" }
+            subject.link_vars.should == { 'query_var_input' => 'query_var_val' }
+        end
+
+        context "when there are #{Arachni::OptionGroups::Scope}#url_rewrites" do
+            before :each do
+                Arachni::Options.scope.url_rewrites = {
+                    'stuff\/(\d+)' => '/stuff?id=\1'
+                }
+            end
+
+            let(:response) do
+                Arachni::HTTP::Client.get( "#{@opts.url}/stuff/13", mode: :sync )
+            end
+
+            it 'rewrites the url' do
+                subject.link_vars.should == { 'id' => '13' }
+            end
         end
     end
 

@@ -1,29 +1,64 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 require 'zlib'
 
-#
 # Overloads the {String} class.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class String
 
+    # @param    [Regexp]    regexp
+    #   Regular expression with named captures.
     #
+    # @return   [Hash]
+    #   Grouped matches.
+    def scan_in_groups( regexp )
+        raise ArgumentError, 'Regexp does not contain any names.' if regexp.names.empty?
+        return {} if !(matches = scan( regexp ).first)
+
+        Hash[regexp.names.zip( matches )].reject { |_, v| v.empty? }
+    end
+
+    # @param    [Regexp]    regexp
+    #   Regular expression with named captures.
+    # @param    [Hash]    substitutions
+    #   Hash (with capture names as keys) with which to replace the `regexp`
+    #   matches.
+    #
+    # @return   [String]
+    #   Updated copy of self.
+    def sub_in_groups( regexp, substitutions )
+        dup.sub_in_groups!( regexp, substitutions )
+    end
+
+    # @param    [Regexp]    regexp
+    #   Regular expression with named captures.
+    # @param    [Hash]    updates
+    #   Hash (with capture names as keys) with which to replace the `regexp`
+    #   matches.
+    #
+    # @return   [String]
+    #   Updated self.
+    def sub_in_groups!( regexp, updates )
+        return if !(match = regexp.match( self ))
+
+        # updates.reject! { |k| !(match.offset( k ) rescue nil) }
+
+        keys_in_order = updates.keys.sort_by { |k| match.offset( k ) }.reverse
+        keys_in_order.each do |k|
+            offsets_for_group = match.offset( k )
+            self[offsets_for_group.first...offsets_for_group.last] = updates[k]
+        end
+
+        self
+    end
+
     # Gets the reverse diff between self and str on a word level.
     #
     #
@@ -45,7 +80,6 @@ class String
     # @param [String] other
     #
     # @return [String]
-    #
     def rdiff( other )
         return self if self == other
 
@@ -56,13 +90,12 @@ class String
         (s_words - (s_words - other.words)).join
     end
 
-    #
     # Calculates the difference ratio (at a word level) between `self` and `other`
     #
     # @param    [String]    other
     #
-    # @return   [Float]     `0.0` (identical strings) to `1.0` (completely different)
-    #
+    # @return   [Float]
+    #   `0.0` (identical strings) to `1.0` (completely different)
     def diff_ratio( other )
         return 0.0 if self == other
         return 1.0 if empty? || other.empty?
@@ -76,25 +109,26 @@ class String
         (union - common) / union
     end
 
-    #
     # Returns the words in `self`.
     #
-    # @param    [Bool]  strict  include *only* words, no boundary characters (like spaces, etc.)
+    # @param    [Bool]  strict
+    #   Include *only* words, no boundary characters (like spaces, etc.).
     #
     # @return   [Array<String>]
-    #
     def words( strict = false )
         splits = split( /\b/ )
         splits.reject! { |w| !(w =~ /\w/) } if strict
         splits
     end
 
-    # @return [String] Shortest word.
+    # @return [String]
+    #   Shortest word.
     def shortest_word
         words( true ).sort_by { |w| w.size }.first
     end
 
-    # @return [String] Longest word.
+    # @return [String]
+    #   Longest word.
     def longest_word
         words( true ).sort_by { |w| w.size }.last
     end
@@ -107,33 +141,19 @@ class String
     #   It basically has the same function as Ruby's `#hash` method, but does
     #   not use a random seed per Ruby process -- making it suitable for use
     #   in distributed systems.
-    #
     def persistent_hash
         Zlib.crc32 self
     end
 
-    def substring?( string )
-        begin
-            cmatch = match( Regexp.new( Regexp.escape( string ) ) )
-            cmatch && !cmatch.to_s.empty?
-        rescue
-            nil
-        end
-    end
-
-    def repack
-        unpack( 'C*' ).pack( 'U*' )
-    end
-
     def recode!
         force_encoding( 'utf-8' )
-        encode!( 'utf-16be', invalid: :replace, undef: :replace ).encode( 'utf-8' )
+        encode!( 'utf-16be', invalid: :replace, undef: :replace )
+        encode!( 'utf-8' )
     end
 
     def recode
         dup.recode!
     end
-
 
     def binary?
         # Stolen from YAML.

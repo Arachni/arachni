@@ -1,119 +1,59 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
+require_relative 'inputtable'
+require_relative 'mutable'
+require_relative 'submittable'
+require_relative 'with_auditor'
+
 module Arachni
-
-lib = Options.dir['lib']
-require lib + 'module/utilities'
-require lib + 'issue'
-require lib + 'element/capabilities/mutable'
-
 module Element::Capabilities
 
+# Provides inputs, HTTP submission and audit functionality to
+# {Arachni::Element::Capabilities::Mutable} elements.
 #
-# Provides audit functionality to {Arachni::Element::Mutable} elements.
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Auditable
     include Utilities
+    include Inputtable
+    include Submittable
     include Mutable
+    include WithAuditor
 
     # Load and include all available analysis/audit techniques.
-    Dir.glob( File.dirname( __FILE__ ) + '/auditable/*.rb' ).each { |f| require f }
+    Dir.glob( File.dirname( __FILE__ ) + '/auditable/**/*.rb' ).each { |f| require f }
 
-    include Taint
-    include Timeout
-    include RDiff
+    # @return      [Hash]
+    #   Audit and general options for convenience's sake.
+    attr_accessor :audit_options
 
-    #
-    # Sets the auditor for this element.
-    #
-    # The auditor provides its output, HTTP and issue logging interfaces.
-    #
-    # @return   [Arachni::Module::Auditor]
-    #
-    attr_accessor :auditor
-
-    #
-    # Frozen version of {#auditable}, has all the original name/values.
-    #
-    # @return   [Hash]
-    #
-    attr_reader   :orig
-    alias :original :orig
-
-    #
-    # @return [Hash]    Audit and general options for convenience's sake.
-    #
-    attr_reader   :opts
-
-    #
     # Default audit options.
-    #
     OPTIONS = {
-        # Enable skipping of already audited inputs.
-        redundant: false,
-
-        # Make requests asynchronously.
-        async:     true,
+        # Optionally enable skipping of already audited inputs, disabled by default.
+        redundant:     false,
 
         # Block to be passed each mutation right before being submitted.
-        #
         # Allows for last minute changes.
-        each_mutation:  nil,
+        each_mutation: nil,
 
         # Block to be passed each mutation to determine if it should be skipped.
-        skip_like: nil
+        skip_like:     nil
     }
 
-    #
     # Empties the de-duplication/uniqueness look-up table.
     #
-    # Unless you're sure you need this, set the :redundant flag to true
-    # when calling audit methods to bypass it.
-    #
-    def self.reset
-        @@audited          = Support::LookUp::HashSet.new
+    # Unless you're sure you need this, set the :redundant flag to true when
+    # calling audit methods to bypass it.
+    def Auditable.reset
+        State.audit.clear
         @@skip_like_blocks = []
-
-        Timeout.reset
     end
     reset
-
-    # Removes workload restrictions and allows all elements to be audited.
-    def self.reset_instance_scope
-        @@restrict_to_elements = Support::LookUp::HashSet.new( hasher: :to_i )
-    end
-    reset_instance_scope
-
-    #
-    # Restricts the audit to a specific set of elements.
-    #
-    # *Caution*: Each call overwrites the last.
-    #
-    # @param    [Array<String,Integer>]    elements
-    #   Element audit IDs as returned by {#scope_audit_id}.
-    #
-    # @see scope_audit_id
-    #
-    def self.restrict_to_elements( elements )
-        self.reset_instance_scope
-        elements.each { |elem| @@restrict_to_elements << elem }
-    end
 
     # @param    [Block] block
     #   Block to decide whether an element should be skipped or not.
@@ -125,293 +65,44 @@ module Auditable
         self
     end
 
-    #
-    # Assigns an anonymous auditor as an {#auditor}.
-    #
-    # Alleviates the need to assign a custom auditor for simple stuff when
-    # scripting.
-    #
-    def use_anonymous_auditor
-        self.auditor = Class.new do
-            include Arachni::Module::Auditor
-
-            def initialize
-                @framework = Arachni::Framework.new
-            end
-            #
-            # @return   [Array<Issue>]  Unfiltered logged issues.
-            #
-            # @see Arachni::Module::Manager.results
-            #
-            def raw_issues
-                Arachni::Module::Manager.results
-            end
-
-            #
-            # @return   [Array<Issue>]  Deduplicated issues.
-            #
-            # @see AuditStore#issues
-            #
-            def issues
-                auditstore.issues
-            end
-
-            # @return   [AuditStore]
-            def auditstore
-                AuditStore.new( options: Options.instance.to_h,
-                                issues:  raw_issues )
-            end
-            alias :audit_store :auditstore
-
-            def self.info
-                { name: 'Anonymous auditor' }
-            end
-        end.new
+    def initialize( options )
+        super
+        @audit_options = {}
     end
 
-    #
-    # Frozen inputs.
-    #
-    # If you want to change it you'll either have to use {#update}
-    # or the {#auditable=} attr_writer and pass a new hash -- the new hash
-    # will also be frozen.
-    #
-    # @return   [Hash]
-    #
-    def auditable
-        @auditable.freeze
-    end
-
-    #
-    # @param  [Hash]  hash Inputs/params.
-    #
-    # @note Will convert keys and values to strings.
-    #
-    # @see #auditable
-    #
-    def auditable=( hash )
-        @auditable = (hash || {}).inject({}) { |h, (k, v)| h[k.to_s] = v.to_s.freeze; h}
-        rehash
-        self.auditable
-    end
-
-    #
-    # Checks whether or not the given inputs match the auditable ones.
-    #
-    # @param    [Hash, Array, String, Symbol]   args
-    #   Names of inputs to check (also accepts var-args).
-    #
-    # @return   [Bool]
-    #
-    def has_inputs?( *args )
-        if (h = args.first).is_a?( Hash )
-            h.each { |k, v| return false if self[k] != v }
-        else
-            keys = args.flatten.compact.map { |a| [a].map( &:to_s ) }.flatten
-            (self.auditable.keys & keys).size == keys.size
-        end
-    end
-
-    #
-    # @param    [Hash]  hash
-    #   Inputs with which to update the {#auditable} inputs.
-    #
-    # @return   [Auditable]   self
-    #
-    # @see #auditable
-    # @see #auditable=
-    #
-    def update( hash )
-        self.auditable = self.auditable.merge( hash )
+    # Resets the audit options to their original values.
+    def reset
+        super if defined?( super )
+        @audit_options = {}
         self
     end
 
-    # @return   [Hash]  Returns changes make to the {#auditable}'s inputs.
-    def changes
-        (self.orig.keys | self.auditable.keys).inject( {} ) do |h, k|
-            if self.orig[k] != self.auditable[k]
-                h[k] = self.auditable[k]
-            end
-            h
-        end
-    end
-
+    # @note Requires an {#auditor}.
     #
-    # Shorthand {#auditable} reader.
-    #
-    # @param    [#to_s] k   key
-    #
-    # @return   [String]
-    #
-    def []( k )
-        self.auditable[k.to_s]
-    end
-
-    #
-    # Shorthand {#auditable} writer.
-    #
-    # @param    [#to_s] k   key
-    # @param    [#to_s] v   value
-    #
-    # @see #update
-    #
-    def []=( k, v )
-        update( { k => v } )
-        [k]
-    end
-
-    def ==( e )
-        hash == e.hash
-    end
-    alias :eql? :==
-
-    def hash
-        @hash ||= rehash
-    end
-
-    #
-    # When working in High Performance Grid mode the instances have
-    # a very specific list of elements which they are allowed to audit.
-    #
-    # Elements which do not fit the scope are ignored.
-    #
-    # When called, the element will override the scope and be audited
-    # no-matter what.
-    #
-    # This is mainly used on elements discovered during audit-time by the trainer.
-    #
-    def override_instance_scope
-        @override_instance_scope = true
-    end
-
-    def reset_scope_override
-        @override_instance_scope = false
-    end
-
-    #
-    # Does this element override the instance scope?
-    #
-    # @see override_instance_scope
-    #
-    def override_instance_scope?
-        @override_instance_scope ||= false
-    end
-
-    #
-    # Provides a more generalized audit ID which does not take into account
-    # the auditor's name nor timeout value of injection string.
-    #
-    # Right now only used when in multi-Instance mode to generate a white-list
-    # of element IDs that are allowed to be audited.
-    #
-    # @param    [Hash]  opts    {#audit}    opts
-    #
-    # @return   [Integer]   Hash ID.
-    #
-    def scope_audit_id( opts = {} )
-        opts = {} if !opts
-        audit_id( nil, opts.merge(
-            no_auditor:       true,
-            no_timeout:       true,
-            no_injection_str: true
-        )).persistent_hash
-    end
-
-    #
-    # Must be implemented by the including class and perform the appropriate
-    # HTTP request (get/post/whatever) for the current element.
-    #
-    # Invoked by {#submit} to submit the object.
-    #
-    # @param    [Hash]      opts
-    # @param    [Block]     block    Callback to be passed the HTTP response.
-    #
-    # @return   [Typhoeus::Request]
-    #
-    # @see #submit
-    # @abstract
-    #
-    def http_request( opts, &block )
-    end
-
-    # @return   [Arachni::HTTP]
-    def http
-        HTTP
-    end
-
-    # @return   [Bool]  `true` if it has no auditor, `false` otherwise.
-    def orphan?
-        !@auditor
-    end
-
-    # Resets the auditable inputs to their original format/values.
-    def reset
-        self.auditable = @orig.dup
-    end
-
-    # Removes the {#auditor} from this element.
-    def remove_auditor
-        @auditor = nil
-    end
-
-    #
-    # Submits self using {#http_request}.
-    #
-    # @param  [Hash]  opts
-    # @param  [Block]  block    Callback to be passed the HTTP response.
-    #
-    # @see #http_request
-    #
-    def submit( opts = {}, &block )
-        opts = OPTIONS.merge( opts )
-        opts[:params]  = @auditable.dup
-        opts[:follow_location] = true if !opts.include?( :follow_location )
-
-        @opts ||= {}
-
-        opts = @opts.merge( opts )
-        @opts = opts
-
-        @auditor ||= opts[:auditor] if opts[:auditor]
-        use_anonymous_auditor if !@auditor
-
-        opts.delete( :auditor )
-
-        http_request( opts, &block )
-    end
-
-    #
-    # Submits mutations of self and calls the block to handle the responses.
-    #
-    # @note Requires an {#auditor}, if none has been provided it will fallback
-    #   to an {#use_anonymous_auditor anonymous} one.
+    # Submits mutations of `self` and calls the `block` to handle the results.
     #
     # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
     #   Payloads to inject, if given:
     #
     #   * {String} -- Will inject the single payload.
     #   * {Array} -- Will iterate over all payloads and inject them.
-    #   * {Hash} -- Expects {Platform} (as `Symbol`s ) for keys and {Array} of
-    #       `payloads` for values. The applicable `payloads` will be
-    #       {Platform#pick picked} from the hash based on
-    #       {Element::Base#platforms applicable platforms} for the
-    #       {Base#action resource} to be audited.
-    # @param  [Hash]    opts             Options as described in {OPTIONS}.
+    #   * {Hash} -- Expects platform names (as `Symbol`s ) for keys and
+    #       {Array} of `payloads` for values. The applicable `payloads` will be
+    #       {Platform::Manager#pick picked} from the hash based on
+    #       {#platforms applicable platforms} for the {#action resource} to be
+    #       audited.
+    # @param  [Hash]    opts
+    #   Options as described in {OPTIONS}.
     # @param  [Block]   block
-    #   Block to be used for analysis of responses; will be passed the following:
-    #
-    #   * {Typhoeus::Response HTTP response}.
-    #   * Audit options, as a hash.
-    #   * Vulnerable element mutation.
-    #
-    #   The `block` will be called as soon as the HTTP response is received.
+    #   Block to be used for analysis of responses, will be passed each
+    #   {HTTP::Response response} and mutation.
     #
     # @return   [Boolean, nil]
     #
     #   * `true` when the audit was successful.
     #   * `false` when:
-    #       * There are no {#auditable} inputs.
-    #       * The {Element::Base#action} matches a {#skip_path? skip} rule.
+    #       * There are no {#inputs} inputs.
+    #       * The element is {WithScope::Scope#out? out} of {WithScope::Scope}.
     #       * The element has already been audited and the `:redundant` option
     #          is `false` -- the default.
     #       * The element matches a {.skip_like} block.
@@ -423,21 +114,28 @@ module Auditable
     #   On missing `block` or unsupported `payloads` type.
     #
     # @see #submit
-    #
-    def audit( payloads, opts = { }, &block )
+    def audit( payloads, opts = {}, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
-        return false if self.auditable.empty?
+        return false if self.inputs.empty?
+
+        if scope.out?
+            print_debug_level_2 "#{__method__}: Element is out of scope, " <<
+                                    "skipping: #{audit_id}"
+            return false
+        end
 
         case payloads
             when String
                 audit_single( payloads, opts, &block )
+
             when Array
                 return if payloads.empty?
 
                 payloads.each do |payload|
                     audit_single( payload, opts, &block )
                 end
+
             when Hash
                 platform_payloads = platforms.any? ?
                     platforms.pick( payloads ) : payloads
@@ -453,6 +151,7 @@ module Auditable
                            ),
                            &block )
                 end
+
             else
                 raise ArgumentError,
                       "Unsupported payload type '#{payloads.class}'. " <<
@@ -460,7 +159,7 @@ module Auditable
         end
     end
 
-    # @note To be overridden by auditable element implementations for more
+    # @note To be overridden by inputs element implementations for more
     #   fine-grained audit control.
     #
     # @return   [Boolean]
@@ -472,48 +171,54 @@ module Auditable
     end
 
     # @return  [String]
-    #   Status string explaining what's being audited.
-    #
-    #   The string contains the name of the input that is being audited,
-    #   the url and the type of the input (form, link, cookie...).
-    #
-    def status_string
-        "Auditing #{self.type} variable '#{self.altered}' with action '#{self.action}'."
+    #   Status message explaining what input vector is being audited, containing
+    #   its name, {Element::Base#type} and {#action}.
+    def audit_status_message
+        "Auditing #{self.type} input '#{affected_input_name}'" <<
+            " pointing to: '#{audit_status_message_action}'"
     end
 
+    # Action URL to be used in {#audit_status_message} instead of
+    # {Submittable#action}.
     #
-    # Returns an audit ID string used to identify the audit of `self` by its
-    # {#auditor}.
-    #
-    # @note Mostly used to keep track of what audits have been perform in order
-    #   to prevent redundancies.
-    #
-    # @param  [String]  injection_str
-    # @param  [Hash]    opts
+    # @abstract
+    def audit_status_message_action
+        self.action
+    end
+
+    # @return  [String]
+    #   Verbose message including the payload used to audit the current vector.
+    def audit_verbose_message
+        s = "With: #{seed.inspect}"
+
+        if seed != affected_input_value
+            s << " -> #{affected_input_value.inspect}"
+        end
+
+        s
+    end
+
+    # @param  [String]  payload
+    #   Payload about to be used for the {#audit}.
     #
     # @return  [String]
-    #
-    def audit_id( injection_str = '', opts = {} )
-        vars = auditable.keys.sort.to_s
-
-        str = ''
-        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
-
-        str << "#{@action}:#{type}:#{vars}"
-        str << "=#{injection_str}" if !opts[:no_injection_str]
-        str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
-
-        str
+    #   ID string used to identify the {#audit} of `self` by its {#auditor}.
+    def audit_id( payload = nil )
+        "#{auditor.class.name}:#{coverage_id}:#{payload}"
     end
 
-    # @note Mainly used by {Arachni::Module::Auditor#skip?} to prevent redundant
-    #   audits for elements/issues which have already been logged as vulnerable.
+    # @note Differences in input values will not be taken into consideration.
     #
-    # @return   [String]
-    #   Predicts what the {Issue#unique_id} of an issue would look like,
-    #   should `self` be vulnerable.
-    def provisioned_issue_id( auditor_fanxy_name = @auditor.fancy_name )
-        "#{auditor_fanxy_name}::#{type}::#{altered}::#{self.action.split( '?' ).first}"
+    # @return  [String]
+    #   String identifying self's coverage of the web application's input surface.
+    def coverage_id
+        "#{action}:#{type}:#{inputs.keys.sort}"
+    end
+
+    # @return  [Integer]
+    #   Digest of {#coverage_id}.
+    def coverage_hash
+        coverage_id.persistent_hash
     end
 
     # @return [Boolean]
@@ -522,148 +227,122 @@ module Auditable
     #
     # @see .skip_like_blocks
     def matches_skip_like_blocks?
-        Arachni::Element::Capabilities::Auditable.matches_skip_like_blocks?( self )
+        Auditable.matches_skip_like_blocks? self
     end
 
+    def dup
+        copy_auditable( super )
+    end
+
+    protected
+
+    # Calls {#submit} and does some internal processing (prints messages etc.)
+    # before forwarding the response and performer element to the `block`.
     #
-    # Delegate output related methods to the auditor
-    #
+    # @param  [Block]   block
+    #   Block to be used for analysis of the response.
+    def submit_and_process( options = {}, &block )
+        submit( options ) do |response|
+            element = response.request.performer
+            if !element.audit_options[:silent]
+                print_status  "Analyzing response ##{response.request.id}..."
+            end
 
-    def debug?
-        @auditor.debug? rescue false
-    end
-
-    def print_error( str = '' )
-        @auditor.print_error( str ) if !orphan?
-    end
-
-    def print_status( str = '' )
-        @auditor.print_status( str ) if !orphan?
-    end
-
-    def print_info( str = '' )
-        @auditor.print_info( str ) if !orphan?
-    end
-
-    def print_line( str = '' )
-        @auditor.print_line( str ) if !orphan?
-    end
-
-    def print_ok( str = '' )
-        @auditor.print_ok( str ) if !orphan?
-    end
-
-    def print_bad( str = '' )
-        @auditor.print_bad( str ) if !orphan?
-    end
-
-    def print_debug( str = '' )
-        @auditor.print_debug( str ) if !orphan?
-    end
-
-    def print_debug_backtrace( str = '' )
-        @auditor.print_debug_backtrace( str ) if !orphan?
-    end
-
-    def print_error_backtrace( str = '' )
-        @auditor.print_error_backtrace( str ) if !orphan?
+            exception_jail( false ){ block.call( response, element ) }
+        end
     end
 
     private
 
+    def copy_auditable( other )
+        other.audit_options = self.audit_options.dup
+        other
+    end
+
+    # @note Requires an {#auditor}.
     #
     # Submits mutations of self and calls the block to handle the responses.
     #
-    # @note Requires an {#auditor}, if none has been provided it will fallback
-    #   to an {#use_anonymous_auditor anonymous} one.
-    #
-    # @param  [String]  injection_str  The string to be injected.
-    # @param  [Hash]    opts             Options as described in {OPTIONS}.
+    # @param  [String]  payload
+    #   The string to be injected.
+    # @param  [Hash]    opts
+    #   Options as described in {OPTIONS}.
     # @param  [Block]   block
-    #   Block to be used for analysis of responses; will be passed the following:
-    #
-    #     * HTTP response
-    #     * options
-    #     * element
-    #
-    #     The block will be called as soon as the HTTP response is received.
+    #   Block to be used for analysis of responses, will be passed each
+    #   {HTTP::Response response} and mutation.
     #
     # @return   [Boolean]
     #   `true` if the audit was successful, `false` if:
     #
-    #    * There are no {#auditable} inputs.
-    #    * The {Element::Base#action} matches a {#skip_path? skip} rule.
+    #    * The `payload` contains {Inputtable#valid_input_data? invalid} data
+    #       for this element type.
+    #    * There are no {#inputs} inputs.
+    #    * The element is {WithScope::Scope#out? out} of {WithScope::Scope}.
     #    * The element has already been audited and the `:redundant` option
     #       is `false` -- the default.
     #    * The element matches a {.skip_like} block.
     #
-    # @raise    ArgumentError   On missing `block`.
+    # @raise    [ArgumentError]
+    #   On missing `block`.
     #
     # @see #submit
-    #
-    def audit_single( injection_str, opts = { }, &block )
+    def audit_single( payload, opts = { }, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
 
-        # We'll do stuff to this hash so let's make a copy for ourselves.
-        opts = opts.dup
-
-        audit_id = audit_id( injection_str, opts )
-        return false if !opts[:redundant] && audited?( audit_id )
-        audited audit_id
-
-        print_debug "About to audit: #{audit_id}"
-        print_debug "Payload platform: #{opts[:platform]}" if opts.include?( :platform )
-
-        # If we don't have any auditable elements just return.
-        if auditable.empty?
-            print_debug 'The element has no auditable inputs.'
+        if !valid_input_data?( payload )
+            print_debug_level_2 "Payload not supported by #{self}: #{payload.inspect}"
             return false
         end
 
-        if skip_path? self.action
-            print_debug "Element's action matches skip rule, bailing out."
+        @audit_options = OPTIONS.merge( opts )
+
+        print_debug_level_2 "About to audit: #{audit_id}"
+
+        self.auditor ||= @audit_options.delete( :auditor )
+
+        caudit_id = audit_id( payload )
+        if !@audit_options[:redundant] && audited?( caudit_id )
+            print_debug_level_2 "Skipping, already audited: #{caudit_id}"
             return false
         end
+        audited caudit_id
 
         if matches_skip_like_blocks?
-            print_debug 'Element matches one or more skip_like blocks, skipping.'
+            print_debug_level_2 'Element matches one or more skip_like blocks, skipping.'
             return false
         end
 
-        opts[:injected_orig] = injection_str
-
-        @auditor       ||= opts[:auditor]
-        opts[:auditor] ||= @auditor
-        use_anonymous_auditor if !@auditor
+        print_debug_level_2 "Payload platform: #{@audit_options[:platform]}" if opts.include?( :platform )
 
         # Options will eventually be serialized so remove non-serializeable
         # objects. Also, blocks are expensive, they should not be kept in the
         # options otherwise they won't be GC'ed.
-        skip_like_option = [opts.delete(:skip_like)].flatten.compact
-        each_mutation    = opts.delete(:each_mutation)
+        skip_like_option = [@audit_options.delete(:skip_like)].flatten.compact
+        each_mutation    = @audit_options.delete(:each_mutation)
+
+        submit_options = @audit_options[:submit] || {}
 
         # Iterate over all fuzz variations and audit each one.
-        each_mutation( injection_str, opts ) do |elem|
-
-            if Options.exclude_vectors.include?( elem.altered )
-                print_info "Skipping audit of '#{elem.altered}' #{type} vector."
+        each_mutation( payload, @audit_options ) do |elem|
+            if !Options.audit.vector?( elem.affected_input_name )
+                print_info "Skipping audit of out of scope '#{elem.affected_input_name}' #{type} input vector."
                 next
             end
 
             if elem.matches_skip_like_blocks?
-                print_debug 'Element matches one or more skip_like blocks, skipping.'
+                print_debug_level_2 'Element matches one or more skip_like blocks, skipping.'
                 next
             end
 
-            if !orphan? && @auditor.skip?( elem )
-                mid = elem.audit_id( injection_str, opts )
-                print_debug "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
+            if !orphan? && auditor.skip?( elem )
+                mid = elem.audit_id( payload )
+                print_debug_level_2 "Auditor's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
 
             if skip?( elem )
-                mid = elem.audit_id( injection_str, opts )
-                print_debug "Self's #skip? method returned true for mutation, skipping: #{mid}"
+                mid = elem.audit_id( payload  )
+                print_debug_level_2 "Self's #skip? method returned true for mutation, skipping: #{mid}"
                 next
             end
 
@@ -675,125 +354,45 @@ module Auditable
                 next if should_skip
             end
 
-            opts[:altered] = elem.altered.dup
-            opts[:element] = type
+            if !@audit_options[:silent]
+                print_status elem.audit_status_message
+                print_verbose "--> #{elem.audit_verbose_message}"
+            end
 
-            # Inform the user about what we're auditing.
-            print_status( elem.status_string ) if !opts[:silent]
-
-            # Process each mutation via the supplied block if we have one and
+            # Process each mutation via the supplied block, if we have one, and
             # submit new mutations returned by that block, if any.
             if each_mutation && (elements = each_mutation.call( elem ))
                 [elements].flatten.compact.each do |e|
                     next if !e.is_a?( self.class )
-                    on_complete( e.submit( opts ), e, &block )
+
+                    e.submit_and_process( submit_options, &block )
                 end
             end
 
-            # Submit the element with the injection values.
-            on_complete( elem.submit( opts ), elem, &block )
+            elem.submit_and_process( submit_options, &block )
         end
 
         true
     end
 
-    def skip_path?( url )
-        super || redundant_path?( url )
-    end
-
-    # impersonate the auditor to the output methods
-    def info
-        !orphan? ? @auditor.class.info : { name: '' }
-    end
-
-    #
-    # Registers a block to be executed as soon as the Typhoeus request (reg)
-    # has been completed and a response has been received.
-    #
-    # If no &block has been provided {#get_matches} will be called instead.
-    #
-    # @param  [Typhoeus::Request]  req    request
-    # @param  [Auditable]    elem    element
-    # @param  [Block]   block
-    #   Block to be used for analysis of responses; will be passed the following:
-    #
-    #     * HTTP response
-    #     * options
-    #     * element
-    #
-    #     The block will be called as soon as the HTTP response is received.
-    #
-    def on_complete( req, elem, &block )
-        return if !req
-
-        elem.opts[:injected] = elem.auditable[elem.altered].to_s
-        elem.opts[:combo]    = elem.auditable
-        elem.opts[:action]   = elem.action
-
-        if req.response
-            after_complete( req.response, elem, &block )
-            return
-        end
-
-        req.on_complete { |res| after_complete( res, elem, &block ) }
-    end
-
-    def after_complete( response, element, &block )
-        # make sure that we have a response before continuing
-        if !response
-            print_error 'Failed to get response, backing out...'
-            return
-        end
-
-        if element.opts && !element.opts[:silent]
-            print_status "Analyzing response ##{response.request.id}..."
-        end
-
-        exception_jail( false ){ block.call( response, element.opts, element ) }
-    end
-
-    def within_scope?
-        auditor_override_instance_scope = false
-        begin
-            auditor_override_instance_scope = @auditor.override_instance_scope?
-        rescue
-        end
-
-        override_instance_scope? || auditor_override_instance_scope ||
-        @@restrict_to_elements.empty? || @@restrict_to_elements.include?( scope_audit_id )
-    end
-
-    #
     # Checks whether or not an audit has been already performed.
     #
-    # @param  [String]  elem_audit_id  a string returned by {#audit_id}
+    # @param  [String]  elem_audit_id
+    #   A string returned by {#audit_id}.
     #
     # @see #audited
-    #
     def audited?( elem_audit_id )
-        if @@audited.include?( elem_audit_id )
-            print_debug 'Skipping, already audited.'
-            true
-        elsif !within_scope?
-            print_debug "Skipping, out of scope (#{scope_audit_id})."
-            true
-        else
-            false
-        end
+        State.audit.include?( elem_audit_id )
     end
 
-    #
     # Registers an audited element to avoid duplicate audits.
     #
-    # @param  [String]  audit_id  {#audit_id Audit ID}.
+    # @param  [String]  audit_id
+    #   {#audit_id Audit ID}.
     #
     # @see #audited?
-    #
     def audited( audit_id )
-        @@audited << audit_id
-    end
-    def self.audited
-        @@audited
+        State.audit << audit_id
     end
 
     def self.skip_like_blocks
@@ -803,10 +402,6 @@ module Auditable
     def self.matches_skip_like_blocks?( element )
         skip_like_blocks.each { |b| return true if b.call( element ) }
         false
-    end
-
-    def rehash
-        @hash = (self.action.to_s + self.method.to_s + self.auditable.to_s).hash
     end
 
 end

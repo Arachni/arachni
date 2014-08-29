@@ -1,30 +1,20 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 module Arachni
 module Support::Cache
 
-#
 # Least Cost Replacement cache implementation.
 #
 # Maintains 3 cost classes (low, medium, high) ) and discards entries from the
 # lowest cost classes in order to make room for new ones.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class LeastCostReplacement < Base
 
     VALID_COSTS = [ :low, :medium, :high ]
@@ -35,17 +25,17 @@ class LeastCostReplacement < Base
         reset_costs
     end
 
-    #
     # Storage method
     #
-    # @param    [Object]    k   entry key
-    # @param    [Object]    v   object to store
+    # @param    [Object]    k
+    #   Entry key.
+    # @param    [Object]    v
+    #   Object to store.
     # @param    [Symbol]    cost
     #
     # @return   [Object]    `v`
     #
     # @see VALID_COSTS
-    #
     def store( k, v, cost = :low )
         fail( "invalid cost: #{cost}" ) if !valid_cost?( cost )
 

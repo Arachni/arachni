@@ -1,0 +1,45 @@
+<% content_for :title, 'Finalize login settings' %>
+
+<div class="hero-unit">
+    <h1>A bit more info</h1>
+    <h2>and we'll have you on your way in no time.</h2>
+</div>
+
+<div class="alert alert-success">
+    <a class="close" data-dismiss="alert" href="#">×</a>
+    Login check was successful.
+</div>
+
+<% if !form %>
+        <div class="alert alert-error">
+            <a class="close" data-dismiss="alert" href="#">×</a>
+            Couldn't find a login form, this can happen for a number of reasons:
+            <ul>
+                <li>The login form was generated using JavaScript -- Arachni can't interpret JS yet</li>
+                <li>The login form was generated using a client-side applet (like Flash)</li>
+            </ul>
+        </div>
+<% else %>
+<div class="well">
+    <h2>This is the deduced login form:</h2>
+    <p>
+        <b>
+            Found in: <%= html_encode form.url %>
+        </b>
+        <br/>
+        <b>
+            Action: <%= html_encode form.action %>
+            (method <%= form.method.to_s.upcase %>)
+        </b>
+    </p>
+    <p>
+        <ul>
+            <% form.inputs.each do |k, v| %>
+                <li><%= k.inspect %> = <%= v.inspect %></li>
+            <% end %>
+        </ul>
+    </p>
+
+    <a href="<%= root_url %>verify/login_sequence" class="btn btn-primary">Next &rarr;</a>
+</div>
+<% end %>

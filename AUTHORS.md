@@ -1,3 +1,3 @@
 # Authors
 
-Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>

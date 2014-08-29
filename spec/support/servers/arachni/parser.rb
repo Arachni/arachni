@@ -39,7 +39,11 @@ EOHTML
 end
 
 get '/with_nonce' do
+    cookies['stuff'] = 'blah'
+
     <<HTML
+    <a href="#/?stuff=blah">DOM link</a>
+
     <form method="post" action="/form" name="my_form">
         <p>
             <input type="text" name="form_input_1" value="form_val_1">

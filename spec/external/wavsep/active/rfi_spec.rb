@@ -5,7 +5,7 @@ describe 'WAVSEP RFI' do
 
     def self.common
         {
-            modules:    :rfi,
+            checks:    :rfi,
             vulnerable: [
                 'Case01-RFI-UrlClass-FilenameContext-Unrestricted-HttpURL-DefaultFullInput-AnyPathReq-Read.jsp',
                 'Case02-RFI-UrlClass-FilenameContext-Unrestricted-HttpURL-DefaultRelativeInput-AnyPathReq-Read.jsp',

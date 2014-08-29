@@ -1,40 +1,33 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
-require Arachni::Options.dir['lib'] + 'element/base'
+require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 
-HEADER = 'header'
+# Represents an auditable request header element
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+class Header < Base
+    include Capabilities::Analyzable
 
-class Header < Arachni::Element::Base
+    INVALID_INPUT_DATA = [ "\0" ]
 
-    def initialize( url, raw = {} )
-        super( url, raw )
+    def initialize( options )
+        super( options )
 
-        self.action    = @url
-        self.method    = 'get'
-        self.auditable = @raw
+        self.inputs = options[:inputs]
 
-        @orig = self.auditable.dup
-        @orig.freeze
+        @default_inputs = self.inputs.dup.freeze
     end
 
     def simple
-        @auditable.dup
+        @inputs.dup
     end
 
     # Overrides {Capabilities::Mutable#each_mutation} to handle header-specific
@@ -46,53 +39,60 @@ class Header < Arachni::Element::Base
     # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
-    def each_mutation( injection_str, opts = {}, &block )
+    def each_mutation( payload, opts = {}, &block )
         flip = opts.delete( :param_flip )
-        super( injection_str, opts, &block )
+        super( payload, opts, &block )
 
         return if !flip
+
+        if !valid_input_name_data?( payload )
+            print_debug_level_2 'Payload not supported as input value by' <<
+                                    " #{audit_id}: #{payload.inspect}"
+            return
+        end
+        
         elem = self.dup
-
-        # when under HPG mode element auditing is strictly regulated
-        # and when we flip params we essentially create a new element
-        # which won't be on the whitelist
-        elem.override_instance_scope
-
-        elem.altered = 'Parameter flip'
-        elem.auditable = { injection_str => seed }
+        elem.affected_input_name = 'Parameter flip'
+        elem.inputs = { payload => seed }
         yield elem
     end
 
-    # @return   [String]    Header name.
+    def valid_input_data?( data )
+        !INVALID_INPUT_DATA.find { |c| data.include? c }
+    end
+
+    # @return   [String]
+    #   Header name.
     def name
-        @auditable.first.first
+        @inputs.first.first
     end
 
-    # @return   [String]    Header value.
+    # @return   [String]
+    #   Header value.
     def value
-        @auditable.first.last
+        @inputs.first.last
     end
 
-    def type
-        Arachni::Element::HEADER
+    class <<self
+        def encode( header )
+            ::URI.encode( header, "\r\n" )
+        end
+
+        def decode( header )
+            ::URI.decode( header )
+        end
     end
 
-    def self.encode( header )
-        ::URI.encode( header, "\r\n" )
-    end
     def encode( header )
         self.class.encode( header )
     end
 
-    def self.decode( header )
-        ::URI.decode( header )
-    end
     def decode( header )
         self.class.decode( header )
     end
 
-
     private
+
     def http_request( opts, &block )
         http.header( @action, opts, &block )
     end

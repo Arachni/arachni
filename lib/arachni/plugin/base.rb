@@ -1,154 +1,156 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
+
+require_relative 'formatter'
 
 module Arachni
 module Plugin
 
-#
-# Will be extended by plugin formatters which provide plugin data formatting
-# for the reports.
-#
-# Plugin formatters will be in turn ran by [Arachni::Report::Bas#format_plugin_results].
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-class Formatter
-    # get the output interface
-    include UI::Output
-
-    attr_reader :results
-    attr_reader :description
-
-    def initialize( plugin_data )
-        @results     = plugin_data[:results]
-        @description = plugin_data[:description]
-    end
-
-    def run
-    end
-
-end
-
-#
 # An abstract class which all plugins must extend.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @abstract
-#
-class Base
-    # I hate keep typing this all the time...
-    include Arachni
-
-    # get the output interface
-    include Module::Output
-    include Module::Utilities
-
+class Base < Component::Base
     include Component
+    include MonitorMixin
 
+    # @return   [Hash]
+    #   Plugin options.
     attr_reader :options
+
+    # @return   [Framework]
     attr_reader :framework
 
-    #
-    # @param    [Arachni::Framework]    framework
-    # @param    [Hash]        options    options passed to the plugin
-    #
+    # @param    [Framework]   framework
+    # @param    [Hash]        options
+    #   Options to pass to the plugin.
     def initialize( framework, options )
         @framework = framework
         @options   = options
     end
 
+    # @note **OPTIONAL**
     #
-    # OPTIONAL
+    # Gets called right after the plugin is initialized and it used to prepare
+    # its data.
     #
+    # @abstract
     def prepare
     end
 
+    # @note **OPTIONAL**
     #
-    # REQUIRED
+    # Gets called instead of {#prepare} when restoring a suspended plugin.
+    # If no {#restore} method has been defined, {#prepare} will be called instead.
     #
+    # @param   [Object] state    State to restore.
+    #
+    # @see #suspend
+    # @abstract
+    def restore( state = nil )
+    end
+
+    # @note **REQUIRED**
+    #
+    # Gets called right after {#prepare} and delivers the plugin payload.
+    #
+    # @abstract
     def run
     end
 
+    # @note **OPTIONAL**
     #
-    # OPTIONAL
+    # Gets called right after {#run} and is used for generic clean-up.
     #
+    # @abstract
     def clean_up
     end
 
+    # @note **OPTIONAL**
     #
-    # OPTIONAL
+    # Gets called right before killing the plugin and should return state data
+    # to be {Arachni::State::Plugins#store stored} and passed to {#restore}.
+    #
+    # @return   [Object]    State to store.
+    #
+    # @see #restore
+    # @abstract
+    def suspend
+    end
+
+    # Pauses the {#framework}.
+    def framework_pause
+        @pause_id ||= framework.pause
+    end
+
+    # Aborts the {#framework}.
+    def framework_abort
+        Thread.new do
+            framework.abort
+        end
+    end
+
+    # Resumes the {#framework}.
+    def framework_resume
+        return if !@pause_id
+        framework.resume @pause_id
+    end
+
+    # @note **OPTIONAL**
     #
     # Only used when in Grid mode.
     #
-    # Should the plug-in be distributed
-    # across all instances or only run by the master
-    # prior to any distributed operations?
+    # Should the plug-in be distributed across all instances or only run by the
+    # master prior to any distributed operations?
     #
-    # For example, if a plug-in dynamically modifies the framework options
-    # in any way and wants these changes to be identical
-    # across instances this method should return 'false'.
-    #
+    # For example, if a plug-in dynamically modifies the framework options in
+    # any way and wants these changes to be identical across instances this
+    # method should return `false`.
     def self.distributable?
         @distributable ||= false
     end
 
-    # Should the plug-in be distributed
-    # across all instances or only run by the master
-    # prior to any distributed operations?
+    # Should the plug-in be distributed across all instances or only run by the
+    # master prior to any distributed operations?
     def self.distributable
         @distributable = true
     end
-    # Should the plug-in be distributed
-    # across all instances or only run by the master
-    # prior to any distributed operations?
+
+    # Should the plug-in be distributed across all instances or only run by the
+    # master prior to any distributed operations?
     def self.is_distributable
         distributable
     end
 
+    # @note **REQUIRED** if {.distributable?} returns `true` and the plugin
+    #   {#register_results registers results}.
     #
-    # REQUIRED IF self.distributable? returns 'true' and the plugins stores results.
-    #
-    # Only used when in Grid mode.
-    #
-    # Merges an array of results as gathered by the plug-in when run
-    # by multiple instances.
-    #
+    # Merges an array of results as gathered by the plug-in when ran by multiple
+    # instances.
     def self.merge( results )
     end
 
-    #
     # Should return an array of plugin related gem dependencies.
     #
     # @return   [Array]
-    #
     def self.gems
         []
     end
 
-    #
     # REQUIRED
     #
-    # Do not omit any of the info.
-    #
+    # @return   [Hash]
+    # @abstract
     def self.info
         {
             name:        'Abstract plugin class',
             description: %q{Abstract plugin class.},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
             options:     [
                 #                       option name        required?       description                        default
@@ -164,9 +166,8 @@ class Base
             priority:    0
         }
     end
-
-    def spider
-        framework.spider
+    def info
+        self.class.info
     end
 
     def session
@@ -177,37 +178,16 @@ class Base
         framework.http
     end
 
-    #
-    # Provides a thread-safe way to run the queued HTTP requests.
-    #
-    def http_run
-        synchronize { http.run }
-    end
-
-    #
-    # Provides plugin-wide synchronization.
-    #
-    def self.synchronize( &block )
-        (@mutex ||= Mutex.new).synchronize( &block )
-    end
-    def synchronize( &block )
-        self.class.synchronize( &block )
-    end
-
-    #
-    # Registers the plugin's results with the framework.
+    # Registers the plugin's results to {Data::Plugins}.
     #
     # @param    [Object]    results
-    #
     def register_results( results )
-        framework.plugins.register_results( self, results )
+        Data.plugins.store( self, results )
     end
 
-    #
     # Will block until the scan finishes.
-    #
     def wait_while_framework_running
-        ::IO.select( nil, nil, nil, 1 ) while( framework.running? )
+        sleep 1 while framework.running?
     end
 
 end

@@ -10,23 +10,12 @@ describe 'WAVSEP false-positive SQL injection' do
     def self.test_cases( http_method )
         {
             'SQL Injection' => {
-                url:        "SInjection-FalsePositives-#{http_method}/",
-                modules:    'sqli*',
-
-                # I maintain that these should be logged **but** be flagged as
-                # untrusted.
-                vulnerable: [
-                    'Case07-FalsePositiveInjectionInLogin-PsAndIv-500ErrorOnUnrelatedSyntaxError.jsp',
-                    'Case08-FalsePositiveInjectionInLogin-PsAndIv-200ErrorOnUnrelatedSyntaxError.jsp'
-                ]
+                url:        "SQL-Injection/SInjection-FalsePositives-#{http_method}/",
+                checks:     'sql_injection*',
+                vulnerable: []
             }
         }
     end
 
-    easy_test do
-        @framework.modules.issues.each do |issue|
-            issue.trusted?.should be_false
-            issue.remarks.should include :auditor
-        end
-    end
+    easy_test
 end

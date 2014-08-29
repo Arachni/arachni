@@ -1,0 +1,136 @@
+<nav class="navbar navbar-inverse navbar-default" role="navigation">
+    <div class="container">
+        <a class="navbar-brand" href="http://www.arachni-scanner.com">
+            Arachni v<%= Arachni::VERSION %>
+        </a>
+
+        <div class="navbar-header">
+            <ul class="nav navbar-nav">
+                <li class="dropdown">
+                    <a href="#!/summary">
+                        Summary
+
+                        <% if report.issues.any? %>
+                        <b class="fa fa-caret-down"></b>
+                        <% end %>
+                    </a>
+
+                    <% if report.issues.any? %>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a href="#!/summary/charts">
+                                Charts
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="#!/summary/issues">
+                                Issues
+                            </a>
+                        </li>
+                    </ul>
+                    <% end %>
+                </li>
+
+                <% if report.issues.any? %>
+                <li class="dropdown">
+                    <a href="#!/issues" class="dropdown-toggle">
+                        Issues
+
+                        <span class="badge">
+                            <%= report.issues.size %>
+                        </span>
+
+                        <b class="fa fa-caret-down"></b>
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <% grouped_issues.each do |trust, by_severity| %>
+                            <li class="dropdown">
+                                <a href="#!/issues/<%= trust %>">
+                                    <%= trust.to_s.capitalize %>
+
+                                    <span class="badge">
+                                        <%= graph_data[:trust][trust.to_s.capitalize] %>
+                                    </span>
+
+                                    <b class="fa fa-caret-right"></b>
+                                </a>
+
+                                <ul class="dropdown-menu">
+                                    <% by_severity.each do |severity, by_name| %>
+                                        <li class="dropdown">
+                                            <a href="#!/issues/<%= trust %>/severity/<%= severity %>">
+                                                <%= severity.to_s.capitalize %>
+
+                                                <span class="badge">
+                                                    <%= graph_data["#{trust}_severities".to_sym][severity.to_sym] %>
+                                                </span>
+
+                                                <b class="fa fa-caret-right"></b>
+                                            </a>
+
+                                            <ul class="dropdown-menu">
+                                                <% by_name.each do |name, issues| %>
+                                                    <li class="dropdown">
+                                                        <a href="#!/issues/<%= trust %>/severity/<%= severity %>/<%= issues.first.check[:shortname] %>">
+                                                            <%= escapeHTML name %>
+
+                                                            <span class="badge">
+                                                                <%= issues.size %>
+                                                            </span>
+                                                        </a>
+                                                    </li>
+                                                <% end %>
+                                            </ul>
+                                        </li>
+                                    <% end %>
+                                </ul>
+                            </li>
+                        <% end %>
+                    </ul>
+                </li>
+                <% end %>
+
+                <% if plugins.any? %>
+                <li class="dropdown">
+                    <a href="#!/plugins">
+                        Plugin results
+
+                        <span class="badge"><%= plugins.size %></span>
+                        <b class="fa fa-caret-down"></b>
+                    </a>
+
+                    <ul class="dropdown-menu">
+                        <% plugins.keys.each do |name| %>
+                            <li>
+                                <a href="#!/plugins/<%= name %>">
+                                    <%= escapeHTML get_plugin_info( name )[:name] %>
+                                </a>
+                            </li>
+                        <% end %>
+                    </ul>
+                </li>
+                <% end %>
+
+                <li>
+                    <a href="#!/sitemap">
+                        Sitemap
+
+                        <span class="badge"><%= report.sitemap.size %></span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#!/configuration">Configuration</a>
+                </li>
+            </ul>
+        </div>
+
+        <p class="navbar-text navbar-right">
+            (Found a false positive?
+
+            <a class="navbar-link" href="<%= escapeHTML(ISSUES_URL) %>">
+                Please let us know.</a>)
+        </p>
+    </div>
+</nav>

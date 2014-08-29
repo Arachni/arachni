@@ -61,6 +61,36 @@ describe Hash do
         end
     end
 
+    describe '#stringify_recursively_and_freeze' do
+        it 'converts keys and values to frozen strings' do
+            converted = with_symbols.stringify_recursively_and_freeze
+
+            converted.should == with_strings
+            converted.keys.map(&:frozen?).uniq.should == [true]
+            converted.values.map(&:frozen?).uniq.should == [true]
+        end
+
+        it 'returns a frozen hash' do
+            with_symbols.stringify_recursively_and_freeze.should be_frozen
+        end
+    end
+
+    describe '#stringify' do
+        it 'returns a Hash with keys and values recursively converted to strings' do
+            {
+                test:         'blah',
+                another_hash: {
+                    stuff: 'test'
+                }
+            }.stringify.should == {
+                'test'         => 'blah',
+                'another_hash' => {
+                    'stuff' => 'test'
+                }
+            }
+        end
+    end
+
     describe '#recode' do
         it 'recursively converts String data to UTF8' do
             recoded = {

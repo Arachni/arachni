@@ -1,0 +1,30 @@
+<h2>Plugin results</h2>
+
+<div id="plugin-tabs">
+    <ul class="nav nav-tabs">
+        <% plugins.keys.each.with_index do |name, i| %>
+            <li <%= 'class="active"' if i == 0 %> >
+                <a href="#!/plugins/<%= name %>">
+                    <%= escapeHTML get_plugin_info( name )[:name] %>
+                </a>
+            </li>
+        <% end %>
+    </ul>
+
+    <div class="tab-content">
+    <% plugins.each do |name, html| %>
+        <div class="tab-pane <%= 'active' if plugins.keys.first == name %>"
+             id="plugins-<%= name %>">
+
+            <div class="plugin-description markdown">
+                <%= md get_plugin_info(name)[:description] %>
+            </div>
+
+            <div class="plugin-results">
+                <%= html.recode %>
+            </div>
+        </div>
+    <% end %>
+    </div>
+
+</div>

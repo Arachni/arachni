@@ -1,17 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 module Arachni
@@ -20,7 +12,7 @@ module Processes
 #
 # Helper for managing {RPC::Server::Instance} processes.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 class Instances
     include Singleton
@@ -44,10 +36,13 @@ class Instances
     # @return   [RPC::Client::Instance]
     #
     def connect( url, token = nil )
+        Reactor.global.run_in_thread if !Reactor.global.running?
+
         token ||= @list[url]
         @list[url] ||= token
 
-        @instance_connections[url] ||= RPC::Client::Instance.new( Options.instance, url, token )
+        @instance_connections[url] ||=
+            RPC::Client::Instance.new( Options, url, token )
     end
 
     # @param    [Block] block   Block to pass an RPC client for each Instance.
@@ -66,74 +61,83 @@ class Instances
         @list[client_or_url.is_a?( String ) ? client_or_url : client_or_url.url ]
     end
 
-    #
     # Spawns an {RPC::Server::Instance} process.
     #
     # @param    [Hash]  options
     #   To be passed to {Arachni::Options#set}. Allows `address` instead of
-    #   `rpc_address` and `port` instead of `rpc_port`.
-    #
-    # @param    [Block] block
-    #   Passed {Arachni::Options} to configure the Dispatcher options.
+    #   `rpc_server_address` and `port` instead of `rpc_port`.
     #
     # @return   [RPC::Client::Instance]
-    #
-    def spawn( options = {}, &block )
-        options[:token] ||= generate_token
+    def spawn( options = {} )
+        token = options.delete(:token) || generate_token
+        fork  = options.delete(:fork)
 
-        options = Options.to_hash.symbolize_keys( false ).merge( options )
-
-        options[:rpc_port]    = options.delete( :port ) if options.include?( :port )
-        options[:rpc_address] = options.delete( :address ) if options.include?( :address )
-        options[:rpc_socket]  = options.delete( :socket ) if options.include?( :socket )
-
-        options[:rpc_port]    ||= available_port
+        options = {
+            spawns: options[:spawns],
+            rpc:    {
+                server_socket:  options[:socket],
+                server_port:    options[:port]    || available_port,
+                server_address: options[:address] || '127.0.0.1'
+            }
+        }
 
         url = nil
-        if options[:rpc_socket]
-            url = options[:rpc_socket]
-            options.delete :rpc_address
-            options.delete :rpc_port
+        if options[:rpc][:server_socket]
+            url = options[:rpc][:server_socket]
+
+            options[:rpc].delete :server_address
+            options[:rpc].delete :server_port
         else
-            url = "#{options[:rpc_address]}:#{options[:rpc_port]}"
+            url = "#{options[:rpc][:server_address]}:#{options[:rpc][:server_port]}"
         end
 
-        Manager.quiet_fork do
-            Options.set( options )
-            block.call( Options.instance ) if block_given?
+        Manager.spawn( :instance, options: options, token: token, fork: fork )
 
-            require "#{Arachni::Options.dir['lib']}/rpc/server/instance"
-
-            RPC::Server::Instance.new( Options.instance, options[:token] )
-        end
-
-        begin
-            Timeout.timeout( 10 ) do
-                while sleep( 0.1 )
-                    begin
-                        connect( url, options[:token] ).service.alive?
-                        break
-                    rescue Exception
-                    end
-                end
+        while sleep( 0.1 )
+            begin
+                connect( url, token ).service.alive?
+                break
+            rescue => e
+                # ap e
             end
-        rescue Timeout::Error
-            abort "Instance '#{url}' never started!"
         end
 
-        @list[url] = options[:token]
+        @list[url] = token
         connect( url )
     end
 
-    #
     # Starts {RPC::Server::Dispatcher} grid and returns a high-performance Instance.
     #
     # @param    [Hash]  options
-    # @option options [Integer] :grid_size (2)  Amount of Dispatchers to spawn.
+    # @option options [Integer] :grid_size (3)  Amount of Dispatchers to spawn.
     #
     # @return   [RPC::Client::Instance]
-    #
     def grid_spawn( options = {} )
+        options[:grid_size] ||= 3
+
+        last_member = nil
+        options[:grid_size].times do |i|
+            last_member = Dispatchers.spawn(
+                neighbour: last_member ? last_member.url : last_member,
+                pipe_id:   available_port.to_s + available_port.to_s
+            )
+        end
+
+        info = last_member.dispatch
+
+        instance = connect( info['url'], info['token'] )
+        instance.framework.set_as_master
+        instance.options.set( dispatcher: { grid_mode: :aggregate } )
+        instance
+    end
+
+    # Starts {RPC::Server::Dispatcher} grid and returns a high-performance Instance.
+    #
+    # @param    [Hash]  options
+    # @option options [Integer] :grid_size (3)  Amount of Dispatchers to spawn.
+    #
+    # @return   [RPC::Client::Instance]
+    def light_grid_spawn( options = {} )
         options[:grid_size] ||= 3
 
         last_member = nil
@@ -144,11 +148,12 @@ class Instances
             )
         end
 
-        info = last_member.dispatch
+        info = nil
+        info = last_member.dispatch while !info && sleep( 0.1 )
 
         instance = connect( info['url'], info['token'] )
         instance.framework.set_as_master
-        instance.opts.grid_mode = :aggregate
+        instance.options.set( dispatcher: { grid_mode: :aggregate } )
         instance
     end
 
@@ -162,12 +167,30 @@ class Instances
         connect( info['url'], info['token'] )
     end
 
+    def kill( url )
+        Manager.kill_many connect( url ).service.consumed_pids
+        @list.delete url
+    end
+
     # Kills all {Instances #list}.
     def killall
         pids = []
         each do |instance|
             begin
-                pids |= instance.service.consumed_pids
+                Timeout.timeout 5 do
+                    pids |= instance.service.consumed_pids
+                end
+            rescue => e
+                #ap e
+                #ap e.backtrace
+            end
+        end
+
+        each do |instance|
+            begin
+                Timeout.timeout 5 do
+                    instance.service.shutdown
+                end
             rescue => e
                 #ap e
                 #ap e.backtrace
@@ -182,8 +205,8 @@ class Instances
     def self.method_missing( sym, *args, &block )
         if instance.respond_to?( sym )
             instance.send( sym, *args, &block )
-        elsif
-        super( sym, *args, &block )
+        else
+            super( sym, *args, &block )
         end
     end
 

@@ -1,0 +1,56 @@
+[name] (copy)/
+[name] (another copy)/
+[name] (3rd copy)/
+[name] (third copy)/
+[name] (4th copy)/
+[name]~/
+Copy of [name]/
+Copy (2) of [name]/
+Copy of Copy of [name]/
+[name] - Copy/
+[name] - Copy (2)/
+[name] - Copy Copy/
+[name].7z
+[name].ar
+[name].ear
+[name].bz2
+[name].cbz
+[name].exe
+[name].gz
+[name].jar
+[name].lzma
+[name].tar
+[name].tar.7z
+[name].tar.bz2
+[name].tar.gz
+[name].tar.lzma
+[name].tar.xz
+[name].xz
+[name].zip
+[name].war
+[name].wim
+[name].rar
+[name].old/
+[name].bak/
+[name].bac/
+[name].backup/
+[name].1/
+[name].a/
+[name].inc/
+[name].include/
+[name]_old/
+[name]old/
+[name]_bak/
+[name]bak/
+[name]_backup/
+[name]backup/
+[name]_inc/
+[name]inc/
+old_[name]/
+bak_[name]/
+backup_[name]/
+[name]1/
+[name]2/
+[name]3/
+[name]4/
+[name]5/

@@ -10,8 +10,8 @@ describe 'WAVSEP false-positive Remote File Inclusion' do
     def self.test_cases( http_method )
         {
             'Remote File Inclusion' => {
-                url:        "RFI-FalsePositives-#{http_method}/",
-                modules:    :rfi,
+                url:        "RFI/RFI-FalsePositives-#{http_method}/",
+                checks:     :rfi,
                 vulnerable: []
             }
         }

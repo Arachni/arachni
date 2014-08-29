@@ -1,137 +1,186 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
-#
-# Should be extended/implemented by all HTML/HTTP modules.
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-# @abstract
-#
 module Arachni
+
+require 'nokogiri'
+require Options.paths.lib + 'nokogiri/xml/node'
+
 module Element
 
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+class Error < Arachni::Error
+end
+
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Capabilities
+
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+    class Error < Element::Error
+    end
 end
 
 # load and include all available capabilities
 lib = File.dirname( __FILE__ ) + '/capabilities/*.rb'
 Dir.glob( lib ).each { |f| require f }
 
-#
 # Base class for all element types.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @abstract
 class Base
-    include Capabilities::Auditable
-    extend  Utilities
+    include Utilities
+    extend Utilities
 
-    # @return  [Hash]
-    #   'raw' (frozen) hash holding the element's HTML attributes, values, etc.
-    attr_reader :raw
+    include Capabilities::WithScope
 
-    # @param    [String]  url     {#url}
-    # @param    [Hash]    raw     {#raw}
-    def initialize( url, raw = {} )
-        @raw = raw.dup
-        @raw.freeze
-        self.url = url.to_s
+    # @return     [Page]
+    #   Page this element belongs to.
+    attr_accessor :page
 
-        @opts = {}
+    # @return     [Object]
+    #   Options used to initialize an identical element.
+    attr_reader   :initialization_options
+
+    def initialize( options )
+        options = options.symbolize_keys( false )
+
+        if !(options[:url] || options[:action])
+            fail 'Needs :url or :action option.'
+        end
+
+        @initialization_options = options.dup
+        self.url = options[:url] || options[:action]
     end
 
-    # @return   [Platform]
-    #   Applicable platforms for {#action} resource.
-    def platforms
-        Platform::Manager[@action]
-    end
-
-    # @return  [String] String uniquely identifying self.
+    # @return  [Element::Base]
+    #   Reset the element to its original state.
     # @abstract
-    def id
-        @raw.to_s
+    def reset
+        self
     end
 
-    # @return   [Hash] Simple representation of self.
     # @abstract
-    def simple
-        {}
+    def prepare_for_report
     end
 
-    # Should represent a method in {Arachni::Module::HTTP}.
-    #
-    # Ex. get, post, cookie, header
-    #
-    # @see Arachni::Module::HTTP
-    #
-    # @return [Symbol]  HTTP request method for the element.
-    def method( *args )
-        return super( *args ) if args.any?
-
-        @method.freeze
-    end
-
-    # @see #method
-    def method=( method )
-        @method = method
-        rehash
-        self.method
-    end
-
-    # @note Ex. 'href' for links, 'action' for forms, etc.
-    #
     # @return  [String]
-    #   URI to which the element points and should be audited against.
-    def action
-        @action.freeze
+    #   String uniquely identifying self.
+    def id
+        defined? super ? super : "#{action}:#{type}"
     end
 
-    # @see #action
-    def action=( url )
-        @action = self.url ? to_absolute( url, self.url ) : normalize_url( url )
-        rehash
-        self.action
+    # @return   [Hash]
+    #   Simple representation of self.
+    def to_h
+        {
+            class: self.class.to_s,
+            type:  type,
+            url:   url
+        }
     end
+    def to_hash
+        to_h
+    end
+
+    def hash
+        id.hash
+    end
+
+    def persistent_hash
+        id.persistent_hash
+    end
+
+    def ==( other )
+        hash == other.hash
+    end
+    alias :eql? :==
 
     # @return  [String]
     #   URL of the page that owns the element.
     def url
-        @url.freeze
+        @url
+    end
+
+    def action
+        url
     end
 
     # @see #url
     def url=( url )
-        @url = normalize_url( url )
-        rehash
-        self.url
+        @url = normalize_url( url ).freeze
     end
 
-    # @return [String]  Element type.
+    # @return   [Symbol]
+    #   Element type.
     def type
-        self.class.name.split( ':' ).last.downcase
+        self.class.type
+    end
+
+    # @return   [Symbol]
+    #   Element type.
+    def self.type
+        name.split( ':' ).last.downcase.to_sym
     end
 
     def dup
-        new = self.class.new( @url ? @url.dup : nil, @raw.dup )
-        new.override_instance_scope if override_instance_scope?
-        new.auditor   = self.auditor
-        new.method    = self.method.dup
-        new.altered   = self.altered.dup if self.altered
-        new.auditable = self.auditable.dup
-        new
+        dupped = self.class.new( self.initialization_options )
+        dupped.page = page
+        dupped
+    end
+
+    def marshal_dump
+        instance_variables.inject({}) do |h, iv|
+            next h if [:@page].include? iv
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
+    end
+
+    # @return   [Hash]
+    #   Data representing this instance that are suitable the RPC transmission.
+    def to_rpc_data
+        data = marshal_dump.inject({}) { |h, (k, v)| h[k.to_s.gsub('@', '')] = v.to_rpc_data_or_self; h }
+        data.delete 'audit_options'
+        data.delete 'scope'
+        data['class'] = self.class.to_s
+        data
+    end
+
+    # @param    [Hash]  data    {#to_rpc_data}
+    # @return   [Base]
+    def self.from_rpc_data( data )
+        instance = allocate
+        data.each do |name, value|
+            value = case name
+                        when 'dom'
+                            self::DOM.from_rpc_data( value )
+
+                        when 'initialization_options'
+                            value.is_a?( Hash ) ?
+                                value.symbolize_keys( false ) : value
+
+                        when 'method'
+                            value.to_sym
+
+                        else
+                            value
+                    end
+
+            instance.instance_variable_set( "@#{name}", value )
+        end
+
+        instance.instance_variable_set( :@audit_options, {} )
+        instance
     end
 
 end

@@ -1,17 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 require 'bundler'
@@ -29,36 +21,41 @@ begin
             t.pattern = FileList[ 'spec/arachni/**/*_spec.rb' ]
         end
 
-        desc 'Run module tests.'
-        RSpec::Core::RakeTask.new( :modules ) do |t|
-            t.pattern = FileList[ 'spec/modules/**/*_spec.rb' ]
+        desc 'Run check tests.'
+        RSpec::Core::RakeTask.new( :checks ) do |t|
+            t.pattern = FileList[ 'spec/components/checks/**/*_spec.rb' ]
         end
 
-        namespace :modules do
-            desc 'Run tests for the audit modules.'
-            RSpec::Core::RakeTask.new( :audit ) do |t|
-                t.pattern = FileList[ 'spec/modules/audit/**/*_spec.rb' ]
+        namespace :checks do
+            desc 'Run tests for the active checks.'
+            RSpec::Core::RakeTask.new( :active ) do |t|
+                t.pattern = FileList[ 'spec/components/checks/active/**/*_spec.rb' ]
             end
 
-            desc 'Run tests for the recon modules.'
-            RSpec::Core::RakeTask.new( :recon ) do |t|
-                t.pattern = FileList[ 'spec/modules/recon/**/*_spec.rb' ]
+            desc 'Run tests for the passive checks.'
+            RSpec::Core::RakeTask.new( :passive ) do |t|
+                t.pattern = FileList[ 'spec/components/checks/passive/**/*_spec.rb' ]
             end
         end
 
-        desc 'Run report tests.'
-        RSpec::Core::RakeTask.new( :reports ) do |t|
-            t.pattern = FileList[ 'spec/reports/**/*_spec.rb' ]
+        desc 'Run reporter tests.'
+        RSpec::Core::RakeTask.new( :reporters ) do |t|
+            t.pattern = FileList[ 'spec/components/reporters/*_spec.rb' ]
         end
 
         desc 'Run plugin tests.'
         RSpec::Core::RakeTask.new( :plugins ) do |t|
-            t.pattern = FileList[ 'spec/plugins/**/*_spec.rb' ]
+            t.pattern = FileList[ 'spec/components/plugins/**/*_spec.rb' ]
         end
 
         desc 'Run path-extractor tests.'
         RSpec::Core::RakeTask.new( :path_extractors ) do |t|
-            t.pattern = FileList[ 'spec/path_extractors/**/*_spec.rb' ]
+            t.pattern = FileList[ 'spec/components/path_extractors/**/*_spec.rb' ]
+        end
+
+        desc 'Run fingerprinter tests.'
+        RSpec::Core::RakeTask.new( :fingerprinters ) do |t|
+            t.pattern = FileList[ 'spec/components/fingerprinters/**/*_spec.rb' ]
         end
 
         desc 'Run external test suites.'
@@ -84,12 +81,12 @@ begin
 
                     desc 'Run the WAVSEP XSS tests.'
                     RSpec::Core::RakeTask.new( :xss ) do |t|
-                        t.pattern = FileList[ 'spec/external/wavsep/active/xss_spec.rb' ]
+                        t.pattern = FileList[ 'spec/external/wavsep/active/xss*_spec.rb' ]
                     end
 
                     desc 'Run the WAVSEP SQL injection tests.'
-                    RSpec::Core::RakeTask.new( :sqli ) do |t|
-                        t.pattern = FileList[ 'spec/external/wavsep/active/sqli_spec.rb' ]
+                    RSpec::Core::RakeTask.new( :sql_injection ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/sql_injection_spec.rb' ]
                     end
 
                     desc 'Run the WAVSEP LFI tests.'
@@ -100,6 +97,16 @@ begin
                     desc 'Run the WAVSEP RFI tests.'
                     RSpec::Core::RakeTask.new( :rfi ) do |t|
                         t.pattern = FileList[ 'spec/external/wavsep/active/rfi_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP Unvalidated Redirect tests.'
+                    RSpec::Core::RakeTask.new( :unvalidated_redirect ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/unvalidated_redirect_spec.rb' ]
+                    end
+
+                    desc 'Run the WAVSEP Obsolete Files tests.'
+                    RSpec::Core::RakeTask.new( :obsolete_files ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/active/obsolete_files_spec.rb' ]
                     end
                 end
 
@@ -115,8 +122,8 @@ begin
                     end
 
                     desc 'Run the WAVSEP SQL injection false positive tests.'
-                    RSpec::Core::RakeTask.new( :sqli ) do |t|
-                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/sqli_spec.rb' ]
+                    RSpec::Core::RakeTask.new( :sql_injection ) do |t|
+                        t.pattern = FileList[ 'spec/external/wavsep/false_positives/sql_injection_spec.rb' ]
                     end
 
                     desc 'Run the WAVSEP LFI false positive tests.'
@@ -132,45 +139,43 @@ begin
             end
         end
 
-        desc 'Generate an AFR report for the report tests.'
+        desc 'Generate an AFR report for the reporter tests.'
         namespace :generate do
             task :afr do
+                begin
+                    $spec_issues = []
 
-                # Run the module tests and save all the issues to put them
-                # in our AFR report.
-                FileUtils.touch( "#{Dir.tmpdir}/save_issues" )
-                Rake::Task['spec:modules'].execute rescue nil
-                FileUtils.rm( "#{Dir.tmpdir}/save_issues" )
+                    # Rake::Task['spec:checks'].execute rescue nil
+                    RSpec::Core::Runner.run(FileList[ 'spec/components/checks/**/*_spec.rb' ])
 
-                issues = []
-                File.open( "#{Dir.tmpdir}/issues.yml" ) do |f|
-                    issues = YAML.load_documents( f ).flatten
+                    ($spec_issues.size / 3).times do |i|
+                        # Add remarks to some issues.
+                        issue = $spec_issues.sample
+                        issue.add_remark( :stuff, 'Blah' )
+                        issue.add_remark( :stuff, 'Blah2' )
+
+                        # Flag some issues as untrusted.
+                        $spec_issues.sample.trusted = false
+                    end
+
+                    Arachni::Data.issues.store
+                    $spec_issues.each { |i| Arachni::Data.issues << i }
+
+                    Arachni::Options.url = 'http://test.com'
+                    Arachni::Options.audit.elements :forms, :links, :cookies, :headers
+                    Arachni::Options.audit.link_templates = [
+                        /\/input\/(?<input>.+)\//,
+                        /input\|(?<input>.+)/
+                    ]
+
+                    Arachni::Report.new(
+                        sitemap: { Arachni::Options.url => 200 },
+                        issues:  Arachni::Data.issues.sort
+                    ).save( 'spec/support/fixtures/report.afr' )
+                ensure
+                    Arachni::Options.reset
+                    Arachni::Data.reset
                 end
-
-                200.times do |i|
-                    # Add remarks to some issues.
-                    issue = issues[rand( issues.size )]
-                    issue.add_remark( :stuff, 'Blah' )
-                    issue.add_remark( :stuff, 'Blah2' )
-
-                    # Flag some issues are requiring manual verification.
-                    issues[rand( issues.size )].verification = true
-                end
-
-                FileUtils.rm( "#{Dir.tmpdir}/issues.yml" )
-
-                Arachni::Options.url = 'http://test.com'
-                Arachni::Options.audit :forms, :links, :cookies, :headers
-
-                # Make all module constants available because the AuditStore
-                # will need them to make the necessary associations between them
-                # and the issues.
-                Arachni::Framework.new.modules.load_all
-
-                Arachni::AuditStore.new( issues: issues.uniq ).
-                    save( 'spec/support/fixtures/auditstore.afr' )
-
-                Arachni::Options.reset
             end
         end
     end
@@ -179,6 +184,13 @@ begin
 rescue LoadError
     puts 'If you want to run the tests please install rspec first:'
     puts '  gem install rspec'
+end
+
+desc 'Start a web server dispatcher.'
+task :web_server_dispatcher do
+    require_relative 'spec/support/lib/web_server_dispatcher'
+
+    WebServerDispatcher.new
 end
 
 desc 'Generate docs.'
@@ -234,10 +246,10 @@ task :profile do
 
 end
 
-desc 'Remove report and log files.'
+desc 'Remove reporter and log files.'
 task :clean do
-    files = %w(error.log *.afr *.yaml *.json *.marshal *.gem pkg/*.gem logs/*.log
-        spec/support/logs/*.log).map { |file| Dir.glob( file ) }.flatten
+    files = %w(error.log *.afr *.afs *.yaml *.json *.marshal *.gem pkg/*.gem
+        snapshots/*.afs logs/*.log spec/support/logs/*.log).map { |file| Dir.glob( file ) }.flatten
 
     next if files.empty?
 

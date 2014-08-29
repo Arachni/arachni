@@ -69,3 +69,21 @@ get '/link' do
         EOHTML
     end
 end
+
+get '/crawl' do
+    <<-EOHTML
+    <a href='/sleep'></a>
+    EOHTML
+end
+
+get '/sleep' do
+    sleep 10
+end
+
+get '/redirect' do
+    redirect '/redirected'
+end
+
+get '/redirected' do
+    'Redirected!'
+end

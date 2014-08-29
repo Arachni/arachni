@@ -1,42 +1,33 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
-require 'arachni/rpc/em'
+require 'arachni/rpc'
+require_relative '../serializer'
 
 module Arachni
 module RPC
 class Client
 
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-class Base < ::Arachni::RPC::EM::Client
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+class Base < Client
     attr_reader :url
 
-    #
-    # @param    [Arachni::Options]   opts
+    # @param    [Arachni::Options]   options
     #   Relevant options:
     #
-    #     * `ssl_ca` -- CA file (.pem).
-    #     * `node_ssl_pkey` OR `ssl_pkey` -- Private key file (.pem).
-    #     * `node_ssl_cert` OR `ssl_cert` -- Cert file file (.pem).
-    # @param    [String]    url       Server URL in `address:port` format.
-    # @param    [String]    token     Optional authentication token.
-    #
-    def initialize( opts, url, token = nil )
+    #     * {OptionGroups::RPC#ssl_ca}
+    #     * {OptionGroups::RPC#client_ssl_private_key}
+    #     * {OptionGroups::RPC#client_ssl_certificate}
+    # @param    [String]    url
+    #   Server URL in `address:port` format.
+    # @param    [String]    token
+    #   Optional authentication token.
+    def initialize( options, url, token = nil )
         @url = url
 
         socket, host, port = nil
@@ -47,15 +38,16 @@ class Base < ::Arachni::RPC::EM::Client
         end
 
         super(
-            serializer:  Marshal,
-            host:        host,
-            port:        port,
-            socket:      socket,
-            token:       token,
-            max_retries: opts.max_retries,
-            ssl_ca:      opts.ssl_ca,
-            ssl_pkey:    opts.node_ssl_pkey || opts.ssl_pkey,
-            ssl_cert:    opts.node_ssl_cert || opts.ssl_cert
+            serializer:           Serializer,
+            host:                 host,
+            port:                 port.to_i,
+            socket:               socket,
+            token:                token,
+            connection_pool_size: options.rpc.connection_pool_size,
+            max_retries:          options.rpc.client_max_retries,
+            ssl_ca:               options.rpc.ssl_ca,
+            ssl_pkey:             options.rpc.client_ssl_private_key,
+            ssl_cert:             options.rpc.client_ssl_certificate
         )
     end
 

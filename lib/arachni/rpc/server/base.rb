@@ -1,43 +1,52 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
-require 'arachni/rpc/em'
+require 'ostruct'
+require 'arachni/rpc'
+require_relative '../serializer'
 
 module Arachni
 module RPC
 class Server
 
-#
 # RPC server class
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
-class Base < ::Arachni::RPC::EM::Server
+# @private
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+class Base < Server
 
-    def initialize( opts, token = nil )
+    # @param    [Arachni::Options]   options
+    #   Relevant options:
+    #
+    #     * {OptionGroups::RPC#server_address}
+    #     * {OptionGroups::RPC#server_port}
+    #     * {OptionGroups::RPC#server_socket}
+    #     * {OptionGroups::RPC#ssl_ca}
+    #     * {OptionGroups::RPC#client_ssl_private_key}
+    #     * {OptionGroups::RPC#client_ssl_certificate}
+    # @param    [String]    token
+    #   Optional authentication token.
+    def initialize( options, token = nil )
+        if options.is_a?( Hash )
+            original_options = options
+            options     = OpenStruct.new
+            options.rpc = OpenStruct.new( original_options )
+        end
+
         super(
-            serializer: Marshal,
-            fallback_serializer:  YAML,
-            host:       opts.rpc_address,
-            port:       opts.rpc_port,
-            socket:     opts.rpc_socket,
+            serializer: Serializer,
+            host:       options.rpc.server_address,
+            port:       options.rpc.server_port,
+            socket:     options.rpc.server_socket,
             token:      token,
-            ssl_ca:     opts.ssl_ca,
-            ssl_pkey:   opts.ssl_pkey,
-            ssl_cert:   opts.ssl_cert
+            ssl_ca:     options.rpc.ssl_ca,
+            ssl_pkey:   options.rpc.server_ssl_private_key,
+            ssl_cert:   options.rpc.server_ssl_certificate
         )
     end
 

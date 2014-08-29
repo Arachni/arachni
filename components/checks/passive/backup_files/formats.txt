@@ -1,0 +1,106 @@
+[name] (copy).[extension]
+[name] (another copy).[extension]
+[name] (3rd copy).[extension]
+[name] (third copy).[extension]
+[name] (4th copy).[extension]
+[name].[extension]~
+Copy of [name].[extension]
+Copy (2) of [name].[extension]
+Copy of Copy of [name].[extension]
+[name] - Copy.[extension]
+[name] - Copy (2).[extension]
+[name] - Copy Copy.[extension]
+[name].[extension].7z
+[name].[extension].rar
+[name].[extension].ar
+[name].[extension].bz2
+[name].[extension].cbz
+[name].[extension].exe
+[name].[extension].gz
+[name].[extension].jar
+[name].[extension].lzma
+[name].[extension].tar
+[name].[extension].tar.7z
+[name].[extension].tar.bz2
+[name].[extension].tar.gz
+[name].[extension].tar.lzma
+[name].[extension].tar.xz
+[name].[extension].xz
+[name].[extension].zip
+[name].[extension].wim
+[name].7z
+[name].ar
+[name].ear
+[name].bz2
+[name].cbz
+[name].exe
+[name].gz
+[name].jar
+[name].lzma
+[name].tar
+[name].tar.7z
+[name].tar.bz2
+[name].tar.gz
+[name].tar.lzma
+[name].tar.xz
+[name].xz
+[name].zip
+[name].wim
+[name].war
+[name].rar
+[name].[extension].old
+[name].[extension].bak
+[name].[extension].bac
+[name].[extension].backup
+[name].[extension].1
+[name].[extension].a
+[name].[extension].inc
+[name].[extension].include
+[name].[extension]_old
+[name].[extension]old
+[name].[extension]_bak
+[name].[extension]bak
+[name].[extension]_backup
+[name].[extension]backup
+[name].[extension]_inc
+[name].[extension]inc
+[name]_old.[extension]
+[name].old
+[name].bak
+[name].bac
+[name].backup
+[name].1
+[name].a
+[name].inc
+[name].include
+[name]_old
+[name]old
+[name]_bak
+[name]bak
+[name]_backup
+[name]backup
+[name]_inc
+[name]inc
+old_[name].[extension]
+bak_[name].[extension]
+backup_[name].[extension]
+[name]_bak.[extension]
+[name]_backup.[extension]
+[name].jspf
+[name].jspx
+[name].jspa
+[name]1
+[name]2
+[name]3
+[name]4
+[name]5
+[name]1.[extension]
+[name]2.[extension]
+[name]3.[extension]
+[name]4.[extension]
+[name]5.[extension]
+[name].[extension]1
+[name].[extension]2
+[name].[extension]3
+[name].[extension]4
+[name].[extension]5

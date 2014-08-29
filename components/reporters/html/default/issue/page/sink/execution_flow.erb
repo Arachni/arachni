@@ -1,0 +1,63 @@
+<table class="table table-condensed table-fixed">
+    <tr>
+        <th>#</th>
+        <th>
+            Data
+
+            <a href="#" rel="tooltip"
+               title="Helper data logged by the payload.">
+                <i class="fa fa-info"></i>
+            </a>
+        </th>
+        <th></th>
+    </tr>
+    <% page.dom.execution_flow_sinks.each.with_index do |sink, i| %>
+        <tr id="<%= id %>-execution_flow_sinks-<%= i %>" >
+            <td>
+                <strong>
+                    <a href="<%= id_to_location id %>/execution_flow_sinks/<%= i %>">
+                        <%= i %>
+                    </a>
+                </strong>
+            </td>
+            <td>
+                <% if sink.data.any? %>
+                    <%= data_dump sink.data %>
+                <% else %>
+                    <p class="alert alert-info">No helper data logged.</p>
+                <% end %>
+            </td>
+            <td>
+                <a href="javascript:void(0);"
+                   onclick="$('#<%= id %>-execution_flow_sinks-<%= i %>-inspect').toggle()"
+                   class="btn btn-info btn-xs">
+                    Inspect
+                </a>
+            </td>
+        </tr>
+
+        <tr id="<%= id %>-execution_flow_sinks-<%= i %>-inspect" style="display: none">
+            <td colspan="3" class="borderless">
+                <ul class="nav nav-tabs">
+
+                    <li class="active">
+                        <a href="<%= id_to_location id %>/execution_flow_sinks/<%= i %>/inspect/stacktrace">
+                            Stacktrace
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="<%= id %>-execution_flow_sinks-<%= i %>-inspect-stacktrace">
+                        <%= erb 'issue/page/sink/trace/table.erb',
+                                id:    "#{id}-execution_flow_sinks-#{i}-inspect-stacktrace",
+                                parent_id: id,
+                                trace: sink.trace,
+                                page:  page
+                        %>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    <% end %>
+</table>

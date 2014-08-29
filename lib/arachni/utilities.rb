@@ -1,35 +1,37 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
-require 'addressable/uri'
+require 'securerandom'
 require 'digest/sha2'
 require 'cgi'
 
 module Arachni
 
+# Includes some useful methods for the system.
 #
-# Includes some useful methods for the system, the modules etc.
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Utilities
 
+    # @return   [String]
+    #   Filename (without extension) of the caller.
+    def caller_name
+        File.basename( caller_path( 3 ), '.rb' )
+    end
+
+    # @return   [String]
+    #   Filepath of the caller.
+    def caller_path( offset = 2 )
+        ::Kernel.caller[offset].split( /:(\d+):in/ ).first
+    end
+
     # @return   [String]    random HEX (SHA2) string
-    def seed
-        @@seed ||= Digest::SHA2.hexdigest( srand( 1000 ).to_s )
+    def random_seed
+        @@random_seed ||= generate_token
     end
 
     # @see Arachni::Element::Form.from_response
@@ -52,11 +54,10 @@ module Utilities
         Form.decode( *args )
     end
 
-    # @see Arachni::Element::Form.parse_request_body
-    def form_parse_request_body( *args )
-        Form.parse_request_body( *args )
+    # @see Arachni::HTTP::Request.parse_body
+    def request_parse_body( *args )
+        HTTP::Request.parse_body( *args )
     end
-    alias :parse_request_body :form_parse_request_body
 
     # @see Arachni::Element::Link.from_response
     def links_from_response( *args )
@@ -66,14 +67,6 @@ module Utilities
     # @see Arachni::Element::Link.from_document
     def links_from_document( *args )
         Link.from_document( *args )
-    end
-
-    # @see Arachni::Element::Link.parse_query_vars
-    def parse_url_vars( *args )
-        Link.parse_query_vars( *args )
-    end
-    def parse_query( *args )
-        Link.parse_query_vars( *args )
     end
 
     # @see Arachni::Element::Cookie.from_response
@@ -99,6 +92,11 @@ module Utilities
     # @see Arachni::Element::Cookie.encode
     def cookie_encode( *args )
         Cookie.encode( *args )
+    end
+
+    # @see Arachni::Element::Cookie.decode
+    def cookie_decode( *args )
+        Cookie.decode( *args )
     end
 
     # @see Arachni::Page.from_response
@@ -132,13 +130,22 @@ module Utilities
     end
 
     # @see URI.encode
-    def uri_encode( string, bad_characters = nil )
-        URI.encode( string, bad_characters )
+    def uri_encode( *args )
+        URI.encode( *args )
     end
 
     # @see URI.encode
     def uri_decode( url )
         URI.decode( url )
+    end
+
+    def uri_rewrite( *args )
+        URI.rewrite( *args )
+    end
+
+    # @see Arachni::URI.parse_query
+    def uri_parse_query( url )
+        URI.parse_query( url )
     end
 
     # @see URI.to_absolute
@@ -151,48 +158,26 @@ module Utilities
         URI.normalize( url )
     end
 
-    # @see normalize_url
-    def url_sanitize( url )
-        normalize_url( url )
-    end
-
-    #
     # @param   [String]   url
     #
     # @return  [String]   path
     #   Full URL up to the path component (no resource, query etc.).
     #
     # @see URI.up_to_path
-    #
     def get_path( url )
         uri_parse( url ).up_to_path
     end
 
-    #
-    # @param    [String] url
-    #
-    # @return   [String]  Domain name.
-    #
-    # @see URI.domain
-    #
-    def extract_domain( url )
-        uri_parse( url ).domain
-    end
-
-    #
     # @param    [String] url
     #
     # @return   [Bool]
     #   `true` is the path exceeds the framework limit, `false` otherwise.
     #
-    # @see URI.too_deep?
-    # @see Options#depth_limit
-    #
+    # @see URI::Scope.too_deep?
     def path_too_deep?( url )
-        uri_parse( url ).too_deep?( Options.depth_limit )
+        uri_parse( url ).scope.too_deep?
     end
 
-    #
     # Compares 2 urls in order to decide whether or not they belong to the same domain.
     #
     # @param    [String]    url
@@ -202,13 +187,11 @@ module Utilities
     #   `true` if self is in the same domain as the `reference` URL, false otherwise.
     #
     # @see URI.in_domain?
-    # @see Options#follow_subdomains
-    #
+    # @see OptionGroups::Scope#include_subdomains
     def path_in_domain?( url, reference = Options.url )
-        uri_parse( url ).in_domain?( !Options.follow_subdomains, reference )
+        uri_parse( url ).scope.in_domain?( reference )
     end
 
-    #
     # Decides whether the given `url` matches any framework exclusion rules.
     #
     # @param    [String]    url
@@ -216,13 +199,11 @@ module Utilities
     # @return   [Bool]
     #
     # @see URI.exclude?
-    # @see Options#exclude
-    #
+    # @see OptionGroups::Scope#exclude_path_patterns
     def exclude_path?( url )
-        uri_parse( url ).exclude?( Options.exclude )
+        uri_parse( url ).scope.exclude?
     end
 
-    #
     # Decides whether the given `url` matches any framework inclusion rules.
     #
     # @param    [String]    url
@@ -231,25 +212,23 @@ module Utilities
     #
     # @see URI.include?
     # @see Options#include
-    #
     def include_path?( url )
-        uri_parse( url ).include?( Options.include )
+        uri_parse( url ).scope.include?
     end
 
-    #
-    # Checks if the provided URL matches a redundant filter
-    # and decreases its counter if so.
+    # Checks if the provided URL matches a redundant filter and decreases its
+    # counter if so.
     #
     # If a filter's counter has reached 0 the method returns true.
     #
     # @param    [String]  url
     #
-    # @return   [Bool]    `true` if the `url` is redundant, `false` otherwise.
+    # @return   [Bool]
+    #   `true` if the `url` is redundant, `false` otherwise.
     #
-    # @see Options#redundant?
-    #
-    def redundant_path?( url, &block )
-        Options.redundant?( url, &block )
+    # @see OptionGroups::Scope#redundant_path_patterns?
+    def redundant_path?( url )
+        uri_parse( url ).scope.redundant?
     end
 
     #
@@ -260,22 +239,14 @@ module Utilities
     #
     # @return   [Bool]
     #
-    # @see Options#https_only
-    # @see Options#https_only?
+    # @see OptionGroups::Scope#https_only
+    # @see OptionGroups::Scope#https_only?
     #
     def follow_protocol?( url, reference = Options.url )
-        return true if !reference
-        check_scheme = uri_parse( url ).scheme
-
-        return false if !%(http https).include?( check_scheme.to_s.downcase )
-
-        ref_scheme   = uri_parse( reference ).scheme
-        return true if ref_scheme && ref_scheme != 'https'
-        return true if ref_scheme == check_scheme
-
-        !Options.https_only?
+        uri_parse( url ).scope.follow_protocol?( reference )
     end
 
+    # @note Does **not** call {#redundant_path?}.
     #
     # Decides whether or not the provided `path` should be skipped based on:
     #
@@ -284,61 +255,60 @@ module Utilities
     # * {#path_too_deep?}
     # * {#path_in_domain?}
     #
-    # @note Does **not** call {#redundant_path?}.
-    #
     # @param    [Arachni::URI, ::URI, Hash, String] path
     #
     # @return   [Bool]
-    #
     def skip_path?( path )
         return true if !path
 
         parsed = uri_parse( path.to_s )
+        return true if !parsed
 
-        begin
-            return true if !follow_protocol?( parsed )
-            return true if !path_in_domain?( parsed )
-            return true if path_too_deep?( parsed )
-            return true if !include_path?( parsed )
-            return true if exclude_path?( parsed )
-            false
-        rescue => e
-            ap e
-            ap e.backtrace
-            true
-        end
+        parsed.scope.out?
     end
 
+    # Determines whether or not the given {Arachni::HTTP::Response} should be
+    # ignored.
     #
-    # Determines whether or not a given {Arachni::Page} or {Typhoeus::Response}
-    # should be ignored.
-    #
-    # @param    [Page,Typhoeus::Response,#body]   page_or_response
+    # @param    [Arachni::HTTP::Response]   response
     #
     # @return   [Bool]
     #   `true` if the `#body` of the given object matches any of the exclusion
     #   patterns, `false` otherwise.
     #
     # @see #skip_path?
-    # @see Options#exclude_binaries?
-    # @see Options#exclude_page?
-    #
-    def skip_page?( page_or_response )
-        (Options.exclude_binaries? && !page_or_response.text?) ||
-            skip_path?( page_or_response.url ) ||
-            Options.exclude_page?( page_or_response.body )
+    # @see OptionGroups::Scope#exclude_binaries?
+    # @see OptionGroups::Scope#exclude_page?
+    def skip_response?( response )
+        response.scope.out?
     end
-    alias :skip_response? :skip_page?
+
+    # Determines whether or not the given {Arachni::Page}.
+    #
+    # @param    [Page]   page
+    #
+    # @return   [Bool]
+    #   `true` if the `#body` of the given object matches any of the exclusion
+    #   patterns or the  {OptionGroups::Scope#dom_depth_limit} has been reached,
+    #   `false` otherwise.
+    #
+    # @see #skip_path?
+    # @see OptionGroups::Audit#exclude_binaries?
+    # @see OptionGroups::Scope#exclude_page?
+    # @see OptionGroups::Scope#dom_depth_limit
+    def skip_page?( page )
+        page.scope.out?
+    end
 
     #
     # Determines whether or not the given `resource` should be ignored
     # depending on its type and content.
     #
-    # @param    [Page,Typhoeus::Response,String]    resource
+    # @param    [Page,Arachni::HTTP::Response,String]    resource
     #   If given a:
     #
     #       * {Page}: both its URL and body will be examined.
-    #       * {Typhoeus::Response}: both its effective URL and body will be examined.
+    #       * {Arachni::HTTP::Response}: both its effective URL and body will be examined.
     #       * {String}: if multi-line it will be treated as a response body,
     #           otherwise as a path.
     #
@@ -355,69 +325,77 @@ module Utilities
             when Page
                 skip_page?( resource )
 
-            when Typhoeus::Response
+            when Arachni::HTTP::Response
                 skip_response?( resource )
 
             else
-                if (s = resource.to_s) =~ /[\r\n]/
-                    Options.exclude_page? s
-                else
-                    skip_path? s
-                end
+                skip_path? resource.to_s
         end
     end
 
-    # @return   [Fixnum]  Random available port number.
+    # @return   [Fixnum]
+    #   Random available port number.
     def available_port
         nil while !port_available?( port = rand_port )
         port
     end
 
-    # @return   [Integer]   Random port within the user specified range.
-    # @see Options#rpc_instance_port_range
+    # @return   [Integer]
+    #   Random port within the user specified range.
+    #
+    # @see OptionGroups::Dispatcher#instance_port_range
     def rand_port
-        first, last = Options.rpc_instance_port_range
+        first, last = Options.dispatcher.instance_port_range
         range = (first..last).to_a
 
         range[ rand( range.last - range.first ) ]
     end
 
     def generate_token
-        secret = ''
-        1000.times { secret << rand( 9999 ).to_s }
-        Digest::SHA2.hexdigest( secret )
+        SecureRandom.hex
     end
 
-    #
     # Checks whether the port number is available.
     #
     # @param    [Fixnum]  port
     #
     # @return   [Bool]
-    #
     def port_available?( port )
         begin
-            socket = Socket.new( :INET, :STREAM, 0 )
-            socket.bind( Addrinfo.tcp( '127.0.0.1', port ) )
-            socket.close
+            TCPServer.new( '127.0.0.1', port ).close
             true
         rescue
             false
         end
     end
 
+    # @param    [String, Float, Integer]    seconds
     #
-    # Wraps the "block" in exception handling code and runs it.
+    # @return    [String]
+    #   Time in `00:00:00` (`hours:minutes:seconds`) format.
+    def seconds_to_hms( seconds )
+        seconds = seconds.to_i
+        [seconds / 3600, seconds / 60 % 60, seconds % 60].
+            map { |t| t.to_s.rjust( 2, '0' ) }.join( ':' )
+    end
+
+    def hms_to_seconds( time )
+        a = [1, 60, 3600] * 2
+        time.split( /[:\.]/ ).map { |t| t.to_i * a.pop }.inject(&:+)
+    rescue
+        0
+    end
+
+    # Wraps the `block` in exception handling code and runs it.
     #
-    # @param    [Bool]  raise_exception  re-raise exception
-    # @param    [Block]     block   to call
-    #
+    # @param    [Bool]  raise_exception
+    #   Re-raise exception?
+    # @param    [Block]     block
     def exception_jail( raise_exception = true, &block )
         block.call
-    rescue Exception => e
-        begin
-            print_error e.inspect
-            print_error_backtrace e
+    rescue => e
+        if respond_to?( :print_error ) && respond_to?( :print_exception )
+            print_exception e
             print_error
             print_error 'Parent:'
             print_error  self.class.to_s
@@ -428,14 +406,16 @@ module Utilities
             print_error 'Caller:'
             ::Kernel.caller.each { |l| print_error l }
             print_error '-' * 80
-        rescue
         end
+
         raise e if raise_exception
+
+        nil
     end
 
-    def remove_constants( mod, skip = [], children_only = true )
+    def remove_constants( mod, skip = [] )
         return if skip.include?( mod )
-        return if !(mod.is_a?( Class ) || !mod.is_a?( Module )) ||
+        return if !(mod.is_a?( Class ) || mod.is_a?( Module )) ||
             !mod.to_s.start_with?( 'Arachni' )
 
         parent = Object
@@ -444,9 +424,7 @@ module Utilities
         end
 
         mod.constants.each { |m| mod.send( :remove_const, m ) }
-
-        return if children_only
-        parent.send( :remove_const, mod.to_s.split( ':' ).last.to_sym )
+        nil
     end
 
     extend self

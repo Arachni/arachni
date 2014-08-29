@@ -1,57 +1,52 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 module Arachni
 
-require Options.dir['lib'] + 'element_filter'
-require Options.dir['lib'] + 'module/output'
+require Options.paths.lib + 'element_filter'
 
-#
 # Trainer class
 #
 # Analyzes key HTTP responses looking for new auditable elements.
 #
-# @author Tasos Laskos <tasos.laskos@gmail.com>
-#
+# @author Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Trainer
-    include Module::Output
-    include ElementFilter
+    include UI::Output
     include Utilities
+    include Support::Mixins::Observable
+
+    # @!method on_new_page( &block )
+    advertise :on_new_page
+
+    personalize_output
 
     MAX_TRAININGS_PER_URL = 25
 
     # @param    [Arachni::Framework]  framework
     def initialize( framework )
+        super()
+
         @framework  = framework
         @updated    = false
 
-        @on_new_page_blocks = []
-        @trainings_per_url  = Hash.new( 0 )
+        @trainings_per_url = Hash.new( 0 )
 
         # get us setup using the page that is being audited as a seed page
-        framework.on_audit_page { |page| self.page = page }
+        framework.on_page_audit { |page| self.page = page }
 
-        HTTP.add_on_complete do |response|
+        framework.http.on_complete do |response|
             next if !response.request.train?
 
-            if response.redirection? && response.location.is_a?( String )
-                reference_url = @page ? @page.url : @framework.opts.url
-                HTTP.get( to_absolute( response.location, reference_url ) ) do |res|
-                    push res
-                end
+            if response.redirect?
+                reference_url = @page ? @page.url : @framework.options.url
+                redirect_url  = to_absolute( response.headers.location, reference_url )
+
+                framework.http.get( redirect_url ) { |res| push res }
                 next
             end
 
@@ -59,7 +54,6 @@ class Trainer
         end
     end
 
-    #
     # Passes the response on for analysis.
     #
     # If the response contains new elements it creates a new page
@@ -67,122 +61,88 @@ class Trainer
     #
     # These new pages can then be retrieved by flushing the buffer (#flush).
     #
-    # @param  [Typhoeus::Response]  res
-    #
-    def push( res )
+    # @param  [Arachni::HTTP::Response]  response
+    def push( response )
         if !@page
             print_debug 'No seed page assigned yet.'
             return
         end
 
-        if @framework.link_count_limit_reached?
-            print_verbose 'Link count limit reached, skipping analysis.'
-            return false
+        if !@framework.accepts_more_pages?
+            print_info 'No more pages accepted, skipping analysis.'
+            return
         end
 
-        @parser = Parser.new( res )
-
-        return false if !@parser.text?
+        return false if !response.text?
 
         skip_message = nil
-        if @trainings_per_url[@parser.url] >= MAX_TRAININGS_PER_URL
+        if @trainings_per_url[response.url] >= MAX_TRAININGS_PER_URL
             skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
-        elsif redundant_path?( @parser.url )
+        elsif response.scope.redundant?
             skip_message = 'Matched redundancy filters'
-        elsif skip_resource?( res )
+        elsif response.scope.out?
             skip_message = 'Matched exclusion criteria'
         end
 
         if skip_message
-            print_verbose "#{skip_message}, skipping: #{@parser.url}"
+            print_verbose "#{skip_message}, skipping: #{response.url}"
             return false
         end
 
-        analyze( res )
+        analyze response
         true
     rescue => e
-        print_error( e.to_s )
-        print_error_backtrace( e )
+        print_exception e
+        nil
     end
 
-    #
-    # Sets the current working page and inits the element DB.
+    # Sets the current working page and {ElementFilter.update_from_page updates}
+    # the {ElementFilter}.
     #
     # @param    [Arachni::Page]    page
-    #
     def page=( page )
-        init_db_from_page( page )
-        @page = page.deep_clone
-    end
-    alias :init :page=
-
-    def on_new_page( &block )
-        @on_new_page_blocks << block
+        ElementFilter.update_from_page page
+        @page = page.dup
     end
 
     private
 
-    #
     # Analyzes a response looking for new links, forms and cookies.
     #
-    # @param   [Typhoeus::Response]  res
-    #
-    def analyze( res )
-        print_debug "Started for response with request ID: ##{res.request.id}"
+    # @param   [Arachni::HTTP::Response]  response
+    def analyze( response )
+        print_debug "Started for response with request ID: ##{response.request.id}"
 
-        page_data           = @page.to_hash
-        page_data[:cookies] = find_new( :cookies )
+        incoming_page    = response.to_page
+        has_new_elements = has_new?( incoming_page, :cookies )
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if res.body == @page.body && !@updated && @page.url == @parser.url
+        if incoming_page.body == @page.body && !has_new_elements &&
+            @page.url == incoming_page.url
             print_debug 'Page hasn\'t changed.'
             return
         end
 
-        [ :forms, :links ].each { |type| page_data[type] = find_new( type ) }
+        [ :forms, :links ].each { |type| has_new_elements ||= has_new?( incoming_page, type ) }
 
-        if @updated
-            page_data[:url]              = @parser.url
-            page_data[:query_vars]       = @parser.link_vars( @parser.url )
-            page_data[:code]             = res.code
-            page_data[:method]           = res.request.method.to_s.upcase
-            page_data[:body]             = res.body
-            page_data[:document]         = @parser.doc
-            page_data[:response_headers] = res.headers_hash
+        if has_new_elements
+            @trainings_per_url[incoming_page.url] += 1
 
-            @trainings_per_url[@parser.url] += 1
-
-            page = Page.new( page_data )
-            Platform::Manager.fingerprint( page ) if Options.fingerprint?
-
-            @on_new_page_blocks.each { |block| block.call page }
-
-            # feed the page back to the framework
-            @framework.push_to_page_queue( page )
-
-            @updated = false
+            notify_on_new_page incoming_page
+            @framework.push_to_page_queue( incoming_page )
         end
 
         print_debug 'Training complete.'
     end
 
-    def find_new( element_type )
-        elements, count = send( "update_#{element_type}".to_sym, @parser.send( element_type ) )
-        return [] if count == 0
+    def has_new?( incoming_page, element_type )
+        count = ElementFilter.send( "update_#{element_type}".to_sym, incoming_page.send( element_type ) )
+        incoming_page.clear_cache
+        return if count == 0
 
-        @updated = true
         print_info "Found #{count} new #{element_type}."
-
-        prepare_new_elements( elements )
-    end
-
-    def prepare_new_elements( elements )
-        elements.flatten.map { |elem| elem.override_instance_scope; elem }
-    end
-
-    def self.info
-        { name: 'Trainer' }
+        true
     end
 
 end

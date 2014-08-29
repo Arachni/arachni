@@ -1,0 +1,664 @@
+<?xml version="1.0"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xs:element name="report">
+        <xs:complexType>
+            <xs:all>
+                <xs:element name="version" type="xs:string"/>
+                <xs:element name="start_datetime" type="xs:dateTime" />
+                <xs:element name="finish_datetime" type="xs:dateTime"/>
+                <xs:element name="sitemap" type="sitemap"/>
+
+                <!--
+                    Dumped profile, save it as a YAML file and use it as a
+                    scan profile via whatever interface you want or parse it
+                    into a Hash and use it to configure Arachni over RPC.
+                -->
+                <xs:element name="options" type="xs:string" />
+                <xs:element name="issues" type="issues"/>
+                <xs:element name="plugins" type="plugins"/>
+            </xs:all>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="plugins">
+        <xs:choice minOccurs="0" maxOccurs="9">
+            <xs:element name="healthmap" type="plugin_healthmap" maxOccurs="1"/>
+            <xs:element name="autologin" type="plugin_autologin" maxOccurs="1"/>
+            <xs:element name="content_types" type="plugin_content_types" maxOccurs="1"/>
+            <xs:element name="cookie_collector" type="plugin_cookie_collector" maxOccurs="1"/>
+            <xs:element name="form_dicattack" type="plugin_form_dicattack" maxOccurs="1"/>
+            <xs:element name="http_dicattack" type="plugin_http_dicattack" maxOccurs="1"/>
+            <xs:element name="uncommon_headers" type="plugin_uncommon_headers" maxOccurs="1"/>
+            <xs:element name="uniformity" type="plugin_uniformity" maxOccurs="1"/>
+            <xs:element name="waf_detector" type="plugin_waf_detector" maxOccurs="1"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_waf_detector">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_waf_detector_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_waf_detector_results">
+        <xs:all>
+            <xs:element name="status" minOccurs="0" type="xs:string"/>
+            <xs:element name="message" minOccurs="0" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uniformity">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_uniformity_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uniformity_results">
+        <xs:sequence>
+            <!--
+                Groups of "issue:digests".
+            -->
+            <xs:element name="digests" minOccurs="0" maxOccurs="unbounded"
+                        type="plugin_plugin_uniformity_results_digests"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:simpleType name="plugin_plugin_uniformity_results_digests">
+        <xs:list itemType="xs:integer"/>
+    </xs:simpleType>
+
+    <xs:complexType name="plugin_uncommon_headers">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_uncommon_headers_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uncommon_headers_results">
+        <xs:sequence>
+            <xs:element name="entry" minOccurs="0" maxOccurs="unbounded"
+                        type="plugin_uncommon_headers_results_entry"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_uncommon_headers_results_entry">
+        <xs:all>
+            <xs:element name="headers" type="headers"/>
+            <xs:element name="url" type="xs:anyURI"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_http_dicattack">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_http_dicattack_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_http_dicattack_results">
+        <xs:all>
+            <xs:element name="username" minOccurs="0" type="xs:string"/>
+            <xs:element name="password" minOccurs="0" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_form_dicattack">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_form_dicattack_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_form_dicattack_results">
+        <xs:all>
+            <xs:element name="username" minOccurs="0" type="xs:string"/>
+            <xs:element name="password" minOccurs="0" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_cookie_collector">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_cookie_collector_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_cookie_collector_results">
+        <xs:sequence>
+            <xs:element name="entry" minOccurs="0" maxOccurs="unbounded"
+                        type="plugin_cookie_collector_results_entry"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_cookie_collector_results_entry">
+        <xs:all>
+            <xs:element name="time" type="xs:dateTime"/>
+            <xs:element name="cookies" type="cookies"/>
+            <xs:element name="url" type="xs:anyURI"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_content_types">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_content_types_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_content_types_results">
+        <xs:sequence>
+            <xs:element name="entry" maxOccurs="unbounded"
+                        type="plugin_content_types_results_entry"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_content_types_results_entry">
+        <xs:all>
+            <xs:element name="content_type" type="xs:string"/>
+            <xs:element name="url" type="xs:anyURI"/>
+            <xs:element name="method" type="xs:string"/>
+            <xs:element name="parameters" type="parameters" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_autologin">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_autologin_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_autologin_results">
+        <xs:all>
+            <xs:element name="status" type="xs:string"/>
+            <xs:element name="message" type="xs:string"/>
+            <xs:element name="cookies" type="cookies" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_healthmap">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_healthmap_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_healthmap_results">
+        <xs:all>
+            <xs:element name="map" type="plugin_healthmap_map"/>
+            <xs:element name="total" type="xs:integer"/>
+            <xs:element name="with_issues" type="xs:integer"/>
+            <xs:element name="without_issues" type="xs:integer"/>
+            <xs:element name="issue_percentage" type="xs:integer"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_healthmap_map">
+        <xs:choice minOccurs="0" maxOccurs="unbounded">
+            <xs:element name="without_issues" type="xs:string"/>
+            <xs:element name="with_issues" type="xs:string"/>
+        </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="sitemap">
+        <xs:sequence>
+            <xs:element name="entry" type="sitemapentry"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="sitemapentry">
+        <xs:attribute name="code" type="xs:integer"/>
+        <xs:attribute name="url" type="xs:anyURI"/>
+    </xs:complexType>
+
+    <xs:complexType name="issues">
+        <xs:sequence>
+            <xs:element name="issue" type="issue"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--
+        Holds generic information about the logged issue, while providing
+        details as "issuevariations" via the "variations" attribute.
+    -->
+    <xs:complexType name="issue">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string" minOccurs="0"/>
+            <xs:element name="remedy_guidance" type="xs:string"
+                        minOccurs="0"/>
+            <xs:element name="remedy_code" type="xs:string" minOccurs="0"/>
+            <xs:element name="severity" type="severity"/>
+            <xs:element name="references" type="references" minOccurs="0"/>
+            <xs:element name="cwe" type="xs:integer" minOccurs="0"/>
+            <xs:element name="vector" type="vector"/>
+            <xs:element name="digest" type="xs:integer"/>
+            <xs:element name="variations" type="issuevariations"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!--
+        Issues have 1 or more variations.
+        Currently, active checks only have 1 variation while passive ones
+        can have multiple.
+    -->
+    <xs:complexType name="issuevariations">
+        <xs:sequence>
+            <xs:element name="variation" type="issuevariation"
+                        minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--
+        Input vector information, in essence, the element affected
+        by the logged issue.
+
+        The data therein are the original, non-fuzzed ones.
+    -->
+    <xs:complexType name="vector">
+        <xs:all>
+            <xs:element name="class" type="vectorclass"/>
+
+            <!--
+                Ths gives out the same sort of information as "vectorclass",
+                although the Arachni::Element::GenericDOM object can have
+                a "type" of any DOM element so enumerating all possible
+                values can be tricky.
+            -->
+            <xs:element name="type" type="xs:string"/>
+
+            <!--
+                URL of the page which presented the element.
+            -->
+            <xs:element name="url" type="xs:anyURI"/>
+
+            <!--
+                HTML representation of the element according to the page
+                at "url".
+            -->
+            <xs:element name="html" type="xs:string" minOccurs="0"/>
+
+            <!--
+                Unlike "url", this is the location that will be requested
+                upon submission of the element.
+            -->
+            <xs:element name="action" type="xs:anyURI" minOccurs="0"/>
+
+            <!--
+                HTTP method to use for submission of the element.
+            -->
+            <xs:element name="method" type="xs:string" minOccurs="0"/>
+
+            <!--
+                Vulnerable input name, its value can be found in
+                "variationvector:inputs".
+            -->
+            <xs:element name="affected_input_name" type="xs:string"
+                        minOccurs="0"/>
+
+            <xs:element name="inputs" type="inputs" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!--
+        Details about the logged issue, each variation represents a
+        situation where the same issue has been identified albeit in
+        different ways.
+    -->
+    <xs:complexType name="issuevariation">
+        <xs:all>
+            <xs:element name="vector" type="variationvector"/>
+
+            <!--
+                Page which displays the logged issue.
+            -->
+            <xs:element name="page" type="page"/>
+            <xs:element name="referring_page" type="page"/>
+
+            <!--
+                Signature used to identify the issue. Its match will be the
+                "proof".
+            -->
+            <xs:element name="signature" type="xs:string" minOccurs="0"/>
+
+            <!--
+                String proving the existence of the issue.
+            -->
+            <xs:element name="proof" type="xs:string"/>
+
+            <!--
+                Some issues may be logged even though the system doesn't
+                have 100% confidence in them, in that case they will be
+                marked as not trusted.
+            -->
+            <xs:element name="trusted" type="xs:boolean"/>
+
+            <xs:element name="remarks" type="remarks"/>
+
+            <!--
+                Type of the platform affected by this issue.
+                "db", "os", etc.
+            -->
+            <xs:element name="platform_type" type="xs:string"/>
+
+            <!--
+                Name of the platform affected by this issue.
+                "mysql", "linux", etc.
+            -->
+            <xs:element name="platform_name" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="response">
+        <xs:all>
+            <xs:element name="url" type="xs:string"/>
+            <xs:element name="code" type="xs:integer"/>
+            <xs:element name="ip_address" type="xs:string"/>
+            <xs:element name="headers" type="headers"/>
+            <xs:element name="body" type="xs:string"/>
+            <xs:element name="time" type="xs:decimal"/>
+            <xs:element name="return_code" type="xs:string"/>
+            <xs:element name="return_message" type="xs:string"/>
+            <xs:element name="raw_headers" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="request">
+        <xs:all>
+            <xs:element name="url" type="xs:string"/>
+            <xs:element name="method" type="xs:string"/>
+            <xs:element name="parameters" type="parameters"/>
+            <xs:element name="body" type="xs:string"/>
+            <xs:element name="headers" type="headers"/>
+            <xs:element name="raw" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!--
+        System components can attach remarks on issues, usually to explain
+        why an issue has been flagged as untrusted.
+    -->
+    <xs:complexType name="remarks">
+        <xs:sequence>
+            <xs:element name="commenter" type="xs:string"
+                        minOccurs="0" maxOccurs="1"/>
+            <xs:element name="remark" type="xs:string"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--
+        This is details on the state of the logged vector when
+        an "issuevariation" was identified.
+
+        Merged with "vector" it forms the full vector mutation.
+    -->
+    <xs:complexType name="variationvector">
+        <xs:sequence>
+            <!--
+                HTTP method used to submit the vector. Can be different
+                from the "vector" one because the fuzzed version could
+                have been submitted with a different method.
+            -->
+            <xs:element name="method" type="xs:string" minOccurs="0"
+                        maxOccurs="1"/>
+
+            <xs:element name="seed" type="xs:string" minOccurs="0"
+                        maxOccurs="1"/>
+
+            <xs:element name="inputs" type="inputs" minOccurs="0"
+                        maxOccurs="1"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="page">
+        <xs:all>
+            <xs:element name="body" type="xs:string"/>
+            <xs:element name="request" type="request"/>
+            <xs:element name="response" type="response"/>
+            <xs:element name="dom" type="pagedom"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!--
+        DOM state of "page" (represented by "transitions") along with
+        issue JS context info (provided by "data_flow_sinks" and
+        "execution_flow_sinks").
+    -->
+    <xs:complexType name="pagedom">
+        <xs:all>
+            <xs:element name="url" type="xs:anyURI"/>
+
+            <!--
+                Interactions, between the browser and the page, required
+                to restore the page to the logged state.
+            -->
+            <xs:element name="transitions" type="transitions"/>
+
+            <!--
+                Flow-points of a tainted value in the JS environment.
+            -->
+            <xs:element name="data_flow_sinks" type="data_flow_sinks"/>
+
+            <!--
+                Points of execution of an injected JS payload.
+            -->
+            <xs:element name="execution_flow_sinks"
+                          type="execution_flow_sinks"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="transitions">
+        <xs:sequence>
+            <xs:element name="transition" type="transition"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--
+        Represents an interaction between the browser and the
+        page.
+    -->
+    <xs:complexType name="transition">
+        <xs:all>
+            <xs:element name="element" type="xs:string"/>
+            <xs:element name="event" type="xs:string"/>
+            <xs:element name="time" type="xs:decimal"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="data_flow_sinks">
+        <xs:sequence>
+            <xs:element name="data_flow_sink" type="data_flow_sink"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--
+        Flow-points of a tainted value in the JS environment.
+    -->
+    <xs:complexType name="data_flow_sink">
+        <xs:all>
+            <xs:element name="function" type="function"/>
+
+            <!--
+                Object where the "function" was defined.
+            -->
+            <xs:element name="object" type="xs:string"/>
+
+            <!--
+                "function:arguments" index of the argument that contains
+                the "tainted_value".
+            -->
+            <xs:element name="tainted_argument_index" type="xs:decimal"/>
+
+            <!--
+                The tainted value, which isn't necessarily the tainted
+                argument object itself.
+                The value will have been located recursively in the tainted
+                argument object's properties if need be.
+            -->
+            <xs:element name="tainted_value" type="xs:string"/>
+
+            <!--
+                The injected taint.
+            -->
+            <xs:element name="taint" type="xs:string"/>
+
+            <!--
+                Stacktrace of this call.
+            -->
+            <xs:element name="trace" type="trace"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="execution_flow_sinks">
+        <xs:sequence>
+            <xs:element name="execution_flow_sink"
+                        type="execution_flow_sink"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="execution_flow_sink">
+        <xs:sequence>
+            <xs:element name="trace" type="trace"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <!--
+        JS function referenced by "pagedom" sink data.
+    -->
+    <xs:complexType name="function">
+        <xs:all>
+            <xs:element name="source" type="xs:string"/>
+            <xs:element name="arguments" type="functionarguments"/>
+            <xs:element name="name" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="functionarguments">
+        <xs:sequence>
+            <xs:element name="argument" type="xs:string"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="trace">
+        <xs:sequence>
+            <xs:element name="frame" type="stackframe"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="stackframe">
+        <xs:all>
+            <xs:element name="function" type="function"/>
+            <xs:element name="line" type="xs:integer"/>
+            <xs:element name="url" type="xs:string"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="inputs">
+        <xs:sequence>
+            <xs:element name="input" type="input"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="input">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="headers">
+        <xs:sequence>
+            <xs:element name="header" type="input"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="header">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:complexType name="parameters">
+        <xs:sequence>
+            <xs:element name="parameter" type="input"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="parameter">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+
+    <xs:simpleType name="vectorclass">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Arachni::Element::Body" />
+            <xs:enumeration value="Arachni::Element::Server" />
+            <xs:enumeration value="Arachni::Element::Path" />
+            <xs:enumeration value="Arachni::Element::Form" />
+            <xs:enumeration value="Arachni::Element::Form::DOM" />
+            <xs:enumeration value="Arachni::Element::Link" />
+            <xs:enumeration value="Arachni::Element::Link::DOM"/>
+            <xs:enumeration value="Arachni::Element::Cookie" />
+            <xs:enumeration value="Arachni::Element::Cookie::DOM" />
+            <xs:enumeration value="Arachni::Element::Header" />
+            <xs:enumeration value="Arachni::Element::LinkTemplate" />
+            <xs:enumeration value="Arachni::Element::LinkTemplate::DOM"/>
+            <xs:enumeration value="Arachni::Element::GenericDOM" />
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="severity">
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="high" />
+            <xs:enumeration value="medium" />
+            <xs:enumeration value="low" />
+            <xs:enumeration value="informational"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:complexType name="references">
+        <xs:sequence>
+            <xs:element name="reference" type="reference"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="reference">
+        <xs:attribute name="title" type="xs:string"/>
+        <xs:attribute name="url" type="xs:anyURI"/>
+    </xs:complexType>
+
+    <xs:complexType name="cookies">
+        <xs:sequence>
+            <xs:element name="cookie" type="cookie"
+                        minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="cookie">
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="value" type="xs:string"/>
+    </xs:complexType>
+
+
+</xs:schema>

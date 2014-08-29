@@ -4,7 +4,7 @@ require 'sinatra/contrib'
 set :logging, false
 
 get '/' do
-    cookies.map { |k, v| k.to_s + v.to_s }.join( "\n" )
+    env['REQUEST_METHOD'].downcase + params.to_s
 end
 
 get '/submit' do

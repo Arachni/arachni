@@ -1,17 +1,9 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 require 'openssl'
@@ -20,36 +12,33 @@ require "base64"
 module Arachni
 module Support::Crypto
 
-#
 # Simple hybrid crypto class using RSA for public key encryption and AES with CBC
 # for bulk data encryption/decryption.
 #
 # RSA is used to encrypt the AES primitives which are used to encrypt the plaintext.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class RSA_AES_CBC
 
-    #
     # If only encryption is required the private key parameter can be omitted.
     #
-    # @param  [String]  public_pem   location of the Public key in PEM format
-    # @param  [String]  private_pem  location of the Private key in PEM format
-    #
+    # @param  [String]  public_pem
+    #   Location of the Public key in PEM format.
+    # @param  [String]  private_pem
+    #   Location of the Private key in PEM format.
     def initialize( public_pem, private_pem = nil )
         @public_pem  = public_pem
         @private_pem = private_pem
     end
 
-    #
     # Encrypts data and returns a Base64 representation of the ciphertext
     # and AES CBC primitives encrypted using the public key.
     #
     # @param  [String]  data
     #
-    # @return  [String]   Base64 representation of the ciphertext
-    #                       and AES CBC primitives encrypted using the public key.
-    #
+    # @return  [String]
+    #   Base64 representation of the ciphertext and AES CBC primitives encrypted
+    #   using the public key.
     def encrypt( data )
         rsa = OpenSSL::PKey::RSA.new( File.read( @public_pem ) )
 
@@ -74,13 +63,12 @@ class RSA_AES_CBC
         Base64.encode64( primitives.to_yaml )
     end
 
-    #
     # Decrypts data.
     #
     # @param  [String]  data
     #
-    # @return  [String]   plaintext
-    #
+    # @return  [String]
+    #   Plaintext.
     def decrypt( data )
         rsa = OpenSSL::PKey::RSA.new( File.read( @private_pem ) )
 
@@ -97,7 +85,7 @@ class RSA_AES_CBC
         plaintext = aes.update( primitives['ciphertext'] )
         plaintext << aes.final
 
-        return plaintext
+        plaintext
     end
 
 end

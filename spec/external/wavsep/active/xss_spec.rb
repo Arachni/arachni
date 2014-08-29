@@ -7,9 +7,9 @@ describe 'WAVSEP XSS' do
         {
             'Reflected Cross Site Scripting' => {
                 url:        "Reflected-XSS/RXSS-Detection-Evaluation-#{http_method}/",
-                modules:    'xss*',
+                checks:    'xss*',
 
-                # Misses a lot because we haven't got JS/DOM support yet.
+                # Misses a few because there's no proper VBScript support.
                 vulnerable: [
                     'Case01-Tag2HtmlPageScope.jsp',
                     'Case02-Tag2TagScope.jsp',
@@ -26,9 +26,19 @@ describe 'WAVSEP XSS' do
                     'Case13-Vbs2DoubleQuoteVbsEventScope.jsp',
                     'Case14-Vbs2SingleQuoteVbsEventScope.jsp',
                     'Case15-Vbs2VbsEventScope.jsp',
+                    'Case16-Js2ScriptSupportingProperty.jsp',
+                    'Case17-Js2PropertyJsScopeDoubleQuoteDelimiter.jsp',
+                    'Case18-Js2PropertyJsScopeSingleQuoteDelimiter.jsp',
+                    'Case19-Js2PropertyJsScope.jsp',
+                    'Case20-Vbs2PropertyVbsScopeDoubleQuoteDelimiter.jsp',
+                    'Case21-Vbs2PropertyVbsScope.jsp',
+                    'Case22-Js2ScriptTagDoubleQuoteDelimiter.jsp',
+                    'Case23-Js2ScriptTagSingleQuoteDelimiter.jsp',
+                    'Case24-Js2ScriptTag.jsp',
+                    # 25, 26
                     'Case27-Js2ScriptTagOLCommentScope.jsp',
                     'Case28-Js2ScriptTagMLCommentScope.jsp',
-                    'Case29-Vbs2ScriptTagOLCommentScope.jsp',
+                    # 29
                     'Case30-Tag2HtmlPageScopeMultipleVulnerabilities.jsp',
                     'Case31-Tag2HtmlPageScopeDuringException.jsp',
                     'Case32-Tag2HtmlPageScopeValidViewstateRequired.jsp'

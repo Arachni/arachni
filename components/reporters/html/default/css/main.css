@@ -1,0 +1,140 @@
+.severity-high {
+    background-color: #d62728;
+}
+.c3-region.severity-high {
+    fill: #d62728;
+}
+.tab-severity-high, li.active a.tab-severity-high {
+    color: #d62728;
+}
+
+.severity-medium {
+    background-color: #ff7f0e;
+}
+.c3-region.severity-medium  {
+    fill: #ff7f0e;
+}
+.tab-severity-medium, li.active a.tab-severity-medium {
+    color: #ff7f0e;
+}
+
+.tab-trusted, li.active a.tab-trusted {
+    color: #1f77b4;
+}
+
+.tab-untrusted, li.active a.tab-untrusted {
+    color: #d62728;
+}
+
+.severity-low {
+    background-color: #ffbb78;
+}
+.c3-region.severity-low {
+    fill: #ffbb78;
+}
+.tab-severity-low, li.active a.tab-severity-low {
+    color: #ffbb78;
+}
+
+.severity-informational {
+    background-color: #1f77b4;
+}
+.c3-region.severity-informational {
+    fill: #1f77b4;
+}
+.tab-severity-informational, li.active a.tab-severity-informational {
+    color: #1f77b4;
+}
+
+.table tr.borderless,
+.table td.borderless {
+    border:  0;
+}
+
+.table .panel-group {
+    margin:  0;
+    padding: 0;
+}
+
+.table .panel-group .panel-heading {
+    padding: 5px;
+}
+
+.table .table-borderless td,
+.table .table-borderless th {
+    border: 0;
+}
+
+.table, .table .table-condensed {
+    margin-bottom: 0;
+}
+
+.table tr.request-transition td:nth-child(2) {
+    padding-left: 30px;
+}
+
+table.table-fixed {
+    table-layout: fixed
+}
+
+.data-dump {
+    overflow-x: auto;
+    max-height: 400px;
+    position:   relative;
+}
+
+.code-container {
+    overflow-x: auto;
+    max-height: 400px;
+    position:   relative;
+}
+
+.proof {
+    color: red;
+    font-weight: bold;
+}
+
+.navbar {
+    border-radius: 0;
+}
+
+ul.nav li.dropdown:hover > ul.dropdown-menu {
+    display: block;
+}
+
+ul.dropdown-menu li.dropdown:hover > ul.dropdown-menu {
+    display: block;
+}
+
+ul.dropdown-menu ul.dropdown-menu {
+    margin-top: -20%;
+    margin-left: 100%;
+    position: absolute;
+}
+
+.CodeRay .active {
+    font-weight: bold;
+    background-color: #BCE8F1;
+}
+
+.CodeRay .breakpoint {
+    font-weight: bold;
+    background-color: #F2DEDE;
+}
+
+.dl-horizontal dd {
+    margin-left: auto;
+    padding-left: 200px;
+}
+
+.dl-horizontal dt {
+    width: auto;
+}
+
+#bars, #pies {
+    text-align: center;
+}
+
+.issue-proof-highlight {
+    background-color: yellow;
+}

@@ -1,291 +1,260 @@
 require 'spec_helper'
 
 describe Arachni::Issue do
-    before( :all ) do
-        @issue_data = {
-            name: 'Module name',
-            elem: Arachni::Element::LINK,
-            platform: :unix,
-            platform_type: :os,
-            method: 'GET',
-            description: 'Issue description',
-            references: {
-                'Title' => 'http://some/url'
-            },
-            cwe: '1',
-            severity: Arachni::Issue::Severity::HIGH,
-            cvssv2: '4.5',
-            remedy_guidance: 'How to fix the issue.',
-            remedy_code: 'Sample code on how to fix the issue',
-            verification: false,
-            metasploitable: 'exploit/unix/webapp/php_include',
-            opts: {
-                'some' => 'opts',
-                'blah' => "\xE2\x9C\x93"
-            },
-            mod_name: 'Module name',
-            internal_modname: 'module_name',
-            tags: %w(these are a few tags),
-            var: 'input name',
-            url: 'http://test.com/stuff/test.blah?query=blah',
-            headers: {
-                request: {
-                    'User-Agent' => 'UA/v1'
-                 },
-                response: {
-                     'Set-Cookie' => 'name=value'
-                 }
-            },
-            remarks: {
-                the_dude: ['Hey!']
-            },
-            response: 'HTML response',
-            injected: 'injected string',
-            id: 'This string was used to identify the vulnerability',
-            regexp: /some regexp/,
-            regexp_match: "string matched by '/some regexp/'"
-        }
-        @issue = Arachni::Issue.new( @issue_data.deep_clone )
-    end
 
-    describe Arachni::Issue::Severity do
-        describe 'Arachni::Issue::Severity::HIGH' do
-            it 'returns "High"' do
-                Arachni::Issue::Severity::HIGH.should == 'High'
-            end
-        end
-        describe 'Arachni::Issue::Severity::MEDIUM' do
-            it 'returns "Medium"' do
-                Arachni::Issue::Severity::MEDIUM.should == 'Medium'
-            end
-        end
-        describe 'Arachni::Issue::Severity::LOW' do
-            it 'returns "Low"' do
-                Arachni::Issue::Severity::LOW.should == 'Low'
-            end
-        end
-        describe 'Arachni::Issue::Severity::INFORMATIONAL' do
-            it 'returns "Informational"' do
-                Arachni::Issue::Severity::INFORMATIONAL.should == 'Informational'
-            end
-        end
+    let( :request ) { Factory[:request] }
+    let( :response ) { Factory[:response] }
+    let( :vector ) { Factory[:vector] }
+    let( :passive_vector ) { Factory[:passive_vector] }
+    let( :active_vector ) { Factory[:active_vector] }
 
-        it 'is assigned to Arachni::Severity for easy access' do
-            Arachni::Severity.should == Arachni::Issue::Severity
-        end
+    let( :issue_data ) { Factory[:issue_data] }
+    let( :passive_issue_data ) { Factory[:passive_issue_data] }
+    let( :issue ) { Factory[:issue] }
+    let( :empty_issue ) { Factory[:issue_empty] }
+    let( :passive_issue ) { Factory[:passive_issue] }
+    let( :active_issue ) { Factory[:active_issue] }
+    let( :trusted_issue ) { Factory[:trusted_issue] }
+    let( :untrusted_issue ) { Factory[:untrusted_issue] }
+    let( :issue_with_variations ) { Factory[:issue_with_variations] }
+
+    it "supports #{Arachni::RPC::Serializer}" do
+        duped = Arachni::RPC::Serializer.deep_clone( issue_with_variations )
+        issue_with_variations.should == duped
+
+        duped.variations.should == issue_with_variations.variations
     end
 
     it 'recodes string data to UTF8' do
-        @issue.opts['blah'].should == "\u2713"
+        issue.name.should == "Check name \u2713"
     end
 
-    it 'assigns the values in opts to the the instance vars' do
-        @issue_data.each do |k, v|
-            next if [ :opts, :regexp ].include?( k )
-            @issue.instance_variable_get( "@#{k}".to_sym ).should == @issue_data[k]
+    describe '#to_rpc_data' do
+        let(:issue) { issue_with_variations }
+        let(:data) { issue.to_rpc_data }
+
+        %w(name description platform_name platform_type references cwe
+            remedy_guidance remedy_code tags trusted unique_id digest
+            digest).each do |attribute|
+            it "includes '#{attribute}'" do
+                data[attribute].should == issue.send( attribute )
+            end
         end
-        @issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] ).recode
-        @issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
+
+        it "includes 'variations'" do
+            check = issue.check.dup
+            data['check'].should == check.merge(elements: check[:elements].map(&:to_s))
+        end
+
+        it "includes 'variations'" do
+            data['variations'].should == issue.variations.map(&:to_rpc_data)
+        end
+
+        it "includes 'vector'" do
+            data['vector'].should == issue.vector.to_rpc_data
+        end
+
+        it "includes 'severity'" do
+            data['severity'].should == issue.severity.to_s
+        end
+
+        it "includes 'variation'" do
+            data['variation'].should == issue.variation?
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:issue) { issue_with_variations }
+        let(:restored_issue) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( issue ) }
+
+        %w(name description vector platform_name platform_type references cwe
+            remedy_guidance remedy_code tags check trusted variations unique_id
+            digest digest severity).each do |attribute|
+            it "restores '#{attribute}'" do
+                restored_issue.send( attribute ).should == issue.send( attribute )
+            end
+        end
+
+        it "restores 'variation'" do
+            restored_issue.variation?.should == issue.variation?
+        end
+    end
+
+    [:page=, :referring_page=, :vector=].each do |m|
+        describe "##{m}" do
+            let(:obj) do
+                obj = Object.new
+                obj.stub(:deep_clone).and_return(obj)
+                obj.stub(:prepare_for_report)
+                obj
+            end
+
+            it 'calls #deep_clone' do
+                obj.should receive(:deep_clone)
+                empty_issue.send( "#{m}", obj )
+            end
+            it 'calls #prepare_for_report' do
+                obj.should receive(:prepare_for_report)
+                empty_issue.send( "#{m}", obj )
+            end
+        end
     end
 
     describe '#tags' do
         it 'returns the set tags' do
-            @issue.tags.should == @issue_data[:tags]
+            issue.tags.should == issue_data[:tags]
         end
         context 'when nil' do
             it 'defaults to an empty array' do
-                Arachni::Issue.new( url: 'http://test.com' ).tags.should == []
+                empty_issue.tags.should == []
             end
         end
     end
 
-    describe '#audit?' do
+    describe '#active?' do
         context 'when the issue was discovered by manipulating an input' do
             it 'returns true' do
-                Arachni::Issue.new( issue: { var: '1' } ).audit?.should be_true
+                active_issue.active?.should be_true
             end
         end
         context 'when the issue was logged passively' do
             it 'returns false' do
-                Arachni::Issue.new.audit?.should be_false
+                passive_issue.active?.should be_false
+            end
+        end
+        context 'when the issue has active variations' do
+            it 'returns true' do
+                issue_with_variations.active?.should be_true
             end
         end
     end
 
-    describe '#recon?' do
+    describe '#passive?' do
         context 'when the issue was discovered by manipulating an input' do
             it 'returns false' do
-                Arachni::Issue.new( issue: { var: '1' } ).recon?.should be_false
+                passive_issue.passive?.should be_true
             end
         end
         context 'when the issue was logged passively' do
             it 'returns true' do
-                Arachni::Issue.new.recon?.should be_true
-            end
-        end
-    end
-
-    context 'when there\'s an :issue key' do
-        it 'assigns its hash contents to instance vars' do
-            issue = Arachni::Issue.new( issue: @issue_data )
-            @issue_data.each do |k, v|
-                next if [ :opts, :regexp, :mod_name ].include?( k )
-                issue.instance_variable_get( "@#{k}".to_sym ).should == @issue_data[k]
-            end
-            issue.opts.should == { regexp: '' }.merge( @issue_data[:opts] ).recode
-            issue.cwe_url.should == 'http://cwe.mitre.org/data/definitions/1.html'
-        end
-    end
-
-    describe '#url=' do
-        it 'normalizes the URL before assigning it' do
-            i = Arachni::Issue.new
-            url = 'HttP://DomainName.com/stuff here'
-            i.url = url
-            i.url.should == Arachni::Module::Utilities.normalize_url( url )
-        end
-    end
-
-    describe '#requires_verification?' do
-        context 'when the issue requires verification' do
-            it 'returns true' do
-                i = Arachni::Issue.new
-                i.verification = true
-                i.requires_verification?.should be_true
-            end
-        end
-        context 'when the issue does not require verification' do
-            it 'returns false' do
-                i = Arachni::Issue.new
-                i.verification = false
-                i.requires_verification?.should be_false
-            end
-        end
-        context 'by default' do
-            it 'returns false' do
-                i = Arachni::Issue.new
-                i.requires_verification?.should be_false
+                passive_issue.passive?.should be_true
             end
         end
     end
 
     describe '#trusted?' do
-        context 'when the issue requires verification' do
+        context 'when the issue is not trusted' do
             it 'returns false' do
-                i = Arachni::Issue.new
-                i.verification = true
-                i.trusted?.should be_false
+                untrusted_issue.trusted?.should be_false
             end
         end
-        context 'when the issue does not require verification' do
+        context 'when the issue does is trusted' do
             it 'returns true' do
-                i = Arachni::Issue.new
-                i.verification = false
-                i.trusted?.should be_true
+                trusted_issue.trusted?.should be_true
             end
         end
         context 'by default' do
             it 'returns true' do
-                i = Arachni::Issue.new
-                i.trusted?.should be_true
+                trusted_issue.trusted?.should be_true
             end
         end
     end
 
     describe '#untrusted?' do
-        context 'when the issue requires verification' do
+        context 'when the issue is not trusted' do
             it 'returns true' do
-                i = Arachni::Issue.new
-                i.verification = true
-                i.untrusted?.should be_true
+                untrusted_issue.untrusted?.should be_true
             end
         end
-        context 'when the issue does not require verification' do
+        context 'when the issue is trusted' do
             it 'returns false' do
-                i = Arachni::Issue.new
-                i.verification = false
-                i.untrusted?.should be_false
+                trusted_issue.untrusted?.should be_false
             end
         end
         context 'by default' do
             it 'returns false' do
-                i = Arachni::Issue.new
-                i.untrusted?.should be_false
+                issue.untrusted?.should be_false
             end
         end
     end
 
+    describe '#affected_input_name' do
+        context 'when the issue is' do
+            context 'active' do
+                it 'returns the name of the affected input' do
+                    active_issue.affected_input_name.should ==
+                        active_issue.vector.affected_input_name
+                end
+            end
+
+            context 'passive' do
+                it 'returns nil' do
+                    passive_issue.affected_input_name.should be_nil
+                end
+            end
+        end
+
+    end
 
     describe '#cwe=' do
         it 'assigns a CWE ID and CWE URL based on that ID' do
-            i = Arachni::Issue.new
-            i.cwe = 20
-            i.cwe.should == '20'
-            i.cwe_url.should == 'http://cwe.mitre.org/data/definitions/20.html'
+            empty_issue.cwe = 20
+            empty_issue.cwe.should == 20
+        end
+    end
+
+    describe '#cwe_url' do
+        it 'returns the CWE reference URL' do
+            described_class.new( vector: vector, cwe: 21 ).cwe_url.should ==
+                'http://cwe.mitre.org/data/definitions/21.html'
+        end
+
+        context 'when no #cwe has been given' do
+            it 'returns nil' do
+                described_class.new( vector: vector, cwe: nil ).cwe_url.should be_nil
+            end
+        end
+    end
+
+    describe '#signature=' do
+        it 'assigns a signature as a String' do
+            signature = /test.*/
+
+            empty_issue.signature = signature
+            empty_issue.signature.should == signature.to_s
+        end
+
+        context 'when no signature has been given' do
+            it 'returns nil' do
+                empty_issue.signature = nil
+                empty_issue.signature.should be_nil
+            end
         end
     end
 
     describe '#references=' do
         it 'assigns a references hash' do
-            i = Arachni::Issue.new
             refs = { 'title' => 'url' }
-            i.references = refs
-            i.references.should == refs
+            empty_issue.references = refs
+            empty_issue.references.should == refs
         end
         context 'when nil is passed as a value' do
             it 'falls-back to an empty Hash' do
-                i = Arachni::Issue.new
-                i.references.should == {}
-                i.references = nil
-                i.references.should == {}
-            end
-        end
-    end
-
-    describe '#regexp=' do
-        it 'assigns a regexp and convert it to a string' do
-            i = Arachni::Issue.new
-            rxp = /test/
-            i.regexp = rxp
-            i.regexp.should == rxp.to_s
-        end
-        context 'when nil is passed as a value' do
-            it 'falls-back to an empty string' do
-                i = Arachni::Issue.new
-                i.regexp = nil
-                i.regexp.should == ''
-            end
-        end
-    end
-
-    describe '#opts=' do
-        it 'assigns an opts hash and convert the included :regexp to a string' do
-            i = Arachni::Issue.new
-            i.opts = { an: 'opt' }
-            i.opts.should == { an: 'opt', regexp: '' }
-
-            rxp = /test/
-            i.opts = { an: 'opt', regexp: rxp }
-            i.opts.should == { an: 'opt', regexp: rxp.to_s }
-        end
-        context 'when nil is passed as a value' do
-            it 'falls-back to an empty Hash' do
-                i = Arachni::Issue.new
-                i.opts.should == { regexp: '' }
-                i.opts = nil
-                i.opts.should == { regexp: '' }
+                empty_issue.references.should == {}
+                empty_issue.references = nil
+                empty_issue.references.should == {}
             end
         end
     end
 
     describe '#remarks' do
         it 'returns the set remarks as a Hash' do
-            @issue.remarks.should == @issue_data[:remarks]
+            issue.remarks.should == issue_data[:remarks]
         end
         context 'when uninitialised' do
             it 'falls-back to an empty Hash' do
-                i = Arachni::Issue.new
-                i.remarks.should == {}
+                empty_issue.remarks.should == {}
             end
         end
     end
@@ -295,20 +264,16 @@ describe Arachni::Issue do
             author  = :dude
             remarks = ['Hey dude!', 'Hey again dude!' ]
 
-            i = Arachni::Issue.new
-            i.add_remark author, remarks.first
-            i.add_remark author, remarks[1]
-
-            i.remarks.should == { author => remarks }
+            empty_issue.add_remark author, remarks.first
+            empty_issue.add_remark author, remarks[1]
+            empty_issue.remarks.should == { author => remarks }
         end
 
         context 'when an argument is blank' do
             it 'raises an ArgumentError' do
-                i = Arachni::Issue.new
-
                 raised = false
                 begin
-                    i.add_remark '', 'ddd'
+                    empty_issue.add_remark '', 'ddd'
                 rescue ArgumentError
                     raised = true
                 end
@@ -316,7 +281,7 @@ describe Arachni::Issue do
 
                 raised = false
                 begin
-                    i.add_remark :dsds, ''
+                    empty_issue.add_remark :dsds, ''
                 rescue ArgumentError
                     raised = true
                 end
@@ -324,7 +289,7 @@ describe Arachni::Issue do
 
                 raised = false
                 begin
-                    i.add_remark '', ''
+                    empty_issue.add_remark '', ''
                 rescue ArgumentError
                     raised = true
                 end
@@ -332,99 +297,414 @@ describe Arachni::Issue do
 
                 raised = false
                 begin
-                    i.add_remark nil, nil
+                    empty_issue.add_remark nil, nil
                 rescue ArgumentError
                     raised = true
                 end
                 raised.should be_true
-            end
-        end
-
-    end
-
-    describe '#[]' do
-        it 'acts as an attr_reader' do
-            @issue_data.each do |k, _|
-                @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
-            end
-        end
-    end
-
-    describe '#[]=' do
-        it 'acts as an attr_writer' do
-            raised = false
-            begin
-                @issue_data.each { |k, v| @issue[k] = v }
-            rescue
-                raised = true
-            end
-            raised.should be_false
-        end
-    end
-
-    describe '#each' do
-        it 'iterates over the available instance vars' do
-            @issue.each do |k, v|
-                @issue[k].should == @issue.send( k )
-                @issue[k].should == v
-            end
-        end
-    end
-
-    describe '#each_pair' do
-        it 'iterates over the available instance vars' do
-            @issue.each_pair do |k, v|
-                @issue[k].should == @issue.send( "#{k}" )
-                @issue[k].should == v
             end
         end
     end
 
     describe '#to_h' do
         it 'converts self to a Hash' do
-            @issue.to_h.is_a?( Hash ).should be_true
-            @issue.to_h.each do |k, v|
-                next if [:unique_id, :hash, :_hash, :digest].include? k
-                @issue[k].should == @issue.instance_variable_get( "@#{k}".to_sym )
-                @issue[k].should == v
+            page = Factory[:page].dup
+            page.body << 'stuff'
+
+            issue.referring_page = page
+            issue_h = issue.to_h
+
+            dom_h = issue.page.dom.to_h
+            dom_h.delete(:skip_states)
+            dom_h[:transitions] = dom_h[:transitions].map do |t|
+                h = t.to_hash
+                h.delete(:time)
+                h
+            end
+
+            referring_page_dom_h = issue.referring_page.dom.to_h
+            referring_page_dom_h.delete(:skip_states)
+            referring_page_dom_h[:transitions] =
+                referring_page_dom_h[:transitions].map do |t|
+                    h = t.to_hash
+                    h.delete(:time)
+                    h
+                end
+
+            issue_h[:page][:dom][:transitions] =
+                issue_h[:page][:dom][:transitions].map do |h|
+                    h.delete(:time)
+                    h
+                end
+            issue_h[:page][:dom][:data_flow_sinks] =
+                issue_h[:page][:dom][:data_flow_sinks].map(&:to_h)
+            issue_h[:page][:dom][:execution_flow_sinks] =
+                issue_h[:page][:dom][:execution_flow_sinks].map(&:to_h)
+
+            issue_h[:referring_page][:dom][:transitions] =
+                issue_h[:page][:dom][:transitions].map do |h|
+                    h.delete(:time)
+                    h
+                end
+            issue_h[:referring_page][:dom][:data_flow_sinks] =
+                issue_h[:referring_page][:dom][:data_flow_sinks].map(&:to_h)
+            issue_h[:referring_page][:dom][:execution_flow_sinks] =
+                issue_h[:referring_page][:dom][:execution_flow_sinks].map(&:to_h)
+
+            issue_h.should == {
+                name:            "Check name \u2713",
+                description:     'Issue description',
+                vector:          issue.vector.to_h,
+                referring_page:  {
+                    body: issue.referring_page.body,
+                    dom:  referring_page_dom_h
+                },
+                page:            {
+                    body: issue.page.body,
+                    dom:  dom_h
+                },
+                response:        Factory[:response].to_h,
+                platform_name:   :unix,
+                platform_type:   :os,
+                references:      { 'Title' => 'http://some/url' },
+                severity:        :high,
+                remedy_guidance: 'How to fix the issue.',
+                remedy_code:     'Sample code on how to fix the issue',
+                tags:            %w(these are a few tags),
+                remarks:         { the_dude: %w(Hey!) },
+                signature:       '(?-mix:some regexp)',
+                proof:           "string matched by '/some regexp/'",
+                check:           {
+                    name:        'Test check',
+                    description: 'Test description',
+                    author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
+                    version:     '0.1',
+                    targets:     {
+                        'Generic' => 'all'
+                    },
+                    elements:    [:link, :form_dom],
+                    shortname:   'test'
+                },
+                trusted:         true,
+                digest:          3311937213,
+                request:         issue.request.to_h,
+                cwe:             1,
+                variations:      [],
+                cwe_url:         'http://cwe.mitre.org/data/definitions/1.html'
+            }
+        end
+
+        context 'when the issue has variations' do
+            it 'includes those variations' do
+                page = Factory[:page].dup
+                page.body << 'stuff'
+
+                issue_with_variations.variations.each { |v| v.referring_page = page }
+
+                issue_h    = issue_with_variations.to_h
+                variations = issue_h.delete( :variations )
+
+                issue_h.should == {
+                    name:            "Check name \u2713",
+                    description:     'Issue description',
+                    platform_name:   :unix,
+                    platform_type:   :os,
+                    references:      { 'Title' => 'http://some/url' },
+                    severity:        :high,
+                    remedy_guidance: 'How to fix the issue.',
+                    remedy_code:     'Sample code on how to fix the issue',
+                    tags:            %w(these are a few tags),
+                    check:           {
+                        name:        'Test check',
+                        description: 'Test description',
+                        author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
+                        version:     '0.1',
+                        targets:     {
+                            'Generic' => 'all'
+                        },
+                        elements:    [:link, :form_dom],
+                        shortname:   'test'
+                    },
+                    digest:          58999149,
+                    cwe:             1,
+                    variation:       false,
+                    trusted:         true,
+                    vector:          {
+                        method: :get,
+                        type:   :form,
+                        class:   'Arachni::Element::Form',
+                        url:    'http://test.com/',
+                        action: 'http://test.com/',
+                        inputs:  { 'stuff' => '1' },
+                        affected_input_name:  'stuff',
+                        html: nil
+                    },
+                    cwe_url:         'http://cwe.mitre.org/data/definitions/1.html'
+                }
+
+                variations.each_with_index do |variation, i|
+                    dom_h = issue.page.dom.to_h
+                    dom_h.delete(:skip_states)
+                    dom_h[:transitions] = dom_h[:transitions].map do |t|
+                        h = t.to_hash
+                        h.delete(:time)
+                        h
+                    end
+
+                    referring_page_dom_h = variation[:referring_page][:dom]
+                    referring_page_dom_h.delete(:skip_states)
+                    referring_page_dom_h[:transitions] =
+                        referring_page_dom_h[:transitions].map do |t|
+                            h = t.to_hash
+                            h.delete(:time)
+                            h
+                        end
+
+
+                    variation[:page][:dom][:transitions] =
+                        variation[:page][:dom][:transitions].map do |h|
+                            h.delete(:time)
+                            h
+                        end
+                    variation[:page][:dom][:data_flow_sinks] =
+                        variation[:page][:dom][:data_flow_sinks].map(&:to_h)
+                    variation[:page][:dom][:execution_flow_sinks] =
+                        variation[:page][:dom][:execution_flow_sinks].map(&:to_h)
+
+                    variation[:referring_page][:dom][:transitions] =
+                        variation[:page][:dom][:transitions].map do |h|
+                            h.delete(:time)
+                            h
+                        end
+                    variation[:referring_page][:dom][:data_flow_sinks] =
+                        variation[:referring_page][:dom][:data_flow_sinks].map(&:to_h)
+                    variation[:referring_page][:dom][:execution_flow_sinks] =
+                        variation[:referring_page][:dom][:execution_flow_sinks].map(&:to_h)
+
+                    variation.should == {
+                        vector:    {
+                            method:               :get,
+                            inputs:               { 'stuff' => i.to_s },
+                            affected_input_value: i.to_s,
+                            seed:                 i.to_s,
+                            class:                Arachni::Element::Form.to_s,
+                        },
+                        referring_page:  {
+                            body: page.body,
+                            dom:  referring_page_dom_h
+                        },
+                        page:            {
+                            body: issue.page.body,
+                            dom:  dom_h
+                        },
+                        response:  issue.response.to_h,
+                        remarks:   { the_dude: %w(Hey!) },
+                        signature: '(?-mix:some regexp)',
+                        proof:     "string matched by '/some regexp/'",
+                        trusted:   true,
+                        request:   issue.request.to_h,
+                        variation: true
+                    }
+                end
             end
         end
     end
 
     describe '#unique_id' do
         it 'returns a string uniquely identifying the issue' do
-            @issue.unique_id.should ==
-                "#{@issue.mod_name}::#{@issue.elem}::#{@issue.var}::http://test.com/stuff/test.blah"
+            i = active_issue
+            i.unique_id.should ==
+                "#{i.name}:#{i.vector.method}:#{i.vector.affected_input_name}:#{i.vector.url}"
+
+            i = passive_issue
+            i.unique_id.should == "#{i.name}:#{i.vector.url}"
         end
     end
 
     describe '#eql?' do
         context 'when 2 issues are equal' do
             it 'returns true' do
-                @issue.eql?( @issue ).should be_true
-
-                i = @issue.deep_clone
-                i.injected = 'stuff'
-                @issue.eql?( i ).should be_true
+                issue.eql?( issue ).should be_true
             end
         end
         context 'when 2 issues are not equal' do
             it 'returns false' do
-                i = @issue.deep_clone
-                i.var = 'stuff'
-                @issue.eql?( i ).should be_false
+                i = issue.deep_clone
+                i.name = 'stuff'
+                issue.eql?( i ).should be_false
 
-                i = @issue.deep_clone
-                i.url = 'http://stuff'
-                @issue.eql?( i ).should be_false
+                i = issue.deep_clone
+                i.vector.action = 'http://stuff'
+                issue.eql?( i ).should be_false
 
-                i = @issue.deep_clone
-                i.mod_name = 'http://stuff'
-                @issue.eql?( i ).should be_false
+                i = issue.deep_clone
+                i.vector.affected_input_name = 'Stuff'
+                issue.eql?( i ).should be_false
+            end
 
-                i = @issue.deep_clone
-                i.elem = 'stuff'
-                @issue.eql?( i ).should be_false
+            context 'when the issue is' do
+                context 'active' do
+                    it 'takes into account the vector method' do
+                        i = active_issue.deep_clone
+                        i.vector.method = :post
+                        active_issue.eql?( i ).should be_false
+                    end
+                end
+                context 'passive' do
+                    it 'does not take into account the vector method' do
+                        i = issue.deep_clone
+                        i.vector.method = :post
+                        issue.eql?( i ).should be_true
+                    end
+                end
+            end
+        end
+    end
+
+    describe '#with_variations' do
+        it 'returns a copy of the issue with variation data removed' do
+            variation_data = [ :response, :proof, :signature, :remarks ]
+
+            variation_data.each do |k|
+                issue.send(k).should be_true
+            end
+
+            root = issue.with_variations
+            variation_data.each do |k|
+                root.send(k).should be_nil
+            end
+            root.variations.should == []
+        end
+
+        it 'removes specific issue data from the vector' do
+            vector = active_issue.vector
+            vector.affected_input_name.should be_true
+            vector.affected_input_value.should be_true
+            vector.seed.should be_true
+
+            vector = active_issue.with_variations.vector
+            vector.affected_input_name.should be_nil
+            vector.affected_input_value.should be_nil
+            vector.seed.should be_nil
+        end
+    end
+
+    describe '#as_variation' do
+        it 'returns a copy of the issue with generic data removed' do
+            variation_data = [
+                :name, :description, :platform_name, :platform_type, :references,
+                :cwe, :severity, :remedy_guidance, :remedy_code, :tags, :check,
+                :cwe_url
+            ]
+
+            variation_data.each do |k|
+                issue.send(k).should be_true
+            end
+
+            root = issue.as_variation
+            variation_data.each do |k|
+                root.send(k).should be_nil
+            end
+            root.variations.should be_nil
+        end
+    end
+
+    describe '#to_solo!' do
+        it 'converts a variation to a solo issue in place, using a parent as a reference' do
+            original_solo  = issue
+            parent         = issue.with_variations
+            variation      = issue.as_variation
+
+            original_solo.should be_solo
+            parent.should_not    be_variation
+            variation.should     be_variation
+
+            solo = variation.to_solo!( parent )
+            solo.should be_solo
+
+            solo.to_h.should == original_solo.to_h
+            solo.to_h.should == variation.to_h
+            solo.object_id.should == variation.object_id
+        end
+
+        it 'skips #variations' do
+            parent    = issue.with_variations
+            variation = issue.as_variation
+
+            parent.variations << variation
+
+            parent.variations.should be_any
+            variation.to_solo!( parent ).variations.should be_empty
+        end
+
+        it 'skips #vector' do
+            parent    = active_issue.with_variations
+            variation = active_issue.as_variation
+
+            parent.vector.affected_input_name.should be_nil
+            variation.vector.affected_input_name.should be_true
+            variation.to_solo!( parent ).vector.affected_input_name.should be_true
+        end
+    end
+
+    describe '#to_solo' do
+        it 'returns a solo issue using a parent as a reference' do
+            original_solo  = issue
+            parent         = issue.with_variations
+            variation      = issue.as_variation
+
+            original_solo.should be_solo
+            parent.should_not    be_variation
+            variation.should     be_variation
+
+            solo = variation.to_solo( parent )
+            solo.should be_solo
+
+            solo.to_h.should == original_solo.to_h
+            solo.object_id.should_not == variation.object_id
+        end
+    end
+
+    describe '#variation?' do
+        context 'when the issue is' do
+            context 'variation' do
+                it 'returns true' do
+                    issue.as_variation.should be_variation
+                end
+            end
+
+            context 'parent' do
+                it 'returns false' do
+                    issue.with_variations.should_not be_variation
+                end
+            end
+
+            context 'solo' do
+                it 'returns false' do
+                    issue.should_not be_variation
+                end
+            end
+        end
+    end
+
+    describe '#solo?' do
+        context 'when the issue is' do
+            context 'variation' do
+                it 'returns false' do
+                    issue.as_variation.should_not be_solo
+                end
+            end
+
+            context 'parent' do
+                it 'returns false' do
+                    issue.with_variations.should_not be_solo
+                end
+            end
+
+            context 'solo' do
+                it 'returns true' do
+                    issue.should be_solo
+                end
             end
         end
     end
@@ -432,47 +712,30 @@ describe Arachni::Issue do
     describe '#hash' do
         context 'when 2 issues are equal' do
             it 'have the same hash' do
-                @issue.hash.should == @issue.hash
-
-                i = @issue.deep_clone
-                i.injected = 'stuff'
-                @issue.hash.should == i.hash
+                issue.hash.should == issue.hash
             end
         end
         context 'when 2 issues are not equal' do
             it 'returns false' do
-                i = @issue.deep_clone
-                i.var = 'stuff'
-                @issue.hash.should_not == i.hash
+                i = issue.deep_clone
+                i.name = 'stuff'
+                issue.hash.should_not == i.hash
 
-                i = @issue.deep_clone
-                i.url = 'http://stuff'
-                @issue.hash.should_not == i.hash
+                i = issue.deep_clone
+                i.vector.action = 'http://stuff'
+                issue.hash.should_not == i.hash
 
-                i = @issue.deep_clone
-                i.mod_name = 'http://stuff'
-                @issue.hash.should_not == i.hash
-
-                i = @issue.deep_clone
-                i.elem = 'stuff'
-                @issue.hash.should_not == i.hash
+                i = issue.deep_clone
+                i.vector.affected_input_name = 'Stuff'
+                issue.hash.should_not == i.hash
             end
         end
     end
 
-    describe '#digest (and #_hash)' do
-        it 'returns a HEX digest of the issue' do
-            @issue._hash.should == Digest::SHA2.hexdigest( @issue.unique_id )
-            @issue.digest.should == @issue._hash
-        end
-    end
-
-    describe '#remove_instance_var' do
-        it 'removes an instance variable' do
-            rxp = @issue.regexp
-            rxp.should_not be_nil
-            @issue.remove_instance_var( :@regexp )
-            @issue.regexp.should be_nil
+    describe '#digest' do
+        it 'returns a Integer hash based on #unique_id' do
+            issue.digest.should be_kind_of Integer
+            issue.digest.should == issue.unique_id.persistent_hash
         end
     end
 

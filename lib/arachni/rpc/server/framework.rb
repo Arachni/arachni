@@ -1,33 +1,23 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
 require 'tempfile'
 
 module Arachni
 
-lib = Options.dir['lib']
+lib = Options.paths.lib
 require lib + 'framework'
-require lib + 'rpc/server/spider'
-require lib + 'rpc/server/module/manager'
+require lib + 'rpc/server/check/manager'
 require lib + 'rpc/server/plugin/manager'
 
 module RPC
 class Server
 
-#
 # Wraps the framework of the local instance and the frameworks of all its slaves
 # (when it is a Master in multi-Instance mode) into a neat, easy to handle package.
 #
@@ -38,10 +28,10 @@ class Server
 #   * `block` parameters, they are an RPC implementation detail for methods which
 #       perform asynchronous operations.
 #
-# @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-#
+# @private
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Framework < ::Arachni::Framework
-    require Options.dir['lib'] + 'rpc/server/framework/multi_instance'
+    require Options.paths.lib + 'rpc/server/framework/multi_instance'
 
     include Utilities
     include MultiInstance
@@ -52,67 +42,73 @@ class Framework < ::Arachni::Framework
         public  m
     end
 
-    #
     # {RPC::Server::Framework} error namespace.
     #
     # All {RPC::Server::Framework} errors inherit from and live under it.
     #
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-    #
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Arachni::Framework::Error
 
-        #
         # Raised when an option is nor supported for whatever reason.
         #
-        # For example, {Options#restrict_paths} isn't supported when in
-        # HPG mode.
+        # For example, {OptionGroups::Scope#restrict_paths} isn't supported
+        # when in HPG mode.
         #
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@gmail.com>
-        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class UnsupportedOption < Error
         end
     end
 
     # Make these inherited methods public again (i.e. accessible over RPC).
-    [ :audit_store, :stats, :paused?, :lsmod, :list_modules, :lsplug,
-      :list_plugins, :lsrep, :list_reports, :version, :revision, :status,
-      :report_as, :lsplat, :list_platforms ].each do |m|
+    [ :statistics, :version, :status, :report_as, :list_platforms, :list_platforms,
+      :sitemap ].each do |m|
         private m
         public  m
     end
-
-    alias :auditstore :audit_store
 
     def initialize( * )
         super
 
         # Override standard framework components with their RPC-server counterparts.
-        @modules = Module::Manager.new( self )
+        @checks  = Check::Manager.new( self )
         @plugins = Plugin::Manager.new( self )
-        @spider  = Spider.new( self )
+    end
+
+    # @return   [Report]
+    #   {Report#to_rpc_data}
+    def report( &block )
+        # If a block is given it means the call was form an RPC client.
+        if block_given?
+            block.call super.to_rpc_data
+            return
+        end
+
+        super
     end
 
     # @return (see Arachni::Framework#list_plugins)
     def list_plugins
         super.map do |plugin|
-            plugin[:options] = [plugin[:options]].flatten.compact.map do |opt|
-                opt.to_h.merge( 'type' => opt.type )
-            end
+            plugin[:options] = plugin[:options].map(&:to_h)
             plugin
         end
     end
-    alias :lsplug :list_plugins
 
-    # @return (see Arachni::Framework#list_reports)
-    def list_reports
-        super.map do |report|
-            report[:options] = [report[:options]].flatten.compact.map do |opt|
-                opt.to_h.merge( 'type' => opt.type )
-            end
-            report
+    # @return (see Arachni::Framework#list_reporters)
+    def list_reporters
+        super.map do |reporter|
+            reporter[:options] = reporter[:options].map(&:to_h)
+            reporter
         end
     end
-    alias :lsrep :list_reports
+
+    # @return (see Arachni::Framework#list_checks)
+    def list_checks
+        super.map do |check|
+            check[:issue][:severity] = check[:issue][:severity].to_s
+            check
+        end
+    end
 
     # @return   [Bool]
     #   `true` If the system is scanning, `false` if {#run} hasn't been called
@@ -121,26 +117,28 @@ class Framework < ::Arachni::Framework
         # If we have a block it means that it was called via RPC, so use the
         # status variable to determine if the scan is done.
         if block_given?
-            block.call @prepared && @status != :done
+            block.call @prepared && status != :done
             return
         end
 
         !!@extended_running
     end
 
+    # @param    [Integer]   from_index
+    #   Get sitemap entries after this index.
     #
+    # @return   [Hash<String=>Integer>]
+    def sitemap_entries( from_index = 0 )
+        Hash[sitemap.to_a[from_index..-1] || {}]
+    end
+
     # Starts the scan.
     #
-    # @return   [Bool]  `false` if already running, `true` otherwise.
-    #
+    # @return   [Bool]
+    #   `false` if already running, `true` otherwise.
     def run
         # Return if we're already running.
         return false if busy?
-
-        if master? && @opts.restrict_paths.any?
-            fail Error::UnsupportedOption,
-                 'Option \'restrict_paths\' is not supported when in multi-Instance mode.'
-        end
 
         @extended_running = true
 
@@ -148,7 +146,7 @@ class Framework < ::Arachni::Framework
         prepare
 
         # Start the scan  -- we can't block the RPC server so we're using a Thread.
-        Thread.abort_on_exception = true
+        # Thread.abort_on_exception = true
         Thread.new do
             if !solo?
                 multi_run
@@ -160,33 +158,34 @@ class Framework < ::Arachni::Framework
         true
     end
 
-    #
     # If the scan needs to be aborted abruptly this method takes care of any
     # unfinished business (like signaling running plug-ins to finish).
     #
-    # Should be called before grabbing the {#auditstore}, especially when
-    # running in HPG mode as it will take care of merging the plug-in results
+    # Should be called before grabbing the {#report}, especially when running
+    # in multi-Instance mode, as it will take care of merging the plug-in results
     # of all instances.
     #
     # You don't need to call this if you've let the scan complete.
-    #
     def clean_up( &block )
-        if @cleaned_up
+        if @rpc_cleaned_up
+            # Don't shutdown the BrowserCluster here, its termination will be
+            # handled by Instance#shutdown.
             block.call false if block_given?
             return false
         end
 
-        @cleaned_up       = true
+        @rpc_cleaned_up   = true
         @extended_running = false
-        r = super
+
+        r = super( false )
 
         if !block_given?
-            @status = :done
+            state.status = :done
             return r
         end
 
         if !has_slaves?
-            @status = :done
+            state.status = :done
             block.call r
             return
         end
@@ -200,137 +199,45 @@ class Framework < ::Arachni::Framework
         end
         after = proc do |results|
             @plugins.merge_results( results.compact )
-            @status = :done
+            state.status = :done
             block.call true
         end
         map_slaves( foreach, after )
     end
 
-    # Pauses the running scan on a best effort basis.
-    def pause( &block )
-        r = super
-        return r if !block_given?
-
-        if !has_slaves?
-            block.call true
-            return
-        end
-
-        each = proc { |instance, iter| instance.framework.pause { iter.next } }
-        each_slave( each, proc { block.call true } )
-    end
-
-    # Resumes a paused scan right away.
-    def resume( &block )
-        r = super
-        return r if !block_given?
-
-        if !has_slaves?
-            block.call true
-            return
-        end
-
-        each = proc { |instance, iter| instance.framework.resume { iter.next } }
-        each_slave( each, proc { block.call true } )
-    end
-
+    # @return  [Array<Hash>]
+    #   First variations of all discovered issues with generic info filled in
+    #   from the parent as {Arachni::Issue#to_rpc_data RPC data}.
     #
-    # Merged output of all running instances.
-    #
-    # This is going to be wildly out of sync and lack A LOT of messages.
-    #
-    # It's here to give the notion of progress to the end-user rather than
-    # provide an accurate depiction of the actual progress.
-    #
-    # The returned object will be in the form of:
-    #
-    #   [ { <type> => <message> } ]
-    #
-    # like:
-    #
-    #   [
-    #       { status: 'Initiating'},
-    #       {   info: 'Some informational msg...'},
-    #   ]
-    #
-    # Possible message types are:
-    # * `status`  -- Status messages, usually to denote progress.
-    # * `info`  -- Informational messages, like notices.
-    # * `ok`  -- Denotes a successful operation or a positive result.
-    # * `verbose` -- Verbose messages, extra information about whatever.
-    # * `bad`  -- Opposite of :ok, an operation didn't go as expected,
-    #   something has failed but it's recoverable.
-    # * `error`  -- An error has occurred, this is not good.
-    # * `line`  -- Generic message, no type.
-    #
-    # @return   [Array<Hash>]
-    #
-    # @deprecated
-    #
-    def output( &block )
-        buffer = flush_buffer
-
-        if !has_slaves?
-            block.call( buffer )
-            return
-        end
-
-        foreach = proc do |instance, iter|
-            instance.service.output { |out| iter.return( out ) }
-        end
-        after = proc { |out| block.call( (buffer | out).flatten ) }
-        map_slaves( foreach, after )
-    end
-
-    # @see Arachni::Framework#stats
-    def stats( *args )
-        ss = super( *args )
-        ss.tap { |s| s[:sitemap_size] = spider.local_sitemap.size } if !solo?
-        ss
-    end
-
-    # @return   [Hash]  Audit results as a {AuditStore#to_h hash}.
-    # @see AuditStore#to_h
-    def report
-        audit_store.to_h
-    end
-    alias :audit_store_as_hash :report
-    alias :auditstore_as_hash :report
-
-    # @return   [String]    YAML representation of {#report}.
-    def serialized_report
-        report.to_yaml
-    end
-
-    # @return   [String]    YAML representation of {#auditstore}.
-    def serialized_auditstore
-        audit_store.to_yaml
-    end
-
-    # @return  [Array<Arachni::Issue>]
-    #   First variations of all discovered issues.
+    # @private
     def issues
-        auditstore.issues.map { |issue| issue.variations.first || issue }
+        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_rpc_data }
     end
 
-    # @return   [Array<Hash>]   {#issues} as an array of Hashes.
+    # @return   [Array<Hash>]
+    #   {#issues} as an array of Hashes.
+    #
     # @see #issues
     def issues_as_hash
-        issues.map( &:to_h )
+        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_h }
     end
 
-    # @return   [String]  URL of this instance.
+    # @return   [String]
+    #   URL of this instance.
+    #
     # @private
     def self_url
-        @opts.rpc_external_address ||= @opts.rpc_address
+        options.dispatcher.external_address ||= options.rpc.server_address
 
-        @self_url ||= @opts.rpc_external_address ?
-            "#{@opts.rpc_external_address }:#{@opts.rpc_port}" : @opts.rpc_socket
+        @self_url ||= options.dispatcher.external_address ?
+            "#{options.dispatcher.external_address }:#{options.rpc.server_port}" :
+            options.rpc.server_socket
     end
 
-    # @return   [String]  This instance's RPC token.
+    # @return   [String]
+    #   This instance's RPC token.
     def token
-        @opts.datastore[:token]
+        options.datastore.token
     end
 
     # @private

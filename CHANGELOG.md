@@ -1,5 +1,211 @@
 # ChangeLog
 
+## 1.0 _(August 29, 2014)_
+
+- Executables:
+    - Added
+        - `arachni_restore` (`UI::CLI::RestoredFramework`)
+            - Restores snapshots of suspended scans.
+            - Prints snapshot metadata.
+        - `arachni_report` (`UI::CLI::Report`)
+            - Creates reports from `.afr` files.
+    - `arachni` (`UI::CLI::Framework`)
+        - `Ctrl+C` (`SIGINT`) now aborts the scan.
+        - Hitting `Enter` now toggles between the progress message and the
+            command screens.
+        - Updated to provide access to the new suspend-to-disk feature.
+        - Moved reporting functionality to `arachni_report`.
+- `Framework`
+    - `#audit_page` -- Updated to perform DOM/JS/AJAX analysis on the page and
+        feed DOM page snapshots and new paths back to the `Framework`.
+    - `#stats` renamed to `#statistics` with the return hash cleaned-up.
+    - `#opts` renamed to `#options`.
+- `Session`
+    - Updated to support login forms which depend on DOM/Javascript.
+- Added `State` -- Stores and provides access to the system's state.
+    - `Plugins` -- Stores plugin runtime states when suspending.
+    - `HTTP` -- Stores client headers and cookies.
+    - `Audit` -- Stores audit operations.
+    - `ElementFilter` -- Stores seen elements.
+    - `Framework` -- Stores the `Framework` state.
+        - `RPC` -- Stores the `RPC::Server::Framework` state.
+- Added `Data` -- Stores and provides access to the system's data.
+    - `Issues` -- Stores logged `Issue` objects.
+    - `Plugins` -- Stores plugin results.
+    - `Session` -- Stores login configuration.
+    - `Framework` -- Stores the `Framework` audit workload.
+        - `RPC` -- Stores the `RPC::Server::Framework` audit workload.
+- Added `Snapshot`
+    - Dumps and loads `State` and `Data` to and from disk to suspend and restore
+        active scans.
+- Removed the `Spider`.
+    - The Framework has grown to encompass a process providing the same
+        functionality as a result of `Browser` analysis.
+- `Element`
+    - Cleaned up initializers.
+        - Now passed a single Hash argument with configuration options.
+    - Added `GenericDOM`
+        - Provides an interface similar to traditional elements in order for
+            generic DOM elements to be logged and assigned as vectors to issues.
+    - Added `LinkTemplate`
+        - Basing its vector identification and manipulation to a user-provided
+            template to satisfy cases like ModRewrite and similar.
+        - Including `#dom` pointing to a `Auditable::DOM` object handling browser-based
+            link submissions/audits.
+    - `Form`
+        - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
+            form submissions/audits.
+    - `Link`
+        - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
+            link submissions/audits.
+    - `Cookie`
+        - Added `#dom` pointing to a `Auditable::DOM` object handling browser-based
+            cookie submissions/audits.
+    - `Capabilities::Auditable`
+        - Removed `#use_anonymous_auditor`
+        - `#auditable` => `#inputs`
+        - `#orig` => `#default_inputs`
+        - `#opts` => `#audit_options`
+        - `#audit` - Callback now get passed the HTTP response and element mutation
+            instead of response, audit options and mutation -- options can now be
+            accessed via the element's `#audit_options` attribute.
+        - Added `DOM` -- To handle DOM submission/auditing of elements.
+        - Split into the following `Capabilities`:
+            - `Analyzable`
+                - `Timeout`
+                    - General refactoring and code cleanup.
+                    - Updated the algorithm to ensure server responsiveness before each phase.
+                    - Lowered the amount of performed requests.
+                    - No longer downloads response bodies.
+                - `RDiff` => `Differential`
+                - `Taint`
+            - `Submittable`
+            - `Inputtable`
+- `RPC`
+    - `Serializer` -- Replaced `Marshal` and `YAML` as RPC serialization providers.
+        - Delegates to `MessagePack`.
+        - Supports message compression -- applied based on message size to minimize overhead.
+    - `opts` handler renamed to `options`.
+    - `Server`
+        - `Dispatcher`
+            - `#dispatch` -- Returns `false` when the pool is empty as a signal
+                to check back later.
+            - Removed `#proc_info` method.
+            - Removed `proc` from job info data.
+            - `Handler` renamed to `Service`.
+        - `Instance`
+            - Removed `#output`.
+        - `Framework`
+            - Removed `#output`.
+            - `#progress`
+                - `:messages` now returns `Framework#status_messages` instead of
+                    output messages.
+                - Cleaned up return data.
+                - Removed `#progress_data` alias.
+- `HTTP` expanded to be a complete wrapper around Typhoeus, providing:
+    - `Headers`
+    - `Message`
+    - `Request`
+    - `Response`
+    - `Client`
+        - `#request` options:
+            - `:params` => `:parameters`
+            - `:async` => `:mode` (with values of `:async` and `:sync`)
+            - Added `:http_max_response_size`.
+    - `ProxyServer` -- Moved the proxy server out of the `Proxy` plugin and
+        updated it to work with `Arachni::HTTP` objects.
+- `Browser` -- Real browser driver providing DOM/JS/AJAX support.
+- `BrowserCluster` -- Maintains a pool of `Arachni::Browser` instances
+    and distributes the analysis workload of multiple resources.
+- `Page`
+    - Cleaned-up attributes.
+    - Attributes (`#links`, `#forms`, `#paths` etc.) are lazy-parsed on-demand.
+    - Added:
+        - `#response` -- Associated `HTTP::Response`.
+        - `#dom` -- Associated `Arachni::Page::DOM`.
+- `Page::DOM` -- Static DOM snapshot as computed by a real browser.
+- `Parser` -- Updated to **only** operate under the context of the
+    `HTTP::Response` with which it was initialized -- no longer supports parsing
+    data from external sources.
+- `Options` -- Rewritten with renamed option names and grouped relevant options together.
+- `Report` (Renamed from `AuditStore`)
+    - `#save` -- Updated to store a compressed `Marshal` dump of the instance.
+    - `.load` -- Updated to load the new `#save` format.
+- `Component::Options` -- Refactored initializers and API.
+    - `Enum` renamed to `MultipleChoice`.
+- `Reporters` (Renamed from `Reports`)
+    - Removed `metareport`.
+    - All updated to the new format.
+- Plugins
+    - Descriptions have been converted to GitHub-flavored Markdown.
+    - `resolver` -- Removed as the report now contains that information in the
+        responses associated with each issue.
+    - `proxy`
+        - Updated to use `HTTP::ProxyServer`.
+        - Added `ignore_responses` option.
+            - Forces the proxy to only extract vector information from observed
+                HTTP requests and not analyze responses.
+    - `autologin`
+        - `params` option renames to `parameters`.
+        - Changed results to include `status` (`String`) and `message` (`String`)
+            instead of `code` (`Integer`) and `msg` (`String`).
+        - Updated to abort the scan upon login failure.
+    - `content_types`
+        - Renamed `params` in logged results to `parameters`.
+    - `cookie_collector`
+        - Renamed `res` in logged results to `response`.
+    - `waf_detector`
+        - Changed results to include `status` (`Symbol`) and `message` (`String`)
+            instead of `code` (`Integer`) and `msg` (`String`).
+    - `healthmap`
+        - Changed results to use `with_issues` and `without_issues` instead of
+            `unsafe` and `safe`.
+- Path extractors
+    - Added:
+        - Extract partial paths from HTML comments (`comments`).
+        - `script` - Extract partial paths from scripts.
+- Moved all Framework components (`modules`, `plugins`, `reports`, etc.)
+    under `components/`.
+- Renamed `modules` to `checks`, also:
+    - _Audit_ checks renamed to _Active_ checks.
+    - _Recon_ checks renamed to _Passive_ checks.
+- Checks
+    - Descriptions and `remedy_guidance` have been converted to GitHub-flavored Markdown.
+    - Renamed
+        - `xpath` => `xpath_injection`
+        - `ldapi` => `ldap_injection`
+        - `sqli` => `sql_injection`
+        - `sqli_blind_rdiff` => `sql_injection_differential`
+        - `sqli_blind_timing` => `sql_injection_timing`
+        - `htaccess` => `htaccess_limit`
+    - Active
+        - New
+            - `xss_dom` -- Injects HTML code via DOM-based links, forms and cookies.
+            - `xss_dom_inputs` -- Injects HTML code via orphan text inputs with
+                associated DOM events.
+            - `xss_dom_script_context` -- Injects JavaScript code via DOM-based
+                links, forms and cookies.
+            - `no_sql_injection` -- NoSQL Injection (error-based) .
+            - `no_sql_injection_differential` -- Blind NoSQL Injection (differential analysis).
+        - `xss` -- Added support for Browser-based taint-analysis.
+        - `xss_script_context` -- Added support for Browser-based taint-analysis.
+            - Renamed from `xss_script_tag`.
+        - `unvalidated_redirect` -- Updated to also use full browser evaluation
+            in order to detect JS redirects.
+        - `os_cmd_injection` -- Added payloads for *BSD and AIX.
+    - Passive
+        - New
+            - `backup_directories` -- Backup directories.
+            - `cookie_set_for_parent_domain` -- Cookie set for parent domain.
+            - Grep
+                - `hsts` - Checks HTTPS pages for missing `Strict-Transport-Security` headers.
+        - `backup_files` -- Updated filename formats.
+        - `x_forwarded_for_access_restriction_bypass` renamed to `origin_spoof_access_restriction_bypass`.
+            - Also updated to use more origin headers.
+        - Grep
+            - `emails` - Updated to handle simple (`[at]` and `[dot]`) obfuscation.
+            - `insecure_cookies` - Only check HTTPS pages.
+
 ## 0.4.7 _(April 12, 2014)_
 
 - `Spider`
@@ -104,6 +310,10 @@
             - Check for an ASP platform instead of a Windows one.
             - Fixed `LocalJumpError`.
 - Plugins
+    - Removed
+        - `libnotify`
+        - `profiler`
+        - `rescan`
     - `autologin`
         - Changed `print_bad` to `print_error` so that errors are written to the
             error log.
@@ -442,6 +652,7 @@
   - Protocol -- Now supports both ```Marshal``` and ```YAML``` automatically.
       - ```Marshal``` by default since it's many times faster than ```YAML```.
       - ```YAML``` as an automatic fallback in order to maintain backwards compatibility and ease of integration with 3rd parties.
+          - Updated to use the Ruby-default ```Psych``` engine.
   - ```Framework```
       - Updated gathering of slave status -- once a slave is done it reports back to the master.
       - Clean-up happens automatically, clients no longer need to call ```#clean_up``` (like previously mentioned).

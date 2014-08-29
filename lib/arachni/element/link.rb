@@ -1,226 +1,188 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@gmail.com>
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
 =end
 
-require Arachni::Options.dir['lib'] + 'element/base'
+require_relative 'base'
+require_relative 'capabilities/with_node'
 
 module Arachni::Element
 
-LINK = 'link'
+# Represents an auditable link element
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+class Link < Base
+    require_relative 'link/dom'
 
-class Link < Arachni::Element::Base
-
+    include Capabilities::WithNode
+    include Capabilities::WithDOM
+    include Capabilities::Analyzable
     include Capabilities::Refreshable
 
-    #
-    # Creates a new Link element from a URL or more complex data.
-    #
-    # @param    [String]    url
-    #   {#url Owner URL} -- URL of the page which contains the link.
-    # @param    [String, Hash]    raw
-    #   If empty, the owner URL will be treated as the {#action actionable} URL
-    #   and {#auditable} inputs will be extracted from its query component.
-    #
-    #   If a {String} is passed, it will be treated as the actionable
-    #   URL and auditable inputs will be extracted from its query component.
-    #
-    #   If a `Hash` is passed, it will look for an {#action actionable} URL
-    #   `String` in the following keys:
-    #
-    #   * `'href'`
-    #   * `:href`
-    #   * `'action'`
-    #   * `:action`
-    #
-    #   and for an {#auditable} inputs `Hash` in:
-    #
-    #   * `'vars'`
-    #   * `:vars`
-    #   * `'inputs'`
-    #   * `:inputs`
-    #
-    #   these should contain inputs in `name => value` pairs.
-    #
-    #   If the `Hash` doesn't contain any of the following keys, its contents
-    #   will be used as {#auditable} inputs instead and `url` will be used as
-    #   the actionable URL.
-    #
-    #   If no inputs have been provided it will try to extract some from the
-    #   actionable URL, if empty inputs (empty `Hash`) have been provided the
-    #   URL will not be parsed and the Link will instead be configured without
-    #   any auditable inputs/vectors.
-    #
-    def initialize( url, raw = {} )
-        super( url, raw )
+    # @param    [Hash]    options
+    # @option   options [String]    :url
+    #   URL of the page which includes the link.
+    # @option   options [String]    :action
+    #   Link URL -- defaults to `:url`.
+    # @option   options [Hash]    :inputs
+    #   Query parameters as `name => value` pairs. If none have been provided
+    #   they will automatically be extracted from {#action}.
+    def initialize( options )
+        super( options )
 
-        if !@raw || @raw.empty?
-            self.action = self.url
-        elsif raw.is_a?( String )
-            self.action = @raw
-        elsif raw.is_a?( Hash )
-            keys = raw.keys
-            has_input_hash  = (keys & ['vars', :vars, 'inputs', :inputs]).any?
-            has_action_hash = (keys & ['href', :href, 'action', :action]).any?
+        self.inputs     = (self.inputs || {}).merge( options[:inputs] || {} )
+        @default_inputs = self.inputs.dup.freeze
+    end
 
-            if !has_input_hash && !has_action_hash
-                self.auditable = @raw
-            else
-                self.auditable = @raw['vars'] || @raw[:vars] || @raw['inputs'] || @raw[:inputs]
-            end
-            self.action = @raw['href'] || @raw[:href] || @raw['action'] || @raw[:action]
-        end
+    # @return   [DOM]
+    def dom
+        return @dom if @dom
+        return if !dom_data
 
-        self.auditable = self.class.parse_query_vars( self.action ) if !self.auditable || self.auditable.empty?
-
-        if @raw.is_a?( String )
-            @raw = {
-                action: self.action,
-                inputs: self.auditable
-            }
-        end
-
-        self.method = 'get'
-
-        @orig = self.auditable.dup
-        @orig.freeze
+        super
     end
 
     # @return   [Hash]
-    #   Simple representation of self in the form of `{ {#action} => {#auditable} }`.
+    #   Simple representation of self in the form of `{ {#action} => {#inputs} }`.
     def simple
-        { self.action => self.auditable }
+        { self.action => self.inputs }
     end
 
-    # @return   [String]    Unique link ID.
-    def id
-        query_vars = self.class.parse_query_vars( self.action )
-        "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.auditable ).keys.compact.sort.to_s}"
-    end
+    # @note Will {Arachni::Options.rewrite} the `url`.
+    # @note Will update the {#inputs} from the URL query.
+    #
+    # @param   (see Capabilities::Submittable#action=)
+    #
+    # @return  (see Capabilities::Submittable#action=)
+    def action=( url )
+        rewritten   = uri_parse( url ).rewrite
+        self.inputs = rewritten.query_parameters.merge( self.inputs || {} )
 
-    def id_from( type = :auditable )
-        query_vars = self.class.parse_query_vars( self.action )
-        "#{@audit_id_url}::#{self.method}::#{query_vars.merge( self.send( type ) ).keys.compact.sort.to_s}"
+        super rewritten.without_query
     end
 
     # @return   [String]
-    #   Absolute URL with a merged version of {#action} and {#auditable} as a query.
+    #   Absolute URL with a merged version of {#action} and {#inputs} as a query.
     def to_s
-        query_vars = self.class.parse_query_vars( self.action )
-        uri = uri_parse( self.action )
-        uri.query = query_vars.merge( self.auditable ).map { |k, v| "#{k}=#{v}" }.join( '&' )
+        uri = uri_parse( self.action ).dup
+        uri.query = self.inputs.
+            map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.
+            join( '&' )
         uri.to_s
     end
 
-    # @return [String]  'link'
-    def type
-        Arachni::Element::LINK
+    # @param   (see .encode_query_params)
+    # @return  (see .encode_query_params)
+    #
+    # @see .encode_query_params
+    def encode_query_params( *args )
+        self.class.encode_query_params( *args )
     end
 
-    def self.encode( str )
-        URI.encode( str )
+    # @param   (see .encode)
+    # @return  (see .encode)
+    #
+    # @see .encode
+    def encode( *args )
+        self.class.encode( *args )
     end
 
-    def self.decode( str )
-        URI.decode( str )
+    # @param   (see .decode)
+    # @return  (see .decode)
+    #
+    # @see .decode
+    def decode( *args )
+        self.class.decode( *args )
     end
 
-    #
-    # Extracts links from an HTTP response.
-    #
-    # @param   [Typhoeus::Response]    response
-    #
-    # @return   [Array<Link>]
-    #
-    def self.from_response( response )
-        url = response.effective_url
-        [new( url, parse_query_vars( url ) )] | from_document( url, response.body )
+    def coverage_id
+        dom_data ? "#{super}:#{dom_data[:inputs].keys.sort}" : super
     end
 
-    #
-    # Extracts links from a document.
-    #
-    # @param    [String]    url
-    #   URL of the document -- used for path normalization purposes.
-    # @param    [String, Nokogiri::HTML::Document]    document
-    #
-    # @return   [Array<Link>]
-    #
-    def self.from_document( url, document )
-        document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
-        base_url =  begin
-            document.search( '//base[@href]' )[0]['href']
-        rescue
-            url
+    def id
+        dom_data ? "#{super}:#{dom_data[:inputs].sort_by { |k,_| k }}" : super
+    end
+
+    def to_rpc_data
+        data = super
+        data.delete 'dom_data'
+        data
+    end
+
+    class <<self
+
+        # Extracts links from an HTTP response.
+        #
+        # @param   [Arachni::HTTP::Response]    response
+        #
+        # @return   [Array<Link>]
+        def from_response( response )
+            url = response.url
+            [new( url: url )] | from_document( url, response.body )
         end
 
-        document.search( '//a' ).map do |link|
-            c_link = {}
-            c_link['href'] = to_absolute( link['href'], base_url )
-            next if !c_link['href']
+        # Extracts links from a document.
+        #
+        # @param    [String]    url
+        #   URL of the document -- used for path normalization purposes.
+        # @param    [String, Nokogiri::HTML::Document]    document
+        #
+        # @return   [Array<Link>]
+        def from_document( url, document )
+            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            base_url =  begin
+                document.search( '//base[@href]' )[0]['href']
+            rescue
+                url
+            end
 
-            new( url, c_link['href'] )
-        end.compact
-    end
+            document.search( '//a' ).map do |link|
+                href = to_absolute( link['href'], base_url )
+                next if !href
 
-    #
-    # Extracts inputs from a URL query.
-    #
-    # @param    [String]    url
-    #
-    # @return   [Hash]
-    #
-    def self.parse_query_vars( url )
-        return {} if !url
+                if (parsed_url = Arachni::URI( href ))
+                    next if parsed_url.scope.out?
+                end
 
-        parsed = uri_parse( url )
-        return {} if !parsed
+                new(
+                    url:    url.freeze,
+                    action: href.freeze,
+                    html:   link.to_html.freeze
+                )
+            end.compact
+        end
 
-        query = parsed.query
-        return {} if !query || query.empty?
+        def encode_query_params( param )
+            encode( encode( param ), '=' )
+        end
 
-        query.to_s.split( '&' ).inject( {} ) do |h, pair|
-            name, value = pair.split( '=', 2 )
-            h[name.to_s] = value.to_s
-            h
+        def encode( *args )
+            ::URI.encode( *args )
+        end
+
+        def decode( *args )
+            ::URI.decode( *args )
         end
     end
 
-    # @see Base#action=
-    def action=( url )
-        v = super( url )
-        @audit_id_url = self.action.split( '?' ).first.to_s.split( ';' ).first
-        v
-    end
-
-    def audit_id( injection_str = '', opts = {} )
-        vars = auditable.keys.compact.sort.to_s
-
-        str = ''
-        str << "#{@auditor.fancy_name}:" if !opts[:no_auditor] && !orphan?
-
-        str << "#{@audit_id_url}:" + "#{self.type}:#{vars}"
-        str << "=#{injection_str.to_s}" if !opts[:no_injection_str]
-        str << ":timeout=#{opts[:timeout]}" if !opts[:no_timeout]
-
-        str
-    end
 
     private
+
+    def dom_data
+        return @dom_data if @dom_data
+        return if @dom_data == false
+        return if !node
+
+        @dom_data ||= (DOM.data_from_node( node ) || false)
+    end
+
     def http_request( opts, &block )
-        self.method.downcase.to_s != 'get' ?
-            http.post( self.action, opts, &block ) : http.get( self.action, opts, &block )
+        self.method != :get ?
+            http.post( self.action, opts, &block ) :
+            http.get( self.action, opts, &block )
     end
 
 end
