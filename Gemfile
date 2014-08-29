@@ -23,7 +23,5 @@ group :prof do
     gem 'stackprof'
 end
 
-gem 'arachni-rpc', path: '/home/zapotek/workspace/arachni-rpc'
-
 gemspec
 
