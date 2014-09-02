@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `HTTP::Client`
+    - Debugging messages now include the `HTTP::Request#performer`.
 - `UI::CLI::Utilities`
     - `#print_issues` -- Updated to include all inputs of the given vector in
         the message, if the issue is passive.
