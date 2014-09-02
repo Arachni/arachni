@@ -308,6 +308,7 @@ class Browser
 
             @javascript.wait_till_ready
             wait_for_timers
+
             wait_for_pending_requests
         end
 
@@ -792,10 +793,22 @@ class Browser
     # @return   [Array<Cookie>]
     #   Browser cookies.
     def cookies
+        js_cookies = begin
+            # Watir doesn't tell us if cookies are HttpOnly, so we need to figure
+            # this out ourselves, by checking for JS visibility.
+            javascript.run( 'return document.cookie' )
+        # We may not have a page.
+        rescue Selenium::WebDriver::Error::UnknownError
+            ''
+        end
+
         watir.cookies.to_a.map do |c|
-            c[:path]  = '/' if c[:path] == '//'
-            c[:name]  = Cookie.decode( c[:name].to_s )
-            c[:value] = Cookie.decode( c[:value].to_s )
+            original_name = c[:name].to_s
+
+            c[:path]     = '/' if c[:path] == '//'
+            c[:name]     = Cookie.decode( c[:name].to_s )
+            c[:value]    = Cookie.decode( c[:value].to_s )
+            c[:httponly] = !js_cookies.include?( original_name )
 
             Cookie.new c.merge( url: @last_url )
         end
@@ -1065,7 +1078,12 @@ class Browser
             set_cookies[cookie.name] = cookie
         end
         cookies.each do |name, value|
-            set_cookies[name] = Cookie.new( url: url, inputs: { name => value } )
+            if set_cookies[name]
+                set_cookies[name] = set_cookies[name].dup
+                set_cookies[name].update( name => value )
+            else
+                set_cookies[name] = Cookie.new( url: url, inputs: { name => value } )
+            end
         end
 
         url = "#{url}/set-cookies-#{request_token}"

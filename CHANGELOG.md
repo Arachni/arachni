@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Browser`
+    - Fixed issue causing the removal of cookie HttpOnly flags.
 - `HTTP::Client`
     - Debugging messages now include the `HTTP::Request#performer`.
 - `UI::CLI::Utilities`
