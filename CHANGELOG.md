@@ -1,5 +1,7 @@
 # ChangeLog
 
+## _Under development_
+
 ## 1.0 _(August 29, 2014)_
 
 - Executables:
