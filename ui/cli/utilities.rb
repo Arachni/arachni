@@ -29,9 +29,12 @@ module Utilities
         issue_cnt = issues.count
         issues.each.with_index do |issue, i|
             meth  = input = ''
+
             if issue.active?
                 input = " input `#{issue.vector.affected_input_name}`"
                 meth  = " using #{issue.vector.method.to_s.upcase}"
+            elsif issue.vector.respond_to?( :inputs )
+                input = " with inputs `#{issue.vector.inputs.keys.join(', ')}`"
             end
 
             cnt = "#{i + 1} |".rjust( issue_cnt.to_s.size + 2 )

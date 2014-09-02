@@ -2,6 +2,18 @@
 
 ## _Under development_
 
+- `UI::CLI::Utilities`
+    - `#print_issues` -- Updated to include all inputs of the given vector in
+        the message, if the issue is passive.
+- `Check::Auditor`
+    - `#log` -- Updated to include all inputs of the given vector in the success
+        message, if the issue is passive.
+- Reporters
+    - `stdout`
+        - Updated to print out information about all available vector inputs.
+    - `html`
+        - Updated to include information about all available vector inputs in
+            issue title for passive issues.
 - `Hash` -- Renamed added methods to avoid clashes with `ActiveSupport`.
     - `stringify_keys` => `my_stringify_keys`
     - `symbolize_keys` => `my_symbolize_keys`

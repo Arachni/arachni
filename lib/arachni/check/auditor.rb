@@ -271,6 +271,8 @@ module Auditor
 
         if active
             msg << " input '#{vector.affected_input_name}'"
+        elsif vector.respond_to?( :inputs )
+            msg << " with inputs '#{vector.inputs.keys.join(', ')}'"
         end
 
         print_ok "#{msg} with action #{vector.action}"
