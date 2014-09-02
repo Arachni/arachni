@@ -44,7 +44,7 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
 
         @cookies << {
             'time'     => Time.now.to_s,
-            'response' => response_hash.stringify_keys,
+            'response' => response_hash.my_stringify_keys,
             'cookies'  => cookies
         }
     end

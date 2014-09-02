@@ -462,13 +462,13 @@ class Issue
                                 end)
                             end
 
-                            value.symbolize_keys(false)
+                            value.my_symbolize_keys(false)
 
                         when 'variations'
                             value.map { |i| from_rpc_data i }
 
                         when 'remarks'
-                            value.symbolize_keys
+                            value.my_symbolize_keys
 
                         when 'platform_name', 'platform_type'
                             next if !value

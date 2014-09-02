@@ -553,7 +553,7 @@ class Browser
         event   = event.to_s.downcase.sub( /^on/, '' ).to_sym
         locator = nil
 
-        options[:inputs] = options[:inputs].stringify if options[:inputs]
+        options[:inputs] = options[:inputs].my_stringify if options[:inputs]
 
         if element.is_a? ElementLocator
             locator = element

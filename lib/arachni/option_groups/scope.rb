@@ -219,7 +219,7 @@ class Scope < Arachni::OptionGroup
         d = super
 
         %w(redundant_path_patterns url_rewrites).each do |k|
-            d[k] = d[k].stringify
+            d[k] = d[k].my_stringify
         end
 
         %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|

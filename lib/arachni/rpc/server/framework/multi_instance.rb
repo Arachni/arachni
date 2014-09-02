@@ -86,7 +86,7 @@ module MultiInstance
     # @return    [Hash]
     #   Progress data.
     def progress( opts = {}, &block )
-        opts = opts.symbolize_keys
+        opts = opts.my_symbolize_keys
 
         include_statistics = opts[:statistics].nil? ? true : opts[:statistics]
         include_slaves     = opts[:slaves].nil?     ? true : opts[:slaves]
@@ -153,7 +153,7 @@ module MultiInstance
             slave_data.compact!
 
             slave_data.each do |slave|
-                slave = slave.symbolize_keys
+                slave = slave.my_symbolize_keys
 
                 if include_errors
                     data[:errors] |= slave[:errors]

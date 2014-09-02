@@ -58,7 +58,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         page_buffer = []
         print_status "Imported #{feed.size} vectors."
         feed.each do |obj|
-            vector = (obj.respond_to?( :value ) ? obj.value : obj).symbolize_keys( false )
+            vector = (obj.respond_to?( :value ) ? obj.value : obj).my_symbolize_keys( false )
 
             exception_jail false do
                 if page?( vector )

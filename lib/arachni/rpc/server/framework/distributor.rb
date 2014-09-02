@@ -27,7 +27,7 @@ module Distributor
     #   The hash must hold the `'url'` and the `'token'`. In subsequent calls
     #   the `'token'` can be omitted.
     def connect_to_instance( instance )
-        instance = instance.symbolize_keys
+        instance = instance.my_symbolize_keys
         @instance_connections ||= {}
 
         if @instance_connections[instance[:url]]

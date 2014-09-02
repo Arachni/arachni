@@ -117,7 +117,7 @@ class Arachni::Component::Options::Base
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        to_h.merge( class: self.class.to_s ).stringify_keys
+        to_h.merge( class: self.class.to_s ).my_stringify_keys
     end
 
     # @param    [Hash]  data    {#to_rpc_data}
@@ -127,7 +127,7 @@ class Arachni::Component::Options::Base
         data.delete('class')
         name = data.delete('name')
 
-        new name, data.symbolize_keys(false)
+        new name, data.my_symbolize_keys(false)
     end
 
     def ==( option )

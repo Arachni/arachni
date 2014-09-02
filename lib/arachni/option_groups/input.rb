@@ -147,7 +147,7 @@ class Input < Arachni::OptionGroup
         h = super
         [:values, :default_values].each do |k|
             # We can't have blocks in there...
-            h[k] = h[k].select{ |_, v| v.is_a? String }.stringify
+            h[k] = h[k].select{ |_, v| v.is_a? String }.my_stringify
         end
         h
     end

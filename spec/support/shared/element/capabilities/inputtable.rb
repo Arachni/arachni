@@ -15,7 +15,7 @@ shared_examples_for 'inputtable' do |options = {}|
         end
     end
 
-    let(:sym_key_inputs) { inputs.symbolize_keys }
+    let(:sym_key_inputs) { inputs.my_symbolize_keys }
 
     let(:keys) do
         subject.inputs.keys
@@ -140,7 +140,7 @@ shared_examples_for 'inputtable' do |options = {}|
                 context 'when it has the given inputs (names and values)' do
                     it 'returns true' do
                         subject.has_inputs?( subject.inputs ).should be_true
-                        subject.has_inputs?( subject.inputs.symbolize_keys ).should be_true
+                        subject.has_inputs?( subject.inputs.my_symbolize_keys ).should be_true
                     end
                 end
                 context 'when it does not have the given inputs' do

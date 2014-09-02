@@ -221,7 +221,7 @@ class List
             when String
                 platforms.to_sym
             when Hash
-                platforms.symbolize_keys
+                platforms.my_symbolize_keys
             when Enumerable, Array
                 platforms.to_a.flatten.map( &:to_sym ).uniq.sort
         end

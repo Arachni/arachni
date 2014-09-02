@@ -176,7 +176,7 @@ class Response < Message
     def to_rpc_data
         data = to_h
         data[:request] = request.to_rpc_data
-        data.stringify_keys(false)
+        data.my_stringify_keys(false)
     end
 
     # @param    [Hash]  data    {#to_rpc_data}

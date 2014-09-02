@@ -172,7 +172,7 @@ class Manager < Hash
         return {} if !info.include?( :options ) || info[:options].empty?
 
         user_opts ||= {}
-        user_opts   = user_opts.symbolize_keys(false)
+        user_opts   = user_opts.my_symbolize_keys(false)
 
         options     = {}
         errors      = {}
@@ -209,7 +209,7 @@ class Manager < Hash
                  format_error_string( component_name, errors )
         end
 
-        options.symbolize_keys( false )
+        options.my_symbolize_keys( false )
     end
 
     # It parses the component array making sure that its structure is valid

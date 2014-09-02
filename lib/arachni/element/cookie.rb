@@ -321,7 +321,7 @@ class Cookie < Base
                     c['expires'] = nil
                 end
                 c['secure'] = (c['secure'] == 'TRUE') ? true : false
-                new( { url: url }.merge( c.symbolize_keys ) )
+                new( { url: url }.merge( c.my_symbolize_keys ) )
             end.flatten.compact
         end
 
@@ -428,7 +428,7 @@ class Cookie < Base
                 cookie_hash['name']  = decode( cookie.name )
                 cookie_hash['value'] = decode( cookie.value )
 
-                new( { url: url }.merge( cookie_hash.symbolize_keys ) )
+                new( { url: url }.merge( cookie_hash.my_symbolize_keys ) )
             end.flatten.compact
         end
         alias :parse_set_cookie :from_set_cookie

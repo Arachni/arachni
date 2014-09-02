@@ -20,7 +20,7 @@ class Base
     attr_accessor :trace
 
     def initialize( options = {} )
-        options.symbolize_keys(false).each do |k, v|
+        options.my_symbolize_keys(false).each do |k, v|
             send( "#{k}=", v )
         end
 

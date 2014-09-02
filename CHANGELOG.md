@@ -2,6 +2,11 @@
 
 ## _Under development_
 
+- `Hash` -- Renamed added methods to avoid clashes with `ActiveSupport`.
+    - `stringify_keys` => `my_stringify_keys`
+    - `symbolize_keys` => `my_symbolize_keys`
+    - `stringify` => `my_stringify`
+
 ## 1.0 _(August 29, 2014)_
 
 - Executables:

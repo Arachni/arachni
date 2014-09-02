@@ -19,10 +19,11 @@ class Hash
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to strings.
-    def stringify_keys( recursively = true )
+    def my_stringify_keys( recursively = true )
         stringified = {}
         each do |k, v|
-            stringified[k.to_s] = (recursively && v.is_a?( Hash ) ? v.stringify_keys : v)
+            stringified[k.to_s] = (recursively && v.is_a?( Hash ) ?
+                v.my_stringify_keys : v)
         end
         stringified
     end
@@ -34,20 +35,20 @@ class Hash
     #
     # @return [Hash]
     #   Hash with +self+'s keys recursively converted to symbols.
-    def symbolize_keys( recursively = true )
+    def my_symbolize_keys( recursively = true )
         symbolize = {}
         each do |k, v|
             k = k.respond_to?(:to_sym) ? k.to_sym : k
 
             symbolize[k] = (recursively && v.is_a?( Hash ) ?
-                v.symbolize_keys : v)
+                v.my_symbolize_keys : v)
         end
         symbolize
     end
 
     # @return [Hash]
     #   Hash with +self+'s keys and values recursively converted to strings.
-    def stringify
+    def my_stringify
         apply_recursively(:to_s)
     end
 
@@ -79,7 +80,7 @@ class Hash
     # @return   [Hash]
     #   Self with the keys and values converted to lower-case strings.
     def downcase
-        stringify_keys.inject({}) do |h, (k, v)|
+        my_stringify_keys.inject({}) do |h, (k, v)|
             k = k.downcase if k.is_a?( String )
             v = v.downcase if v.is_a?( String )
             h[k] = v
