@@ -10,16 +10,18 @@
 - `Check::Auditor`
     - `#log` -- Updated to include all inputs of the given vector in the success
         message, if the issue is passive.
+- `Element::Cookie`
+    - `.encode` -- Encode `'` and `"`.
+- `Hash` -- Renamed added methods to avoid clashes with `ActiveSupport`.
+    - `stringify_keys` => `my_stringify_keys`
+    - `symbolize_keys` => `my_symbolize_keys`
+    - `stringify` => `my_stringify`
 - Reporters
     - `stdout`
         - Updated to print out information about all available vector inputs.
     - `html`
         - Updated to include information about all available vector inputs in
             issue title for passive issues.
-- `Hash` -- Renamed added methods to avoid clashes with `ActiveSupport`.
-    - `stringify_keys` => `my_stringify_keys`
-    - `symbolize_keys` => `my_symbolize_keys`
-    - `stringify` => `my_stringify`
 
 ## 1.0 _(August 29, 2014)_
 
