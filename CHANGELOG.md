@@ -24,6 +24,12 @@
     - `html`
         - Updated to include information about all available vector inputs in
             issue title for passive issues.
+- Checks
+    - Active
+        - `code_injection_php_input_wrapper` -- Fixed `nil` error when
+            manipulating mutations.
+        - `file_inclusion` -- Fixed `nil` error when manipulating mutations.
+        - `path_traversal` -- Fixed `nil` error when manipulating mutations.
 
 ## 1.0 _(August 29, 2014)_
 
