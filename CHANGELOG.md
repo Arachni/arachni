@@ -4,6 +4,8 @@
 
 - `Browser`
     - Fixed issue causing the removal of cookie HttpOnly flags.
+- `Parser`
+    - `#link_vars` -- Return empty `Hash` when dealing with unparsable URL.
 - `HTTP::Client`
     - Debugging messages now include the `HTTP::Request#performer`.
 - `UI::CLI::Utilities`
