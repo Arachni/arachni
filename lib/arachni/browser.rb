@@ -957,7 +957,8 @@ class Browser
                         self.class.executable,
                         "--webdriver=#{port}",
                         "--proxy=http://#{@proxy.address}/",
-                        '--ignore-ssl-errors=true'
+                        '--ignore-ssl-errors=true',
+                        "--debug=#{!!debug?}"
                     )
                     @process.detach = true
 
