@@ -35,6 +35,8 @@
             manipulating mutations.
         - `file_inclusion` -- Fixed `nil` error when manipulating mutations.
         - `path_traversal` -- Fixed `nil` error when manipulating mutations.
+    - Passive
+        - `cookie_set_for_parent_domain` -- Only check `HTTP::Response` cookies.
 
 ## 1.0 _(August 29, 2014)_
 
