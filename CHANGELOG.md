@@ -8,6 +8,9 @@
     - `#link_vars` -- Return empty `Hash` when dealing with unparsable URL.
 - `HTTP::Client`
     - Debugging messages now include the `HTTP::Request#performer`.
+- `HTTP::Request`
+    - `#to_typhoeus` -- Converted proxy type to `Symbol` to prevent the option
+        from being ignored.
 - `UI::CLI::Utilities`
     - `#print_issues` -- Updated to include all inputs of the given vector in
         the message, if the issue is passive.
