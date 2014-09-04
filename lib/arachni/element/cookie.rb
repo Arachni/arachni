@@ -77,7 +77,7 @@ class Cookie < Base
             @data[:expires] = Time.parse( @data[:expires] ) rescue nil
         end
 
-        @data[:domain] ||= ".#{parsed_uri.host}"
+        @data[:domain] ||= parsed_uri.host
 
         @default_inputs = self.inputs.dup.freeze
     end
