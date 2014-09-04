@@ -31,7 +31,7 @@ resolve its dependencies:
     git clone git://github.com/Arachni/arachni.git
     cd arachni
     git checkout experimental
-    bundle install # to resolve dev dependencies
+    bundle install --without prof # to resolve dev dependencies
 
 Then you can run Arachni using the the executables under `bin/`.<br/>
 If you get an error when trying to run Arachni, use `bundle exec` like so:
