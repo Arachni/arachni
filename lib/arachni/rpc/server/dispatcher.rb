@@ -284,6 +284,14 @@ class Dispatcher
 
     # Starts the dispatcher's server
     def run
+        Reactor.global.on_error do |_, e|
+            print_error "Arachni::Reactor: #{e}"
+
+            e.backtrace.each do |l|
+                print_error "Arachni::Reactor: #{l}"
+            end
+        end
+
         print_status 'Ready'
         @server.start
     rescue => e

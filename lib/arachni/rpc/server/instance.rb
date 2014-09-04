@@ -806,6 +806,15 @@ class Instance
 
     # Starts  RPC service.
     def run
+        Reactor.global.next_tick{raise}
+        Reactor.global.on_error do |_, e|
+            print_error "Arachni::Reactor: #{e}"
+
+            e.backtrace.each do |l|
+                print_error "Arachni::Reactor: #{l}"
+            end
+        end
+
         print_status 'Starting the server...'
         @server.start
     end
