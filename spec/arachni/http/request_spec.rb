@@ -450,7 +450,7 @@ describe Arachni::HTTP::Request do
                     described_class.new(
                         url:   url,
                         proxy: 'http://stuff/',
-                        proxy_type: 'http'
+                        proxy_type: :http
                     )
                 end
 
@@ -486,7 +486,7 @@ describe Arachni::HTTP::Request do
             context "and #{Arachni::OptionGroups::HTTP}#proxy_type" do
                 it 'forwards it' do
                     Arachni::Options.http.proxy_type = 'http'
-                    subject.options[:proxytype].should == 'http'
+                    subject.options[:proxytype].should == :http
                 end
             end
         end
