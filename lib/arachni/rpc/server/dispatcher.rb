@@ -76,14 +76,20 @@ class Dispatcher
         @consumed_pids = []
         @pool          = Reactor.global.create_queue
 
+        print_status "Populating the pool with #{@options.dispatcher.pool_size}  Instances."
         if @options.dispatcher.pool_size > 0
             @options.dispatcher.pool_size.times { add_instance_to_pool( false ) }
         end
 
+        print_status 'Waiting for Instances to come on-line.'
+
         # Check up on the pool and start the server once it has been filled.
         Reactor.global.at_interval( 0.1 ) do |task|
+            print_debug "Instances: #{@pool.size}/#{@options.dispatcher.pool_size}"
             next if @options.dispatcher.pool_size != @pool.size
             task.done
+
+            print_status 'Instances are on-line.'
 
             _services.each do |name, service|
                 @server.add_handler( name, service.new( @options, self ) )
@@ -334,17 +340,15 @@ class Dispatcher
         print_status "Instance added to pool -- PID: #{pid} - " +
             "Port: #{port} - Owner: #{owner}"
 
-        url = "#{@options.dispatcher.external_address}:#{port}"
-
         # Wait until the Instance has booted before adding it to the pool.
-        Client::Instance.when_ready( url, token ) do
+        Client::Instance.when_ready( "#{@options.rpc.server_address}:#{port}", token ) do
             @operation_in_progress = false
 
             @pool << {
                 'token'     => token,
                 'pid'       => pid,
                 'port'      => port,
-                'url'       => url,
+                'url'       => "#{@options.dispatcher.external_address}:#{port}",
                 'owner'     => owner,
                 'birthdate' => Time.now.to_s
             }
