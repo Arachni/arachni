@@ -455,7 +455,7 @@ describe Arachni::HTTP::Request do
                 end
 
                 it 'forwards it' do
-                    subject.options[:proxytype].should == 'http'
+                    subject.options[:proxytype].should == :http
                 end
             end
         end
