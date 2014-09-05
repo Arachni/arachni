@@ -23,6 +23,8 @@
     - `stringify_keys` => `my_stringify_keys`
     - `symbolize_keys` => `my_symbolize_keys`
     - `stringify` => `my_stringify`
+- Plugins
+    - `proxy` -- Show control panel URL in output.
 - Reporters
     - `stdout`
         - Updated to print out information about all available vector inputs.
