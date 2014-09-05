@@ -198,7 +198,15 @@ class Framework
 
         # Initialization may take a while so since we lazy load this make sure
         # that only one thread gets to this code at a time.
-        synchronize { @browser_cluster ||= BrowserCluster.new }
+        synchronize do
+            if !@browser_cluster
+                state.set_status_message :browser_cluster_startup
+            end
+
+            @browser_cluster ||= BrowserCluster.new
+            state.clear_status_messages
+            @browser_cluster
+        end
     end
 
     # Starts the scan.
