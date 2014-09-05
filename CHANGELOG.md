@@ -4,7 +4,7 @@
 
 - `RPC::Server::Dispatcher`
     - Check for Instance status via the bind address, not the external one.
-    - Added more status and debuggig messages
+    - Added more status and debugging messages
 - `Browser`
     - Fixed issue causing the removal of cookie HttpOnly flags.
 - `Parser`
