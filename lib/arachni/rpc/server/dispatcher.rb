@@ -362,7 +362,8 @@ class Dispatcher
     end
 
     def connect_to_peer( url )
-        Client::Dispatcher.new( @options, url )
+        @rpc_clients ||= {}
+        @rpc_clients[url] ||= Client::Dispatcher.new( @options, url )
     end
 
     def struct_to_h( struct )

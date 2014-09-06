@@ -5,6 +5,7 @@
 - `RPC::Server::Dispatcher`
     - Check for Instance status via the bind address, not the external one.
     - Added more status and debugging messages
+    - Fixed RPC connection leak when in Grid configuration.
 - `Browser`
     - Fixed issue causing the removal of cookie HttpOnly flags.
 - `Parser`

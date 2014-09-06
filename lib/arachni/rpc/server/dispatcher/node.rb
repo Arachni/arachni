@@ -229,7 +229,8 @@ class Server::Dispatcher::Node
     end
 
     def connect_to_peer( url )
-        Client::Dispatcher.new( @options, url ).node
+        @rpc_clients ||= {}
+        @rpc_clients[url] ||= Client::Dispatcher.new( @options, url ).node
     end
 
 end
