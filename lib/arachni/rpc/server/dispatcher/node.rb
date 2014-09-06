@@ -52,12 +52,18 @@ class Server::Dispatcher::Node
         @nodes_info_cache = []
 
         if (neighbour = @options.dispatcher.neighbour)
-            # add neighbour and announce him to everyone
-            add_neighbour( neighbour, true )
-
-            # grab the neighbour's neighbours
+            # Grab the neighbour's neighbours.
             connect_to_peer( neighbour ).neighbours do |urls|
-                fail "Neighbour '#{neighbour}' is unreachable." if urls.rpc_exception?
+                if urls.rpc_exception?
+                    add_dead_neighbour( neighbour )
+                    print_info "Neighbour seems dead: #{neighbour}"
+                    add_dead_neighbour( neighbour )
+                    next
+                end
+
+                # Add neighbour and announce it to everyone.
+                add_neighbour( neighbour, true )
+
                 urls.each { |url| @neighbours << url if url != @url }
             end
         end
