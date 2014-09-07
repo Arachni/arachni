@@ -48,7 +48,7 @@ class Base
     attr_reader   :initialization_options
 
     def initialize( options )
-        options = options.symbolize_keys( false )
+        options = options.my_symbolize_keys( false )
 
         if !(options[:url] || options[:action])
             fail 'Needs :url or :action option.'
@@ -167,7 +167,7 @@ class Base
 
                         when 'initialization_options'
                             value.is_a?( Hash ) ?
-                                value.symbolize_keys( false ) : value
+                                value.my_symbolize_keys( false ) : value
 
                         when 'method'
                             value.to_sym

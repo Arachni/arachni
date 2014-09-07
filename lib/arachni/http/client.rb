@@ -719,6 +719,7 @@ class Client
             print_debug_level_3 '------------'
             print_debug_level_3 'Queued request.'
             print_debug_level_3 "ID#: #{request.id}"
+            print_debug_level_3 "Performer: #{request.performer}"
             print_debug_level_3 "URL: #{request.url}"
             print_debug_level_3 "Method: #{request.method}"
             print_debug_level_3 "Params: #{request.parameters}"
@@ -747,6 +748,7 @@ class Client
                 if debug_level_3?
                     print_debug_level_3 '------------'
                     print_debug_level_3 "Got response for request ID#: #{response.request.id}"
+                    print_debug_level_3 "Performer: #{response.request.performer}"
                     print_debug_level_3 "Status: #{response.code}"
                     print_debug_level_3 "Code: #{response.return_code}"
                     print_debug_level_3 "Message: #{response.return_message}"

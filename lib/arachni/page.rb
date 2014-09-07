@@ -478,7 +478,7 @@ class Page
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data        = to_initialization_options.stringify_keys(false)
+        data        = to_initialization_options.my_stringify_keys(false)
         data['dom'] = dom.to_rpc_data
         data['element_audit_whitelist'] = element_audit_whitelist.to_a
         data['response'] = data['response'].to_rpc_data

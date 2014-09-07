@@ -532,7 +532,7 @@ class Instance
         end
 
         # Normalize this sucker to have symbols as keys.
-        opts = opts.symbolize_keys( false )
+        opts = opts.my_symbolize_keys( false )
 
         slaves      = opts.delete(:slaves) || []
         spawn_count = opts[:spawns]
@@ -750,7 +750,7 @@ class Instance
                                 parsed[q.to_sym] = nil
 
                             when Hash
-                                parsed.merge!( q.symbolize_keys )
+                                parsed.merge!( q.my_symbolize_keys )
                         end
                     end
 
@@ -758,7 +758,7 @@ class Instance
                     parsed[w.to_sym] = nil
 
                 when Hash
-                    parsed.merge!( w.symbolize_keys )
+                    parsed.merge!( w.my_symbolize_keys )
             end
         end
 
@@ -806,6 +806,14 @@ class Instance
 
     # Starts  RPC service.
     def run
+        Reactor.global.on_error do |_, e|
+            print_error "Arachni::Reactor: #{e}"
+
+            e.backtrace.each do |l|
+                print_error "Arachni::Reactor: #{l}"
+            end
+        end
+
         print_status 'Starting the server...'
         @server.start
     end

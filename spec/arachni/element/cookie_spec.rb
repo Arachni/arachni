@@ -199,7 +199,7 @@ describe Arachni::Element::Cookie do
 
     describe '#encode' do
         it 'encodes the string in a way that makes is suitable to be included in a cookie header' do
-            described_class.encode( 'some stuff ;%=' ).should == 'some+stuff+%3B%25='
+            described_class.encode( 'some stuff \'";%=' ).should == 'some+stuff+%27%22%3B%25='
         end
     end
 
@@ -214,7 +214,7 @@ describe Arachni::Element::Cookie do
             )
 
             c.to_set_cookie.should ==
-                'blah%3Dha%25=some+stuff+%3B; Path=/; Domain=.127.0.0.2; Secure; HttpOnly'
+                'blah%3Dha%25=some+stuff+%3B; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
             described_class.from_set_cookie( url, c.to_set_cookie ).first.should == c
 
             c = described_class.new(
@@ -226,7 +226,7 @@ describe Arachni::Element::Cookie do
 
             described_class.from_set_cookie( url, c.to_set_cookie ).first.should == c
             c.to_set_cookie.should ==
-                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=.127.0.0.2'
+                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=127.0.0.2'
         end
     end
 

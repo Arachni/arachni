@@ -6,9 +6,9 @@
     web site for more information on licensing and terms of use.
 =end
 
-# @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
+# @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution
 class Arachni::Checks::CodeInjectionPhpInputWrapper < Arachni::Check::Base
 
     def self.options
@@ -20,6 +20,11 @@ class Arachni::Checks::CodeInjectionPhpInputWrapper < Arachni::Check::Base
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
             each_mutation: proc do |mutation|
+                next if !mutation.affected_input_value ||
+                    (mutation.is_a?( Arachni::Form ) &&
+                        (mutation.mutation_with_original_values? ||
+                            mutation.mutation_with_sample_values?))
+
                 # Don't bother if the current element type can't carry nulls.
                 next if !mutation.valid_input_value_data?( "\0" )
 
@@ -51,7 +56,7 @@ to try and load it.
 },
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1',
+            version:     '0.1.1',
             platforms:   [:php],
 
             issue:       {

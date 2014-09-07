@@ -91,7 +91,7 @@ class ElementLocator
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        to_h.stringify_keys
+        to_h.my_stringify_keys
     end
 
     # @param    [Hash]  data    {#to_rpc_data}

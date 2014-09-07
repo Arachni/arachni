@@ -109,6 +109,10 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
                 print_info "Input name: #{issue.affected_input_name}"
             end
 
+            if issue.vector.respond_to? :inputs
+                print_info "All inputs: #{issue.vector.inputs.keys.join(', ')}"
+            end
+
             print_line
             print_info "Tags: #{issue.tags.join(', ')}" if issue.tags.is_a?( Array )
             print_line

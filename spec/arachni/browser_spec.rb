@@ -1797,6 +1797,20 @@ describe Arachni::Browser do
 
                 transition.options[:cookies].should == cookie
             end
+
+        context 'when auditing existing cookies' do
+            it 'preserves the HttpOnly attribute' do
+                @browser.goto( @url )
+                @browser.cookies.size.should == 1
+
+                cookies = { @browser.cookies.first.name => 'updated' }
+                @browser.goto( @url, cookies: cookies )
+
+                @browser.cookies.first.value == 'updated'
+                @browser.cookies.first.should be_http_only
+            end
+        end
+
         end
 
         describe :take_snapshot do
@@ -2268,6 +2282,17 @@ describe Arachni::Browser do
             cookie.should be_kind_of Arachni::Cookie
             cookie.name.should  == 'This name should be updated; and properly escaped'
             cookie.value.should == 'This value should be updated; and properly escaped'
+        end
+
+        it 'preserves the HttpOnly attribute' do
+            @browser.load @url
+            @browser.cookies.first.should be_http_only
+        end
+
+        context 'when no page is available' do
+            it 'returns an empty Array' do
+                @browser.cookies.should be_empty
+            end
         end
     end
 

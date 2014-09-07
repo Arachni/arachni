@@ -10,6 +10,11 @@
                             <% if issue.active? %>
                                 input
                                 <code><%= issue.affected_input_name %></code>
+                            <% elsif issue.vector.respond_to? :inputs %>
+                                with inputs
+                                <% issue.vector.inputs.keys.map do |iname| %>
+                                    <code><%= iname %></code>
+                                <% end.join( ', ') %>
                             <% end %>
 
                             <% if issue.variations.first.request %>

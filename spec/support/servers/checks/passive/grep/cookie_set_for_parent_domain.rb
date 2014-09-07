@@ -4,7 +4,7 @@ require 'sinatra/contrib'
 get '/' do
     response.set_cookie( 'cookie', {
         value:  'value',
-        domain: nil
+        domain: '.localhost'
     })
     response.set_cookie( 'cookie2', {
         value:  'value2',

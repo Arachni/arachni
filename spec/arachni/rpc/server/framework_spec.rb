@@ -226,7 +226,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 data.keys.sort.should == @progress_keys
 
                 data[:statistics].keys.should == instance.framework.statistics.keys
-                data[:messages].should be_any
+                data[:messages].should be_empty
                 data[:status].should be_true
                 data[:busy].nil?.should be_false
                 data[:issues].should be_any

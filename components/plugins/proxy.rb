@@ -16,7 +16,7 @@ require 'ostruct'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.3
+# @version 0.3.1
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     BASEDIR  = "#{File.dirname( __FILE__ )}/proxy/"
@@ -58,7 +58,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def run
         print_status "Listening on: http://#{@server[:BindAddress]}:#{@server[:Port]}"
 
-        print_status "Shutdown URL: #{url_for( :shutdown )}"
+        print_info "Control panel URL: #{url_for( :panel )}"
+        print_info "Shutdown URL:      #{url_for( :shutdown )}"
         print_info 'The scan will resume once you visit the shutdown URL.'
 
         print_info
@@ -463,7 +464,7 @@ a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3',
+            version:     '0.3.1',
             options:     [
                 Options::Port.new( :port,
                     description: 'Port to bind to.',

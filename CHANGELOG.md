@@ -1,5 +1,52 @@
 # ChangeLog
 
+## 1.0.1 _(September 7, 2014)_
+
+- `RPC::Server::Dispatcher`
+    - Check for Instance status via the bind address, not the external one.
+    - Added more status and debugging messages
+    - Fixed RPC connection leak when in Grid configuration.
+    - `Node`
+        - Don't raise error if the initial neighbour is unreachable, just add
+            it to the dead list as usual.
+- `Browser`
+    - Fixed issue causing the removal of cookie HttpOnly flags.
+- `Parser`
+    - `#link_vars` -- Return empty `Hash` when dealing with unparsable URL.
+- `HTTP::Client`
+    - Debugging messages now include the `HTTP::Request#performer`.
+- `HTTP::Request`
+    - `#to_typhoeus` -- Converted proxy type to `Symbol` to prevent the option
+        from being ignored.
+- `UI::CLI::Utilities`
+    - `#print_issues` -- Updated to include all inputs of the given vector in
+        the message, if the issue is passive.
+- `Check::Auditor`
+    - `#log` -- Updated to include all inputs of the given vector in the success
+        message, if the issue is passive.
+- `Element::Cookie`
+    - `.encode` -- Encode `'` and `"`.
+- `Hash` -- Renamed added methods to avoid clashes with `ActiveSupport`.
+    - `stringify_keys` => `my_stringify_keys`
+    - `symbolize_keys` => `my_symbolize_keys`
+    - `stringify` => `my_stringify`
+- Plugins
+    - `proxy` -- Show control panel URL in output.
+- Reporters
+    - `stdout`
+        - Updated to print out information about all available vector inputs.
+    - `html`
+        - Updated to include information about all available vector inputs in
+            issue title for passive issues.
+- Checks
+    - Active
+        - `code_injection_php_input_wrapper` -- Fixed `nil` error when
+            manipulating mutations.
+        - `file_inclusion` -- Fixed `nil` error when manipulating mutations.
+        - `path_traversal` -- Fixed `nil` error when manipulating mutations.
+    - Passive
+        - `cookie_set_for_parent_domain` -- Only check `HTTP::Response` cookies.
+
 ## 1.0 _(August 29, 2014)_
 
 - Executables:

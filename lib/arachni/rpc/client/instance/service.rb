@@ -26,9 +26,9 @@ class Service < Proxy
     %w(list_reporters list_plugins).each do |m|
         translate m do |data|
             data.map do |c|
-                c = c.symbolize_keys
+                c = c.my_symbolize_keys
                 c[:options] = c[:options].map do |o|
-                    o = o.symbolize_keys
+                    o = o.my_symbolize_keys
                     o[:name] = o[:name].to_sym
                     o[:type] = o[:type].to_sym
                     o
@@ -39,18 +39,18 @@ class Service < Proxy
     end
 
     translate :list_platforms do |platforms|
-        platforms.inject({}) { |h, (k, v)| h[k] = v.symbolize_keys; h }
+        platforms.inject({}) { |h, (k, v)| h[k] = v.my_symbolize_keys; h }
     end
 
     translate :progress do |data|
         sitemap = data.delete('sitemap')
         issues  = data.delete('issues')
 
-        data = data.symbolize_keys
+        data = data.my_symbolize_keys
         data[:status] = data[:status].to_sym
 
         if data[:instances]
-            data[:instances] = data[:instances].map(&:symbolize_keys)
+            data[:instances] = data[:instances].map(&:my_symbolize_keys)
         end
 
         if issues
@@ -68,7 +68,7 @@ class Service < Proxy
         sitemap = data.delete('sitemap')
         issues  = data.delete('issues')
 
-        data = data.symbolize_keys
+        data = data.my_symbolize_keys
         data[:status] = data[:status].to_sym
 
         if issues
@@ -76,7 +76,7 @@ class Service < Proxy
         end
 
         if data[:instances]
-            data[:instances] = data[:instances].map(&:symbolize_keys)
+            data[:instances] = data[:instances].map(&:my_symbolize_keys)
         end
 
         if sitemap

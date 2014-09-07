@@ -7,11 +7,13 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::CookieSetForParentDomain < Arachni::Check::Base
 
     def run
-        page.cookies.each do |cookie|
+        return if !page.parser
+
+        page.parser.cookies.each do |cookie|
             next if !cookie.domain.start_with?( '.' ) || audited?( cookie.name )
 
             log( vector: cookie )
@@ -25,7 +27,7 @@ class Arachni::Checks::CookieSetForParentDomain < Arachni::Check::Base
             description: %q{Logs cookies that are accessible by all subdomains.},
             elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
 
             issue:       {
                 name:        %q{Cookie set for parent domain},

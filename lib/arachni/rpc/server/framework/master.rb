@@ -69,7 +69,7 @@ module Master
             return false
         end
 
-        instance_info = instance_info.symbolize_keys
+        instance_info = instance_info.my_symbolize_keys
 
         fail "Instance info does not contain a 'url' key."   if !instance_info[:url]
         fail "Instance info does not contain a 'token' key." if !instance_info[:token]

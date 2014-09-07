@@ -54,7 +54,7 @@ class OptionGroup
     end
 
     def to_rpc_data
-        to_h.stringify_keys(false)
+        to_h.my_stringify_keys(false)
     end
 
     # @return   [Hash]

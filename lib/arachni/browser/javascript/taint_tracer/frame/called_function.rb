@@ -28,7 +28,7 @@ class CalledFunction
     attr_accessor :arguments
 
     def initialize( options = {} )
-        options.symbolize_keys(false).each do |k, v|
+        options.my_symbolize_keys(false).each do |k, v|
             send( "#{k}=", v )
         end
     end

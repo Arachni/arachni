@@ -214,14 +214,14 @@ describe Arachni::OptionGroups::Scope do
             values = { /redundant_path_patterns/ => 1 }
             subject.redundant_path_patterns = values
 
-            data['redundant_path_patterns'].should == values.stringify
+            data['redundant_path_patterns'].should == values.my_stringify
         end
 
         it "converts 'url_rewrites' to strings" do
             values = { /url_rewrites/ => 'test' }
             subject.url_rewrites = values
 
-            data['url_rewrites'].should == values.stringify
+            data['url_rewrites'].should == values.my_stringify
         end
 
         %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|

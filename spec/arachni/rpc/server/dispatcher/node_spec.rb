@@ -97,6 +97,8 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             c = @get_node.call
 
             n.add_neighbour( c.url )
+            sleep 1
+
             c.neighbours.should == [n.url]
             n.neighbours.should == [c.url]
 

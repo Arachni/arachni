@@ -35,7 +35,7 @@ class Frame
             @function = CalledFunction.new( options.delete(:function) )
         end
 
-        options.symbolize_keys(false).each do |k, v|
+        options.my_symbolize_keys(false).each do |k, v|
             send( "#{k}=", v )
         end
     end

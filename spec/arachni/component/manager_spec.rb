@@ -301,7 +301,7 @@ describe Arachni::Component::Manager do
                 'opt_opt'     => 'opt_opt value',
                 'default_opt' => 'value2'
             }
-            @components.prepare_options( c, @components[c], opts ).should == opts.symbolize_keys
+            @components.prepare_options( c, @components[c], opts ).should == opts.my_symbolize_keys
         end
 
         context 'with missing options' do

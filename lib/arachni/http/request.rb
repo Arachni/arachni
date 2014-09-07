@@ -343,7 +343,7 @@ class Request < Message
         if proxy
             options.merge!(
                 proxy:     proxy,
-                proxytype: proxy_type
+                proxytype: (proxy_type || :http).to_sym
             )
 
             if proxy_user_password
@@ -353,7 +353,7 @@ class Request < Message
         elsif Arachni::Options.http.proxy_host && Arachni::Options.http.proxy_port
             options.merge!(
                 proxy:     "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
-                proxytype: Arachni::Options.http.proxy_type
+                proxytype: (Arachni::Options.http.proxy_type || :http).to_sym
             )
 
             if Arachni::Options.http.proxy_username && Arachni::Options.http.proxy_password

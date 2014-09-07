@@ -78,7 +78,7 @@ class Form < Base
 
         cinputs = (options[:inputs] || {}).inject({}) do |h, (name, value_or_info)|
              if value_or_info.is_a? Hash
-                 value_or_info             = value_or_info.symbolize_keys
+                 value_or_info             = value_or_info.my_symbolize_keys
                  h[name]                   = value_or_info[:value]
                  @input_details[name.to_s] = value_or_info
              else

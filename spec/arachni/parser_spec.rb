@@ -517,6 +517,13 @@ describe Arachni::Parser do
                 subject.link_vars.should == { 'id' => '13' }
             end
         end
+
+        context 'when the URL cannot be parsed' do
+            it 'returns an empty array' do
+                subject.url = nil
+                subject.link_vars.should == {}
+            end
+        end
     end
 
 end

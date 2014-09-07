@@ -77,7 +77,7 @@ class Cookie < Base
             @data[:expires] = Time.parse( @data[:expires] ) rescue nil
         end
 
-        @data[:domain] ||= ".#{parsed_uri.host}"
+        @data[:domain] ||= parsed_uri.host
 
         @default_inputs = self.inputs.dup.freeze
     end
@@ -321,7 +321,7 @@ class Cookie < Base
                     c['expires'] = nil
                 end
                 c['secure'] = (c['secure'] == 'TRUE') ? true : false
-                new( { url: url }.merge( c.symbolize_keys ) )
+                new( { url: url }.merge( c.my_symbolize_keys ) )
             end.flatten.compact
         end
 
@@ -428,7 +428,7 @@ class Cookie < Base
                 cookie_hash['name']  = decode( cookie.name )
                 cookie_hash['value'] = decode( cookie.value )
 
-                new( { url: url }.merge( cookie_hash.symbolize_keys ) )
+                new( { url: url }.merge( cookie_hash.my_symbolize_keys ) )
             end.flatten.compact
         end
         alias :parse_set_cookie :from_set_cookie
@@ -461,7 +461,7 @@ class Cookie < Base
         #
         # @return   [String]
         def encode( str, type = :value )
-            reserved = "+;%\0"
+            reserved = "+;%\0\'\""
             reserved << '=' if type == :name
 
             URI.encode( str, reserved ).recode.gsub( ' ', '+' )

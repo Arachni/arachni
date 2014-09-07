@@ -23,7 +23,7 @@ describe Arachni::Reporter::Manager do
                 options = { 'outfile' => 'stuff' }
                 reporter = @reporters.run( :foo, report, options )
 
-                reporter.options.should == options.symbolize_keys(false)
+                reporter.options.should == options.my_symbolize_keys(false)
             end
         end
     end

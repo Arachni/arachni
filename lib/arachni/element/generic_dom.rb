@@ -113,7 +113,7 @@ class GenericDOM < Base
                                 Arachni::Page::DOM::Transition.from_rpc_data( value )
 
                             when 'initialization_options'
-                                value = value.is_a?( Hash ) ? value.symbolize_keys(false) : value
+                                value = value.is_a?( Hash ) ? value.my_symbolize_keys(false) : value
                                 value[:transition] =
                                     Arachni::Page::DOM::Transition.from_rpc_data( value[:transition] )
                                 value

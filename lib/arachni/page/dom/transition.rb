@@ -143,7 +143,7 @@ class Transition
         self.event = event
         @element   = element
 
-        @options = options.symbolize_keys(false)
+        @options = options.my_symbolize_keys(false)
         @clock   = Time.now
 
         return self if !block_given?
@@ -253,7 +253,7 @@ class Transition
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        h = to_hash.stringify_keys(false)
+        h = to_hash.my_stringify_keys(false)
         h['element'] = element.to_rpc_data_or_self
         h
     end
@@ -276,7 +276,7 @@ class Transition
                             end
 
                         when 'options'
-                            value.symbolize_keys
+                            value.my_symbolize_keys
 
                         else
                             value

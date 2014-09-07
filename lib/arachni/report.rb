@@ -245,7 +245,7 @@ class Report
 
         data['plugins'] = data['plugins'].inject({}) do |h, (k, v)|
             k    = k.to_sym
-            h[k] = v.symbolize_keys(false)
+            h[k] = v.my_symbolize_keys(false)
             next h if !h[k][:options]
 
             h[k][:options] = v['options'].map do |option|
