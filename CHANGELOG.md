@@ -1,5 +1,7 @@
 # ChangeLog
 
+## Under development
+
 ## 1.0.1 _(September 7, 2014)_
 
 - `RPC::Server::Dispatcher`
