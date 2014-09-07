@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.0.1 _(September 7, 2014)_
 
 - `RPC::Server::Dispatcher`
     - Check for Instance status via the bind address, not the external one.
