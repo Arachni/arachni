@@ -6,6 +6,7 @@
     web site for more information on licensing and terms of use.
 =end
 
+require 'sys/proctable'
 require 'ruby-mass'
 require 'stackprof'
 
@@ -60,26 +61,19 @@ class Profiler
         ap find_references( o )
     end
 
-    def print_object_space( options = {} )
-        klass                = options[:class]
-        namespaces           = options[:namespaces] || [Arachni]
-        with_allocation_info = options[:with_allocation_info]
-        with_references      = options[:with_references]
-        with_dependencies    = options[:with_dependencies]
-        max_entries          = options[:max_entries] || 50
+    def object_space( options = {} )
+        klass       = options[:class]
+        namespaces  = options[:namespaces] || [Arachni]
+        max_entries = options[:max_entries] || 50
 
         object_space    = Hash.new(0)
         @object_space ||= Hash.new(0)
 
         ObjectSpace.each_object do |o|
-            next if o.class != klass || !object_within_namespace?( o, namespaces )
-
-            print_object_allocations( o ) if with_allocation_info
-            print_references( o )         if with_references
-            print_dependencies( o )       if with_dependencies
-
+            next if o.class != klass && !object_within_namespace?( o, namespaces )
             object_space[o.class] += 1
         end
+
         object_space = Hash[object_space.sort_by { |_, v| v }.reverse[0..max_entries]]
 
         with_deltas = object_space.dup
@@ -91,9 +85,30 @@ class Profiler
             end
         end
 
-        ap with_deltas
-
         @object_space = object_space.dup
+        with_deltas
+    end
+
+    def write_object_space( file, options = {} )
+        consumption = resource_consumption
+
+        str = "RAM: #{consumption[:memory_usage].round(3)}MB"
+        str << " (#{consumption[:memory_utilization]}%)"
+        str << " - CPU: #{consumption[:cpu_utilization]}%\n\n"
+
+        os      = object_space( options )
+        maxsize = os.keys.map(&:to_s).map(&:size).sort.reverse.first
+
+        os.each do |klass, info|
+            offset = maxsize - klass.to_s.size
+            str << "#{klass}: #{' ' * offset}#{info}\n"
+        end
+
+        IO.write( file, str )
+    end
+
+    def print_object_space( options = {} )
+        ap object_space( options )
     end
 
     def count_objects( klass )
@@ -101,8 +116,6 @@ class Profiler
     end
 
     def resource_consumption
-        require 'sys/proctable'
-
         procinfo = ::Sys::ProcTable.ps( Process.pid )
         {
             cpu_utilization:    procinfo[:pctcpu],
