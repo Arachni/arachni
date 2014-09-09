@@ -13,8 +13,14 @@ class ResourceExploration
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Result < Job::Result
+
     # @return [Page]
     attr_accessor :page
+
+    def to_s
+        "#<#{self.class}:#{object_id} @job=#{@job} @page=#{@page}>"
+    end
+
 end
 
 end

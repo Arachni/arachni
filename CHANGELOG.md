@@ -4,6 +4,8 @@
 
 - `Browser`
     - Updated to catch exception when trying to manipulate read-only inputs.
+- `BrowserCluster`
+    - Added debugging messages for job processing.
 
 ## 1.0.1 _(September 7, 2014)_
 

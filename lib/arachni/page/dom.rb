@@ -205,6 +205,10 @@ class DOM
         to_h
     end
 
+    def to_s
+        "#<#{self.class}:#{object_id} @url=#{@url.inspect}>"
+    end
+
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data

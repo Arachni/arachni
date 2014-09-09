@@ -35,6 +35,11 @@ class EventTrigger < ResourceExploration
         browser.trigger_event( resource, element, event )
     end
 
+    def to_s
+        "#<#{self.class}:#{object_id} @resource=#{@resource} " +
+            "@event=#{@event.inspect} @element=#{@element.inspect}>"
+    end
+
 end
 
 end

@@ -41,6 +41,11 @@ class TaintTrace < ResourceExploration
         super
     end
 
+    def to_s
+        "#<#{self.class}:#{object_id} @resource=#{@resource} " +
+            "@taint=#{@taint.inspect} @injector=#{@injector.inspect}>"
+    end
+
 end
 
 end

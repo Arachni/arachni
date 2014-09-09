@@ -425,6 +425,10 @@ class Page
     end
     alias :to_hash :to_h
 
+    def to_s
+        "#<#{self.class}:#{object_id} @url=#{@url.inspect} @dom=#{@dom}>"
+    end
+
     def persistent_hash
         digest.persistent_hash
     end
