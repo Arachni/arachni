@@ -69,9 +69,16 @@ class DOM
         @url = url.freeze
     end
 
-    def digest=( digest )
-        return @digest = nil if !digest
-        @digest = digest.freeze
+    def digest=( d )
+        return @digest = nil if !d
+
+        if d.include?( url ) || d.include?( page.url )
+            d = d.dup
+            d.gsub!( url, '' )
+            d.gsub!( page.url, '' )
+        end
+
+        @digest = d.freeze
     end
 
     # @param    [Transition]    transition
@@ -270,8 +277,14 @@ class DOM
     protected
 
     def digest_without_urls( other )
-        digest.gsub( url, '' ).gsub( other.url, '' ).
-            gsub( page.url, '' ).gsub( other.page.url, '' )
+        if !digest.include?( other.url ) && !digest.include?( other.page.url )
+            return digest
+        end
+
+        d = digest.dup
+        d.gsub!( other.url, '' )
+        d.gsub!( other.page.url, '' )
+        d
     end
 
 end
