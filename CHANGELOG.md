@@ -2,6 +2,9 @@
 
 ## Under development
 
+- `Browser`
+    - Updated to catch exception when trying to manipulate read-only inputs.
+
 ## 1.0.1 _(September 7, 2014)_
 
 - `RPC::Server::Dispatcher`
