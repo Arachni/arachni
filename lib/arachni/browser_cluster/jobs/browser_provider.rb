@@ -21,7 +21,7 @@ class BrowserProvider < Job
     end
 
     def to_s
-        "#<#{self.class}:#{object_id} #{callback_for( self )}>"
+        "#<#{self.class}:#{object_id} callback=#{browser.master.callback_for( self ) if browser && browser.master}>"
     end
 
 end
