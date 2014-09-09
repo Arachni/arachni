@@ -6,6 +6,9 @@
     - Updated to catch exception when trying to manipulate read-only inputs.
 - `BrowserCluster`
     - Added debugging messages for job processing.
+    - `Worker`
+        - `#run_job` -- Clear the `@window_responses` cache after each job in
+            addition to after each browser re-spawn.
 
 ## 1.0.1 _(September 7, 2014)_
 
