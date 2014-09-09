@@ -16,6 +16,22 @@ module Support
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Profiler
 
+    def self.write_samples_to_disk( file, options = {} )
+        profiler = Support::Profiler.new
+
+        Thread.new do
+            begin
+                loop do
+                    profiler.write_object_space( file, options )
+                    sleep options[:interval] || 1
+                end
+            rescue => e
+                ap e
+                ap e.backtrace
+            end
+        end
+    end
+
     def trace_allocations
         require 'objspace'
         ObjectSpace.trace_object_allocations_start
