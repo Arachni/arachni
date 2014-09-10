@@ -18,7 +18,7 @@ module Auditable
 module DOM
     include WithNode
     include Auditable
-    extend Forwardable
+    extend ::Forwardable
 
     INVALID_INPUT_DATA = [ "\0" ]
 

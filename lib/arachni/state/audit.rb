@@ -19,7 +19,7 @@ class State
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Audit
-    extend Forwardable
+    extend ::Forwardable
 
     def initialize
         @collection = Support::LookUp::HashSet.new( hasher: :persistent_hash )
