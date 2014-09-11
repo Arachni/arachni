@@ -2,6 +2,7 @@
 
 ## Under development
 
+- `UI::Output` -- Updated null output interface with placeholder debugging methods.
 - `Browser`
     - Updated to catch exception when trying to manipulate read-only inputs.
 - `BrowserCluster`

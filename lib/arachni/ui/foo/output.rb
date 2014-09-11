@@ -92,6 +92,11 @@ module Output
     def debug?(*)
     end
 
+    1.upto( 3 ) do |i|
+        define_method( "debug_level_#{i}?" ) {}
+        define_method( "debug_level_#{i}" ) {}
+    end
+
     def only_positives
     end
 
