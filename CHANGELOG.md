@@ -10,9 +10,16 @@
     - `Worker`
         - `#run_job` -- Clear the `@window_responses` cache after each job in
             addition to after each browser re-spawn.
+- `Form`
+    - `#audit` -- `:each_mutation` callback now ignores `#mutation_with_original_values`
+        and `#mutation_with_sample_values`.
 - Checks
     - Active
         - `xss_dom_inputs` -- Ignore out-of-scope browser pages.
+        - `code_injection_php_input_wrapper` -- Cleaned up `:each_mutation` callback.
+        - `file_inclusion` -- Cleaned up `:each_mutation` callback.
+        - `path_traversal` -- Cleaned up `:each_mutation` callback.
+        - `source_code_disclosure` -- Cleaned up `:each_mutation` callback.
 
 ## 1.0.1 _(September 7, 2014)_
 

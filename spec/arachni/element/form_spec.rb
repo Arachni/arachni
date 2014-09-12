@@ -101,6 +101,36 @@ describe Arachni::Element::Form do
         end
     end
 
+    describe '#audit' do
+        describe :each_mutation do
+            it 'ignores #mutation_with_original_values' do
+                had_mutation_with_original_values = false
+                each_mutation = proc do |mutation|
+                    had_mutation_with_original_values ||=
+                        mutation.mutation_with_original_values?
+                end
+
+                subject.audit( 'stuff', each_mutation: each_mutation ) {}
+                subject.http.run
+
+                had_mutation_with_original_values.should be_false
+            end
+
+            it 'ignores mutation_with_sample_values' do
+                had_mutation_with_sample_values = false
+                each_mutation = proc do |mutation|
+                    had_mutation_with_sample_values ||=
+                        mutation.mutation_with_sample_values?
+                end
+
+                subject.audit( 'stuff', each_mutation: each_mutation ) {}
+                subject.http.run
+
+                had_mutation_with_sample_values.should be_false
+            end
+        end
+    end
+
     describe '#name_or_id' do
         context 'when a #name is available' do
             it 'returns it' do

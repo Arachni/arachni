@@ -490,6 +490,21 @@ class Form < Base
 
     private
 
+    def audit_single( payload, opts = {}, &block )
+        opts = opts.dup
+
+        if (each_m = opts.delete(:each_mutation))
+            opts[:each_mutation] = proc do |mutation|
+                next if mutation.mutation_with_original_values? ||
+                    mutation.mutation_with_sample_values?
+
+                each_m.call( mutation )
+            end
+        end
+
+        super( payload, opts, &block )
+    end
+
     def skip?( elem )
         if elem.mutation_with_original_values? || elem.mutation_with_sample_values?
             id = elem.audit_id
