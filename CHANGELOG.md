@@ -1,5 +1,7 @@
 # ChangeLog
 
+## _Under development_
+
 ## 1.0.2 _(September 13, 2014)_
 
 - `UI::Output` -- Updated null output interface with placeholder debugging methods.
