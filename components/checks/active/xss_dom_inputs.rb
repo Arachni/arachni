@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
     INPUTS = Set.new([:input, :textarea])
@@ -41,7 +41,9 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
                         transition = b.fire_event( locator, event, value: self.tag )
                         next if !transition
 
-                        p = b.to_page
+                        # Page may be out of scope, some sort of JS redirection.
+                        next if !(p = b.to_page)
+
                         p.dom.transitions << transition
 
                         check_and_log p
@@ -77,7 +79,7 @@ Injects an HTML element into page text fields, triggers their associated events
 and inspects the DOM for proof of vulnerability.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             elements:    [Element::GenericDOM],
 
             issue:       {

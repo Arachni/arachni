@@ -12,7 +12,7 @@ module WithAuditor
 
 # Delegate output related methods to the {WithAuditor#auditor}.
 module Output
-    extend Forwardable
+    extend ::Forwardable
 
     [ :debug?, :print_error, :print_status, :print_verbose, :print_info,
       :print_line, :print_ok, :print_bad, :print_debug, :print_debug_backtrace,

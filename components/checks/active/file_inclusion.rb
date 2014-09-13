@@ -9,7 +9,7 @@
 # File inclusion check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.2
+# @version 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/98.html
 # @see https://www.owasp.org/index.php/PHP_File_Inclusion
@@ -50,10 +50,7 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
             each_mutation: proc do |mutation|
-                next if !mutation.affected_input_value ||
-                    (mutation.is_a?( Arachni::Form ) &&
-                        (mutation.mutation_with_original_values? ||
-                            mutation.mutation_with_sample_values?))
+                next if !mutation.affected_input_value
 
                 # Don't bother if the current element type can't carry nulls.
                 next if !mutation.valid_input_value_data?( "\0" )
@@ -105,7 +102,7 @@ content or errors in the HTTP response body.
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.2',
+            version:     '0.1.3',
             platforms:   options[:regexp].keys,
 
             issue:       {

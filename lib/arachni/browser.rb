@@ -883,6 +883,7 @@ class Browser
                 input.set( value.to_s )
                 # Disabled inputs and such...
             rescue Watir::Exception::ObjectDisabledException,
+                Watir::Exception::ObjectReadOnlyException,
                 Selenium::WebDriver::Error::InvalidElementStateError => e
                 print_debug_level_2 "Could not fill in form input '#{name_or_id}'" <<
                                         " because: #{e} [#{e.class}"

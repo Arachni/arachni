@@ -20,6 +20,10 @@ class BrowserProvider < Job
         browser.master.callback_for( self ).call browser
     end
 
+    def to_s
+        "#<#{self.class}:#{object_id} callback=#{browser.master.callback_for( self ) if browser && browser.master}>"
+    end
+
 end
 
 end

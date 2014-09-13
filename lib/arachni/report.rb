@@ -131,7 +131,7 @@ class Report
     end
 
     # @param    [String]    location
-    #   Location for the dumped report file.
+    #   Location for the {#to_afr dumped} report file.
     #
     # @return   [String]
     #   Absolute location of the report.
@@ -144,15 +144,21 @@ class Report
             location += "/#{default_filename}"
         end
 
-        IO.binwrite( location, RPC::Serializer.dump( self ) )
-
-        # Append metadata to the end of the file.
-        metadata = RPC::Serializer.dump( summary )
-        File.open( location, 'a' ) do |f|
-            f.write [metadata, metadata.size].pack( 'a*N' )
-        end
+        IO.binwrite( location, to_afr )
 
         File.expand_path( location )
+    end
+
+    # @return   [String]
+    #   Report serialized in the Arachni Framework Report format..
+    def to_afr
+        afr = RPC::Serializer.dump( self )
+
+        # Append metadata to the end of the dump.
+        metadata = RPC::Serializer.dump( summary )
+        afr << [metadata, metadata.size].pack( 'a*N' )
+
+        afr
     end
 
     # @return   [Hash]

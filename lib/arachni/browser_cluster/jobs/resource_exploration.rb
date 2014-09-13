@@ -53,6 +53,10 @@ class ResourceExploration < Job
         super.tap { |j| j.resource = nil }
     end
 
+    def to_s
+        "#<#{self.class}:#{object_id} @resource=#{@resource}>"
+    end
+
 end
 
 end

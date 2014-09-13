@@ -150,6 +150,8 @@ class BrowserCluster
         @done_signal.clear
 
         synchronize do
+            print_debug "Queueing: #{job}"
+
             @pending_job_counter  += 1
             @pending_jobs[job.id] += 1
             @job_callbacks[job.id] = block if block
@@ -200,6 +202,8 @@ class BrowserCluster
     #   {Worker} states.
     def job_done( job )
         synchronize do
+            print_debug "Job done: #{job}"
+
             if !job.never_ending?
                 @skip_states_per_job.delete job.id
                 @job_callbacks.delete job.id
@@ -241,6 +245,8 @@ class BrowserCluster
         return if job_done? result.job
 
         synchronize do
+            print_debug "Got job result: #{result}"
+
             exception_jail( false ) do
                 @job_callbacks[result.job.id].call result
             end

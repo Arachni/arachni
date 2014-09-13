@@ -21,6 +21,8 @@ end
 
 group :prof do
     gem 'stackprof'
+    gem 'sys-proctable'
+    gem 'ruby-mass'
 end
 
 gemspec

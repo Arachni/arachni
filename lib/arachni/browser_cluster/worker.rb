@@ -78,6 +78,7 @@ class Worker < Arachni::Browser
     # @see Arachni::Browser#trigger_events
     def run_job( job )
         @job = job
+        print_debug "Started: #{@job}"
 
         # PhantomJS may have crashed (it happens sometimes) so make sure that
         # we've got a live one before running the job.
@@ -94,7 +95,7 @@ class Worker < Arachni::Browser
                 end
             end
         rescue TimeoutError => e
-            print_debug "Job timed-out after #{@job_timeout} seconds: #{job}"
+            print_debug "Job timed-out after #{@job_timeout} seconds: #{@job}"
 
             # Could have left us with a broken browser.
             browser_respawn
@@ -110,6 +111,8 @@ class Worker < Arachni::Browser
         decrease_time_to_live
         browser_respawn_if_necessary
 
+        print_debug "Finished: #{@job}"
+
         true
     rescue Selenium::WebDriver::Error::WebDriverError
         browser_respawn
@@ -122,6 +125,7 @@ class Worker < Arachni::Browser
         @captured_pages.clear
         @page_snapshots.clear
         @page_snapshots_with_sinks.clear
+        @window_responses.clear
 
         # The jobs may have configured callbacks to capture pages etc.,
         # remove them.

@@ -221,6 +221,14 @@ describe Arachni::Report do
         end
     end
 
+    describe '#to_afr' do
+        it 'returns the object in AFR format' do
+            @report_file = report.save
+
+            IO.binread( @report_file ).should == report.to_afr
+        end
+    end
+
     describe '#to_h' do
         it 'returns the object as a hash' do
             report.to_h.should == {
