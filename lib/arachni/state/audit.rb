@@ -6,6 +6,8 @@
     web site for more information on licensing and terms of use.
 =end
 
+require 'forwardable'
+
 module Arachni
 class State
 
