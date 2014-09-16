@@ -9,7 +9,6 @@
 # Logs content-types of all server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.6
 class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
 
     is_distributable
@@ -29,7 +28,7 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     end
 
     def run
-        framework.http.on_complete do |response|
+        http.on_complete do |response|
             next if skip?( response )
 
             type = response.headers.content_type
@@ -47,8 +46,8 @@ class Arachni::Plugins::ContentTypes < Arachni::Plugin::Base
     end
 
     def skip?( response )
-        logged?( response ) || response.headers.content_type.to_s.empty? ||
-            !log?( response )
+        response.scope.out? || logged?( response ) ||
+            response.headers.content_type.to_s.empty? || !log?( response )
     end
 
     def log?( response )
@@ -97,7 +96,7 @@ It can help you categorize and identify publicly available file-types which in
 turn can help you identify accidentally leaked files.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
             options:     [
                 Options::String.new( :exclude,
                     description: 'Exclude content-types that match this regular expression.',
