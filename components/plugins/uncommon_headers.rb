@@ -32,7 +32,9 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
          'proxy-authenticate',
          'set-cookie',
          'trailer',
-         'transfer-encoding'
+         'transfer-encoding',
+         'keep-alive',
+         'content-disposition'
     ])
 
     def prepare
@@ -85,7 +87,7 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
             name:        'Uncommon headers',
             description: %q{Intercepts HTTP responses and logs uncommon headers.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2'
+            version:     '0.1.3'
         }
     end
 

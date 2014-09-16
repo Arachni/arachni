@@ -2,6 +2,10 @@
 
 ## _Under development_
 
+- Plugins
+    - `uncommon_headers`
+        - Added `keep-alive` and `content-disposition` in the common list.
+
 ## 1.0.2 _(September 13, 2014)_
 
 - `UI::Output` -- Updated null output interface with placeholder debugging methods.
