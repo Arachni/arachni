@@ -5,6 +5,7 @@
 - Plugins
     - `uncommon_headers`
         - Added `keep-alive` and `content-disposition` in the common list.
+        - Ignore out-of-scope responses.
 
 ## 1.0.2 _(September 13, 2014)_
 
