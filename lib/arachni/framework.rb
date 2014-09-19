@@ -1017,6 +1017,7 @@ class Framework
         state.status = :scanning if !pausing?
 
         push_to_url_queue( options.url )
+        options.scope.extend_paths.each { |url| push_to_url_queue( url ) }
         options.scope.restrict_paths.each { |url| push_to_url_queue( url, true ) }
 
         # Initialize the BrowserCluster.

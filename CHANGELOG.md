@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Framework`
+    - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
 - Plugins
     - `uncommon_headers`
         - Added `keep-alive` and `content-disposition` in the common list.
