@@ -94,7 +94,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             version:     '0.1.5',
 
             issue:       {
-                name:            %q{Cross-Site Scripting in event tag of HTML element},
+                name:            %q{Cross-Site Scripting (XSS) in event tag of HTML element},
                 description:     %q{
 Client-side scripts are used extensively by modern web applications.
 They perform from simple functions (such as the formatting of text) up to full
