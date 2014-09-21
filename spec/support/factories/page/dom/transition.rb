@@ -19,3 +19,24 @@ end
 Factory.define :empty_transition do
     Arachni::Page::DOM::Transition.new
 end
+
+Factory.define :empty_transition do
+    Arachni::Page::DOM::Transition.new
+end
+
+Factory.define :input_transition do
+    Arachni::Page::DOM::Transition.new(
+        Arachni::Browser::ElementLocator.new(
+            tag_name:   :input,
+            attributes: {
+                "oninput" => "handleoninput();",
+                "id" => "my-input",
+                "name" => "my-input"
+            }
+        ),
+        :input,
+        options: {
+            value: "<some_dangerous_input_a9838b473d1f6db80b6342d1c61f9fa2></some_dangerous_input_a9838b473d1f6db80b6342d1c61f9fa2> "
+        }
+    )
+end
