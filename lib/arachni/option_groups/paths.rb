@@ -36,13 +36,18 @@ class Paths < Arachni::OptionGroup
         @components = @root + 'components/'
         @snapshots  = @root + 'snapshots/'
 
-        @logs = ENV['ARACHNI_FRAMEWORK_LOGDIR'] ?
-            "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/" : @root + 'logs/'
+        if ENV['ARACHNI_FRAMEWORK_LOGDIR']
+            @logs = "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/"
+        elsif !(logdir = IO.read( "#{@root}.logdir" ).strip).empty?
+            @logs = "#{logdir}/"
+        else
+            @logs = "#{@root}logs/"
+        end
 
         @checks          = @components + 'checks/'
         @reporters       = @components + 'reporters/'
         @plugins         = @components + 'plugins/'
-        @services   = @components + 'services/'
+        @services        = @components + 'services/'
         @path_extractors = @components + 'path_extractors/'
         @fingerprinters  = @components + 'fingerprinters/'
 

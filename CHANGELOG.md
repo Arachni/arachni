@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- `OptionGroups::Paths`
+    - Default log directory location can be overridden by being specified in the
+        `.logdir` file.
 - `Framework`
     - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
 - Plugins

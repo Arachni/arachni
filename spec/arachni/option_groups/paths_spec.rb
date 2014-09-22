@@ -1,6 +1,11 @@
 require 'spec_helper'
 
 describe Arachni::OptionGroups::Paths do
+
+    after do
+        IO.write( "#{subject.root}.logdir", '' )
+    end
+
     %w(root arachni components logs checks reporters plugins services
         path_extractors fingerprinters lib support mixins snapshots).each do |method|
 
@@ -25,6 +30,22 @@ describe Arachni::OptionGroups::Paths do
             context 'has not been set' do
                 it 'returns the default location' do
                     ENV['ARACHNI_FRAMEWORK_LOGDIR'] = nil
+                    subject.logs.should == "#{subject.root}logs/"
+                end
+            end
+        end
+
+        context 'when .logdir' do
+            context 'has been set' do
+                it 'returns its value' do
+                    IO.write( "#{subject.root}.logdir", 'stuff' )
+
+                    described_class.new.logs.should == 'stuff/'
+                end
+            end
+
+            context 'has not been set' do
+                it 'returns the default location' do
                     subject.logs.should == "#{subject.root}logs/"
                 end
             end
