@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- `Browser`
+    - `ElementLocator.supported_element_attributes_for`
+        - Fixed `nil`-error when dealing with unknown attributes.
 - `OptionGroups::Paths`
     - Default log directory location can be overridden by being specified in the
         `.logdir` file.

@@ -127,8 +127,15 @@ class ElementLocator
     #   List of attributes supported by Watir.
     def self.supported_element_attributes_for( tag_name )
         @supported_element_attributes_for ||= {}
-        @supported_element_attributes_for[tag_name.to_sym] ||=
-            Set.new( Watir.tag_to_class[tag_name.to_sym].attribute_list )
+
+        tag_name = tag_name.to_sym
+
+        if (klass = Watir.tag_to_class[tag_name])
+            @supported_element_attributes_for[tag_name] ||=
+                Set.new( klass.attribute_list )
+        else
+            @supported_element_attributes_for[tag_name] ||= Set.new
+        end
     end
 
 end
