@@ -830,7 +830,8 @@ class Browser
     def wait_for_timers
         delay = load_delay
         return if !delay
-        sleep delay / 1000.0
+
+        sleep [Options.http.request_timeout, delay].min / 1000.0
     end
 
     def skip_path?( path )

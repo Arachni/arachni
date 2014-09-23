@@ -25,6 +25,7 @@
         - Fixed `nil`-error when dealing with unknown attributes.
     - Added `:ignore_scope` option, allowing the browser to roam completely
         unrestricted.
+    - Capped `setTimeout` waiting period to `OptionGroups::HTTP#request_timeout`.
 - `Session`
     - Fallback to `Framework` DOM Level 1 handlers when no `Browser` is available.
     - When `OptionGroups::Scope#dom_depth_limit` is 0 don't use the `Browser`.

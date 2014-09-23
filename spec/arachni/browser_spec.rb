@@ -244,6 +244,16 @@ describe Arachni::Browser do
                 subject.wait_for_timers
                 (Time.now - time).should > seconds
             end
+
+            it "caps them at #{Arachni::OptionGroups::HTTP}#request_timeout" do
+                subject.load( "#{@url}load_delay" )
+
+                Arachni::Options.http.request_timeout = 100
+
+                time = Time.now
+                subject.wait_for_timers
+                (Time.now - time).should < 0.2
+            end
         end
     end
 
