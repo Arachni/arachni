@@ -2,14 +2,22 @@
 
 ## _Under development_
 
-- `OptionGroups::Paths`
-    - Default log directory location can be overridden by being specified in the
-        `.logdir` file.
+- Added overrides for system write directories in `config/write_paths.yml`.
+- `OptionGroups`
+    - `Paths`
+        - Added `.config` -- Parsing `config/write_paths.yml`.
+        - `#logs` -- Can now be set via `.config`.
+        - `#snapshots` -- Can now be set via `.config`.
+    - `Snapshot`
+        - `#save_path` -- Can now be set via `Paths.config`.
 - `UI::Output`
     - Moved default error log under `OptionGroups::Paths.logs`.
     - Optimized file descriptor handling.
-- `UI::CLI::Framework`
-    - Print the error-log location at the end of the scan if there were errors.
+- `UI::CLI`
+    - `OptionParser`
+        - Set default report location save-dir from `OptionGroups::Paths.config`.
+    - `Framework`
+        - Print the error-log location at the end of the scan if there were errors.
 - `Framework`
     - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
 - `Browser`
