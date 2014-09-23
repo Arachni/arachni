@@ -212,11 +212,23 @@ class Session
     def login
         fail Error::NotConfigured, 'Please #configure the session first.' if !configured?
 
+        if has_browser?
+            print_debug 'Logging in using browser.'
+        else
+            print_debug 'Logging in without browser.'
+        end
+
+        print_debug "Grabbing page at: #{configuration[:url]}"
+
         # Revert to the Framework DOM Level 1 page handling if no browser
         # is available.
         page = refresh_browser ?
-            browser.load(configuration[:url]).to_page :
-            Page.from_url(configuration[:url])
+            browser.load( configuration[:url] ).to_page :
+            Page.from_url( configuration[:url], precision: 1, http: {
+                update_cookies: true
+            })
+
+        print_debug "Got page with URL #{page.url}"
 
         form = find_login_form(
             pages:  page,
@@ -224,15 +236,20 @@ class Session
         )
 
         if !form
+            print_debug_level_3 page.body
             fail Error::FormNotFound,
                  "Login form could not be found with: #{configuration}"
         end
+
+        print_debug "Found login form: #{form.id}"
 
         # Use the form DOM to submit if a browser is available.
         form = form.dom if has_browser?
 
         form.update configuration[:inputs]
         form.auditor = self
+
+        print_debug "Updated form inputs: #{form.inputs}"
 
         page = nil
         if has_browser?
@@ -244,6 +261,13 @@ class Session
                 follow_location: false,
                 update_cookies:  true
             ).to_page
+
+            if page.response.redirection?
+                url  = to_absolute( page.response.headers.location, page.url )
+                print_debug "Redirected to: #{url}"
+
+                page = Page.from_url( url, precision: 1, http: { update_cookies: true } )
+            end
         end
 
         page
