@@ -39,6 +39,10 @@ module Differential
         # element under audit.
         respect_method: true,
 
+        # Disable {Arachni::Options#audit_cookies_extensively}, there's little
+        # to be gained in this case and just causes interference.
+        extensively:    false,
+
         # Don't generate or submit any mutations with default or sample inputs.
         skip_original:  true,
 

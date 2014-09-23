@@ -10,6 +10,9 @@
         `.logdir` file.
 - `Framework`
     - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
+- `Element::Capabilities::Analyzable`
+    - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+    - `Timeout` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
 - Plugins
     - `uncommon_headers`
         - Added `keep-alive` and `content-disposition` in the common list.
