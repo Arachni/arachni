@@ -23,6 +23,8 @@
 - `Browser`
     - `ElementLocator.supported_element_attributes_for`
         - Fixed `nil`-error when dealing with unknown attributes.
+- `Session`
+    - Fallback to `Framework` DOM Level 1 handlers when no Browser is available.
 - `Element::Capabilities`
     - `Analyzable`
         - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.

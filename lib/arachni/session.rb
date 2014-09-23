@@ -212,10 +212,14 @@ class Session
     def login
         fail Error::NotConfigured, 'Please #configure the session first.' if !configured?
 
-        refresh_browser
+        # Revert to the Framework DOM Level 1 page handling if no browser
+        # is available.
+        page = refresh_browser ?
+            browser.load(configuration[:url]).to_page :
+            Page.from_url(configuration[:url])
 
         form = find_login_form(
-            pages:  browser.load( configuration[:url] ).to_page,
+            pages:  page,
             inputs: configuration[:inputs].keys
         )
 
@@ -224,13 +228,23 @@ class Session
                  "Login form could not be found with: #{configuration}"
         end
 
-        form.dom.update configuration[:inputs]
-        form.dom.auditor = self
+        # Use the form DOM to submit if a browser is available.
+        form = form.dom if has_browser?
+
+        form.update configuration[:inputs]
+        form.auditor = self
 
         page = nil
-        form.dom.submit { |p| page = p }
-
-        http.update_cookies browser.cookies
+        if has_browser?
+            form.submit { |p| page = p }
+            http.update_cookies browser.cookies
+        else
+            page = form.submit(
+                mode:            :sync,
+                follow_location: false,
+                update_cookies:  true
+            ).to_page
+        end
 
         page
     end
@@ -278,6 +292,10 @@ class Session
         HTTP::Client
     end
 
+    def has_browser?
+        Browser.has_executable?
+    end
+
     private
 
     def shutdown_browser
@@ -288,6 +306,8 @@ class Session
     end
 
     def refresh_browser
+        return if !has_browser?
+
         shutdown_browser
         @browser = Browser.new
     end

@@ -97,40 +97,52 @@ describe Arachni::Session do
             configured.should be_logged_in
         end
 
-        it 'returns the resulting page' do
-            configured.login.should be_kind_of Arachni::Page
+        context 'when a browser is available' do
+            before { subject.stub(:has_browser?) { false } }
 
-            transition = configured.login.dom.transitions.first
-            transition.event.should == :load
-            transition.element.should == :page
-            transition.options[:url].should == configured.configuration[:url]
-
-            transition = configured.login.dom.transitions.last
-            transition.event.should == :submit
-            transition.element.tag_name.should == :form
-
-            transition.options[:inputs]['username'].should ==
-                configured.configuration[:inputs][:username]
-
-            transition.options[:inputs]['password'].should ==
-                configured.configuration[:inputs][:password]
+            it 'uses the framework Page helpers' do
+                configured.should_not be_logged_in
+                configured.login.should be_kind_of Arachni::Page
+                configured.should be_logged_in
+            end
         end
 
-        it 'can handle Javascript forms' do
-            subject.configure(
-                url:    "#{@url}/javascript_login",
-                inputs: {
-                    username: 'john',
-                    password: 'doe'
-                }
-            )
+        context 'when a browser is available' do
+            it 'can handle Javascript forms' do
+                subject.configure(
+                    url:    "#{@url}/javascript_login",
+                    inputs: {
+                        username: 'john',
+                        password: 'doe'
+                    }
+                )
 
-            @opts.session.check_url     = @url
-            @opts.session.check_pattern = 'logged-in user'
+                @opts.session.check_url     = @url
+                @opts.session.check_pattern = 'logged-in user'
 
-            subject.login
+                subject.login
 
-            subject.should be_logged_in
+                subject.should be_logged_in
+            end
+
+            it 'returns the resulting browser evaluated page' do
+                configured.login.should be_kind_of Arachni::Page
+
+                transition = configured.login.dom.transitions.first
+                transition.event.should == :load
+                transition.element.should == :page
+                transition.options[:url].should == configured.configuration[:url]
+
+                transition = configured.login.dom.transitions.last
+                transition.event.should == :submit
+                transition.element.tag_name.should == :form
+
+                transition.options[:inputs]['username'].should ==
+                    configured.configuration[:inputs][:username]
+
+                transition.options[:inputs]['password'].should ==
+                    configured.configuration[:inputs][:password]
+            end
         end
 
         context 'when no configuration has been provided' do
