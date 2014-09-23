@@ -202,15 +202,6 @@ module Mutable
             end
         end
 
-        if !opts[:respect_method]
-            elem = switch_method
-            if !generated.include?( elem )
-                print_debug_mutation elem
-                yield elem
-            end
-            generated << elem
-        end
-
         nil
     end
 

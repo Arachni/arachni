@@ -23,9 +23,12 @@
 - `Browser`
     - `ElementLocator.supported_element_attributes_for`
         - Fixed `nil`-error when dealing with unknown attributes.
-- `Element::Capabilities::Analyzable`
-    - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
-    - `Timeout` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+- `Element::Capabilities`
+    - `Analyzable`
+        - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+        - `Timeout` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+    - `Mutable`
+        - `#each_mutation` -- Removed obsolete method-switch with default inputs.
 - Plugins
     - `uncommon_headers`
         - Added `keep-alive` and `content-disposition` in the common list.
