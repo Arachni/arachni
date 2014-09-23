@@ -8,6 +8,8 @@
 - `UI::Output`
     - Moved default error log under `OptionGroups::Paths.logs`.
     - Optimized file descriptor handling.
+- `UI::CLI::Framework`
+    - Print the error-log location at the end of the scan if there were errors.
 - `Framework`
     - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
 - `Browser`
