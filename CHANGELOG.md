@@ -2,14 +2,14 @@
 
 ## _Under development_
 
-- `Browser`
-    - `ElementLocator.supported_element_attributes_for`
-        - Fixed `nil`-error when dealing with unknown attributes.
 - `OptionGroups::Paths`
     - Default log directory location can be overridden by being specified in the
         `.logdir` file.
 - `Framework`
     - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
+- `Browser`
+    - `ElementLocator.supported_element_attributes_for`
+        - Fixed `nil`-error when dealing with unknown attributes.
 - `Element::Capabilities::Analyzable`
     - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
     - `Timeout` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
