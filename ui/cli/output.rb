@@ -42,7 +42,7 @@ module Output
         @@error_log_written_env = false
         @@error_fd = nil
 
-        @@error_logfile = "#{Options.paths.logs}/error-#{Process.pid}.log"
+        @@error_logfile = "#{Options.paths.logs}error-#{Process.pid}.log"
     end
 
     reset_output_options
@@ -57,6 +57,10 @@ module Output
     #   Location of the error log file.
     def error_logfile
         @@error_logfile
+    end
+
+    def has_error_log?
+        File.exist? error_logfile
     end
 
     def error_log_fd
