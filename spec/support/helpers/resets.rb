@@ -21,6 +21,7 @@ def reset_options
 end
 
 def reset_all
+    Arachni::UI::Output.reset_output_options
     Arachni::Framework.reset
     reset_options
     Arachni::HTTP::Client.reset
