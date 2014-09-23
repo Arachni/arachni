@@ -35,6 +35,8 @@
         - Ignore out-of-scope responses.
     - `content_types`
         - Ignore out-of-scope responses.
+    - `cookie_collector`
+        - `Set-Cookie` header is now always an `Array`.
 
 ## 1.0.2 _(September 13, 2014)_
 

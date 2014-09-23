@@ -9,7 +9,7 @@
 # Simple cookie collector
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
+# @version 0.2.1
 class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
 
     is_distributable
@@ -42,9 +42,12 @@ class Arachni::Plugins::CookieCollector < Arachni::Plugin::Base
         response_hash.delete( :body )
         response_hash.delete( :headers_string )
 
+        r_h = response_hash.my_stringify_keys
+        r_h['headers']['Set-Cookie'] = [r_h['headers']['Set-Cookie']].flatten.compact
+
         @cookies << {
             'time'     => Time.now.to_s,
-            'response' => response_hash.my_stringify_keys,
+            'response' => r_h,
             'cookies'  => cookies
         }
     end
@@ -81,7 +84,7 @@ thousands of results leading to a huge report, highly increased memory
 consumption and CPU usage.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             options:     [
                 Options::String.new( :filter,
                     description: 'Pattern to use to determine which cookies to ' +
