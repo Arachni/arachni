@@ -116,8 +116,6 @@ class Session
     #   Pages to look through.
     # @option opts [String] :url
     #   URL to fetch and look for forms.
-    # @option opts [Bool] :with_browser
-    #   Does the login form require a {Browser} environment?
     #
     # @param    [Block] block
     #   If a block and a :url are given, the request will run async and the
@@ -151,17 +149,19 @@ class Session
                     opts[:forms]
                 elsif (url = opts[:url])
                     http_opts = {
-                        precision: false,
-                        http:      {
-                            update_cookies:  true,
-                            follow_location: true
-                        }
+                        update_cookies:  true,
+                        follow_location: true
                     }
 
                     if async
-                        page_from_url( url, http_opts ) { |p| block.call find.call( p.forms ) }
+                        http.get( url, http_opts ) do |r|
+                            block.call find.call( forms_from_response( r, true ) )
+                        end
                     else
-                        page_from_url( url, http_opts ).forms
+                        forms_from_response(
+                            http.get( url, http_opts.merge( mode: :sync ) ),
+                            true
+                        )
                     end
                 end
 
@@ -231,7 +231,10 @@ class Session
         print_debug "Got page with URL #{page.url}"
 
         form = find_login_form(
-            pages:  page,
+            # We need to reparse the body in order to override the scope
+            # and thus extract even out-of-scope forms in case we're dealing
+            # with a Single-Sign-On situation.
+            forms:  forms_from_document( page.url, page.body, true ),
             inputs: configuration[:inputs].keys
         )
 
@@ -242,6 +245,8 @@ class Session
         end
 
         print_debug "Found login form: #{form.id}"
+
+        form.page = page
 
         # Use the form DOM to submit if a browser is available.
         form = form.dom if has_browser?
