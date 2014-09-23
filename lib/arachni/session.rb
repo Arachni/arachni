@@ -223,7 +223,7 @@ class Session
         # Revert to the Framework DOM Level 1 page handling if no browser
         # is available.
         page = refresh_browser ?
-            browser.load( configuration[:url] ).to_page :
+            browser.load( configuration[:url], take_snapshot: false ).to_page :
             Page.from_url( configuration[:url], precision: 1, http: {
                 update_cookies: true
             })
@@ -236,7 +236,7 @@ class Session
         )
 
         if !form
-            print_debug_level_3 page.body
+            print_debug_level_2 page.body
             fail Error::FormNotFound,
                  "Login form could not be found with: #{configuration}"
         end
@@ -333,7 +333,10 @@ class Session
         return if !has_browser?
 
         shutdown_browser
-        @browser = Browser.new
+
+        # The session handling browser needs to be able to roam free in order
+        # to support SSO.
+        @browser = Browser.new( store_pages: false, ignore_scope: true )
     end
 
 end
