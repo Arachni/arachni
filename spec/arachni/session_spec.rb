@@ -52,6 +52,22 @@ describe Arachni::Session do
         end
     end
 
+    describe '#has_browser?' do
+        context "when #{Arachni::OptionGroups::Scope}#dom_depth_limit is 0" do
+            it 'returns false' do
+                Arachni::Options.scope.dom_depth_limit = 0
+                subject.has_browser?.should be_false
+            end
+        end
+
+        context "when not #{Arachni::Browser}.has_executable?" do
+            it 'returns false' do
+                Arachni::Browser.stub(:has_executable?) { false }
+                subject.has_browser?.should be_false
+            end
+        end
+    end
+
     describe '#configuration' do
         it "returns #{Arachni::Data::Session}#configuration" do
             subject.configuration.object_id.should ==

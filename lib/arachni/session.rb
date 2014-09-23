@@ -293,7 +293,7 @@ class Session
     end
 
     def has_browser?
-        Browser.has_executable?
+        Browser.has_executable? && Options.scope.dom_depth_limit > 0
     end
 
     private
