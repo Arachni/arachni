@@ -5,6 +5,9 @@
 - `OptionGroups::Paths`
     - Default log directory location can be overridden by being specified in the
         `.logdir` file.
+- `UI::Output`
+    - Moved default error log under `OptionGroups::Paths.logs`.
+    - Optimized file descriptor handling.
 - `Framework`
     - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
 - `Browser`
