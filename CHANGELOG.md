@@ -23,6 +23,8 @@
 - `Browser`
     - `ElementLocator.supported_element_attributes_for`
         - Fixed `nil`-error when dealing with unknown attributes.
+    - Added `:ignore_scope` option, allowing the browser to roam completely
+        unrestricted.
 - `Session`
     - Fallback to `Framework` DOM Level 1 handlers when no `Browser` is available.
     - When `OptionGroups::Scope#dom_depth_limit` is 0 don't use the `Browser`.

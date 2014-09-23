@@ -85,6 +85,47 @@ describe Arachni::Browser do
             it 'sets the HTTP request concurrency'
         end
 
+        describe :ignore_scope do
+            context true do
+                it 'ignores scope restrictions' do
+                    @browser.shutdown
+
+                    @browser = described_class.new( ignore_scope: true )
+
+                    Arachni::Options.scope.exclude_path_patterns << /sleep/
+
+                    subject.load @url + '/ajax_sleep'
+                    subject.to_page.should be_true
+                end
+            end
+
+            context false do
+                it 'enforces scope restrictions' do
+                    @browser.shutdown
+
+                    @browser = described_class.new( ignore_scope: false )
+
+                    Arachni::Options.scope.exclude_path_patterns << /sleep/
+
+                    subject.load @url + '/ajax_sleep'
+                    subject.to_page.should be_nil
+                end
+            end
+
+            context :default do
+                it 'enforces scope restrictions' do
+                    @browser.shutdown
+
+                    @browser = described_class.new( ignore_scope: false )
+
+                    Arachni::Options.scope.exclude_path_patterns << /sleep/
+
+                    subject.load @url + '/ajax_sleep'
+                    subject.to_page.should be_nil
+                end
+            end
+        end
+
         describe :width do
             it 'sets the window width' do
                 @browser.shutdown
