@@ -40,6 +40,12 @@ module Output
         @@reroute_to_file = false
 
         @@error_log_written_env = false
+
+        @@error_fd ||= nil
+        begin
+            @@error_fd.close if @@error_fd
+        rescue IOError
+        end
         @@error_fd = nil
 
         @@error_logfile = "#{Options.paths.logs}error-#{Process.pid}.log"
@@ -70,7 +76,10 @@ module Output
         @@error_fd.sync = true
 
         Kernel.at_exit do
-            @@error_fd.close
+            begin
+                @@error_fd.close if @@error_fd
+            rescue IOError
+            end
         end
 
         @@error_fd
