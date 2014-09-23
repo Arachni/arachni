@@ -67,6 +67,7 @@ module Output
         return @@error_fd if @@error_fd
 
         @@error_fd = File.open( error_logfile, 'a' )
+        @@error_fd.sync = true
 
         Kernel.at_exit do
             @@error_fd.close
