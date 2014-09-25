@@ -30,6 +30,7 @@
     - Fallback to `Framework` DOM Level 1 handlers when no `Browser` is available.
     - When `OptionGroups::Scope#dom_depth_limit` is 0 don't use the `Browser`.
     - Configured its `Browser` with `:ignore_scope` to allow for SSO support.
+    - `#logged_in?` -- Follow redirections for login check HTTP request.
 - `Element::Capabilities`
     - `Analyzable`
         - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.

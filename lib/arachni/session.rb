@@ -299,7 +299,8 @@ class Session
         fail Error::NoLoginCheck if !has_login_check?
 
         http_options = http_options.merge(
-            mode: block_given? ? :async : :sync
+            mode:            block_given? ? :async : :sync,
+            follow_location: true
         )
 
         bool = nil
