@@ -725,6 +725,7 @@ class Client
             print_debug_level_3 "Params: #{request.parameters}"
             print_debug_level_3 "Body: #{request.body}"
             print_debug_level_3 "Headers: #{request.headers}"
+            print_debug_level_3 "Cookies: #{request.cookies}"
             print_debug_level_3 "Train?: #{request.train?}"
             print_debug_level_3  '------------'
         end
