@@ -608,7 +608,7 @@ class OptionParser < UI::CLI::OptionParser
     def validate_session
         if (!options.session.check_url && options.session.check_pattern) ||
             (options.session.check_url && !options.session.check_pattern)
-            print_bad "Both '--login-check-url' and '--login-check-pattern'" <<
+            print_bad "Both '--session-check-url' and '--session-check-pattern'" <<
                             ' options are required.'
             exit 1
         end
