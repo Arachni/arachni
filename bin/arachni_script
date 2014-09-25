@@ -9,8 +9,8 @@
 
 $LOAD_PATH.unshift( File.expand_path( File.dirname( __FILE__ ) + '/../lib' ) )
 
-require_relative '../ui/cli/output'
 require 'arachni'
+require_relative '../ui/cli/output'
 
 include Arachni
 include Utilities
