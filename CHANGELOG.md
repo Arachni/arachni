@@ -31,12 +31,15 @@
     - When `OptionGroups::Scope#dom_depth_limit` is 0 don't use the `Browser`.
     - Configured its `Browser` with `:ignore_scope` to allow for SSO support.
     - `#logged_in?` -- Follow redirections for login check HTTP request.
-- `Element::Capabilities`
-    - `Analyzable`
-        - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
-        - `Timeout` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
-    - `Mutable`
-        - `#each_mutation` -- Removed obsolete method-switch with default inputs.
+- `Element`
+    - `Cookie`
+        - Added `#data` -- Providing access to raw cookie data.
+    - `Capabilities`
+        - `Analyzable`
+            - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+            - `Timeout` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+        - `Mutable`
+            - `#each_mutation` -- Removed obsolete method-switch with default inputs.
 - Plugins
     - `uncommon_headers`
         - Added `keep-alive` and `content-disposition` in the common list.

@@ -40,6 +40,8 @@ class Cookie < Base
         httponly:    false
     }
 
+    attr_reader :data
+
     # @param    [Hash]  options
     #   For options see {DEFAULT}, with the following extras:
     # @option   options [String]    :url
