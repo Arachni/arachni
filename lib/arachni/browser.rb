@@ -312,6 +312,8 @@ class Browser
             wait_for_timers
 
             wait_for_pending_requests
+
+            javascript.set_element_ids
         end
 
         if @add_request_transitions

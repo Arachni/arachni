@@ -28,6 +28,7 @@
     - Capped `setTimeout` waiting period to `OptionGroups::HTTP#request_timeout`.
     - Fixed issue resulting in multiple cookies with the same name being sent
         to the web application.
+    - Assigned unique custom IDs to DOM elements without ID attributes.
 - `Session`
     - Fallback to `Framework` DOM Level 1 handlers when no `Browser` is available.
     - When `OptionGroups::Scope#dom_depth_limit` is 0 don't use the `Browser`.
