@@ -26,6 +26,8 @@
     - Added `:ignore_scope` option, allowing the browser to roam completely
         unrestricted.
     - Capped `setTimeout` waiting period to `OptionGroups::HTTP#request_timeout`.
+    - Fixed issue resulting in multiple cookies with the same name being sent
+        to the web application.
 - `Session`
     - Fallback to `Framework` DOM Level 1 handlers when no `Browser` is available.
     - When `OptionGroups::Scope#dom_depth_limit` is 0 don't use the `Browser`.

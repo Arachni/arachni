@@ -1084,6 +1084,8 @@ class Browser
 
         set_cookies = {}
         HTTP::Client.cookie_jar.for_url( url ).each do |cookie|
+            cookie = cookie.dup
+            cookie.data.delete :domain
             set_cookies[cookie.name] = cookie
         end
         cookies.each do |name, value|
