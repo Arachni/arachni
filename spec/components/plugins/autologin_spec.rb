@@ -7,6 +7,11 @@ describe name_from_filename do
         options.url = url
     end
 
+    before :each do
+        options.session.check_url     = nil
+        options.session.check_pattern = nil
+    end
+
     context 'when given the right params' do
         it 'locates the form and login successfully' do
             options.plugins[component_name] = {
@@ -93,4 +98,58 @@ describe name_from_filename do
             framework.status.should == :aborted
         end
     end
+
+    context "when #{Arachni::OptionGroups::Session}#check_url is" do
+        before do
+            options.plugins[component_name] = {
+                'url'        => url + '/login',
+                'parameters' => 'username=john&password=doe',
+                'check'      => 'Hi there logged-in user'
+            }
+        end
+
+        context 'nil' do
+            it 'sets it to the login response URL' do
+                framework.options.session.check_url = nil
+                run
+                framework.options.session.check_url.should == url
+            end
+        end
+
+        context 'is set' do
+            it 'does not change it' do
+                option_url = url + '/stuff'
+                framework.options.session.check_url = option_url
+                run
+                framework.options.session.check_url.should == option_url
+            end
+        end
+    end
+
+    context "when #{Arachni::OptionGroups::Session}#check_pattern is" do
+        before do
+            options.plugins[component_name] = {
+                'url'        => url + '/login',
+                'parameters' => 'username=john&password=doe',
+                'check'      => 'Hi there logged-in user'
+            }
+        end
+
+        context 'nil' do
+            it 'sets it to the plugin pattern' do
+                framework.options.session.check_pattern = nil
+                run
+                framework.options.session.check_pattern.should == /Hi there logged-in user/
+            end
+        end
+
+        context 'is set' do
+            it 'does not change it' do
+                framework.options.session.check_pattern = /stuff/
+                run
+                framework.options.session.check_pattern.should == /stuff/
+            end
+        end
+    end
+
 end

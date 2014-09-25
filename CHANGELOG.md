@@ -48,6 +48,8 @@
         - Ignore out-of-scope responses.
     - `cookie_collector`
         - `Set-Cookie` header is now always an `Array`.
+    - `autologin`
+        - Don't modify `OptionGroups::Session` (login-check) options if already set.
 
 ## 1.0.2 _(September 13, 2014)_
 
