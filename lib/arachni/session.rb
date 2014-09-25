@@ -258,7 +258,10 @@ class Session
 
         page = nil
         if has_browser?
+            print_debug 'Submitting form.'
             form.submit { |p| page = p }
+            print_debug 'Form submitted.'
+
             http.update_cookies browser.cookies
         else
             page = form.submit(
