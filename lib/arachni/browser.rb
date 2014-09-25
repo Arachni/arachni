@@ -1007,6 +1007,13 @@ class Browser
             kill_process
         end
 
+        # Something went really bad, the browser couldn't be spawned even
+        # after our valiant efforts.
+        #
+        # Bail out for now and count on the BrowserCluster to retry to boot
+        # another process ass needed.
+        return if !@process
+
         begin
             @pid = @process.pid
         # Not supported on JRuby on MS Windows.
