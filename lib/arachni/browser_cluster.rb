@@ -384,32 +384,18 @@ class BrowserCluster
     def initialize_workers
         print_status "Initializing #{pool_size} browsers..."
 
-        # Calculate maximum HTTP connection concurrency for each worker based on
-        # the HTTP request concurrency setting of the framework.
-        #
-        # Ideally, we'd throttle the collective connections of all browsers
-        # for optimal concurrency, but that would require all browsers sharing
-        # the same proxy which would make things **really** dirty and complicated
-        # so let's avoid that for as long as possible.
-        #concurrency = [(Options.http.request_concurrency / pool_size).to_i, 1].max
-
         @workers = []
-        workers  = Queue.new
+        pool_size.times do |i|
+            worker = Worker.new(
+                javascript_token: @javascript_token,
+                master:           self,
+                width:            Options.browser_cluster.screen_width,
+                height:           Options.browser_cluster.screen_height
+            )
+            @workers << worker
+            @consumed_pids << worker.pid
 
-        pool_size.times do
-            Thread.new do
-                workers << Worker.new(
-                    javascript_token: @javascript_token,
-                    master:           self,
-                    width:            Options.browser_cluster.screen_width,
-                    height:           Options.browser_cluster.screen_height
-                    #concurrency:      concurrency
-                )
-            end
-        end
-
-        pool_size.times do
-            @workers << workers.pop.tap { |b| @consumed_pids << b.pid }
+            print_status "Spawned ##{i+1} with PID #{worker.pid}."
         end
         @consumed_pids.compact!
 
