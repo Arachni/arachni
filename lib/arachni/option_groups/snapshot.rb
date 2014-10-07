@@ -17,6 +17,10 @@ class Snapshot < Arachni::OptionGroup
     # @see Framework#suspend
     attr_accessor :save_path
 
+    def initialize
+        @save_path = Paths.config['framework']['snapshots']
+    end
+
 end
 end
 

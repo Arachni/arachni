@@ -126,6 +126,8 @@ class Browser
         super()
         @options = options.dup
 
+        @ignore_scope = options[:ignore_scope]
+
         @width  = options[:width]  || 1600
         @height = options[:height] || 1200
 
@@ -310,6 +312,8 @@ class Browser
             wait_for_timers
 
             wait_for_pending_requests
+
+            javascript.set_element_ids
         end
 
         if @add_request_transitions
@@ -828,7 +832,12 @@ class Browser
     def wait_for_timers
         delay = load_delay
         return if !delay
-        sleep delay / 1000.0
+
+        sleep [Options.http.request_timeout, delay].min / 1000.0
+    end
+
+    def skip_path?( path )
+        enforce_scope? && super( path )
     end
 
     def response
@@ -998,6 +1007,13 @@ class Browser
             kill_process
         end
 
+        # Something went really bad, the browser couldn't be spawned even
+        # after our valiant efforts.
+        #
+        # Bail out for now and count on the BrowserCluster to retry to boot
+        # another process ass needed.
+        return if !@process
+
         begin
             @pid = @process.pid
         # Not supported on JRuby on MS Windows.
@@ -1077,6 +1093,8 @@ class Browser
 
         set_cookies = {}
         HTTP::Client.cookie_jar.for_url( url ).each do |cookie|
+            cookie = cookie.dup
+            cookie.data.delete :domain
             set_cookies[cookie.name] = cookie
         end
         cookies.each do |name, value|
@@ -1181,7 +1199,7 @@ class Browser
             transition.complete
         end
 
-        return if response.scope.out?
+        return if enforce_scope? && response.scope.out?
 
         intercept response
         save_response response
@@ -1203,6 +1221,8 @@ class Browser
     end
 
     def ignore_request?( request )
+        return if !enforce_scope?
+
         # Only allow CSS and JS resources to be loaded from out-of-scope domains.
         !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
             request.scope.out? || request.scope.redundant?
@@ -1302,6 +1322,10 @@ class Browser
             @window_responses[normalize_watir_url( url )] ||
                 @window_responses[normalize_url( url )]
         end
+    end
+
+    def enforce_scope?
+        !@ignore_scope
     end
 
     def normalize_watir_url( url )

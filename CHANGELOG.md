@@ -1,5 +1,62 @@
 # ChangeLog
 
+## 1.0.3 _(October 3, 2014)_
+
+- Added overrides for system write directories in `config/write_paths.yml`.
+- `OptionGroups`
+    - `Paths`
+        - Added `.config` -- Parsing `config/write_paths.yml`.
+        - `#logs` -- Can now be set via `.config`.
+        - `#snapshots` -- Can now be set via `.config`.
+    - `Snapshot`
+        - `#save_path` -- Can now be set via `Paths.config`.
+- `UI::Output`
+    - Moved default error log under `OptionGroups::Paths.logs`.
+    - Optimized file descriptor handling.
+- `UI::CLI`
+    - `OptionParser`
+        - Set default report location save-dir from `OptionGroups::Paths.config`.
+    - `Framework`
+        - Print the error-log location at the end of the scan if there were errors.
+- `Framework`
+    - Use `OptionGroups::Scope#extend_paths` to seed the crawl.
+- `Browser`
+    - `ElementLocator.supported_element_attributes_for`
+        - Fixed `nil`-error when dealing with unknown attributes.
+    - Added `:ignore_scope` option, allowing the browser to roam completely
+        unrestricted.
+    - Capped `setTimeout` waiting period to `OptionGroups::HTTP#request_timeout`.
+    - Fixed issue resulting in multiple cookies with the same name being sent
+        to the web application.
+    - Assigned unique custom IDs to DOM elements without ID attributes.
+- `BrowserCluster`
+    - Spawn browsers in series instead of in parallel to make it easier on
+        low resource systems.
+- `Session`
+    - Fallback to `Framework` DOM Level 1 handlers when no `Browser` is available.
+    - When `OptionGroups::Scope#dom_depth_limit` is 0 don't use the `Browser`.
+    - Configured its `Browser` with `:ignore_scope` to allow for SSO support.
+    - `#logged_in?` -- Follow redirections for login check HTTP request.
+- `Element`
+    - `Cookie`
+        - Added `#data` -- Providing access to raw cookie data.
+    - `Capabilities`
+        - `Analyzable`
+            - `Differential` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+            - `Timeout` -- Forcibly disable `OptionGroups::Audit#cookies_extensively`.
+        - `Mutable`
+            - `#each_mutation` -- Removed obsolete method-switch with default inputs.
+- Plugins
+    - `uncommon_headers`
+        - Added `keep-alive` and `content-disposition` in the common list.
+        - Ignore out-of-scope responses.
+    - `content_types`
+        - Ignore out-of-scope responses.
+    - `cookie_collector`
+        - `Set-Cookie` header is now always an `Array`.
+    - `autologin`
+        - Don't modify `OptionGroups::Session` (login-check) options if already set.
+
 ## 1.0.2 _(September 13, 2014)_
 
 - `UI::Output` -- Updated null output interface with placeholder debugging methods.

@@ -68,7 +68,7 @@ Injects JS taint code and checks to see if it gets executed as proof of vulnerab
             version:     '0.1',
 
             issue:       {
-                name:            %q{DOM-based Cross-Site Scripting (XSS)},
+                name:            %q{DOM-based Cross-Site Scripting (XSS) in script context},
                 description:     %q{
 Client-side scripts are used extensively by modern web applications.
 They perform from simple functions (such as the formatting of text) up to full

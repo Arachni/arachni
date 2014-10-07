@@ -21,7 +21,7 @@ describe Arachni::Element::Cookie do
     end
     subject do
         described_class.new(
-            url:     "#{url}/submit",
+            url:     "#{url}submit",
             name:    inputs.keys.first,
             value:   inputs.values.first,
             expires: Time.now + 99999999999
@@ -173,6 +173,27 @@ describe Arachni::Element::Cookie do
             it 'returns false' do
                 subject.http_only?.should be_false
             end
+        end
+    end
+
+    describe '#data' do
+        it 'returns the cookie data' do
+            subject.data.should == {
+                name:        'mycookie',
+                value:       'myvalue',
+                url:         subject.action,
+                expires:     subject.expires_at,
+                version:     0,
+                port:        nil,
+                discard:     nil,
+                comment_url: nil,
+                max_age:     nil,
+                comment:     nil,
+                secure:      nil,
+                path:        '/submit',
+                domain:      '127.0.0.2',
+                httponly:    false
+            }
         end
     end
 

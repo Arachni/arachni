@@ -299,6 +299,10 @@ module Timeout
             # any interference during timing attacks.
             skip_original:     true,
 
+            # Disable {Arachni::OptionGroups::Audit#cookies_extensively}, there's little
+            # to be gained in this case and just causes interference.
+            extensively:       false,
+
             # Intercept each element mutation prior to it being submitted and
             # replace the '__TIME__' stub with the actual delay value.
             each_mutation:     proc do |mutation|

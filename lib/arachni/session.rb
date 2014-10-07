@@ -116,8 +116,6 @@ class Session
     #   Pages to look through.
     # @option opts [String] :url
     #   URL to fetch and look for forms.
-    # @option opts [Bool] :with_browser
-    #   Does the login form require a {Browser} environment?
     #
     # @param    [Block] block
     #   If a block and a :url are given, the request will run async and the
@@ -151,17 +149,19 @@ class Session
                     opts[:forms]
                 elsif (url = opts[:url])
                     http_opts = {
-                        precision: false,
-                        http:      {
-                            update_cookies:  true,
-                            follow_location: true
-                        }
+                        update_cookies:  true,
+                        follow_location: true
                     }
 
                     if async
-                        page_from_url( url, http_opts ) { |p| block.call find.call( p.forms ) }
+                        http.get( url, http_opts ) do |r|
+                            block.call find.call( forms_from_response( r, true ) )
+                        end
                     else
-                        page_from_url( url, http_opts ).forms
+                        forms_from_response(
+                            http.get( url, http_opts.merge( mode: :sync ) ),
+                            true
+                        )
                     end
                 end
 
@@ -212,25 +212,71 @@ class Session
     def login
         fail Error::NotConfigured, 'Please #configure the session first.' if !configured?
 
-        refresh_browser
+        if has_browser?
+            print_debug 'Logging in using browser.'
+        else
+            print_debug 'Logging in without browser.'
+        end
+
+        print_debug "Grabbing page at: #{configuration[:url]}"
+
+        # Revert to the Framework DOM Level 1 page handling if no browser
+        # is available.
+        page = refresh_browser ?
+            browser.load( configuration[:url], take_snapshot: false ).to_page :
+            Page.from_url( configuration[:url], precision: 1, http: {
+                update_cookies: true
+            })
+
+        print_debug "Got page with URL #{page.url}"
 
         form = find_login_form(
-            pages:  browser.load( configuration[:url] ).to_page,
+            # We need to reparse the body in order to override the scope
+            # and thus extract even out-of-scope forms in case we're dealing
+            # with a Single-Sign-On situation.
+            forms:  forms_from_document( page.url, page.body, true ),
             inputs: configuration[:inputs].keys
         )
 
         if !form
+            print_debug_level_2 page.body
             fail Error::FormNotFound,
                  "Login form could not be found with: #{configuration}"
         end
 
-        form.dom.update configuration[:inputs]
-        form.dom.auditor = self
+        print_debug "Found login form: #{form.id}"
+
+        form.page = page
+
+        # Use the form DOM to submit if a browser is available.
+        form = form.dom if has_browser?
+
+        form.update configuration[:inputs]
+        form.auditor = self
+
+        print_debug "Updated form inputs: #{form.inputs}"
 
         page = nil
-        form.dom.submit { |p| page = p }
+        if has_browser?
+            print_debug 'Submitting form.'
+            form.submit { |p| page = p }
+            print_debug 'Form submitted.'
 
-        http.update_cookies browser.cookies
+            http.update_cookies browser.cookies
+        else
+            page = form.submit(
+                mode:            :sync,
+                follow_location: false,
+                update_cookies:  true
+            ).to_page
+
+            if page.response.redirection?
+                url  = to_absolute( page.response.headers.location, page.url )
+                print_debug "Redirected to: #{url}"
+
+                page = Page.from_url( url, precision: 1, http: { update_cookies: true } )
+            end
+        end
 
         page
     end
@@ -256,7 +302,8 @@ class Session
         fail Error::NoLoginCheck if !has_login_check?
 
         http_options = http_options.merge(
-            mode: block_given? ? :async : :sync
+            mode:            block_given? ? :async : :sync,
+            follow_location: true
         )
 
         bool = nil
@@ -278,6 +325,10 @@ class Session
         HTTP::Client
     end
 
+    def has_browser?
+        Browser.has_executable? && Options.scope.dom_depth_limit > 0
+    end
+
     private
 
     def shutdown_browser
@@ -288,8 +339,13 @@ class Session
     end
 
     def refresh_browser
+        return if !has_browser?
+
         shutdown_browser
-        @browser = Browser.new
+
+        # The session handling browser needs to be able to roam free in order
+        # to support SSO.
+        @browser = Browser.new( store_pages: false, ignore_scope: true )
     end
 
 end

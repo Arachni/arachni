@@ -39,9 +39,16 @@ module Output
         @@only_positives  = false
         @@reroute_to_file = false
 
-        @@opened = false
+        @@error_log_written_env = false
 
-        @@error_logfile = 'error.log'
+        @@error_fd ||= nil
+        begin
+            @@error_fd.close if @@error_fd
+        rescue IOError
+        end
+        @@error_fd = nil
+
+        @@error_logfile = "#{Options.paths.logs}error-#{Process.pid}.log"
     end
 
     reset_output_options
@@ -56,6 +63,26 @@ module Output
     #   Location of the error log file.
     def error_logfile
         @@error_logfile
+    end
+
+    def has_error_log?
+        File.exist? error_logfile
+    end
+
+    def error_log_fd
+        return @@error_fd if @@error_fd
+
+        @@error_fd = File.open( error_logfile, 'a' )
+        @@error_fd.sync = true
+
+        Kernel.at_exit do
+            begin
+                @@error_fd.close if @@error_fd
+            rescue IOError
+            end
+        end
+
+        @@error_fd
     end
 
     # Prints and logs an error message.
@@ -82,30 +109,29 @@ module Output
     #
     # @param    [String]    str
     def log_error( str = '' )
-        File.open( @@error_logfile, 'a' ) do |f|
-            if !@@opened
-                f.puts
-                f.puts "#{Time.now} " + ( "-" * 80 )
+        if !@@error_log_written_env
+            @@error_log_written_env = true
 
-                begin
-                    h = {}
-                    ENV.each { |k, v| h[k] = v }
-                    f.puts 'ENV:'
-                    f.puts h.to_yaml
+            error_log_fd.puts
+            error_log_fd.puts "#{Time.now} " + ( '-' * 80 )
 
-                    f.puts "-" * 80
+            begin
+                h = {}
+                ENV.each { |k, v| h[k] = v }
+                error_log_fd.puts 'ENV:'
+                error_log_fd.puts h.to_yaml
 
-                    f.puts 'OPTIONS:'
-                    f.puts Arachni::Options.instance.to_yaml
-                rescue
-                end
+                error_log_fd.puts '-' * 80
 
-                f.puts "-" * 80
+                error_log_fd.puts 'OPTIONS:'
+                error_log_fd.puts Arachni::Options.to_save_data
+            rescue
             end
-            print_color( "[#{Time.now}]", 31, str, f, true )
+
+            error_log_fd.puts '-' * 80
         end
 
-        @@opened = true
+        print_color( "[#{Time.now}]", 31, str, error_log_fd, true )
     end
 
     # Used to draw attention to a bad situation which isn't an error.

@@ -660,9 +660,10 @@ describe Arachni::Element::Form do
                 described_class.from_document( '', '' ).should be_empty
             end
         end
+
         context 'when forms have actions that are out of scope' do
-            it 'ignores them' do
-                html = '
+            let(:form_html) do
+                <<EOHTML
                     <html>
                         <body>
                             <form method="get" action="form_action/exclude" name="my_form">
@@ -670,20 +671,30 @@ describe Arachni::Element::Form do
                                 <input name="my_second_input" value="my_second_value" />
                             </form>
 
-                            <form method="get" action="form_action" name="my_form">
-                                <input name="my_first_input" value="my_first_value" />
-                                <input name="my_second_input" value="my_second_value" />
-                            </form>
+                            #{html}
                         </body>
-                    </html>'
+                    </html>
+EOHTML
+            end
 
+            it 'ignores them' do
                 Arachni::Options.scope.exclude_path_patterns = [/exclude/]
 
-                forms = described_class.from_document( url, html )
+                forms = described_class.from_document( url, form_html )
                 forms.size.should == 1
                 forms.first.action.should == utilities.normalize_url( url + '/form_action' )
             end
+
+            context 'when ignore_scope is set' do
+                it 'includes them' do
+                    Arachni::Options.scope.exclude_path_patterns = [/exclude/]
+
+                    forms = described_class.from_document( url, form_html, true )
+                    forms.size.should == 2
+                end
+            end
         end
+
         context 'when the response contains forms' do
             context 'with text inputs' do
                 it 'returns an array of forms' do
@@ -1033,7 +1044,6 @@ describe Arachni::Element::Form do
                     }
                 end
             end
-
         end
     end
 

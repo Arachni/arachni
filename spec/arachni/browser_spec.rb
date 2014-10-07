@@ -85,6 +85,47 @@ describe Arachni::Browser do
             it 'sets the HTTP request concurrency'
         end
 
+        describe :ignore_scope do
+            context true do
+                it 'ignores scope restrictions' do
+                    @browser.shutdown
+
+                    @browser = described_class.new( ignore_scope: true )
+
+                    Arachni::Options.scope.exclude_path_patterns << /sleep/
+
+                    subject.load @url + '/ajax_sleep'
+                    subject.to_page.should be_true
+                end
+            end
+
+            context false do
+                it 'enforces scope restrictions' do
+                    @browser.shutdown
+
+                    @browser = described_class.new( ignore_scope: false )
+
+                    Arachni::Options.scope.exclude_path_patterns << /sleep/
+
+                    subject.load @url + '/ajax_sleep'
+                    subject.to_page.should be_nil
+                end
+            end
+
+            context :default do
+                it 'enforces scope restrictions' do
+                    @browser.shutdown
+
+                    @browser = described_class.new( ignore_scope: false )
+
+                    Arachni::Options.scope.exclude_path_patterns << /sleep/
+
+                    subject.load @url + '/ajax_sleep'
+                    subject.to_page.should be_nil
+                end
+            end
+        end
+
         describe :width do
             it 'sets the window width' do
                 @browser.shutdown
@@ -202,6 +243,16 @@ describe Arachni::Browser do
                 time = Time.now
                 subject.wait_for_timers
                 (Time.now - time).should > seconds
+            end
+
+            it "caps them at #{Arachni::OptionGroups::HTTP}#request_timeout" do
+                subject.load( "#{@url}load_delay" )
+
+                Arachni::Options.http.request_timeout = 100
+
+                time = Time.now
+                subject.wait_for_timers
+                (Time.now - time).should < 0.2
             end
         end
     end

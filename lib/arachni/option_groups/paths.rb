@@ -6,6 +6,8 @@
     web site for more information on licensing and terms of use.
 =end
 
+require 'fileutils'
+
 module Arachni::OptionGroups
 
 # Holds paths to the directories of various system components.
@@ -34,19 +36,29 @@ class Paths < Arachni::OptionGroup
         @root       = root_path
         @gfx        = @root + 'gfx/'
         @components = @root + 'components/'
-        @snapshots  = @root + 'snapshots/'
 
-        @logs = ENV['ARACHNI_FRAMEWORK_LOGDIR'] ?
-            "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/" : @root + 'logs/'
+        if self.class.config['framework']['snapshots']
+            @snapshots  = self.class.config['framework']['snapshots']
+        else
+            @snapshots  = @root + 'snapshots/'
+        end
+
+        if ENV['ARACHNI_FRAMEWORK_LOGDIR']
+            @logs = "#{ENV['ARACHNI_FRAMEWORK_LOGDIR']}/"
+        elsif self.class.config['framework']['logs']
+            @logs = self.class.config['framework']['logs']
+        else
+            @logs = "#{@root}logs/"
+        end
 
         @checks          = @components + 'checks/'
         @reporters       = @components + 'reporters/'
         @plugins         = @components + 'plugins/'
-        @services   = @components + 'services/'
+        @services        = @components + 'services/'
         @path_extractors = @components + 'path_extractors/'
         @fingerprinters  = @components + 'fingerprinters/'
 
-        @lib     = @root + 'lib/arachni/'
+        @lib = @root + 'lib/arachni/'
 
         @executables = @lib + 'processes/executables/'
         @support     = @lib + 'support/'
@@ -54,9 +66,54 @@ class Paths < Arachni::OptionGroup
         @arachni     = @lib[0...-1]
     end
 
-    # @return   [String]    Root path of the framework.
     def root_path
+        self.class.root_path
+    end
+
+    # @return   [String]    Root path of the framework.
+    def self.root_path
         File.expand_path( File.dirname( __FILE__ ) + '/../../..' ) + '/'
+    end
+
+    def config
+        self.class.config
+    end
+
+    def self.paths_config_file
+        "#{root_path}config/write_paths.yml"
+    end
+
+    def self.clear_config_cache
+        @config = nil
+    end
+
+    def self.config
+        return @config if @config
+
+        if !File.exist?( paths_config_file )
+            @config = {}
+        else
+            @config = YAML.load( IO.read( paths_config_file ) )
+        end
+
+        @config['framework'] ||= {}
+        @config['cli']       ||= {}
+
+        @config.dup.each do |category, config|
+            config.dup.each do |subcat, dir|
+                if dir.to_s.empty?
+                    @config[category].delete subcat
+                    next
+                end
+
+                dir.gsub!( '~', ENV['HOME'] )
+                dir << '/' if !dir.end_with?( '/' )
+
+                FileUtils.mkdir_p dir
+            end
+        end
+
+        @config
     end
 
 end

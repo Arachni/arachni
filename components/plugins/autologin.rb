@@ -48,8 +48,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
             return
         end
 
-        framework.options.session.check_url     = response.url
-        framework.options.session.check_pattern = @verifier
+        framework.options.session.check_url     ||= response.url
+        framework.options.session.check_pattern ||= @verifier
 
         if !session.logged_in?
             register_results(

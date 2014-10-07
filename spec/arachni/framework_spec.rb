@@ -209,6 +209,23 @@ describe Arachni::Framework do
             end
         end
 
+        describe "#{Arachni::OptionGroups::Scope}#extend_paths" do
+            it 'extends the crawl scope' do
+                Arachni::Framework.new do |f|
+                    f.options.url = "#{@url}/elem_combo"
+                    f.options.scope.extend_paths = %w(/some/stuff /more/stuff)
+                    f.options.audit.elements :links, :forms, :cookies
+                    f.checks.load :taint
+
+                    f.run
+
+                    f.report.sitemap.should include "#{@url}/some/stuff"
+                    f.report.sitemap.should include "#{@url}/more/stuff"
+                    f.report.sitemap.size.should > 3
+                end
+            end
+        end
+
         describe "#{Arachni::OptionGroups::Scope}#restrict_paths" do
             it 'serves as a replacement to crawling' do
                 Arachni::Framework.new do |f|

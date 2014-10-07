@@ -88,3 +88,18 @@ get '/elements_with_events/with-hidden' do
     </script>
 HTML
 end
+
+get '/set_element_ids' do
+    <<HTML
+        <a name="1" href="by-ajax" id="by-ajax">Stuff 1</a>
+        <a name="2" href="">Stuff 2</a>
+
+        <a name="3" href="by-ajax" id="by-ajax-1">Stuff 3</a>
+        <a name="4" href="">Stuff 4</a>
+
+    <script>
+        document.getElementsByTagName( "a" )[0].addEventListener( "click", function(){}, false )
+        document.getElementsByTagName( "a" )[1].addEventListener( "click", function(){}, false )
+    </script>
+HTML
+end

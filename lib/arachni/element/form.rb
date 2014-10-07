@@ -375,8 +375,8 @@ class Form < Base
         # @param   [Arachni::HTTP::Response]    response
         #
         # @return   [Array<Form>]
-        def from_response( response )
-            from_document( response.url, response.body )
+        def from_response( response, ignore_scope = false )
+            from_document( response.url, response.body, ignore_scope )
         end
 
         # Extracts forms from an HTML document.
@@ -386,18 +386,18 @@ class Form < Base
         # @param    [String, Nokogiri::HTML::Document]    document
         #
         # @return   [Array<Form>]
-        def from_document( url, document )
+        def from_document( url, document, ignore_scope = false )
             document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
 
             document.search( '//form' ).map do |node|
-                next if !(form = from_node( base_url, node ))
+                next if !(form = from_node( base_url, node, ignore_scope ))
                 form.url = url.freeze
                 form
             end.compact
         end
 
-        def from_node( url, node )
+        def from_node( url, node, ignore_scope = false )
             options          = attributes_to_hash( node.attributes )
             options[:url]    = url.freeze
             options[:action] = to_absolute( options[:action], url ).freeze
@@ -405,7 +405,7 @@ class Form < Base
             options[:html]   = node.to_html.freeze
 
             if (parsed_url = Arachni::URI( options[:action] ))
-                return if parsed_url.scope.out?
+                return if !ignore_scope && parsed_url.scope.out?
             end
 
             %w(textarea input select button).each do |attr|

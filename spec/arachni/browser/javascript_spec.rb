@@ -98,6 +98,26 @@ describe Arachni::Browser::Javascript do
         end
     end
 
+    describe '#set_element_ids' do
+        it 'sets custom ID attributes to elements with events but without ID' do
+            @browser.load( @dom_monitor_url + 'set_element_ids' )
+
+            as = @browser.watir.as
+
+            as[0].name.should == '1'
+            as[0].html.should_not include 'data-arachni-id'
+
+            as[1].name.should == '2'
+            as[1].html.should include 'data-arachni-id'
+
+            as[2].name.should == '3'
+            as[2].html.should_not include 'data-arachni-id'
+
+            as[3].name.should == '4'
+            as[3].html.should_not include 'data-arachni-id'
+        end
+    end
+
     describe '#dom_digest' do
         it 'returns a string digest of the current DOM tree' do
             @browser.load( @dom_monitor_url + 'digest' )

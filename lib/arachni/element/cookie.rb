@@ -40,6 +40,8 @@ class Cookie < Base
         httponly:    false
     }
 
+    attr_reader :data
+
     # @param    [Hash]  options
     #   For options see {DEFAULT}, with the following extras:
     # @option   options [String]    :url
@@ -175,7 +177,7 @@ class Cookie < Base
     end
 
     # Overrides {Capabilities::Mutable#each_mutation} to handle cookie-specific
-    # limitations and the {Arachni::Options#audit_cookies_extensively} option.
+    # limitations and the {Arachni::OptionGroups::Audit#cookies_extensively} option.
     #
     # @param (see Capabilities::Mutable#each_mutation)
     # @return (see Capabilities::Mutable#each_mutation)
@@ -184,19 +186,22 @@ class Cookie < Base
     #
     # @see Capabilities::Mutable#each_mutation
     def each_mutation( payload, opts = {}, &block )
-        flip = opts.delete( :param_flip )
+        opts        = opts.dup
+        flip        = opts.delete( :param_flip )
+        extensively = opts[:extensively]
+        extensively = Arachni::Options.audit.cookies_extensively? if extensively.nil?
 
         super( payload, opts ) do |elem|
             yield elem
 
-            next if !Arachni::Options.audit.cookies_extensively?
+            next if !extensively
             elem.each_extensive_mutation( elem, &block )
         end
 
         return if !flip
 
         if !valid_input_name_data?( payload )
-            print_debug_level_2 'Payload not supported as input value by' <<
+            print_debug_level_2 'Payload not supported as input name by' <<
                                     " #{audit_id}: #{payload.inspect}"
             return
         end

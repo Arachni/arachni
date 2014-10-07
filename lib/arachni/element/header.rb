@@ -46,7 +46,7 @@ class Header < Base
         return if !flip
 
         if !valid_input_name_data?( payload )
-            print_debug_level_2 'Payload not supported as input value by' <<
+            print_debug_level_2 'Payload not supported as input name by' <<
                                     " #{audit_id}: #{payload.inspect}"
             return
         end

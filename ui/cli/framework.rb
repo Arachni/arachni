@@ -95,6 +95,10 @@ class Framework
                 generate_reports
             end
 
+            if has_error_log?
+                print_info "The scan has logged errors: #{error_logfile}"
+            end
+
             print_statistics
         rescue Component::Options::Error::Invalid => e
             print_error e
@@ -367,6 +371,7 @@ class Framework
         filepath = report.save( options.datastore.report_path )
         filesize = (File.size( filepath ).to_f / 2**20).round(2)
 
+        print_line
         print_info "Report saved at: #{filepath} [#{filesize}MB]"
     end
 

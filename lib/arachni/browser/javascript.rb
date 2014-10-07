@@ -228,6 +228,12 @@ class Javascript
         taint_tracer.flush_data_flow_sinks
     end
 
+    # Sets a custom ID attribute to elements with events but without a proper ID.
+    def set_element_ids
+        return '' if !supported?
+        dom_monitor.setElementIds
+    end
+
     # @return   [String]
     #   Digest of the current DOM tree (i.e. node names and their attributes
     #   without text-nodes).
