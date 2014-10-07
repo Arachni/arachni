@@ -1,5 +1,7 @@
 # ChangeLog
 
+## _Under development_
+
 ## 1.0.3 _(October 3, 2014)_
 
 - Added overrides for system write directories in `config/write_paths.yml`.
