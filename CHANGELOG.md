@@ -2,6 +2,10 @@
 
 ## _Under development_
 
+- Checks
+    - Active
+        - `csrf` -- Check for `csrf` substring in input names and values.
+
 ## 1.0.3 _(October 3, 2014)_
 
 - Added overrides for system write directories in `config/write_paths.yml`.
