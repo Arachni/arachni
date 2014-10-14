@@ -33,8 +33,6 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.3.3
-#
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
 # @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
 # @see http://www.cgisecurity.com/csrf-faq.html
@@ -96,6 +94,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
     # @param  [String]  str
     def csrf_token?( str )
         return false if !str
+        return true if str.to_s.include?( 'csrf' )
 
         # we could use regexps but i kinda like lcamtuf's (Michal's) way
         base16_len_min    = 8
@@ -152,7 +151,7 @@ checks them for lack of anti-CSRF tokens.
 },
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3.3',
+            version:     '0.3.4',
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},
