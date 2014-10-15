@@ -14,3 +14,15 @@ c-h.v2.php
 php-backdoor.php
 simple-backdoor.php
 cmdasp.asp
+cmd-asp-5.1.asp
+cmdasp.aspx
+shell.sh
+cfexec.cfm
+cmdjsp.jsp
+jsp-reverse.jsp
+perlcmd.cgi
+perl-reverse-shell.pl
+php-findsock-shell.php
+php-reverse-shell.php
+php-tiny-shell.php
+qsd-php-backdoor.php
