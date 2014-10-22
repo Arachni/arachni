@@ -7,6 +7,9 @@
 - Checks
     - Active
         - `csrf` -- Check for `csrf` substring in input names and values.
+    - Passive
+        - `backdoors` -- Added more filenames. [PR #492]
+        - `common_directories` -- Added ISO 3166-1 Alpha-2 countries. [PR #491]
 
 ## 1.0.3 _(October 3, 2014)_
 
