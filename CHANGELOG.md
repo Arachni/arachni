@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- Executables
+    - `arachni_restore` -- Updated to accept timeout options.
 - Checks
     - Active
         - `csrf` -- Check for `csrf` substring in input names and values.
