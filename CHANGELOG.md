@@ -4,6 +4,8 @@
 
 - Executables
     - `arachni_restore` -- Updated to accept timeout options.
+- `Browser`
+    - Fail with `Browser::Error::Spawn` on unsuccessful process spawn.
 - Checks
     - Active
         - `csrf` -- Check for `csrf` substring in input names and values.

@@ -200,6 +200,13 @@ describe Arachni::Browser do
                 end
             end
         end
+
+        context 'when browser process spawn fails' do
+            it "raises #{described_class::Error::Spawn}" do
+                described_class.any_instance.stub(:spawn_phantomjs) { nil }
+                expect { described_class.new }.to raise_error described_class::Error::Spawn
+            end
+        end
     end
 
     describe '#source_with_line_numbers' do
