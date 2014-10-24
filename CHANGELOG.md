@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- CLI options
+    - Fixed typo causing `--http-authentication-password` to be ignored.
 - Executables
     - `arachni_restore` -- Updated to accept timeout options.
 - `Browser`
