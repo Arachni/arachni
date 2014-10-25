@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.0.4 _(October 25, 2014)_
 
 - CLI options
     - Fixed typo causing `--http-authentication-password` to be ignored.
