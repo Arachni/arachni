@@ -281,8 +281,6 @@ class Framework
 
                 # Toggle between status messages and command screens.
                 when ''
-                    return if !@framework.scanning?
-
                     if @show_command_screen
                         hide_command_screen
                     else

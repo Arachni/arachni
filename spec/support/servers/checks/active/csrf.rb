@@ -43,7 +43,10 @@ get '/token_in_name' do
 
         <form name='secure_important_form' action='?'>
             <input name='booya!' value='other important stuff' />
-            <input type='hidden' name='da39a3ee5e6b4b0d3255bfef95601890afd80709' />
+        <input type='hidden' name='da39a3ee5e6b4b0d3255bfef95601890afd80709' />
+
+        <form name='secure_important_form_2' action='?'>
+            <input name='blahcsrfblah' value='stuff' />
         </form>
 
         HTML
@@ -73,6 +76,13 @@ get '/token_in_action' do
             <input name='booya!' value='other important stuff' />
         </form>
 
+        <form name='secure_important_form4' action='?csrf=stuff'>
+            <input name='booya!' value='other important stuff' />
+        </form>
+
+        <form name='secure_important_form5' action='?stuff=csrf'>
+            <input name='booya!' value='other important stuff' />
+        </form>
         HTML
     end
 

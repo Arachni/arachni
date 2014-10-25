@@ -24,9 +24,14 @@ class RestoredFramework < Framework
     # It basically prepares the framework before calling {Arachni::Framework#run}.
     def parse_options
         parser = OptionParser.new
-        parser.snapshot
         parser.report
+        parser.snapshot
+        parser.timeout
+        parser.timeout_suspend
         parser.parse
+
+        @timeout         = parser.get_timeout
+        @timeout_suspend = parser.timeout_suspend?
 
         if parser.print_metadata?
             print_metadata Snapshot.read_metadata( parser.snapshot_path )

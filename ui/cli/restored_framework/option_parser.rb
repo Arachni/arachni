@@ -18,6 +18,34 @@ class OptionParser < UI::CLI::OptionParser
 
     attr_accessor :snapshot_path
 
+    def timeout
+        separator ''
+        separator 'Timeout'
+
+        on( '--timeout HOURS:MINUTES:SECONDS',
+            'Stop the scan after the given duration is exceeded.'
+        ) do |time|
+            @timeout = Arachni::Utilities.hms_to_seconds( time )
+        end
+    end
+
+    def timeout_suspend
+        on( '--timeout-suspend',
+            'Suspend after the timeout.',
+            'You can use the generated file to resume the scan with the \'arachni_restore\' executable.'
+        ) do
+            @timeout_suspend = true
+        end
+    end
+
+    def timeout_suspend?
+        !!@timeout_suspend
+    end
+
+    def get_timeout
+        @timeout
+    end
+
     def snapshot
         separator ''
         separator 'Snapshot'
@@ -59,9 +87,17 @@ class OptionParser < UI::CLI::OptionParser
     end
 
     def validate
+        validate_timeout
         validate_report_path
         validate_snapshot_path
         validate_snapshot_save_path
+    end
+
+    def validate_timeout
+        return if !@timeout || @timeout > 0
+
+        print_bad 'Invalid timeout value.'
+        exit 1
     end
 
     def validate_snapshot_path

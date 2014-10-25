@@ -296,8 +296,8 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--http-authentication-password PASSWORD',
-               'Password for HTTP authentication.' ) do |username|
-            options.http.authentication_username = username
+               'Password for HTTP authentication.' ) do |password|
+            options.http.authentication_password = password
         end
 
         on( '--http-proxy ADDRESS:PORT', 'Proxy to use.' ) do |url|

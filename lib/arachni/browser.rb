@@ -47,6 +47,12 @@ class Browser
     # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
     class Error < Arachni::Error
 
+        # Raised when the browser could not be spawned.
+        #
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class Spawn < Error
+        end
+
         # Raised when a given resource can't be loaded.
         #
         # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
@@ -942,7 +948,11 @@ class Browser
     end
 
     def spawn_browser
-        spawn_phantomjs
+        if !spawn_phantomjs
+            fail Error::Spawn, 'Could not start the browser process.'
+        end
+
+        @browser_url
     end
 
     def spawn_phantomjs
@@ -953,6 +963,7 @@ class Browser
         ChildProcess.posix_spawn = true
 
         port = nil
+        last_attempt_output = nil
         10.times do |i|
             done = false
             port = available_port
@@ -996,7 +1007,8 @@ class Browser
                 print_debug 'Spawn timed-out.'
             end
 
-            print_debug IO.read( @process.io.stdout )
+            last_attempt_output = IO.read( @process.io.stdout )
+            print_debug last_attempt_output
 
             if done
                 print_debug 'PhantomJS is ready.'
@@ -1012,7 +1024,11 @@ class Browser
         #
         # Bail out for now and count on the BrowserCluster to retry to boot
         # another process ass needed.
-        return if !@process
+        if !@process
+            log_error 'Could not spawn browser process.'
+            log_error last_attempt_output
+            return
+        end
 
         begin
             @pid = @process.pid
