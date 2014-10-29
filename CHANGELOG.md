@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- Browser
+    - Fixed `nil` error on failed process spawn.
 - Checks
     - Passive
         - `common_files` -- Added more filenames. [PR #504]

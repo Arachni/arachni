@@ -1007,8 +1007,10 @@ class Browser
                 print_debug 'Spawn timed-out.'
             end
 
-            last_attempt_output = IO.read( @process.io.stdout )
-            print_debug last_attempt_output
+            if @process.io.stdout
+                last_attempt_output = IO.read( @process.io.stdout )
+                print_debug last_attempt_output
+            end
 
             if done
                 print_debug 'PhantomJS is ready.'
