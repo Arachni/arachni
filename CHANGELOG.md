@@ -2,6 +2,10 @@
 
 ## _Under development_
 
+- Checks
+    - Passive
+        - `common_files` -- Added more filenames. [PR #504]
+
 ## 1.0.4 _(October 25, 2014)_
 
 - CLI options
