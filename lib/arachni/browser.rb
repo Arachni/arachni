@@ -820,7 +820,7 @@ class Browser
             c[:value]    = Cookie.decode( c[:value].to_s )
             c[:httponly] = !js_cookies.include?( original_name )
 
-            Cookie.new c.merge( url: @last_url )
+            Cookie.new c.merge( url: @last_url || url )
         end
     end
 
