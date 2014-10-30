@@ -4,6 +4,9 @@
 
 - Executables
     - `arachni_console` -- Require the UI::Output interface after Arachni.
+- `Session`
+    - Added `#record_login_sequence`, allowing for arbitrary login sequences to
+        be stored and replayed.
 - `URI`
    - `#domain` -- Fixed `nil` error on missing host.
    - `.query_parameters` -- Recode query string before parsing to fix encoding errors.

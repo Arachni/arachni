@@ -51,6 +51,9 @@ class Session
     # @return   [Browser]
     attr_reader :browser
 
+    # @return   [Block]
+    attr_reader :login_sequence
+
     def clean_up
         configuration.clear
         shutdown_browser
@@ -98,7 +101,7 @@ class Session
     # @return   [Bool]
     #   `true` if {#configure configured}, `false` otherwise.
     def configured?
-        configuration.any?
+        !!@login_sequence || configuration.any?
     end
 
     # Finds a login forms based on supplied location, collection and criteria.
@@ -201,81 +204,33 @@ class Session
         end
     end
 
-    # Uses the information provided by {#configure} to login.
+    # @param    [Block] block
+    #   Login sequence. Must return the resulting {Page}.
+    #
+    #   If a {#browser} is {#has_browser? available} it will be passed to the
+    #   block.
+    def record_login_sequence( &block )
+        @login_sequence = block
+    end
+
+    # Uses the information provided by {#configure} or {#login_sequence} to login.
     #
     # @return   [Page, nil]
-    #   {HTTP::Response} if the login form was submitted successfully,
-    #   `nil` if not {#configured?}.
+    #   {Page} if the login was successful, `nil` otherwise.
     #
+    # @raise    [Error::NotConfigured]
+    #   If not {#configured?}.
     # @raise    [Error::FormNotFound]
     #   If the form could not be found.
     def login
-        fail Error::NotConfigured, 'Please #configure the session first.' if !configured?
+        fail Error::NotConfigured, 'Please configure the session first.' if !configured?
+
+        refresh_browser
+
+        page = @login_sequence ? login_from_sequence : login_from_configuration
 
         if has_browser?
-            print_debug 'Logging in using browser.'
-        else
-            print_debug 'Logging in without browser.'
-        end
-
-        print_debug "Grabbing page at: #{configuration[:url]}"
-
-        # Revert to the Framework DOM Level 1 page handling if no browser
-        # is available.
-        page = refresh_browser ?
-            browser.load( configuration[:url], take_snapshot: false ).to_page :
-            Page.from_url( configuration[:url], precision: 1, http: {
-                update_cookies: true
-            })
-
-        print_debug "Got page with URL #{page.url}"
-
-        form = find_login_form(
-            # We need to reparse the body in order to override the scope
-            # and thus extract even out-of-scope forms in case we're dealing
-            # with a Single-Sign-On situation.
-            forms:  forms_from_document( page.url, page.body, true ),
-            inputs: configuration[:inputs].keys
-        )
-
-        if !form
-            print_debug_level_2 page.body
-            fail Error::FormNotFound,
-                 "Login form could not be found with: #{configuration}"
-        end
-
-        print_debug "Found login form: #{form.id}"
-
-        form.page = page
-
-        # Use the form DOM to submit if a browser is available.
-        form = form.dom if has_browser?
-
-        form.update configuration[:inputs]
-        form.auditor = self
-
-        print_debug "Updated form inputs: #{form.inputs}"
-
-        page = nil
-        if has_browser?
-            print_debug 'Submitting form.'
-            form.submit { |p| page = p }
-            print_debug 'Form submitted.'
-
             http.update_cookies browser.cookies
-        else
-            page = form.submit(
-                mode:            :sync,
-                follow_location: false,
-                update_cookies:  true
-            ).to_page
-
-            if page.response.redirection?
-                url  = to_absolute( page.response.headers.location, page.url )
-                print_debug "Redirected to: #{url}"
-
-                page = Page.from_url( url, precision: 1, http: { update_cookies: true } )
-            end
         end
 
         page
@@ -317,7 +272,7 @@ class Session
     # @return   [Bool]
     #   `true` if a login check exists, `false` otherwise.
     def has_login_check?
-        !!(Options.session.check_url && Options.session.check_pattern)
+        !!@login_check || !!(Options.session.check_url && Options.session.check_pattern)
     end
 
     # @return   [HTTP::Client]
@@ -330,6 +285,81 @@ class Session
     end
 
     private
+
+    def login_from_sequence
+        print_debug "Logging in via sequence: #{@login_sequence}"
+        @login_sequence.call browser
+    end
+
+    def login_from_configuration
+        print_debug 'Logging in via configuration.'
+
+        if has_browser?
+            print_debug 'Logging in using browser.'
+        else
+            print_debug 'Logging in without browser.'
+        end
+
+        print_debug "Grabbing page at: #{configuration[:url]}"
+
+        # Revert to the Framework DOM Level 1 page handling if no browser
+        # is available.
+        page = has_browser? ?
+            browser.load( configuration[:url], take_snapshot: false ).to_page :
+            Page.from_url( configuration[:url], precision: 1, http: {
+                update_cookies: true
+            })
+
+        print_debug "Got page with URL #{page.url}"
+
+        form = find_login_form(
+            # We need to reparse the body in order to override the scope
+            # and thus extract even out-of-scope forms in case we're dealing
+            # with a Single-Sign-On situation.
+            forms:  forms_from_document( page.url, page.body, true ),
+            inputs: configuration[:inputs].keys
+        )
+
+        if !form
+            print_debug_level_2 page.body
+            fail Error::FormNotFound,
+                 "Login form could not be found with: #{configuration}"
+        end
+
+        print_debug "Found login form: #{form.id}"
+
+        form.page = page
+
+        # Use the form DOM to submit if a browser is available.
+        form = form.dom if has_browser?
+
+        form.update configuration[:inputs]
+        form.auditor = self
+
+        print_debug "Updated form inputs: #{form.inputs}"
+
+        page = nil
+        if has_browser?
+            print_debug 'Submitting form.'
+            form.submit { |p| page = p }
+            print_debug 'Form submitted.'
+        else
+            page = form.submit(
+                mode:            :sync,
+                follow_location: false,
+                update_cookies:  true
+            ).to_page
+
+            if page.response.redirection?
+                url  = to_absolute( page.response.headers.location, page.url )
+                print_debug "Redirected to: #{url}"
+
+                page = Page.from_url( url, precision: 1, http: { update_cookies: true } )
+            end
+        end
+
+        page
+    end
 
     def shutdown_browser
         return if !@browser
