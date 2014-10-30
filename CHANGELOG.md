@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- Executables
+    - `arachni_console` -- Require the UI::Output interface after Arachni.
 - Browser
     - Fixed `nil` error on failed process spawn.
 - `BrowserCluster::Worker`
