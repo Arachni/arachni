@@ -82,7 +82,8 @@ class Worker < Arachni::Browser
 
         # PhantomJS may have crashed (it happens sometimes) so make sure that
         # we've got a live one before running the job.
-        browser_respawn_if_necessary
+        # If we can't respawn, then bail out.
+        return if browser_respawn_if_necessary.nil?
 
         begin
             with_timeout @job_timeout do
@@ -234,7 +235,7 @@ class Worker < Arachni::Browser
     end
 
     def browser_respawn_if_necessary
-        return if !time_to_die? && browser_alive? &&
+        return false if !time_to_die? && browser_alive? &&
             watir.windows.size < RESPAWN_WHEN_WINDOW_COUNT_REACHES
 
         browser_respawn
@@ -257,9 +258,18 @@ class Worker < Arachni::Browser
         @watir    = nil
         @selenium = nil
 
-        @watir = ::Watir::Browser.new( selenium )
+        # Browser may fail to respawn but there's nothing we can do about
+        # that, just leave it dead and try again at the next job.
+        begin
+            @watir = ::Watir::Browser.new( selenium )
 
-        ensure_open_window
+            ensure_open_window
+
+            true
+        rescue Browser::Error::Spawn => e
+            print_error 'Could not respawn the browser, will try again at the next job.'
+            nil
+        end
     end
 
     def time_to_die?

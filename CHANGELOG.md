@@ -4,6 +4,8 @@
 
 - Browser
     - Fixed `nil` error on failed process spawn.
+- `BrowserCluster::Worker`
+    - Print error message on failure to respawn.
 - Checks
     - Passive
         - `common_files` -- Added more filenames. [PR #504]
