@@ -455,6 +455,13 @@ describe Arachni::URI do
             url = 'http://deep.subdomain.test.com/'
             described_class.parse( url ).domain.should == 'subdomain.test.com'
         end
+
+        context 'when no host is available' do
+            it 'returns nil' do
+                url = '/stuff/'
+                described_class.parse( url ).domain.should be_nil
+            end
+        end
     end
 
     describe '#ip_address?' do

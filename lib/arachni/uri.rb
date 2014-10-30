@@ -563,6 +563,7 @@ class URI
     # @return [String]
     #   `domain_name.tld`
     def domain
+        return if !host
         return host if ip_address?
 
         s = host.split( '.' )

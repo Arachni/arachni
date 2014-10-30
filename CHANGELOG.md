@@ -4,6 +4,8 @@
 
 - Executables
     - `arachni_console` -- Require the UI::Output interface after Arachni.
+- `URI`
+   - `#domain` -- Fixed `nil` error on missing host.
 - Browser
     - Fixed `nil` error on failed process spawn.
 - `BrowserCluster::Worker`
