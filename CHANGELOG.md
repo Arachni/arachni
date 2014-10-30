@@ -6,6 +6,7 @@
     - `arachni_console` -- Require the UI::Output interface after Arachni.
 - `URI`
    - `#domain` -- Fixed `nil` error on missing host.
+   - `.query_parameters` -- Recode query string before parsing to fix encoding errors.
 - Browser
     - Fixed `nil` error on failed process spawn.
 - `BrowserCluster::Worker`
