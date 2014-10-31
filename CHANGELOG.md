@@ -17,6 +17,10 @@
 - Checks
     - Passive
         - `common_files` -- Added more filenames. [PR #504]
+- Plugins
+    - Added
+        - `login_script` -- Exposes a Watir WebDriver interface to an external
+            script in order to allow for arbitrary login sequences.
 
 ## 1.0.4 _(October 25, 2014)_
 

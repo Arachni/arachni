@@ -25,6 +25,7 @@
         <xs:choice minOccurs="0" maxOccurs="9">
             <xs:element name="healthmap" type="plugin_healthmap" maxOccurs="1"/>
             <xs:element name="autologin" type="plugin_autologin" maxOccurs="1"/>
+            <xs:element name="login_script" type="plugin_login_script" maxOccurs="1"/>
             <xs:element name="content_types" type="plugin_content_types" maxOccurs="1"/>
             <xs:element name="cookie_collector" type="plugin_cookie_collector" maxOccurs="1"/>
             <xs:element name="form_dicattack" type="plugin_form_dicattack" maxOccurs="1"/>
@@ -180,6 +181,22 @@
     </xs:complexType>
 
     <xs:complexType name="plugin_autologin_results">
+        <xs:all>
+            <xs:element name="status" type="xs:string"/>
+            <xs:element name="message" type="xs:string"/>
+            <xs:element name="cookies" type="cookies" minOccurs="0"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_login_script">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_login_script_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_login_script_results">
         <xs:all>
             <xs:element name="status" type="xs:string"/>
             <xs:element name="message" type="xs:string"/>

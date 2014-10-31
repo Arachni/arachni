@@ -514,7 +514,8 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 
 - Passive Proxy  (`proxy`) -- Analyzes requests and responses between the web app and
     the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit.
-- Form based AutoLogin (`autologin`).
+- Form based login (`autologin`).
+- Script based login (`login_script`).
 - Dictionary attacker for HTTP Auth (`http_dicattack`).
 - Dictionary attacker for form based authentication (`form_dicattack`).
 - Cookie collector (`cookie_collector`) -- Keeps track of cookies while establishing a timeline of changes.
