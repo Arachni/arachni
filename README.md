@@ -160,7 +160,7 @@ you with its findings.
  - Proxy authentication.
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
  - Automatic log-out detection and re-login during the scan (when the initial
-    login was performed via the `autologin` or `proxy` plugins).
+    login was performed via the `autologin`, `login_script` or `proxy` plugins).
  - Custom 404 page detection.
  - UI abstraction:
     - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
