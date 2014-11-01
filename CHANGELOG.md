@@ -10,7 +10,9 @@
 - `URI`
    - `#domain` -- Fixed `nil` error on missing host.
    - `.query_parameters` -- Recode query string before parsing to fix encoding errors.
-- Browser
+- `UI::Output`
+    - `#log_error` -- Store errors in memory, as well as in logfile.
+- `Browser`
     - Fixed `nil` error on failed process spawn.
 - `BrowserCluster::Worker`
     - Print error message on failure to respawn.
