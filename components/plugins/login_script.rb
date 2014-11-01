@@ -99,7 +99,7 @@ that process and, for example, load and set cookies from a shared cookie-jar.
 
 **With browser (slow):**
 
-If a [browser](http://watirwebdriver.com/) is available, is will be exposed to
+If a [browser](http://watirwebdriver.com/) is available, it will be exposed to
 the script via the `browser` variable. Otherwise, that variable will have a
 value of `nil`.
 
