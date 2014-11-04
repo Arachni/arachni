@@ -17,6 +17,8 @@
         prevent "Too many open file" exceptions.
 - `Browser`
     - Fixed `nil` error on failed process spawn.
+    - `Javascript` -- Updated to preload and cache script sources to avoid
+        hitting the disk in order to prevent "Too many open file" exceptions.
 - `BrowserCluster::Worker`
     - Print error message on failure to respawn.
 - Checks

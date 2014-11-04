@@ -29,6 +29,10 @@ class Javascript
     #   Filesystem directory containing the JS scripts.
     SCRIPT_LIBRARY  = "#{File.dirname( __FILE__ )}/javascript/scripts/"
 
+    SCRIPT_SOURCES = Dir.glob("#{SCRIPT_LIBRARY}*.js").inject({}) do |h, path|
+        h.merge!( path => IO.read(path) )
+    end
+
     NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
         :title, :link
@@ -361,18 +365,18 @@ class Javascript
     def read_script( filename )
         @scripts ||= {}
         @scripts[filename] ||=
-            IO.read( filesystem_path_for_script( filename ) ).
-                gsub( '_token', "_#{token}" ).freeze
+            SCRIPT_SOURCES[filesystem_path_for_script(filename)].
+                gsub( '_token', "_#{token}" )
     end
 
     def script_exists?( filename )
-        (!!read_script( filename )) rescue false
+        SCRIPT_SOURCES.include? filesystem_path_for_script( filename )
     end
 
     def filesystem_path_for_script( filename )
         name = "#{SCRIPT_LIBRARY}#{filename}"
         name << '.js' if !name.end_with?( '.js')
-        name
+        File.expand_path( name )
     end
 
     def script_url_for( filename )
