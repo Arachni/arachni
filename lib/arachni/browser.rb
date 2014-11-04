@@ -1048,12 +1048,13 @@ class Browser
         end
 
         @process     = nil
+        @watir       = nil
         @pid         = nil
         @browser_url = nil
     end
 
     def browser_alive?
-        @process && @process.alive?
+        @watir && @process && @process.alive?
     rescue Errno::ECHILD
         false
     end
