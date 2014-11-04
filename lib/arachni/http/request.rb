@@ -276,10 +276,7 @@ class Request < Message
     #
     # @return   [Response]
     def run
-        response = to_typhoeus.run
-        fill_in_data_from_typhoeus_response response
-
-        Response.from_typhoeus( response ).tap { |r| r.request = self }
+        client_run.tap { |r| r.request = self }
     end
 
     def handle_response( response, typhoeus_response = nil )
@@ -460,6 +457,13 @@ class Request < Message
     end
 
     private
+
+    def client_run
+        response = to_typhoeus.run
+        fill_in_data_from_typhoeus_response response
+
+        Response.from_typhoeus( response )
+    end
 
     def fill_in_data_from_typhoeus_response( response )
         @headers_string = response.debug_info.header_out.first
