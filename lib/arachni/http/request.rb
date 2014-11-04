@@ -127,10 +127,10 @@ class Request < Message
         @train           = false if @train.nil?
         @update_cookies  = false if @update_cookies.nil?
         @follow_location = false if @follow_location.nil?
-        @max_redirects   = (Arachni::Options.http.request_redirect_limit || REDIRECT_LIMIT)
+        @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
         @on_complete     = []
 
-        @timeout       ||= Arachni::Options.http.request_timeout
+        @timeout       ||= Options.http.request_timeout
         @mode          ||= :async
         @parameters    ||= {}
         @cookies       ||= {}
@@ -213,6 +213,10 @@ class Request < Message
         end.merge( cookies )
     end
 
+    def effective_parameters
+        Utilities.uri_parse_query( url ).merge( parameters || {} )
+    end
+
     def body_parameters
         return {} if method != :post
         parameters.any? ? parameters : self.class.parse_body( body )
@@ -288,24 +292,15 @@ class Request < Message
     # @return   [Typhoeus::Response]
     #   `self` converted to a `Typhoeus::Request`.
     def to_typhoeus
-        headers['Cookie'] = effective_cookies.
-            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
-            join( ';' )
+        prepare_headers
 
-        headers['User-Agent'] ||= Arachni::Options.http.user_agent
-        headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        headers['From']       ||= Arachni::Options.authorized_by if Arachni::Options.authorized_by
-
-        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
-        headers.each { |k, v| headers[k] = Header.encode( v ) if v }
-
-        if (userpwd = (@username || Arachni::Options.http.authentication_username))
-            if (passwd = (@password || Arachni::Options.http.authentication_password))
+        if (userpwd = (@username || Options.http.authentication_username))
+            if (passwd = (@password || Options.http.authentication_password))
                 userpwd += ":#{passwd}"
             end
         end
 
-        max_size = @response_max_size || Arachni::Options.http.response_max_size
+        max_size = @response_max_size || Options.http.response_max_size
         # Weird I know, for some reason 0 gets ignored.
         max_size = 1 if max_size == 0
 
@@ -313,8 +308,7 @@ class Request < Message
             method:          method,
             headers:         headers,
             body:            body,
-            params:          Arachni::Utilities.uri_parse_query( url ).
-                                 merge( parameters || {} ),
+            params:          effective_parameters,
             userpwd:         userpwd,
             followlocation:  follow_location?,
             maxredirs:       @max_redirects,
@@ -343,15 +337,15 @@ class Request < Message
                 options[:proxyuserpwd] = proxy_user_password
             end
 
-        elsif Arachni::Options.http.proxy_host && Arachni::Options.http.proxy_port
+        elsif Options.http.proxy_host && Options.http.proxy_port
             options.merge!(
-                proxy:     "#{Arachni::Options.http.proxy_host}:#{Arachni::Options.http.proxy_port}",
-                proxytype: (Arachni::Options.http.proxy_type || :http).to_sym
+                proxy:     "#{Options.http.proxy_host}:#{Options.http.proxy_port}",
+                proxytype: (Options.http.proxy_type || :http).to_sym
             )
 
-            if Arachni::Options.http.proxy_username && Arachni::Options.http.proxy_password
+            if Options.http.proxy_username && Options.http.proxy_password
                 options[:proxyuserpwd] =
-                    "#{Arachni::Options.http.proxy_username}:#{Arachni::Options.http.proxy_password}"
+                    "#{Options.http.proxy_username}:#{Options.http.proxy_password}"
             end
         end
 
@@ -454,6 +448,19 @@ class Request < Message
     end
 
     private
+
+    def prepare_headers
+        headers['Cookie'] = effective_cookies.
+            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
+            join( ';' )
+
+        headers['User-Agent'] ||= Options.http.user_agent
+        headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        headers['From']       ||= Options.authorized_by if Options.authorized_by
+
+        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
+        headers.each { |k, v| headers[k] = Header.encode( v ) if v }
+    end
 
     def fill_in_data_from_typhoeus_response( response )
         @headers_string = response.debug_info.header_out.first
