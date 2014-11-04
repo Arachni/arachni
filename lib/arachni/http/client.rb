@@ -771,6 +771,10 @@ class Client
 
         return if request.blocking?
 
+        hydra_queue request
+    end
+
+    def hydra_queue( request )
         if request.high_priority?
             @hydra.queue_front( request.to_typhoeus )
         else
