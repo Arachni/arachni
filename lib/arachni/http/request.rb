@@ -279,11 +279,7 @@ class Request < Message
         client_run.tap { |r| r.request = self }
     end
 
-    def handle_response( response, typhoeus_response = nil )
-        if typhoeus_response
-            fill_in_data_from_typhoeus_response typhoeus_response
-        end
-
+    def handle_response( response )
         response.request = self
         @on_complete.each { |b| b.call response }
         response
@@ -364,7 +360,8 @@ class Request < Message
 
         if @on_complete.any?
             r.on_complete do |typhoeus_response|
-                handle_response Response.from_typhoeus( typhoeus_response ), typhoeus_response
+                fill_in_data_from_typhoeus_response typhoeus_response
+                handle_response Response.from_typhoeus( typhoeus_response )
             end
         end
 
@@ -458,16 +455,16 @@ class Request < Message
 
     private
 
+    def fill_in_data_from_typhoeus_response( response )
+        @headers_string = response.debug_info.header_out.first
+        @effective_body = response.debug_info.data_out.first
+    end
+
     def client_run
         response = to_typhoeus.run
         fill_in_data_from_typhoeus_response response
 
         Response.from_typhoeus( response )
-    end
-
-    def fill_in_data_from_typhoeus_response( response )
-        @headers_string = response.debug_info.header_out.first
-        @effective_body = response.debug_info.data_out.first
     end
 
 end
