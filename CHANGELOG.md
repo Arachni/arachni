@@ -12,6 +12,9 @@
    - `.query_parameters` -- Recode query string before parsing to fix encoding errors.
 - `UI::Output`
     - `#log_error` -- Store errors in memory, as well as in logfile.
+- `RPC::Server::Framework::MultiInstance`
+    - `#errors` -- Return errors from memory buffer instead of logfile, to
+        prevent "Too many open file" exceptions.
 - `Browser`
     - Fixed `nil` error on failed process spawn.
 - `BrowserCluster::Worker`
