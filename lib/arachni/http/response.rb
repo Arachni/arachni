@@ -197,8 +197,15 @@ class Response < Message
 
     def self.from_typhoeus( response )
         redirections = response.redirections.map do |redirect|
+            rurl   = URI.to_absolute( redirect.headers['Location'],
+                                      response.effective_url )
+            rurl ||= response.effective_url
+
+            # Broken redirection, skip it...
+            next if !rurl
+
             new(
-                url:     redirect.headers['Location'] || response.effective_url,
+                url:     rurl,
                 code:    redirect.code,
                 headers: redirect.headers
             )
