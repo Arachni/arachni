@@ -258,6 +258,7 @@ network
 xamp
 xampp
 lamp
+phpmyadmin
 AD
 AE
 AF
