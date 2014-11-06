@@ -4,6 +4,8 @@
 
 - Executables
     - `arachni_console` -- Require the UI::Output interface after Arachni.
+- Error log
+    - Redacted HTTP authentication credentials.
 - `Session`
     - Added `#record_login_sequence`, allowing for arbitrary login sequences to
         be stored and replayed.

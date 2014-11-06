@@ -123,8 +123,16 @@ module Output
                 h = {}
                 ENV.each { |k, v| h[k] = v }
 
-                ['ENV:', h.to_yaml, '-' * 80, 'OPTIONS:',
-                 Arachni::Options.to_save_data].each do |s|
+                options = Arachni::Options.to_rpc_data
+                ap options['http']
+                if options['http']['authentication_username']
+                    options['http']['authentication_username'] = '*****'
+                    options['http']['authentication_password'] =
+                        options['http']['authentication_username']
+                end
+                options = options.to_yaml
+
+                ['ENV:', h.to_yaml, '-' * 80, 'OPTIONS:', options].each do |s|
                     error_log_fd.puts s
                     @@error_buffer += s.split("\n")
                 end
