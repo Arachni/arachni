@@ -333,7 +333,7 @@ describe Arachni::Browser::Javascript do
                         Nokogiri::HTML(response.body).css('script')[-2].to_s.should ==
                             "<script>
 _#{subject.token}TaintTracer.update_tracers(); // Injected by Arachni::Browser::Javascript
- // My code and stuff </script>"
+// My code and stuff </script>"
                     end
 
                     it 'injects taint tracer update calls after the script' do
@@ -372,4 +372,19 @@ _#{subject.token}TaintTracer.update_tracers(); // Injected by Arachni::Browser::
         end
     end
 
+    describe '#run_without_elements' do
+        it 'executes the given script and unwraps Watir elements' do
+            @browser.load @dom_monitor_url
+            source = Nokogiri::HTML(@browser.source).to_s
+
+            source.should ==
+                Nokogiri::HTML(subject.run_without_elements( 'return document.documentElement' ) ).to_s
+
+            source.should ==
+                Nokogiri::HTML(subject.run_without_elements( 'return [document.documentElement]' ).first ).to_s
+
+            source.should ==
+                Nokogiri::HTML(subject.run_without_elements( 'return { html: document.documentElement }' )['html'] ).to_s
+        end
+    end
 end

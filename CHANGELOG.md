@@ -21,6 +21,8 @@
     - Fixed `nil` error on failed process spawn.
     - `Javascript` -- Updated to preload and cache script sources to avoid
         hitting the disk in order to prevent "Too many open file" exceptions.
+        - `#run_without_elements` -- Runs a script but unwraps `Watir` elements.
+        - `Proxy` -- Updated to use `#run_without_elements`.
 - `BrowserCluster::Worker`
     - Print error message on failure to respawn.
 - Checks

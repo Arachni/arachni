@@ -202,6 +202,17 @@ class Javascript
         @browser.watir.execute_script script
     end
 
+    # Executes the given code but unwraps Watir elements.
+    #
+    # @param    [String]    script
+    #   JS code to execute.
+    #
+    # @return   [Object]
+    #   Result of `script`.
+    def run_without_elements( script )
+        unwrap_elements run( script )
+    end
+
     # @return   (see TaintTracer#debug)
     def debugging_data
         return [] if !supported?
@@ -386,6 +397,27 @@ class Javascript
         end
 
         "#{SCRIPT_BASE_URL}#{filename}.js"
+    end
+
+    def unwrap_elements( obj )
+        case obj
+            when Watir::Element
+                unwrap_element( obj )
+
+            when Array
+                obj.map { |e| unwrap_elements( e ) }
+
+            when Hash
+                obj.each { |k, v| obj[k] = unwrap_elements( v ) }
+                obj
+
+            else
+                obj
+        end
+    end
+
+    def unwrap_element( element )
+        element.html
     end
 
 end
