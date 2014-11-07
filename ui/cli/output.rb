@@ -124,7 +124,6 @@ module Output
                 ENV.each { |k, v| h[k] = v }
 
                 options = Arachni::Options.to_rpc_data
-                ap options['http']
                 if options['http']['authentication_username']
                     options['http']['authentication_username'] = '*****'
                     options['http']['authentication_password'] =
