@@ -333,7 +333,7 @@ describe Arachni::Browser::Javascript do
                         Nokogiri::HTML(response.body).css('script')[-2].to_s.should ==
                             "<script>
 _#{subject.token}TaintTracer.update_tracers(); // Injected by Arachni::Browser::Javascript
-// My code and stuff </script>"
+ // My code and stuff </script>"
                     end
 
                     it 'injects taint tracer update calls after the script' do
