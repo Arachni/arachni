@@ -20,7 +20,11 @@ class Headers < Hash
 
     # @param  [Headers, Hash] headers
     def initialize( headers = {} )
-        (headers || {}).each { |k, v| self[k] = v }
+        merge!( headers || {} )
+    end
+
+    def merge!( headers )
+        headers.each { |k, v| self[k] = v }
     end
 
     # @note `field` will be capitalized appropriately before storing.
