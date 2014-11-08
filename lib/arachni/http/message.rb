@@ -38,7 +38,6 @@ class Message
     #   Body.
     def initialize( options = {} )
         options.each do |k, v|
-            v = my_dup( v )
             begin
                 send( "#{k}=", v )
             rescue NoMethodError
@@ -63,12 +62,6 @@ class Message
 
     def url=( url )
         @url = Arachni::URI( url ).to_s.freeze
-    end
-
-    private
-
-    def my_dup( value )
-        value.dup rescue value
     end
 
 end
