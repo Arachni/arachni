@@ -26,6 +26,8 @@
 - `BrowserCluster::Worker`
     - Print error message on failure to respawn.
 - Checks
+    - Active
+        - `no_sql_injection` -- Updated payloads to be per platform.
     - Passive
         - `common_files` -- Added more filenames. [PR #504]
 - Plugins

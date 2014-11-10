@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
 
     def self.error_patterns
@@ -31,7 +31,7 @@ class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
     # Prepares the payloads that will hopefully cause the webapp to output SQL
     # error messages if included as part of an SQL query.
     def self.payloads
-        @payloads ||= [ '\';.")' ]
+        @payloads ||= { mongodb: '\';.")' }
     end
 
     def self.options
@@ -57,8 +57,8 @@ NoSQL injection check, uses known DB errors to identify vulnerabilities.
             elements:    [Element::Link, Element::Form, Element::Cookie,
                           Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
-            platforms:   options[:regexp].keys,
+            version:     '0.1.1',
+            platforms:   payloads.keys,
 
             issue:       {
                 name:            %q{NoSQL Injection},
