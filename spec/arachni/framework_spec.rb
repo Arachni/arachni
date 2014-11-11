@@ -1208,8 +1208,6 @@ describe Arachni::Framework do
         let(:page) { Arachni::Page.from_url( @url + '/train/true' ) }
 
         it 'pushes it to the page audit queue and returns true' do
-            page = Arachni::Page.from_url( @url + '/train/true' )
-
             subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 

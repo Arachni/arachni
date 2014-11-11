@@ -25,6 +25,10 @@
         - `Proxy` -- Updated to use `#run_without_elements`.
 - `BrowserCluster::Worker`
     - Print error message on failure to respawn.
+- `Check::Auditor` -- Updated audit helpers to mark elements as audited at the
+    check component level, to avoid sending redundant workload to the analysis
+    classes only to be ignored there.
+    - `#skip?` -- Optimized redundant issue checks.
 - Checks
     - Active
         - `no_sql_injection` -- Updated payloads to be per platform.
