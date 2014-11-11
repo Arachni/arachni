@@ -95,6 +95,23 @@ describe Arachni::Check::Manager do
             issues.size.should equal 1
             issues.first.name.should == checks['test'].info[:issue][:name]
         end
+
+        context 'when the check was ran' do
+            it 'returns true' do
+                checks.load :test
+                checks.run_one( checks.values.first, page ).should be_true
+            end
+        end
+
+        context 'when the check was not ran' do
+            it 'returns false' do
+                checks.load :test
+
+                allow(Arachni::Checks::Test).to receive(:check?).and_return(false)
+
+                checks.run_one( checks.values.first, page ).should be_false
+            end
+        end
     end
 
 end
