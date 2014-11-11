@@ -272,8 +272,6 @@ class Framework
 
         print_line
         print_status "[HTTP: #{page.code}] #{page.dom.url}"
-        # print_object_space
-        # print_with_statistics
 
         if page.platforms.any?
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
