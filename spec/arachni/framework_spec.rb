@@ -1100,6 +1100,10 @@ describe Arachni::Framework do
             end
         end
 
+        context 'when the page contains elements seen in previous pages' do
+            it 'removes them from the page'
+        end
+
         context 'when a check fails with an exception' do
             it 'moves to the next one' do
                 @options.paths.checks  = fixtures_path + '/checks/'

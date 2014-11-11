@@ -17,6 +17,9 @@
 - `RPC::Server::Framework::MultiInstance`
     - `#errors` -- Return errors from memory buffer instead of logfile, to
         prevent "Too many open file" exceptions.
+- ` Framework`
+    - `#audit_page` -- Keep track of checked elements at the `Framework` level
+        too and remove them from pages.
 - `Browser`
     - Fixed `nil` error on failed process spawn.
     - `Javascript` -- Updated to preload and cache script sources to avoid

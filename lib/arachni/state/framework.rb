@@ -44,6 +44,9 @@ class Framework
     # @return     [Support::LookUp::HashSet]
     attr_reader   :url_queue_filter
 
+    # @return     [Support::LookUp::HashSet]
+    attr_reader   :element_pre_check_filter
+
     # @return     [Set]
     attr_reader   :browser_skip_states
 
@@ -70,6 +73,8 @@ class Framework
 
         @page_queue_filter = Support::LookUp::HashSet.new( hasher: :persistent_hash )
         @url_queue_filter  = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+
+        @element_pre_check_filter = Support::LookUp::HashSet.new( hasher: :coverage_hash )
 
         @running = false
         @pre_pause_status = nil
@@ -183,6 +188,25 @@ class Framework
     # @param    [Support::LookUp::HashSet]  states
     def update_browser_skip_states( states )
         @browser_skip_states.merge states
+    end
+
+    # @param    [#coverage_hash]  e
+    #
+    # @return    [Bool]
+    #   `true` if the element has already been seen (based on the
+    #   {#element_pre_check_filter}), `false` otherwise.
+    #
+    # @see #element_checked
+    def element_checked?( e )
+        @element_pre_check_filter.include? e
+    end
+
+    # @param    [Page]  e
+    #   Element to mark as seen.
+    #
+    # @see #element_checked?
+    def element_checked( e )
+        @element_pre_check_filter << e
     end
 
     def running?
@@ -377,9 +401,8 @@ class Framework
 
         rpc.dump( "#{directory}/rpc/" )
 
-        %w(page_queue_filter url_queue_filter browser_skip_states
-            audited_page_count).each do |attribute|
-
+        %w(element_pre_check_filter page_queue_filter url_queue_filter
+            browser_skip_states audited_page_count).each do |attribute|
             IO.binwrite( "#{directory}/#{attribute}", Marshal.dump( send(attribute) ) )
         end
     end
@@ -389,8 +412,12 @@ class Framework
 
         framework.rpc = RPC.load( "#{directory}/rpc/" )
 
-        %w(page_queue_filter url_queue_filter browser_skip_states).each do |attribute|
-            framework.send(attribute).merge Marshal.load( IO.binread( "#{directory}/#{attribute}" ) )
+        %w(element_pre_check_filter page_queue_filter url_queue_filter
+            browser_skip_states).each do |attribute|
+            path = "#{directory}/#{attribute}"
+            next if !File.exist?( path )
+
+            framework.send(attribute).merge Marshal.load( IO.binread( path ) )
         end
 
         framework.audited_page_count = Marshal.load( IO.binread( "#{directory}/audited_page_count" ) )
@@ -399,6 +426,8 @@ class Framework
 
     def clear
         rpc.clear
+
+        @element_pre_check_filter.clear
 
         @page_queue_filter.clear
         @url_queue_filter.clear
