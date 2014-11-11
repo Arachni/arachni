@@ -293,6 +293,9 @@ class Framework
             end
         end
 
+        # Aside from plugins and whatnot, the Trainer hooks here to update the
+        # ElementFilter so that it'll know if new elements appear during the
+        # audit, so it's a big deal.
         notify_on_page_audit( page )
 
         @current_url = page.dom.url.to_s
