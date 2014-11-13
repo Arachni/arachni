@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.0.5 _(November 14, 2014)_
 
 - Executables
     - `arachni_console` -- Require the UI::Output interface after Arachni.
