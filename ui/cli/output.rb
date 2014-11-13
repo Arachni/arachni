@@ -48,6 +48,8 @@ module Output
         end
         @@error_fd = nil
 
+        @@error_buffer  = []
+
         @@error_logfile = "#{Options.paths.logs}error-#{Process.pid}.log"
     end
 
@@ -112,26 +114,41 @@ module Output
         if !@@error_log_written_env
             @@error_log_written_env = true
 
-            error_log_fd.puts
-            error_log_fd.puts "#{Time.now} " + ( '-' * 80 )
+            ['', "#{Time.now} " + ( '-' * 80 )].each do |s|
+                error_log_fd.puts s
+                @@error_buffer << s
+            end
 
             begin
                 h = {}
                 ENV.each { |k, v| h[k] = v }
-                error_log_fd.puts 'ENV:'
-                error_log_fd.puts h.to_yaml
 
-                error_log_fd.puts '-' * 80
+                options = Arachni::Options.to_rpc_data
+                if options['http']['authentication_username']
+                    options['http']['authentication_username'] = '*****'
+                    options['http']['authentication_password'] =
+                        options['http']['authentication_username']
+                end
+                options = options.to_yaml
 
-                error_log_fd.puts 'OPTIONS:'
-                error_log_fd.puts Arachni::Options.to_save_data
+                ['ENV:', h.to_yaml, '-' * 80, 'OPTIONS:', options].each do |s|
+                    error_log_fd.puts s
+                    @@error_buffer += s.split("\n")
+                end
             rescue
             end
 
             error_log_fd.puts '-' * 80
+            @@error_buffer << '-' * 80
         end
 
-        print_color( "[#{Time.now}]", 31, str, error_log_fd, true )
+        t = "[#{Time.now}]"
+        @@error_buffer << "#{t} #{str}"
+        print_color( t, 31, str, error_log_fd, true )
+    end
+
+    def error_buffer
+        @@error_buffer
     end
 
     # Used to draw attention to a bad situation which isn't an error.

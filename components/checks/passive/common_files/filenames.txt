@@ -19,6 +19,7 @@ config.php
 php.ini
 error_log
 elmah.axd
+server-status
 WEB-INF (copy)/web.xml
 WEB-INF - Copy/web.xml
 Copy of WEB-INF/web.xml

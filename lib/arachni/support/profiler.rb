@@ -147,6 +147,8 @@ class Profiler
     private
 
     def object_within_namespace?( object, namespaces )
+        return true if namespaces.empty?
+
         namespaces.each do |namespace|
             return true if object.class.to_s.start_with?( namespace.to_s )
         end

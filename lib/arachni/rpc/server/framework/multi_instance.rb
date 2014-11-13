@@ -44,7 +44,7 @@ module MultiInstance
     def errors( starting_line = 0, &block )
         return [] if !File.exists? error_logfile
 
-        error_strings = IO.read( error_logfile ).split( "\n" )
+        error_strings = error_buffer.dup
 
         if starting_line != 0
             error_strings = error_strings[starting_line..-1]

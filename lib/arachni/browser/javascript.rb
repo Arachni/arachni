@@ -29,6 +29,10 @@ class Javascript
     #   Filesystem directory containing the JS scripts.
     SCRIPT_LIBRARY  = "#{File.dirname( __FILE__ )}/javascript/scripts/"
 
+    SCRIPT_SOURCES = Dir.glob("#{SCRIPT_LIBRARY}*.js").inject({}) do |h, path|
+        h.merge!( path => IO.read(path) )
+    end
+
     NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
         :title, :link
@@ -198,6 +202,17 @@ class Javascript
         @browser.watir.execute_script script
     end
 
+    # Executes the given code but unwraps Watir elements.
+    #
+    # @param    [String]    script
+    #   JS code to execute.
+    #
+    # @return   [Object]
+    #   Result of `script`.
+    def run_without_elements( script )
+        unwrap_elements run( script )
+    end
+
     # @return   (see TaintTracer#debug)
     def debugging_data
         return [] if !supported?
@@ -361,18 +376,18 @@ class Javascript
     def read_script( filename )
         @scripts ||= {}
         @scripts[filename] ||=
-            IO.read( filesystem_path_for_script( filename ) ).
-                gsub( '_token', "_#{token}" ).freeze
+            SCRIPT_SOURCES[filesystem_path_for_script(filename)].
+                gsub( '_token', "_#{token}" )
     end
 
     def script_exists?( filename )
-        (!!read_script( filename )) rescue false
+        SCRIPT_SOURCES.include? filesystem_path_for_script( filename )
     end
 
     def filesystem_path_for_script( filename )
         name = "#{SCRIPT_LIBRARY}#{filename}"
         name << '.js' if !name.end_with?( '.js')
-        name
+        File.expand_path( name )
     end
 
     def script_url_for( filename )
@@ -382,6 +397,27 @@ class Javascript
         end
 
         "#{SCRIPT_BASE_URL}#{filename}.js"
+    end
+
+    def unwrap_elements( obj )
+        case obj
+            when Watir::Element
+                unwrap_element( obj )
+
+            when Array
+                obj.map { |e| unwrap_elements( e ) }
+
+            when Hash
+                obj.each { |k, v| obj[k] = unwrap_elements( v ) }
+                obj
+
+            else
+                obj
+        end
+    end
+
+    def unwrap_element( element )
+        element.html
     end
 
 end

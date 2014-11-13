@@ -294,6 +294,13 @@ class Manager
     # @return   [Manager]
     #   Platform for the given `uri`
     def self.[]( uri )
+        # If fingerprinting is disabled there's no point in filling the cache
+        # with the same object over and over, create an identical one for all
+        # URLs and return that always.
+        if !Options.fingerprint?
+            return @default ||= new( Options.platforms )
+        end
+
         return new if !(key = make_key( uri ))
         synchronize { @platforms[key] ||= new }
     end

@@ -7,8 +7,8 @@
     web site for more information on licensing and terms of use.
 =end
 
-require_relative '../ui/cli/output'
 require_relative '../lib/arachni'
+require_relative '../ui/cli/output'
 require 'irb'
 require 'irb/completion'
 

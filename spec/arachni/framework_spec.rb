@@ -1100,6 +1100,10 @@ describe Arachni::Framework do
             end
         end
 
+        context 'when the page contains elements seen in previous pages' do
+            it 'removes them from the page'
+        end
+
         context 'when a check fails with an exception' do
             it 'moves to the next one' do
                 @options.paths.checks  = fixtures_path + '/checks/'
@@ -1208,8 +1212,6 @@ describe Arachni::Framework do
         let(:page) { Arachni::Page.from_url( @url + '/train/true' ) }
 
         it 'pushes it to the page audit queue and returns true' do
-            page = Arachni::Page.from_url( @url + '/train/true' )
-
             subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 

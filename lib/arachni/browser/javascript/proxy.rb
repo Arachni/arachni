@@ -70,7 +70,7 @@ class Proxy < BasicObject
     #   Javascript property/function.
     # @param    [Array]    arguments
     def call( function, *arguments )
-        @javascript.run "return #{stub.write( function, *arguments )}"
+        @javascript.run_without_elements "return #{stub.write( function, *arguments )}"
     end
     alias :method_missing :call
 

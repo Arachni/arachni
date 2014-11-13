@@ -1,5 +1,47 @@
 # ChangeLog
 
+## 1.0.5 _(November 14, 2014)_
+
+- Executables
+    - `arachni_console` -- Require the UI::Output interface after Arachni.
+- Error log
+    - Redacted HTTP authentication credentials.
+- `Session`
+    - Added `#record_login_sequence`, allowing for arbitrary login sequences to
+        be stored and replayed.
+- `URI`
+   - `#domain` -- Fixed `nil` error on missing host.
+   - `.query_parameters` -- Recode query string before parsing to fix encoding errors.
+- `UI::Output`
+    - `#log_error` -- Store errors in memory, as well as in logfile.
+- `RPC::Server::Framework::MultiInstance`
+    - `#errors` -- Return errors from memory buffer instead of logfile, to
+        prevent "Too many open file" exceptions.
+- ` Framework`
+    - `#audit_page` -- Keep track of checked elements at the `Framework` level
+        too and remove them from pages.
+- `Browser`
+    - Fixed `nil` error on failed process spawn.
+    - `Javascript` -- Updated to preload and cache script sources to avoid
+        hitting the disk in order to prevent "Too many open file" exceptions.
+        - `#run_without_elements` -- Runs a script but unwraps `Watir` elements.
+        - `Proxy` -- Updated to use `#run_without_elements`.
+- `BrowserCluster::Worker`
+    - Print error message on failure to respawn.
+- `Check::Auditor` -- Updated audit helpers to mark elements as audited at the
+    check component level, to avoid sending redundant workload to the analysis
+    classes only to be ignored there.
+    - `#skip?` -- Optimized redundant issue checks.
+- Checks
+    - Active
+        - `no_sql_injection` -- Updated payloads to be per platform.
+    - Passive
+        - `common_files` -- Added more filenames. [PR #504]
+- Plugins
+    - Added
+        - `login_script` -- Exposes a Watir WebDriver interface to an external
+            script in order to allow for arbitrary login sequences.
+
 ## 1.0.4 _(October 25, 2014)_
 
 - CLI options

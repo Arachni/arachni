@@ -820,7 +820,7 @@ class Browser
             c[:value]    = Cookie.decode( c[:value].to_s )
             c[:httponly] = !js_cookies.include?( original_name )
 
-            Cookie.new c.merge( url: @last_url )
+            Cookie.new c.merge( url: @last_url || url )
         end
     end
 
@@ -1007,8 +1007,10 @@ class Browser
                 print_debug 'Spawn timed-out.'
             end
 
-            last_attempt_output = IO.read( @process.io.stdout )
-            print_debug last_attempt_output
+            if @process.io.stdout
+                last_attempt_output = IO.read( @process.io.stdout )
+                print_debug last_attempt_output
+            end
 
             if done
                 print_debug 'PhantomJS is ready.'
@@ -1046,12 +1048,13 @@ class Browser
         end
 
         @process     = nil
+        @watir       = nil
         @pid         = nil
         @browser_url = nil
     end
 
     def browser_alive?
-        @process && @process.alive?
+        @watir && @process && @process.alive?
     rescue Errno::ECHILD
         false
     end

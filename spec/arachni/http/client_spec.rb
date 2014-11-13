@@ -497,7 +497,7 @@ describe Arachni::HTTP::Client do
 
         context "when a #{RuntimeError} occurs" do
             it 'returns nil' do
-                subject.instance.stub(:hydra_run){ raise }
+                subject.instance.stub(:client_run){ raise }
 
                 subject.run.should be_nil
             end

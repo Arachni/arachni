@@ -380,7 +380,8 @@ module Auditor
     #
     # @see  Page#audit?
     def skip?( element )
-        return true if !page.audit_element?( element )
+        return true if audited?( element.coverage_id ) ||
+            !page.audit_element?( element )
 
         # Don't audit elements which have been already logged as vulnerable
         # either by us or preferred checks.
@@ -389,6 +390,10 @@ module Auditor
 
             klass = framework.checks[check]
             next if !klass.info.include?(:issue)
+
+            # No point in doing the following heavy deduplication check if there
+            # are no issues logged to begin with.
+            next if klass.issue_counter == 0
 
             if Data.issues.include?( klass.create_issue( vector: element ) )
                 return true
@@ -499,7 +504,10 @@ module Auditor
         if !block_given?
             audit_taint( payloads, opts )
         else
-            each_candidate_element( opts[:elements] ) { |e| e.audit( payloads, opts, &block ) }
+            each_candidate_element( opts[:elements] ) do |e|
+                e.audit( payloads, opts, &block )
+                audited( e.coverage_id )
+            end
         end
     end
 
@@ -512,7 +520,10 @@ module Auditor
     # @see Arachni::Element::Capabilities::Analyzable::Taint
     def audit_taint( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        each_candidate_element( opts[:elements] ) { |e| e.taint_analysis( payloads, opts ) }
+        each_candidate_element( opts[:elements] )do |e|
+            e.taint_analysis( payloads, opts )
+            audited( e.coverage_id )
+        end
     end
 
     # Audits elements using differential analysis and automatically logs results.
@@ -523,7 +534,10 @@ module Auditor
     # @see Arachni::Element::Capabilities::Analyzable::Differential
     def audit_differential( opts = {}, &block )
         opts = OPTIONS.merge( opts )
-        each_candidate_element( opts[:elements] ) { |e| e.differential_analysis( opts, &block ) }
+        each_candidate_element( opts[:elements] ) do |e|
+            e.differential_analysis( opts, &block )
+            audited( e.coverage_id )
+        end
     end
 
     # Audits elements using timing attacks and automatically logs results.
@@ -534,7 +548,10 @@ module Auditor
     # @see Arachni::Element::Capabilities::Analyzable::Timeout
     def audit_timeout( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
-        each_candidate_element( opts[:elements] ) { |e| e.timeout_analysis( payloads, opts ) }
+        each_candidate_element( opts[:elements] ) do |e|
+            e.timeout_analysis( payloads, opts )
+            audited( e.coverage_id )
+        end
     end
 
     # Traces the taint in the given `resource` and passes each page to the
@@ -581,7 +598,7 @@ module Auditor
 
     def prepare_each_element( elements, &block )
         elements.each do |e|
-            next if e.inputs.empty?
+            next if skip?( e ) || e.inputs.empty?
 
             d = e.dup
             d.auditor = self
@@ -591,7 +608,7 @@ module Auditor
 
     def prepare_each_dom_element( elements, &block )
         elements.each do |e|
-            next if !e.dom || e.dom.inputs.empty?
+            next if skip?( e ) || !e.dom || e.dom.inputs.empty?
 
             d = e.dup
             d.dom.auditor = self

@@ -131,23 +131,21 @@ class Client
         clear_observers if hooks_too
         State.http.clear
 
-        opts = Options
-
-        @url = opts.url.to_s
+        @url = Options.url.to_s
         @url = nil if @url.empty?
 
-        @hydra = Typhoeus::Hydra.new( max_concurrency: opts.http.request_concurrency || MAX_CONCURRENCY )
+        client_initialize
 
         headers.merge!(
             'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent' => opts.http.user_agent
+            'User-Agent' => Options.http.user_agent
         )
-        headers['From'] = opts.authorized_by if opts.authorized_by
-        headers.merge!( opts.http.request_headers )
+        headers['From'] = Options.authorized_by if Options.authorized_by
+        headers.merge!( Options.http.request_headers )
 
-        cookie_jar.load( opts.http.cookie_jar_filepath ) if opts.http.cookie_jar_filepath
-        update_cookies( opts.http.cookies )
-        update_cookies( opts.http.cookie_string ) if opts.http.cookie_string
+        cookie_jar.load( Options.http.cookie_jar_filepath ) if Options.http.cookie_jar_filepath
+        update_cookies( Options.http.cookies )
+        update_cookies( Options.http.cookie_string ) if Options.http.cookie_string
 
         reset_burst_info
 
@@ -203,7 +201,7 @@ class Client
             @burst_runtime = nil
 
             begin
-                hydra_run
+                run_and_update_statistics
 
                 duped_after_run = observers_for( :after_run ).dup
                 observers_for( :after_run ).clear
@@ -258,7 +256,7 @@ class Client
 
     # Aborts the running requests on a best effort basis.
     def abort
-        exception_jail { @hydra.abort }
+        exception_jail { client_abort }
     end
 
     # @return   [Integer]
@@ -688,11 +686,11 @@ class Client
         false
     end
 
-    def hydra_run
+    def run_and_update_statistics
         @running = true
 
         reset_burst_info
-        @hydra.run
+        client_run
 
         @queue_size = 0
         @running    = false
@@ -700,7 +698,7 @@ class Client
         @burst_runtime += Time.now - @burst_runtime_start
         @total_runtime += @burst_runtime
     end
-
+    
     def reset_burst_info
         @burst_response_time_sum = 0
         @burst_response_count    = 0
@@ -771,20 +769,40 @@ class Client
 
         return if request.blocking?
 
+        if client_queue( request )
+            @queue_size += 1
+
+            if emergency_run?
+                print_info 'Request queue reached its maximum size, performing an emergency run.'
+                run_and_update_statistics
+            end
+        end
+
+        request
+    end
+
+    def client_initialize
+        @hydra = Typhoeus::Hydra.new(
+            max_concurrency: Options.http.request_concurrency || MAX_CONCURRENCY
+        )
+    end
+
+    def client_run
+        @hydra.run
+    end
+
+    def client_abort
+        @hydra.abort
+    end
+
+    def client_queue( request )
         if request.high_priority?
             @hydra.queue_front( request.to_typhoeus )
         else
             @hydra.queue( request.to_typhoeus )
         end
 
-        @queue_size += 1
-
-        if emergency_run?
-            print_info 'Request queue reached its maximum size, performing an emergency run.'
-            hydra_run
-        end
-
-        request
+        true
     end
 
     def emergency_run?

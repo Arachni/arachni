@@ -108,56 +108,99 @@ describe Arachni::Session do
     end
 
     describe '#login' do
-        it 'finds and submits the login form with the given credentials' do
-            configured.login
-            configured.should be_logged_in
+        context 'when given a login sequence' do
+            context 'when a browser is available' do
+                it 'passes a browser instance' do
+                    b = nil
+                    subject.record_login_sequence do |browser|
+                        b = browser
+                    end
+
+                    subject.login
+
+                    b.should be_kind_of Arachni::Browser
+                end
+
+                it 'updates the system cookies from the browser' do
+                    subject.record_login_sequence do |browser|
+                        browser.goto @url
+                        browser.watir.cookies.add 'foo', 'bar'
+                    end
+
+                    subject.login
+
+                    Arachni::HTTP::Client.cookies.find { |c| c.name == 'foo' }.should be_true
+                end
+            end
+
+            context 'when a browser is not available' do
+                before { subject.stub(:has_browser?) { false } }
+
+                it 'does not pass a browser instance' do
+                    b = true
+                    subject.record_login_sequence do |browser|
+                        b = browser
+                    end
+
+                    subject.login
+
+                    b.should be_nil
+                end
+            end
         end
 
-        context 'when a browser is available' do
-            before { subject.stub(:has_browser?) { false } }
-
-            it 'uses the framework Page helpers' do
-                configured.should_not be_logged_in
-                configured.login.should be_kind_of Arachni::Page
+        context 'when given login form info' do
+            it 'finds and submits the login form with the given credentials' do
+                configured.login
                 configured.should be_logged_in
             end
-        end
 
-        context 'when a browser is available' do
-            it 'can handle Javascript forms' do
-                subject.configure(
-                    url:    "#{@url}/javascript_login",
-                    inputs: {
-                        username: 'john',
-                        password: 'doe'
-                    }
-                )
+            context 'when a browser is not available' do
+                before { subject.stub(:has_browser?) { false } }
 
-                @opts.session.check_url     = @url
-                @opts.session.check_pattern = 'logged-in user'
-
-                subject.login
-
-                subject.should be_logged_in
+                it 'uses the framework Page helpers' do
+                    configured.should_not be_logged_in
+                    configured.login.should be_kind_of Arachni::Page
+                    configured.should be_logged_in
+                end
             end
 
-            it 'returns the resulting browser evaluated page' do
-                configured.login.should be_kind_of Arachni::Page
+            context 'when a browser is available' do
+                it 'can handle Javascript forms' do
+                    subject.configure(
+                        url:    "#{@url}/javascript_login",
+                        inputs: {
+                            username: 'john',
+                            password: 'doe'
+                        }
+                    )
 
-                transition = configured.login.dom.transitions.first
-                transition.event.should == :load
-                transition.element.should == :page
-                transition.options[:url].should == configured.configuration[:url]
+                    @opts.session.check_url     = @url
+                    @opts.session.check_pattern = 'logged-in user'
 
-                transition = configured.login.dom.transitions.last
-                transition.event.should == :submit
-                transition.element.tag_name.should == :form
+                    subject.login
 
-                transition.options[:inputs]['username'].should ==
-                    configured.configuration[:inputs][:username]
+                    subject.should be_logged_in
+                end
 
-                transition.options[:inputs]['password'].should ==
-                    configured.configuration[:inputs][:password]
+                it 'returns the resulting browser evaluated page' do
+                    configured.login.should be_kind_of Arachni::Page
+
+                    transition = configured.login.dom.transitions.first
+                    transition.event.should == :load
+                    transition.element.should == :page
+                    transition.options[:url].should == configured.configuration[:url]
+
+                    transition = configured.login.dom.transitions.last
+                    transition.event.should == :submit
+                    transition.element.tag_name.should == :form
+
+                    transition.options[:inputs]['username'].should ==
+                        configured.configuration[:inputs][:username]
+
+                    transition.options[:inputs]['password'].should ==
+                        configured.configuration[:inputs][:password]
+                end
             end
         end
 

@@ -116,6 +116,10 @@ class Manager < Arachni::Component::Manager
     #   Check to run as a class.
     # @param    [Page]   page
     #   Page to audit.
+    #
+    # @return   [Bool]
+    #   `true` if the check was ran (based on {Check::Auditor.check?}),
+    #   `false` otherwise.
     def run_one( check, page )
         return false if !check.check?( page )
 
@@ -123,6 +127,8 @@ class Manager < Arachni::Component::Manager
         check_new.prepare
         check_new.run
         check_new.clean_up
+
+        true
     end
 
     def self.reset

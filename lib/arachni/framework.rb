@@ -272,8 +272,6 @@ class Framework
 
         print_line
         print_status "[HTTP: #{page.code}] #{page.dom.url}"
-        # print_object_space
-        # print_with_statistics
 
         if page.platforms.any?
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
@@ -293,6 +291,9 @@ class Framework
             end
         end
 
+        # Aside from plugins and whatnot, the Trainer hooks here to update the
+        # ElementFilter so that it'll know if new elements appear during the
+        # audit, so it's a big deal.
         notify_on_page_audit( page )
 
         @current_url = page.dom.url.to_s
@@ -300,22 +301,23 @@ class Framework
         http.update_cookies( page.cookie_jar )
         perform_browser_analysis( page )
 
+        # Remove elements which have already passed through here.
+        pre_audit_element_filter( page )
+
         # Run checks which **don't** benefit from fingerprinting first, so that
         # we can use the responses of their HTTP requests to fingerprint the
         # webapp platforms, so that the checks which **do** benefit from knowing
         # the remote platforms can run more efficiently.
         ran = false
         @checks.without_platforms.values.each do |check|
-            ran = true
-            check_page( check, page )
+            ran = true if check_page( check, page )
         end
         harvest_http_responses if ran
         run_http = ran
 
         ran = false
         @checks.with_platforms.values.each do |check|
-            ran = true
-            check_page( check, page )
+            ran = true if check_page( check, page )
         end
         harvest_http_responses if ran
         run_http ||= ran
@@ -1201,7 +1203,53 @@ class Framework
         rescue => e
             print_error "Error in #{check.to_s}: #{e.to_s}"
             print_error_backtrace e
+            false
         end
+    end
+
+    # Small but (sometimes) important optimization:
+    #
+    # Keep track of page elements which have already been passed to checks,
+    # in order to filter them out and hopefully even avoid running checks
+    # against pages with no new elements.
+    #
+    # It's not like there were going to be redundant audits anyways, because
+    # each layer of the audit performs its own redundancy checks, but those
+    # redundancy checks can introduce significant latencies when dealing
+    # with pages with lots of elements.
+    def pre_audit_element_filter( page )
+        redundant_elements  = {}
+        page.elements.each do |e|
+            next if !Options.audit.element?( e.type )
+            next if e.is_a?( Cookie ) || e.is_a?( Header )
+
+            new_element                  = false
+            redundant_elements[e.type] ||= []
+
+            if !state.element_checked?( e )
+                state.element_checked e
+                new_element = true
+            end
+
+            if e.respond_to?( :dom ) && e.dom
+                if !state.element_checked?( e.dom )
+                    state.element_checked e.dom
+                    new_element = true
+                end
+            end
+
+            next if new_element
+
+            redundant_elements[e.type] << e
+        end
+
+        # Remove redundant elements from the page cache, if there are thousands
+        # of them then just skipping them during the audit will introduce latency.
+        redundant_elements.each do |type, elements|
+            page.send( "#{type}s=", page.send( "#{type}s" ) - elements )
+        end
+
+        page
     end
 
     def add_to_sitemap( page )

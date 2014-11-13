@@ -9,6 +9,7 @@ describe Arachni::State::Framework do
     before(:each) { subject.clear }
 
     let(:page) { Factory[:page] }
+    let(:element) { Factory[:link] }
     let(:url) { page.url }
     let(:dump_directory) do
         @dump_directory = "#{Dir.tmpdir}/framework-#{Arachni::Utilities.generate_token}"
@@ -111,6 +112,28 @@ describe Arachni::State::Framework do
     describe '#rpc' do
         it "returns an instance of #{described_class::RPC}" do
             subject.rpc.should be_kind_of described_class::RPC
+        end
+    end
+
+    describe '#element_checked?' do
+        context 'when an element has already been checked' do
+            it 'returns true' do
+                subject.element_pre_check_filter << element
+                subject.element_checked?( element ).should be_true
+            end
+        end
+
+        context 'when an element has not been checked' do
+            it 'returns false' do
+                subject.element_checked?( element ).should be_false
+            end
+        end
+    end
+
+    describe '#element_checked' do
+        it 'marks an element as checked' do
+            subject.element_checked element
+            subject.element_checked?( element ).should be_true
         end
     end
 
@@ -805,6 +828,15 @@ describe Arachni::State::Framework do
             described_class.load( dump_directory ).rpc.should be_kind_of described_class::RPC
         end
 
+        it 'loads #element_pre_check_filter from disk' do
+            subject.element_pre_check_filter << element
+
+            subject.dump( dump_directory )
+
+            described_class.load( dump_directory ).element_pre_check_filter.
+                collection.should == Set.new([element.coverage_hash])
+        end
+
         it 'loads #page_queue_filter from disk' do
             subject.page_queue_filter << page
 
@@ -837,7 +869,8 @@ describe Arachni::State::Framework do
     end
 
     describe '#clear' do
-        %w(rpc browser_skip_states page_queue_filter url_queue_filter).each do |method|
+        %w(rpc element_pre_check_filter browser_skip_states page_queue_filter
+            url_queue_filter).each do |method|
             it "clears ##{method}" do
                 subject.send(method).should receive(:clear)
                 subject.clear

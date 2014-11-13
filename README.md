@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>1.0.4</td>
+        <td>1.0.5</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -121,7 +121,7 @@ you with its findings.
  - Proxy authentication.
  - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
  - Automatic log-out detection and re-login during the scan (when the initial
-    login was performed via the `autologin` or `proxy` plugins).
+    login was performed via the `autologin`, `login_script` or `proxy` plugins).
  - Custom 404 page detection.
  - UI abstraction:
     - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
@@ -419,7 +419,10 @@ Active checks engage the web application via its inputs.
 - Path XSS (`xss_path`).
 - XSS in event attributes of HTML elements (`xss_event`).
 - XSS in HTML tags (`xss_tag`).
-- XSS in "script" context (`xss_script_context`).
+- XSS in script context (`xss_script_context`).
+- DOM XSS (`xss_dom`).
+- DOM XSS inputs (`xss_dom_inputs`).
+- DOM XSS script context (`xss_dom_script_context`).
 - Source code disclosure (`source_code_disclosure`)
 
 ##### Passive
@@ -475,7 +478,8 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 
 - Passive Proxy  (`proxy`) -- Analyzes requests and responses between the web app and
     the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit.
-- Form based AutoLogin (`autologin`).
+- Form based login (`autologin`).
+- Script based login (`login_script`).
 - Dictionary attacker for HTTP Auth (`http_dicattack`).
 - Dictionary attacker for form based authentication (`form_dicattack`).
 - Cookie collector (`cookie_collector`) -- Keeps track of cookies while establishing a timeline of changes.

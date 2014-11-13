@@ -563,6 +563,7 @@ class URI
     # @return [String]
     #   `domain_name.tld`
     def domain
+        return if !host
         return host if ip_address?
 
         s = host.split( '.' )
@@ -612,7 +613,7 @@ class URI
         q = self.query
         return {} if q.to_s.empty?
 
-        q.split( '&' ).inject( {} ) do |h, pair|
+        q.recode.split( '&' ).inject( {} ) do |h, pair|
             name, value = pair.split( '=', 2 )
             h[::URI.decode( name.to_s )] = ::URI.decode( value.to_s )
             h
