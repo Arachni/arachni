@@ -2,6 +2,17 @@
 
 ## _Under development_
 
+- `Framework` -- Split into `Parts`:
+    - `Audit`
+    - `Browser`
+    - `Check`
+    - `Data`
+    - `Platform`
+    - `Plugin`
+    - `Report`
+    - `Scope`
+    - `State`
+
 ## 1.0.5 _(November 14, 2014)_
 
 - Executables

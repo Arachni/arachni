@@ -1,0 +1,31 @@
+=begin
+    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+
+    This file is part of the Arachni Framework project and is subject to
+    redistribution and commercial restrictions. Please see the Arachni Framework
+    web site for more information on licensing and terms of use.
+=end
+
+module Arachni
+class Framework
+module Parts
+
+module Platform
+
+    # @return    [Array<Hash>]
+    #   Information about all available platforms.
+    def list_platforms
+        platforms = Arachni::Platform::Manager.new
+        platforms.valid.inject({}) do |h, platform|
+            type = Arachni::Platform::Manager::TYPES[platforms.find_type( platform )]
+            h[type] ||= {}
+            h[type][platform] = platforms.fullname( platform )
+            h
+        end
+    end
+
+end
+
+end
+end
+end
