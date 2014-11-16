@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Issue`
+    - `#recheck` -- Rechecks the existence of the issue.
 - `Framework` -- Split into `Parts`:
     - `Audit`
     - `Browser`

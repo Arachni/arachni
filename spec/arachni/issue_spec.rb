@@ -29,6 +29,24 @@ describe Arachni::Issue do
         issue.name.should == "Check name \u2713"
     end
 
+    describe '#recheck' do
+        it 'rechecks the issue' do
+            Arachni::Options.paths.checks = fixtures_path + '/taint_check/'
+            Arachni::Options.audit.elements :links, :forms, :cookies
+
+            issue = nil
+            Arachni::Framework.new do |f|
+                f.options.url = "#{web_server_url_for( :auditor )}/link"
+                f.checks.load :taint
+
+                f.run
+                issue = f.report.issues.first.variations.first
+            end
+
+            issue.recheck.should == issue
+        end
+    end
+
     describe '#to_rpc_data' do
         let(:issue) { issue_with_variations }
         let(:data) { issue.to_rpc_data }
@@ -78,6 +96,12 @@ describe Arachni::Issue do
 
         it "restores 'variation'" do
             restored_issue.variation?.should == issue.variation?
+        end
+
+        it 'restores variation parent' do
+            restored_issue.variations.each do |v|
+                v.parent.should == restored_issue
+            end
         end
     end
 
@@ -607,6 +631,10 @@ describe Arachni::Issue do
             end
             root.variations.should be_nil
         end
+
+        it 'has a #parent' do
+            issue.as_variation.parent.should == issue
+        end
     end
 
     describe '#to_solo!' do
@@ -644,6 +672,13 @@ describe Arachni::Issue do
             parent.vector.affected_input_name.should be_nil
             variation.vector.affected_input_name.should be_true
             variation.to_solo!( parent ).vector.affected_input_name.should be_true
+        end
+
+        it 'skips #parent' do
+            parent    = issue.with_variations
+            variation = issue.as_variation
+
+            variation.to_solo!( parent ).parent.should be_nil
         end
     end
 

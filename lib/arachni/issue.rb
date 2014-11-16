@@ -112,6 +112,10 @@ class Issue
     #   Variations of this issue.
     attr_accessor :variations
 
+    # @return   [Issue,nil]
+    #   Parent of variation.
+    attr_accessor :parent
+
     # @param    [Hash]    options
     #   Configuration hash holding instance attributes.
     def initialize( options = {} )
@@ -130,6 +134,42 @@ class Issue
         @tags       ||= []
         @variations ||= []
         @variation    = nil
+        @parent       = nil
+    end
+
+    # @note The whole environment needs to be fresh.
+    #
+    # Rechecks the existence of this issue.
+    #
+    # @param    [Framework.nil]     framework
+    #   {Framework} to use, if `nil` is given a new {Framework} will be
+    #   instantiated and used.
+    #
+    # @return   [Issue,nil]
+    #   Fresh {Issue} if the issue still exists, `nil` otherwise.
+    def recheck( framework = nil )
+        new_issue = nil
+        checker = proc do |f|
+            referring_page.update_element_audit_whitelist vector
+
+            f.options.url = referring_page.url
+            f.options.audit.elements vector.class.type
+
+            f.checks.load( parent ? parent.check[:shortname] : check[:shortname] )
+            f.push_to_page_queue referring_page
+
+            f.run
+
+            new_issue = Data.issues[digest]
+        end
+
+        if framework
+            checker.call framework
+        else
+            Arachni::Framework.new( &checker )
+        end
+
+        new_issue
     end
 
     # @return   [HTTP::Response]
@@ -307,6 +347,8 @@ class Issue
             h[:request]  = request.to_h  if request
         end
 
+        h.delete :parent
+
         h
     end
     alias :to_hash :to_h
@@ -358,6 +400,7 @@ class Issue
 
         issue.unique_id = unique_id
         issue.variation = false
+        issue.parent    = nil
         issue
     end
 
@@ -376,6 +419,7 @@ class Issue
 
         issue.unique_id = unique_id
         issue.variation = true
+        issue.parent    = self
         issue
     end
 
@@ -394,6 +438,7 @@ class Issue
 
         @variations = []
         @variation  = nil
+        @parent     = nil
 
         self
     end
@@ -425,9 +470,11 @@ class Issue
     def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
-            data[ivar.to_s.gsub('@','')] = instance_variable_get( ivar ).to_rpc_data_or_self
+            data[ivar.to_s.gsub('@','')] =
+                instance_variable_get( ivar ).to_rpc_data_or_self
         end
 
+        data.delete 'parent'
 
         if data['check'] && data['check'][:elements]
             data['check'] = data['check'].dup
@@ -487,6 +534,13 @@ class Issue
 
             instance.instance_variable_set( "@#{name}", value )
         end
+
+        if instance.variations
+            instance.variations.each do |v|
+                v.parent = instance
+            end
+        end
+
         instance
     end
 
