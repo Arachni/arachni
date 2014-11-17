@@ -14,6 +14,9 @@
     - `Report`
     - `Scope`
     - `State`
+- Checks
+    - Active
+        - `sql_injection` -- Slight payload update to catch double-quote cases.
 
 ## 1.0.5 _(November 14, 2014)_
 
