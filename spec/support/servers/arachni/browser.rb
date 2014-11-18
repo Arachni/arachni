@@ -244,6 +244,37 @@ get '/fire_event/form/onsubmit' do
     EOHTML
 end
 
+get '/fire_event/form/select' do
+    <<-EOHTML
+<html>
+    <script>
+        function submitForm() {
+            document.getElementById("container-name").innerHTML =
+                document.getElementsByName("name")[0].value;
+
+            document.getElementById("container-email").innerHTML =
+                document.getElementById("email").value;
+        }
+    </script>
+
+    <body>
+        <form onsubmit="submitForm();return false;">
+            <textarea name="name" ></textarea>
+            <select name="email" id="email"/>
+                <option value="the.other.dude@abides.com">The other Dude</option>
+                <option value="the.dude@abides.com">The Dude</option>
+            </select>
+        </fom>
+
+        <div id="container-name">
+        </div>
+        <div id="container-email">
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
 get '/fire_event/form/image-input' do
     <<HTML
     <html>
