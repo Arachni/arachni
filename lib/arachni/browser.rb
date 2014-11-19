@@ -910,10 +910,11 @@ class Browser
             value      = inputs ? inputs[name_or_id] : value_for( input )
 
             begin
-                form.select_list( name: name_or_id ).select_value( value.to_s )
+                input.select_value( value.to_s )
             # Disabled inputs and such...
             rescue Watir::Exception::ObjectDisabledException,
                 Watir::Exception::ObjectReadOnlyException,
+                Watir::Exception::NoValueFoundException,
                 Selenium::WebDriver::Error::InvalidElementStateError => e
                 print_debug_level_2 "Could not fill in form select '#{name_or_id}'" <<
                                         " because: #{e} [#{e.class}"
