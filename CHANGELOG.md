@@ -3,6 +3,7 @@
 ## _Under development_
 
 - `Browser` -- Fixed issue causing `select` inputs in forms to not be set.
+- `Element::Cookie.encode` -- Added '&' to the list of reserved characters.
 - `Issue`
     - `#recheck` -- Rechecks the existence of the issue.
 - `Framework` -- Split into `Parts`:

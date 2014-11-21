@@ -466,7 +466,7 @@ class Cookie < Base
         #
         # @return   [String]
         def encode( str, type = :value )
-            reserved = "+;%\0\'\""
+            reserved = "+;%\0\'\"&"
             reserved << '=' if type == :name
 
             URI.encode( str, reserved ).recode.gsub( ' ', '+' )
