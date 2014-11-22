@@ -17,6 +17,7 @@
     - `Report`
     - `Scope`
     - `State`
+- `State::Framework#abort` -- Fixed exception message.
 - Checks
     - Active
         - `sql_injection` -- Slight payload update to catch double-quote cases.

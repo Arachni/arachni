@@ -227,7 +227,7 @@ class Framework
         return false if aborting? || aborted?
 
         if !running?
-            fail Error::StateNotAbortable, 'Cannot suspend an idle state.'
+            fail Error::StateNotAbortable, 'Cannot abort an idle state.'
         end
 
         set_status_message :aborting
