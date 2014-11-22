@@ -2,6 +2,7 @@
 
 ## _Under development_
 
+- `arachni_rpcd` -- Fixed bug causing the `--nickname` option to not be understood.
 - `Browser` -- Fixed issue causing `select` inputs in forms to not be set.
 - `Element::Cookie.encode` -- Added '&' to the list of reserved characters.
 - `Issue`

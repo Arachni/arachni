@@ -100,7 +100,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--nickname NAME', 'Nickname for this Dispatcher.' ) do |name|
-            options.dispatcher.node_name = name
+            options.dispatcher.node_nickname = name
         end
 
         separator ''
