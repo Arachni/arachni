@@ -447,8 +447,6 @@ class Request < Message
         end
     end
 
-    private
-
     def prepare_headers
         headers['Cookie'] = effective_cookies.
             map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
@@ -461,6 +459,8 @@ class Request < Message
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
     end
+
+    private
 
     def fill_in_data_from_typhoeus_response( response )
         @headers_string = response.debug_info.header_out.first
