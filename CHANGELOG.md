@@ -7,6 +7,8 @@
 - `Element::Cookie.encode` -- Added '&' to the list of reserved characters.
 - `Issue`
     - `#recheck` -- Rechecks the existence of the issue.
+- `Element::Capabilities::WithDOM`
+    - `#dom` -- Return `nil` on `Inputtable::Error`.
 - `Framework` -- Split into `Parts`:
     - `Audit`
     - `Browser`

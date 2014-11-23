@@ -21,6 +21,7 @@ module WithDOM
     # @return   [DOM]
     def dom
         @dom ||= self.class::DOM.new( parent: self )
+    rescue Inputtable::Error
     end
 
     def dup
