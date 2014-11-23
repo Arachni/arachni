@@ -186,6 +186,11 @@ module State
         state.pausing?
     end
 
+    # @return   (see Arachni::State::Framework#done?)
+    def done?
+        state.done?
+    end
+
     # @note Each call from a unique caller is counted as a pause request
     #   and in order for the system to resume **all** pause callers need to
     #   {#resume} it.

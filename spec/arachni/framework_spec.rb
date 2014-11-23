@@ -292,6 +292,13 @@ describe Arachni::Framework do
         end
     end
 
+    describe '#done?' do
+        it "delegates to #{Arachni::State::Framework}#done?" do
+            subject.state.stub(:done?) { :stuff }
+            subject.done?.should == :stuff
+        end
+    end
+
     describe '#paused?' do
         it "delegates to #{Arachni::State::Framework}#paused?" do
             subject.state.stub(:paused?) { :stuff }

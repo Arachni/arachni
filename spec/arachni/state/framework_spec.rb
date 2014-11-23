@@ -508,6 +508,21 @@ describe Arachni::State::Framework do
         end
     end
 
+    describe '#done?' do
+        context 'when #status is :done' do
+            it 'returns true' do
+                subject.status = :done
+                subject.should be_done
+            end
+        end
+
+        context 'when not done' do
+            it 'returns false' do
+                subject.should_not be_done
+            end
+        end
+    end
+
     describe '#aborted' do
         it 'sets the #status to :aborted' do
             subject.aborted

@@ -264,6 +264,12 @@ class Framework
         @status == :aborting
     end
 
+    # @return   [Bool]
+    #   `true` if the system has completed successfully, `false` otherwise.
+    def done?
+        @status == :done
+    end
+
     # @param    [Bool]  block
     #   `true` if the method should block until a suspend has completed,
     #   `false` otherwise.
