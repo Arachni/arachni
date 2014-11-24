@@ -377,6 +377,8 @@ module Output
             else
                 out.print "#{sign} #{str}\n"
             end
+
+            out.flush
         rescue
         end
     end
