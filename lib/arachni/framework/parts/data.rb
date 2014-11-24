@@ -56,9 +56,11 @@ module Data
         Page.from_url( url_queue.pop, http: { update_cookies: true } ) do |page|
             @retries[page.url.hash] ||= 0
 
-            if (location = page.response.headers['Location'])
-                print_info "Scheduled #{page.code} redirection: #{page.url} => #{location}"
-                push_to_url_queue to_absolute( location, page.url )
+            if (location = page.response.headers.location)
+                [location].flatten.each do |l|
+                    print_info "Scheduled #{page.code} redirection: #{page.url} => #{l}"
+                    push_to_url_queue to_absolute( l, page.url )
+                end
             end
 
             if page.code != 0

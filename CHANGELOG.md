@@ -15,6 +15,8 @@
     - `Browser`
     - `Check`
     - `Data`
+        - `#pop_page_from_url_queue` -- Fixed issue causing multiple-choice
+            redirections to cause an error.
     - `Platform`
     - `Plugin`
     - `Report`
