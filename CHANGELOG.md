@@ -8,8 +8,11 @@
 - `Element::Cookie.encode` -- Added '&' to the list of reserved characters.
 - `Issue`
     - `#recheck` -- Rechecks the existence of the issue.
-- `Element::Capabilities::WithDOM`
-    - `#dom` -- Return `nil` on `Inputtable::Error`.
+- `Element::Capabilities`
+    - `WithDOM`
+        - `#dom` -- Return `nil` on `Inputtable::Error`.
+    - `Auditable` -- Updated response analysis messages to include vector type,
+        name and action URL.
 - `Framework` -- Split into `Parts`:
     - `Audit`
     - `Browser`
