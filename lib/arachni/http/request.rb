@@ -97,6 +97,10 @@ class Request < Message
     # @return   [Bool]
     attr_accessor :high_priority
 
+    # @return   [Integer]
+    #   Maximum HTTP response size to accept, in bytes.
+    attr_accessor :response_max_size
+
     # @private
     attr_accessor :root_redirect_id
 
