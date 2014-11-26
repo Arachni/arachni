@@ -75,11 +75,11 @@ class Header < Base
 
     class <<self
         def encode( header )
-            ::URI.encode( header, "\r\n" )
+            ::URI.encode( header.to_s, "\r\n" )
         end
 
         def decode( header )
-            ::URI.decode( header )
+            ::URI.decode( header.to_s )
         end
     end
 

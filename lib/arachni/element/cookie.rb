@@ -469,7 +469,7 @@ class Cookie < Base
             reserved = "+;%\0\'\"&"
             reserved << '=' if type == :name
 
-            URI.encode( str, reserved ).recode.gsub( ' ', '+' )
+            URI.encode( str.to_s, reserved ).recode.gsub( ' ', '+' )
         end
 
         # Decodes a {String} encoded for the `Cookie` header field.
