@@ -206,7 +206,7 @@ class Client
                 duped_after_run = observers_for( :after_run ).dup
                 observers_for( :after_run ).clear
                 duped_after_run.each { |block| block.call }
-            end while @queue_size > 0
+            end while @queue_size > 0 || observers_for( :after_run ).any?
 
             notify_after_each_run
 
