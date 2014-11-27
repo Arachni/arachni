@@ -711,7 +711,8 @@ class Client
     #
     # @param    [Request]     request
     def forward_request( request )
-        request.id = @request_count
+        add_callbacks = !request.id
+        request.id    = @request_count
 
         if debug_level_3?
             print_debug_level_3 '------------'
@@ -728,40 +729,42 @@ class Client
             print_debug_level_3  '------------'
         end
 
-        request.on_complete do |response|
-            synchronize do
-                @response_count          += 1
-                @burst_response_count    += 1
-                @burst_response_time_sum += response.time
-                @total_response_time_sum += response.time
+        if add_callbacks
+            request.on_complete do |response|
+                synchronize do
+                    @response_count          += 1
+                    @burst_response_count    += 1
+                    @burst_response_time_sum += response.time
+                    @total_response_time_sum += response.time
 
-                if Platform::Manager.fingerprint?( response )
-                    # Force a fingerprint by converting the Response to a Page object.
-                    response.to_page
-                end
+                    if Platform::Manager.fingerprint?( response )
+                        # Force a fingerprint by converting the Response to a Page object.
+                        response.to_page
+                    end
 
-                notify_on_complete( response )
+                    notify_on_complete( response )
 
-                parse_and_set_cookies( response ) if request.update_cookies?
+                    parse_and_set_cookies( response ) if request.update_cookies?
 
-                if debug_level_3?
+                    if debug_level_3?
+                        print_debug_level_3 '------------'
+                        print_debug_level_3 "Got response for request ID#: #{response.request.id}"
+                        print_debug_level_3 "Performer: #{response.request.performer}"
+                        print_debug_level_3 "Status: #{response.code}"
+                        print_debug_level_3 "Code: #{response.return_code}"
+                        print_debug_level_3 "Message: #{response.return_message}"
+                        print_debug_level_3 "URL: #{response.url}"
+                        print_debug_level_3 "Headers:\n#{response.headers_string}"
+                        print_debug_level_3 "Parsed headers: #{response.headers}"
+                    end
+
+                    if response.timed_out?
+                        print_debug_level_3 "Request timed-out! -- ID# #{response.request.id}"
+                        @time_out_count += 1
+                    end
+
                     print_debug_level_3 '------------'
-                    print_debug_level_3 "Got response for request ID#: #{response.request.id}"
-                    print_debug_level_3 "Performer: #{response.request.performer}"
-                    print_debug_level_3 "Status: #{response.code}"
-                    print_debug_level_3 "Code: #{response.return_code}"
-                    print_debug_level_3 "Message: #{response.return_message}"
-                    print_debug_level_3 "URL: #{response.url}"
-                    print_debug_level_3 "Headers:\n#{response.headers_string}"
-                    print_debug_level_3 "Parsed headers: #{response.headers}"
                 end
-
-                if response.timed_out?
-                    print_debug_level_3 "Request timed-out! -- ID# #{response.request.id}"
-                    @time_out_count += 1
-                end
-
-                print_debug_level_3 '------------'
             end
         end
 
