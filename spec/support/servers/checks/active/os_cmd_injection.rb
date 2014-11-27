@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 STRINGS = {
     unix:    '/bin/cat /etc/passwd',
@@ -26,19 +27,12 @@ multi(0)disk(0)rdisk(0)partition(1)\WINDOWS="Microsoft Windows XP Professional" 
 ',
 }
 
-def exec( system, str, prefix = nil, postfix = nil )
-    OUT[system] if "#{prefix} #{STRINGS[system]}#{postfix}" == str
-end
-
-def variations
-    @@v ||= [ '', '&&', '|', ';' ]
-end
-
 def get_variations( system, str )
-    (variations.map do |v|
-        pre, post = v.split( '%s' )
-        exec( system, str, pre, post )
-    end | [ exec( system, str, "`", "`" ) ] ).compact.to_s
+    current_check.payloads[system].each do |payload|
+        return OUT[system] if payload == str
+    end
+
+    ''
 end
 
 STRINGS.keys.each do |platform|
