@@ -37,7 +37,6 @@ class Arachni::Checks::OsCmdInjectionTiming < Arachni::Check::Base
     end
 
     def run
-        ap self.class.payloads
         audit_timeout self.class.payloads,
                        format:          [Format::STRAIGHT],
                        timeout:         4000,
