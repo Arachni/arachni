@@ -22,7 +22,7 @@ module WithNode
     end
 
     def html=( s )
-        @html = s.freeze
+        @html = (s ? s.recode.freeze : s)
     end
 
     # @return [Nokogiri::XML::Element]

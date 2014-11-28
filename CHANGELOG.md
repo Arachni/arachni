@@ -10,6 +10,8 @@
 - `Issue`
     - `#recheck` -- Rechecks the existence of the issue.
 - `Element::Capabilities`
+    - `WithNode`
+        - `#html=` -- Recode string before storing.
     - `WithDOM`
         - `#dom` -- Return `nil` on `Inputtable::Error`.
     - `Auditable` -- Updated response analysis messages to include vector type,
