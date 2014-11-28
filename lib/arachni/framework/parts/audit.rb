@@ -10,7 +10,48 @@ module Arachni
 class Framework
 module Parts
 
+# Provides {Page} audit functionality and everything related to it, like
+# handling the {Session} and {Trainer}.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Audit
+    include Support::Mixins::Observable
+
+    # @!method on_page_audit( &block )
+    advertise :on_page_audit
+
+    # @!method after_page_audit( &block )
+    advertise :after_page_audit
+
+    # @return   [Trainer]
+    attr_reader :trainer
+
+    # @return   [Session]
+    #   Web application session manager.
+    attr_reader :session
+
+    # @return   [Arachni::HTTP]
+    attr_reader :http
+
+    # @return   [Array<String>]
+    #   Page URLs which elicited no response from the server and were not audited.
+    #   Not determined by HTTP status codes, we're talking network failures here.
+    attr_reader :failures
+
+    def initialize
+        super
+
+        @http = HTTP::Client.instance
+
+        # Holds page URLs which returned no response.
+        @failures = []
+        @retries  = {}
+
+        @current_url = ''
+
+        reset_session
+        reset_trainer
+    end
 
     # @note Will update the {HTTP::Client#cookie_jar} with {Page#cookie_jar}.
     # @note It will audit just the given `page` and not any subsequent pages
@@ -219,6 +260,18 @@ module Audit
             audit_page( page )
             handle_signals
         end
+    end
+
+    def harvest_http_responses
+        print_status 'Harvesting HTTP responses...'
+        print_info 'Depending on server responsiveness and network' <<
+                       ' conditions this may take a while.'
+
+        # Run all the queued HTTP requests and harvest the responses.
+        http.run
+
+        # Needed for some HTTP callbacks.
+        http.run
     end
 
 end

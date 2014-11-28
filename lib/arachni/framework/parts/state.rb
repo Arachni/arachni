@@ -10,6 +10,9 @@ module Arachni
 class Framework
 module Parts
 
+# Provides access to {Arachni::State::Framework} and helpers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module State
 
     def self.included( base )
@@ -17,6 +20,7 @@ module State
     end
 
     module ClassMethods
+
         # @param   [String]    afs
         #   Path to an `.afs.` (Arachni Framework Snapshot) file created by
         #   {#suspend}.
@@ -60,6 +64,7 @@ module State
 
     def initialize
         super
+
         state.status = :ready
     end
 
@@ -83,6 +88,45 @@ module State
         @state_archive ||= File.expand_path( location )
     end
 
+    # Cleans up the framework; should be called after running the audit or
+    # after canceling a running scan.
+    #
+    # It stops the clock and waits for the plugins to finish up.
+    def clean_up( shutdown_browsers = true )
+        return if @cleaned_up
+        @cleaned_up = true
+
+        state.status = :cleanup
+
+        sitemap.merge!( browser_sitemap )
+
+        if shutdown_browsers
+            state.set_status_message :browser_cluster_shutdown
+            shutdown_browser_cluster
+        end
+
+        state.set_status_message :clearing_queues
+        page_queue.clear
+        url_queue.clear
+
+        @finish_datetime  = Time.now
+        @start_datetime ||= Time.now
+
+        # Make sure this is disabled or it'll break reporter output.
+        disable_only_positives
+
+        state.running = false
+
+        state.set_status_message :waiting_for_plugins
+        @plugins.block
+
+        # Plugins may need the session right till the very end so save it for last.
+        @session.clean_up
+        @session = nil
+
+        true
+    end
+
     # @note Prefer this from {.reset} if you already have an instance.
     # @note You should first reset {Arachni::Options}.
     #
@@ -101,6 +145,7 @@ module State
         clear_observers
         reset_trainer
         reset_session
+
         @checks.clear
         @reporters.clear
         @plugins.clear
@@ -145,9 +190,9 @@ module State
     #   * `:suspending` -- The instance is being {#suspend suspended} (if applicable).
     #   * `:suspended` -- The instance has being {#suspend suspended} (if applicable).
     #   * `:cleanup` -- The scan has completed and the instance is
-    #       {Framework#clean_up cleaning up} after itself (i.e. waiting for
+    #       {Framework::Parts::State#clean_up cleaning up} after itself (i.e. waiting for
     #       plugins to finish etc.).
-    #   * `:aborted` -- The scan has been {Framework#abort}, you can grab the
+    #   * `:aborted` -- The scan has been {Framework::Parts::State#abort}, you can grab the
     #       report and shutdown.
     #   * `:done` -- The scan has completed, you can grab the report and shutdown.
     def status
@@ -279,6 +324,21 @@ module State
     end
 
     private
+
+    # @note Must be called before calling any audit methods.
+    #
+    # Prepares the framework for the audit.
+    #
+    # * Sets the status to `:preparing`.
+    # * Starts the clock.
+    # * Runs the plugins.
+    def prepare
+        state.status  = :preparing
+        state.running = true
+        @start_datetime = Time.now
+
+        Snapshot.restored? ? @plugins.restore : @plugins.run
+    end
 
     def reset_session
         @session.clean_up if @session

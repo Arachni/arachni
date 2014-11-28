@@ -10,6 +10,9 @@ module Arachni
 class Framework
 module Parts
 
+# Provides a {Arachni::Plugin::Manager} and related helpers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Plugin
 
     # @return   [Arachni::Plugin::Manager]

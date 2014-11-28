@@ -10,6 +10,9 @@ module Arachni
 class Framework
 module Parts
 
+# Provides a {Arachni::Check::Manager} and related helpers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Check
 
     # @return   [Arachni::Check::Manager]
@@ -55,6 +58,14 @@ module Check
     #   Check to run.
     # @param    [Page]    page
     def check_page( check, page )
+        # If we've been given platforms which the check doesn't support don't
+        # even bother running it.
+        if !check.supports_platforms?( Options.platforms )
+            print_info "Check #{check.shortname} does not support: " <<
+                           Options.platforms.join( ', ' )
+            return false
+        end
+
         begin
             @checks.run_one( check, page )
         rescue => e

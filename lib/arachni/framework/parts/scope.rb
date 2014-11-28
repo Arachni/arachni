@@ -10,6 +10,9 @@ module Arachni
 class Framework
 module Parts
 
+# Provides scope helpers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Scope
 
     # @return   [Bool]
@@ -29,7 +32,6 @@ module Scope
     def accepts_more_pages?
         crawl? && !page_limit_reached?
     end
-
 
 end
 

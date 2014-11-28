@@ -18,6 +18,8 @@
         name and action URL.
 - `Framework` -- Split into `Parts`:
     - `Audit`
+        - If `Options.platforms` are given, checks which don't support them are
+            completely skipped.
     - `Browser`
     - `Check`
     - `Data`
@@ -29,7 +31,7 @@
     - `Scope`
     - `State`
 - `State::Framework`
-    - Added `done?`
+    - Added `#done?`
     - `#abort` -- Fixed exception message.
 - Checks
     - Active

@@ -40,6 +40,7 @@ class AuditorTest < Arachni::Check::Base
     end
 
     def self.clear_info_cache
+        super
         @check_info = nil
     end
 end

@@ -10,6 +10,9 @@ module Arachni
 class Framework
 module Parts
 
+# Provides access to the {BrowserCluster} and relevant helpers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Browser
 
     # @return   [BrowserCluster, nil]

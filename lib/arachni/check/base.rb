@@ -138,27 +138,47 @@ class Base < Component::Base
         # @return   [Bool]
         #   `true` if the check can benefit from knowing the platform beforehand,
         #   `false` otherwise.
+        #
         # @see .platforms
         def has_platforms?
             platforms.any?
         end
 
-        # @return   [Array<Symbol>] Targeted platforms.
+        # @return   [Array<Symbol>]
+        #   Targeted platforms.
+        #
         # @see .info
         def platforms
-            [info[:platforms]].flatten.compact
+            @platforms ||= [info[:platforms]].flatten.compact
         end
 
-        # @return   [Array<Symbol>] Targeted element types.
+        # @param    [Array<Symbol, String>]     platforms
+        #   List of platforms to check for support.
+        #
+        # @return   [Boolean]
+        #   `true` if any of the given platforms are supported, `false` otherwise.
+        def supports_platforms?( platforms )
+            return true if platforms.empty? || !has_platforms?
+
+            # Determine if we've got anything for the given platforms, the same
+            # way payloads are picked.
+            foo_data = self.platforms.inject({}) { |h, platform| h.merge!( platform => true ) }
+            Platform::Manager.new( platforms ).pick( foo_data ).any?
+        end
+
+        # @return   [Array<Symbol>]
+        #   Targeted element types.
+        #
         # @see .info
         def elements
-            [info[:elements]].flatten.compact
+            @elements ||= [info[:elements]].flatten.compact
         end
 
         # Schedules self to be run *after* the specified checks and prevents
         # auditing elements that have been previously logged by any of these checks.
         #
-        # @return   [Array] Check names.
+        # @return   [Array]
+        #   Check names.
         def prefer( *args )
             @preferred = args.flatten.compact
         end
@@ -169,6 +189,11 @@ class Base < Component::Base
         # @see #prefer
         def preferred
             @preferred ||= []
+        end
+
+        # @private
+        def clear_info_cache
+            @elements = @platforms = nil
         end
     end
 

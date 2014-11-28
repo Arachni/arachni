@@ -10,6 +10,9 @@ module Arachni
 class Framework
 module Parts
 
+# Provides access to {Arachni::Platform} helpers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Platform
 
     # @return    [Array<Hash>]

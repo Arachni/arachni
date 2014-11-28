@@ -10,6 +10,9 @@ module Arachni
 class Framework
 module Parts
 
+# Provides a {Arachni::Report::Manager} and related helpers.
+#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Report
 
     # @return   [Arachni::Reporter::Manager]
@@ -17,6 +20,12 @@ module Report
 
     def initialize
         super
+
+        # Deep clone the redundancy rules to preserve their original counters
+        # for the reports.
+        @original_redundant_path_patterns =
+            options.scope.redundant_path_patterns.deep_clone
+
         @reporters = Arachni::Reporter::Manager.new
     end
 
@@ -26,7 +35,7 @@ module Report
         opts = options.to_hash.deep_clone
 
         # restore the original redundancy rules and their counters
-        opts[:scope][:redundant_path_patterns] = @orig_redundant
+        opts[:scope][:redundant_path_patterns] = @original_redundant_path_patterns
 
         Arachni::Report.new(
             options:         options,
