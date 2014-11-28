@@ -380,8 +380,11 @@ module Auditor
     #
     # @see  Page#audit?
     def skip?( element )
-        return true if audited?( element.coverage_id ) ||
-            !page.audit_element?( element )
+        # This method also gets called from Auditable#audit to check mutations,
+        # don't touch these, we're filtering at a higher level here, otherwise
+        # we might mess up the audit.
+        return true if !element.mutation? && audited?( element.coverage_id )
+        return true if !page.audit_element?( element )
 
         # Don't audit elements which have been already logged as vulnerable
         # either by us or preferred checks.
