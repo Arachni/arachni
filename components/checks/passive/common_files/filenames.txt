@@ -6,6 +6,7 @@ CVS/Repository
 CVS/Root
 CVS/Entries
 .svn/wc.db
+.svn/all-wcprops
 .git/HEAD
 _mmServerScripts/MMHTTPDB.php
 _mmServerScripts/MMHTTPDB.asp

@@ -36,6 +36,8 @@
         - `os_command_injection` -- Updated payloads to handle chained commands.
         - `os_command_injection_timing` -- Updated payloads to handle chained commands.
         - `path_traversal` -- Fixed MS Windows output pattern.
+    - Passive
+        - `common_files` -- Added `.svn/all-wcprops`.
 
 ## 1.0.5 _(November 14, 2014)_
 
