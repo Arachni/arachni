@@ -12,7 +12,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.2
+# @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -23,11 +23,11 @@
 class Arachni::Checks::CodeInjection < Arachni::Check::Base
 
     def self.rand1
-        @rand1 ||= '287630581954'
+        @rand1 ||= '28763'
     end
 
     def self.rand2
-        @rand2 ||= '4196403186331128'
+        @rand2 ||= '4196403'
     end
 
     def self.options
@@ -41,7 +41,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
     def self.code_strings
         # code strings to be injected to the webapp
         @code_strings ||= {
-            php:    "echo #{rand1}+#{rand2};",
+            php:    "print #{rand1}+#{rand2};",
             perl:   "print #{rand1}+#{rand2};",
             python: "print #{rand1}+#{rand2}",
             asp:    "Response.Write\x28#{rand1}+#{rand2}\x29"
@@ -72,7 +72,7 @@ Injects code snippets and assess whether or not execution was successful.
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             platforms:   payloads.keys,
 
             issue:       {

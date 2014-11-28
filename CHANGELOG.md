@@ -32,6 +32,7 @@
 - Checks
     - Active
         - `sql_injection` -- Slight payload update to catch double-quote cases.
+        - `code_injection` -- Slight PHP payload update, to ensure it works in more cases.
         - `os_command_injection` -- Updated payloads to handle chained commands.
         - `os_command_injection_timing` -- Updated payloads to handle chained commands.
         - `path_traversal` -- Fixed MS Windows output pattern.
