@@ -387,7 +387,6 @@ Active checks engage the web application via its inputs.
 
 - SQL injection (`sql_injection`) -- Error based detection.
     - Oracle
-    - ColdFusion
     - InterBase
     - PostgreSQL
     - MySQL

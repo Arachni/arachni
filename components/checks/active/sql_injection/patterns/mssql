@@ -1,5 +1,6 @@
 System\.Data\.OleDb\.OleDbException
 \[Microsoft\]\[ODBC SQL Server Driver\]
+\[Macromedia\]\[SQLServer JDBC Driver\]
 \[SqlException
 System\.Data\.SqlClient\.SqlException
 Unclosed quotation mark after the character string

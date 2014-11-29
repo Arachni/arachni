@@ -17,45 +17,47 @@ def get_result( str )
     end
 end
 
-get '/' do
-    <<-EOHTML
-        <a href="/link?input=default">Link</a>
-        <a href="/form">Form</a>
-        <a href="/cookie">Cookie</a>
-        <a href="/header">Header</a>
-    EOHTML
-end
+[:nosql].each do |platform|
+    get "/#{platform}" do
+        <<-EOHTML
+            <a href="/#{platform}/link?input=default">Link</a>
+            <a href="/#{platform}/form">Form</a>
+            <a href="/#{platform}/cookie">Cookie</a>
+            <a href="/#{platform}/header">Header</a>
+        EOHTML
+    end
 
-get '/link' do
-    <<-EOHTML
-        <a href="/link/append?input=default">Link</a>
-    EOHTML
-end
+    get "/#{platform}/link" do
+        <<-EOHTML
+            <a href="/#{platform}/link/append?input=default">Link</a>
+        EOHTML
+    end
 
-get '/link/append' do
-    get_result( params['input'] )
-end
+    get "/#{platform}/link/append" do
+        get_result( params['input'] )
+    end
 
-get '/form' do
-    <<-EOHTML
-        <form action="/form/append">
-            <input name='input' value='default' />
-        </form>
-    EOHTML
-end
+    get "/#{platform}/form" do
+        <<-EOHTML
+            <form action="/#{platform}/form/append">
+                <input name='input' value='default' />
+            </form>
+        EOHTML
+    end
 
-get '/form/append' do
-    get_result( params['input'] )
-end
+    get "/#{platform}/form/append" do
+        get_result( params['input'] )
+    end
 
 
-get '/cookie' do
-    <<-EOHTML
-        <a href="/cookie/append">Cookie</a>
-    EOHTML
-end
+    get "/#{platform}/cookie" do
+        <<-EOHTML
+            <a href="/#{platform}/cookie/append">Cookie</a>
+        EOHTML
+    end
 
-get '/cookie/append' do
-    cookies['cookie'] ||= default
-    get_result( cookies['cookie'] )
+    get "/#{platform}/cookie/append" do
+        cookies['cookie'] ||= default
+        get_result( cookies['cookie'] )
+    end
 end

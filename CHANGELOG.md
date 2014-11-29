@@ -4,6 +4,9 @@
 
 - `arachni_rpcd` -- Fixed bug causing the `--nickname` option to not be understood.
 - `UI::Output` -- Flush output stream after each message.
+- `Platform::Manager`
+    - Removed 'coldfusion`.
+    - Added `sql` and `nosql` parents for DBs.
 - `Check::Auditor#skip?` -- Ignore mutations when checking for redundancies.
 - `Browser` -- Fixed issue causing `select` inputs in forms to not be set.
 - `Element::Cookie.encode` -- Added '&' to the list of reserved characters.
@@ -40,6 +43,8 @@
         - `os_command_injection` -- Updated payloads to handle chained commands.
         - `os_command_injection_timing` -- Updated payloads to handle chained commands.
         - `path_traversal` -- Fixed MS Windows output pattern.
+        - `sql_injection_differential` -- Set platform to generic `sql`.
+        - `no_sql_injection_differential` -- Set platform to generic  `nosql`.
     - Passive
         - `common_files` -- Added `.svn/all-wcprops`.
 

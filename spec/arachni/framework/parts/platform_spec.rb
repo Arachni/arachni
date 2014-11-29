@@ -15,8 +15,8 @@ describe Arachni::Framework::Parts::Platform do
                     windows: 'MS Windows'
                 },
                 'Databases' => {
+                    sql:        'Generic SQL family',
                     access:     'MS Access',
-                    coldfusion: 'ColdFusion',
                     db2:        'DB2',
                     emc:        'EMC',
                     firebird:   'Firebird',
@@ -32,6 +32,7 @@ describe Arachni::Framework::Parts::Platform do
                     pgsql:      'Postgresql',
                     sqlite:     'SQLite',
                     sybase:     'Sybase',
+                    nosql:      'Generic NoSQL family',
                     mongodb:    'MongoDB'
                 },
                 'Web servers' => {

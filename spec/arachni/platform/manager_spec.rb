@@ -276,7 +276,6 @@ describe Arachni::Platform::Manager do
     describe '#db' do
         it 'returns the database list' do
             platforms.db.should be_kind_of Arachni::Platform::List
-            platforms.db.valid.sort.should == described_class::DB.sort
         end
     end
 
@@ -385,11 +384,11 @@ describe Arachni::Platform::Manager do
         it 'returns all valid platforms' do
             platforms.valid.sort.should ==
                 [:unix, :linux, :bsd, :solaris, :windows,
-                 :coldfusion, :db2, :emc, :informix, :interbase, :mssql, :mysql,
+                 :db2, :emc, :informix, :interbase, :mssql, :mysql,
                  :oracle, :firebird, :maxdb, :pgsql, :sqlite, :apache, :iis, :nginx,
                  :tomcat, :asp, :aspx, :jsp, :perl, :php, :python, :ruby, :rack,
                  :sybase, :frontbase, :ingres, :hsqldb, :access, :jetty, :mongodb,
-                 :aix].sort
+                 :aix, :sql, :nosql].sort
         end
     end
 

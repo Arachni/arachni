@@ -14,7 +14,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.4.2
+# @version 0.4.3
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -59,7 +59,8 @@ that of a vulnerable application.
 },
             elements:    [ Element::Link, Element::Form, Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.4.2',
+            version:     '0.4.3',
+            platforms:   [ :sql ],
 
             issue:       {
                 name:            %q{Blind SQL Injection (differential analysis)},

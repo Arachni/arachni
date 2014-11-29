@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::NoSqlInjectionDifferential < Arachni::Check::Base
 
     def self.options
@@ -40,7 +40,8 @@ that of a vulnerable application.
 },
             elements:    [ Element::Link, Element::Form, Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
+            platforms:   [ :nosql ],
 
             issue:       {
                 name:            %q{Blind NoSQL Injection (differential analysis)},
