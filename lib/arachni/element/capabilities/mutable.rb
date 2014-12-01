@@ -159,11 +159,11 @@ module Mutable
                     next
                 end
 
-                elem                     = self.dup
-                elem.seed                = payload
-                elem.affected_input_name = k.dup
-                elem.inputs              = cinputs.merge( k => str )
-                elem.format              = format
+                elem                      = self.dup
+                elem.seed                 = payload
+                elem.affected_input_name  = k
+                elem.affected_input_value = str
+                elem.format               = format
 
                 if !generated.include?( elem )
                     print_debug_mutation elem
