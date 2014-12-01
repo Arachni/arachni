@@ -27,11 +27,6 @@ class Body < Base
     # @param    [Block] block
     #   Block to verify matches before logging, must return `true`/`false`.
     def match_and_log( patterns, &block )
-        elements = auditor.class.info[:elements]
-        elements = auditor.class::OPTIONS[:elements] if !elements || elements.empty?
-
-        return if !elements.include?( Body )
-
         [patterns].flatten.each do |pattern|
             auditor.page.body.scan( pattern ).flatten.uniq.compact.each do |proof|
                 next if block_given? && !block.call( proof )
