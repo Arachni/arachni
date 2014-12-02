@@ -21,7 +21,7 @@ resolve its dependencies:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
-    git checkout experimental
+    git checkout feature/json-vectors
     bundle install --without prof # to resolve dev dependencies
 
 Then you can run Arachni using the the executables under `bin/`.<br/>
