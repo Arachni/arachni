@@ -1,3 +1,4 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -28,6 +29,7 @@ end
             <a href="/#{platform_str}/cookie">Cookie</a>
             <a href="/#{platform_str}/header">Header</a>
             <a href="/#{platform_str}/link-template">Link template</a>
+            <a href="/#{platform_str}/json">JSON</a>
         EOHTML
     end
 
@@ -131,4 +133,30 @@ end
         get_variations( platform, env['HTTP_USER_AGENT'].split( default ).last )
     end
 
+    get "/#{platform_str}/json" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{platform_str}/json/flip", true);
+                http_request.send( '{"input": "arachni_user"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{platform_str}/json/append", true);
+                http_request.send( '{"input": "arachni_user"}' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{platform_str}/json/flip" do
+        data = JSON.load( request.body.read ) rescue return
+        data.keys.map { |k| get_variations( platform, k ) }.to_s
+    end
+
+    post "/#{platform_str}/json/append" do
+        data = JSON.load( request.body.read ) rescue return
+        default = 'arachni_user'
+        return if !data['input'].start_with?( default )
+
+        get_variations( platform, data['input'].split( default ).last )
+    end
 end

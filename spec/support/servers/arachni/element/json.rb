@@ -1,7 +1,7 @@
 require 'sinatra'
 
 post '/submit' do
-    request.body.read
+    URI.decode_www_form_component( request.body.read )
 end
 
 get '/forms' do

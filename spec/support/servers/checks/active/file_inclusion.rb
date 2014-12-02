@@ -1,3 +1,4 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -125,6 +126,7 @@ OUT.keys.each do |system|
             <a href="/#{system_str}/cookie">Cookie</a>
             <a href="/#{system_str}/header">Header</a>
             <a href="/#{system_str}/link-template">Link template</a>
+            <a href="/#{system_str}/json">JSON</a>
         EOHTML
     end
 
@@ -225,4 +227,33 @@ OUT.keys.each do |system|
         get_variations( system, env['HTTP_USER_AGENT'] )
     end
 
+    get "/#{system_str}/json" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/json/straight", true);
+                http_request.send( '{"input": "arachni_user"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/json/append", true);
+                http_request.send( '{"input": "arachni_user"}' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{system_str}/json/straight" do
+        data = JSON.load( request.body.read ) rescue return
+        default = 'arachni_user'
+        return if data['input'].start_with?( default )
+
+        get_variations( system, data['input'] )
+    end
+
+    post "/#{system_str}/json/append" do
+        data = JSON.load( request.body.read ) rescue return
+        default = 'arachni_user'
+        return if !data['input'].start_with?( default )
+
+        get_variations( system, data['input'].split( default ).last )
+    end
 end

@@ -9,7 +9,7 @@
 # Path Traversal check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.3
+# @version 0.4.4
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see http://www.owasp.org/index.php/Path_Traversal
@@ -109,10 +109,9 @@ It injects paths of common files ( like `/etc/passwd` and `boot.ini`) and
 evaluates the existence of a path traversal vulnerability based on the presence
 of relevant content in the HTML responses.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.3',
+            version:     '0.4.4',
             platforms:   payloads.keys,
 
             issue:       {

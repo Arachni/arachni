@@ -8,12 +8,8 @@
 
 # HTTP Response Splitting check.
 #
-# It audits links, forms and cookies.
-#
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.2
+# @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see http://www.owasp.org/index.php/HTTP_Response_Splitting
@@ -47,10 +43,9 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
             description: %q{
 Injects arbitrary and checks if any of them end up in the response header.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.8',
+            version:     '0.2.1',
 
             issue:       {
                 name:            %q{Response Splitting},

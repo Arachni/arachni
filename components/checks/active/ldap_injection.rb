@@ -9,8 +9,7 @@
 # LDAP injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.1.2
+# @version 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
@@ -36,10 +35,9 @@ class Arachni::Checks::LdapInjection < Arachni::Check::Base
 It tries to force the web application to return LDAP error messages, in order to
 discover failures in user input validation.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
 
             issue:       {
                 name:            %q{LDAP Injection},

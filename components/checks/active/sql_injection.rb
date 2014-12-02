@@ -9,8 +9,7 @@
 # SQL Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.2.1
+# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://unixwiz.net/techtips/sql-injection.html
@@ -63,10 +62,9 @@ class Arachni::Checks::SqlInjection < Arachni::Check::Base
             description: %q{
 SQL injection check, uses known SQL DB errors to identify vulnerabilities.
 },
-            elements:    [Element::Link, Element::Form, Element::Cookie,
-                          Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.1',
+            version:     '0.2.2',
             platforms:   options[:regexp].keys,
 
             issue:       {

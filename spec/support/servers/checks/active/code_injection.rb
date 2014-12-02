@@ -1,3 +1,4 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -42,6 +43,7 @@ REGEXP.keys.each do |language|
             <a href="/#{language_str}/cookie">Cookie</a>
             <a href="/#{language_str}/header">Header</a>
             <a href="/#{language_str}/link-template">Link template</a>
+            <a href="/#{language_str}/json">JSON</a>
         EOHTML
     end
 
@@ -160,4 +162,33 @@ REGEXP.keys.each do |language|
         get_variations( language, env['HTTP_USER_AGENT'].split( default ).last )
     end
 
+    get "/#{language_str}/json" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/json/straight", true);
+                http_request.send( '{"input": "arachni_user"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/json/append", true);
+                http_request.send( '{"input": "arachni_user"}' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{language_str}/json/straight" do
+        data = JSON.load( request.body.read ) rescue return
+        default = 'arachni_user'
+        return if data['input'].start_with?( default )
+
+        get_variations( language, data['input'] )
+    end
+
+    post "/#{language_str}/json/append" do
+        data = JSON.load( request.body.read ) rescue return
+        default = 'arachni_user'
+        return if !data['input'].start_with?( default )
+
+        get_variations( language, data['input'].split( default ).last )
+    end
 end

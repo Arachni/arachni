@@ -9,8 +9,7 @@
 # OS command injection check using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.3.1
+# @version 0.3.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -50,10 +49,9 @@ class Arachni::Checks::OsCmdInjectionTiming < Arachni::Check::Base
             description: %q{
 Tries to find operating system command injections using timing attacks.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3.1',
+            version:     '0.3.2',
             platforms:   payloads.keys,
 
             issue:       {

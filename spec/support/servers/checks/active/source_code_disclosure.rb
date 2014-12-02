@@ -1,5 +1,7 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
+require 'ap'
 
 def default
     "default.html"
@@ -17,6 +19,15 @@ def get_variations( language, str )
     OUT[language]
 end
 
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+end
+
 OUT.keys.each do |language|
 
     get "/#{language}" do
@@ -28,6 +39,7 @@ OUT.keys.each do |language|
             <a href="/#{language}/cookie">Cookie</a>
             <a href="/#{language}/header">Header</a>
             <a href="/#{language}/link-template">Link template</a>
+            <a href="/#{language}/json">JSON</a>
         EOHTML
     end
 
@@ -115,4 +127,30 @@ OUT.keys.each do |language|
         get_variations( language, env['HTTP_USER_AGENT'] )
     end
 
+    get "/#{language}/json" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language}/json/straight.#{language}", true);
+                http_request.send( '{"input": "#{default}"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language}/json/with_null.#{language}", true);
+                http_request.send( '{"input": "#{default}"}' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{language}/json/straight.#{language}" do
+        return if !@json
+        return if @json['input'].include?( "\0" )
+        get_variations( language, @json['input'] )
+    end
+
+    post "/#{language}/json/with_null.#{language}" do
+        return if !@json
+        return if !@json['input'].end_with?( "\00.html" )
+
+        get_variations( language, @json['input'].split( "\0.html" ).first )
+    end
 end

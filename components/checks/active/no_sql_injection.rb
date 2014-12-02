@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
+# @version 0.1.2
 class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
 
     def self.error_patterns
@@ -54,10 +54,9 @@ class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
             description: %q{
 NoSQL injection check, uses known DB errors to identify vulnerabilities.
 },
-            elements:    [Element::Link, Element::Form, Element::Cookie,
-                          Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
             platforms:   payloads.keys,
 
             issue:       {

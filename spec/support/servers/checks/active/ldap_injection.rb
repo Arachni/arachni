@@ -1,3 +1,4 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -13,6 +14,7 @@ get '/' do
         <a href="/cookie">Cookie</a>
         <a href="/header">Header</a>
         <a href="/link-template">Link template</a>
+        <a href="/json">JSON</a>
     EOHTML
 end
 
@@ -86,3 +88,32 @@ get '/header/append' do
     get_variations( env['HTTP_USER_AGENT'].split( default ).last )
 end
 
+get "/json" do
+    <<-EOHTML
+        <script type="application/javascript">
+            http_request = new XMLHttpRequest();
+            http_request.open( "POST", "/json/straight", true);
+            http_request.send( '{"input": "arachni_user"}' );
+
+            http_request = new XMLHttpRequest();
+            http_request.open( "POST", "/json/append", true);
+            http_request.send( '{"input": "arachni_user"}' );
+        </script>
+    EOHTML
+end
+
+post "/json/straight" do
+    data = JSON.load( request.body.read ) rescue return
+    default = 'arachni_user'
+    return if data['input'].start_with?( default )
+
+    get_variations( data['input'] )
+end
+
+post "/json/append" do
+    data = JSON.load( request.body.read ) rescue return
+    default = 'arachni_user'
+    return if !data['input'].start_with?( default )
+
+    get_variations( data['input'].split( default ).last )
+end

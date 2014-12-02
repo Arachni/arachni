@@ -9,8 +9,7 @@
 # Blind SQL Injection check using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.3.2
+# @version 0.3.3
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -38,10 +37,9 @@ class Arachni::Checks::SqlInjectionTiming < Arachni::Check::Base
         {
             name:        'Blind SQL injection (timing attack)',
             description: %q{Blind SQL Injection check using timing attacks.},
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.2',
+            version:     '0.3.3',
             platforms:   payloads.keys,
 
             issue:       {

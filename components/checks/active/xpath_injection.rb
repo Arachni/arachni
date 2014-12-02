@@ -9,7 +9,7 @@
 # XPath Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see http://www.owasp.org/index.php/XPATH_Injection
@@ -37,10 +37,9 @@ class Arachni::Checks::XpathInjection < Arachni::Check::Base
         {
             name:        'XPath Injection',
             description: %q{XPath injection check},
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
 
             issue:       {
                 name:            %q{XPath Injection},

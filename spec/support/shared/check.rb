@@ -147,7 +147,7 @@ shared_examples_for 'check' do
             element_type = element_type.type
         end
 
-        options.audit.skip_elements :links, :forms, :cookies, :headers, :link_templates
+        options.audit.skip_elements self.class.elements.map(&:type)
 
         if element_type.to_s.start_with? 'link_template'
             options.audit.link_templates = [
