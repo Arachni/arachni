@@ -191,8 +191,7 @@ shared_examples_for 'mutable' do |options = {}|
             describe :param_flip,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::LinkTemplate &&
-                             described_class != Arachni::Element::JSON do
+                     ) && described_class != Arachni::Element::LinkTemplate do
 
                 it 'uses the seed as a param name' do
                     mutable.mutations(

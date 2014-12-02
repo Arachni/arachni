@@ -189,6 +189,25 @@ class JSON < Base
             end
         end
 
+        if opts[:param_flip]
+            if valid_input_name_data?( payload )
+                elem                     = self.dup
+                elem.affected_input_name = 'Parameter flip'
+                elem.inputs              = elem.inputs.merge( payload => seed )
+                elem.seed                = payload
+
+                if !generated.include?( elem )
+                    print_debug_mutation elem
+                    yield elem
+                end
+                generated << elem
+            else
+                print_debug_level_2 'Payload not supported as input name by' <<
+                                        " #{audit_id}: #{payload.inspect}"
+                return
+            end
+        end
+
         nil
     end
 
