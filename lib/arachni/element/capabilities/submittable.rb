@@ -14,8 +14,8 @@ module Capabilities::Submittable
 
     def initialize( options )
         super
-        self.method = options[:method] || :get
-        self.action = options[:action] || self.url
+        self.method ||= options[:method] || :get
+        self.action ||= options[:action] || self.url
     end
 
     # @return   [Platform]

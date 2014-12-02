@@ -90,10 +90,7 @@ class Page
         data[:response][:request]       ||= {}
         data[:response][:request][:url] ||= data[:response][:url]
 
-        data[:links]   ||= []
-        data[:forms]   ||= []
-        data[:cookies] ||= []
-        data[:headers] ||= []
+        ELEMENTS.each { |e| data[e] ||= [] }
 
         data[:cookie_jar] ||= []
 
@@ -104,34 +101,34 @@ class Page
     end
 
     ELEMENTS = [
-        :links, :forms, :cookies, :headers, :link_templates
+        :links, :forms, :cookies, :headers, :link_templates, :jsons
     ]
 
-    # @return   [DOM]
+    # @return       [DOM]
     #   DOM snapshot.
-    attr_accessor :dom
+    attr_accessor   :dom
 
-    # @return    [HTTP::Response]
+    # @return       [HTTP::Response]
     #   HTTP response.
-    attr_reader :response
+    attr_reader     :response
 
-    # @return    [Hash]
+    # @return       [Hash]
     #
     # @private
-    attr_reader :cache
+    attr_reader     :cache
 
-    # @return    [Hash]
+    # @return       [Hash]
     #   Holds page data that will need to persist between {#clear_cache} calls
     #   and other utility data.
-    attr_reader :metadata
+    attr_reader     :metadata
 
-    # @return   [Set<Integer>]
+    # @return       [Set<Integer>]
     #   Audit whitelist based on {Element::Capabilities::Auditable#coverage_hash}.
     #
     # @see  #update_element_audit_whitelist
     # @see  #audit_element?
     # @see  Check::Auditor#skip?
-    attr_reader :element_audit_whitelist
+    attr_reader     :element_audit_whitelist
 
     # Needs either a `:parser` or a `:response` or user provided data.
     #
@@ -520,7 +517,7 @@ class Page
                             end
                             sanitized
 
-                        when 'links', 'forms', 'cookies'
+                        when *ELEMENTS.map(&:to_s)
                             value.map do |e|
                                 Element.const_get(name[0...-1].capitalize.to_sym).from_rpc_data( e )
                             end.to_a

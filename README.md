@@ -6,18 +6,9 @@
 
 <hr/>
 
-# Experimental/unstable branch -- used for development/integration
+# JSON input vector WiP
 
-This branch is where all development takes place, once its code has been tested and
-is considered stable, it is then merged into the `master` branch and released.
-
-Do not be confused by the version of this branch, `2.0dev` is a placeholder
-which simply means _next release_.
-
-## Nightlies
-
-For self-contained, nightly snapshot packages take a look at:
-http://downloads.arachni-scanner.com/nightlies/
+This branch contains experimental/WiP code for JSON input vector support.
 
 ## Source
 
@@ -264,6 +255,7 @@ Arachni is able to extract and audit the following elements and their inputs:
  - Headers
  - Generic client-side elements like `input`s which have associated DOM events.
  - AJAX-request parameters.
+ - JSON request data.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
@@ -324,6 +316,7 @@ Arachni is able to extract and audit the following elements and their inputs:
         - Can load them via the integrated browser environment.
     - Headers
     - Generic client-side DOM elements like `input`s.
+    - JSON request data.
  - Can ignore binary/non-text pages.
  - Can optionally audit elements using both `GET` and `POST` HTTP methods.
  - Can optionally submit all links and forms of the page along with the cookie

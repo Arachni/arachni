@@ -214,6 +214,11 @@ class Parser
             [link_template].compact | LinkTemplate.from_document( @url, document )
     end
 
+    # @return [Array<Element::JSON>]
+    def jsons
+        @jsons ||= [JSON.from_request( @url, response.request )].compact
+    end
+
     # @return   [Hash]
     #   Parameters found in {#url}.
     def link_vars

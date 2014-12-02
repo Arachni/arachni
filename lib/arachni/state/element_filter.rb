@@ -14,27 +14,21 @@ class State
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ElementFilter
 
-    # @return   [Support::LookUp::HashSet]
-    attr_reader :forms
+    TYPES = [:forms, :links, :link_templates, :cookies, :jsons]
 
-    # @return   [Support::LookUp::HashSet]
-    attr_reader :links
-
-    # @return   [Support::LookUp::HashSet]
-    attr_reader :cookies
+    TYPES.each do |type|
+        attr_reader type
+    end
 
     def initialize
-        @forms   = Support::LookUp::HashSet.new( hasher: :persistent_hash )
-        @links   = Support::LookUp::HashSet.new( hasher: :persistent_hash )
-        @cookies = Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        TYPES.each do |type|
+            instance_variable_set "@#{type}",
+                                  Support::LookUp::HashSet.new( hasher: :persistent_hash )
+        end
     end
 
     def statistics
-        {
-            forms:   forms.size,
-            links:   links.size,
-            cookies: cookies.size
-        }
+        TYPES.inject({}) { |h, type| h.merge!( type => send(type).size) }
     end
 
     def dump( directory )
@@ -52,13 +46,11 @@ class ElementFilter
     end
 
     def hash
-        [@forms.hash, @links.hash, @cookies.hash].hash
+        TYPES.map { |type| send(type).hash }.hash
     end
 
     def clear
-        forms.clear
-        links.clear
-        cookies.clear
+        TYPES.each { |type| send(type).clear }
     end
 
 end

@@ -101,6 +101,17 @@ class Audit < Arachni::OptionGroup
     # @see Element::LinkTemplate
     attr_accessor :link_templates
     alias :link_template_doms  :link_templates
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit HTTP request headers.
+    attr_accessor :headers
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit JSON request inputs.
+    attr_accessor :jsons
 
     set_defaults(
         exclude_vector_patterns: [],
@@ -193,7 +204,8 @@ class Audit < Arachni::OptionGroup
     alias :element? :elements?
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
-     :with_both_http_methods, :link_doms, :form_doms, :cookie_doms].each do |attribute|
+     :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
+     :jsons].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )
         end

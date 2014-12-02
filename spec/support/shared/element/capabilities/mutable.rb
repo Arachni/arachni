@@ -94,7 +94,7 @@ shared_examples_for 'mutable' do |options = {}|
 
     describe '#immutables' do
         it 'skips contained inputs' do
-            input = mutable.inputs.first.first
+            input = mutable.inputs.keys.first
 
             mutable.immutables << input
             mutable.mutations( seed ).
@@ -143,7 +143,7 @@ shared_examples_for 'mutable' do |options = {}|
             describe :respect_method,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) do
+                     ) && described_class != Arachni::Element::JSON do
 
                 describe true do
                     it 'does not fuzz methods' do
@@ -167,7 +167,7 @@ shared_examples_for 'mutable' do |options = {}|
             describe 'Options.audit.with_both_http_methods',
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) do
+                     ) && described_class != Arachni::Element::JSON do
 
                 it 'serves as the default value of :respect_method' do
                     Arachni::Options.audit.with_both_http_methods = true
@@ -191,7 +191,8 @@ shared_examples_for 'mutable' do |options = {}|
             describe :param_flip,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::LinkTemplate do
+                     ) && described_class != Arachni::Element::LinkTemplate &&
+                             described_class != Arachni::Element::JSON do
 
                 it 'uses the seed as a param name' do
                     mutable.mutations(
@@ -201,6 +202,25 @@ shared_examples_for 'mutable' do |options = {}|
                         skip_original: true
                     ).select { |m| m.inputs.include? seed }.size.should > 0
                 end
+
+                context 'when the payload is not supported' do
+                    context 'as a name'do
+                        it 'skips the mutation' do
+                            seed = 'payload'
+
+                            mutable.mutations( seed, param_flip: true ).
+                                select { |m| m.inputs.keys.include? seed }.
+                                size.should > 0
+
+                            described_class.any_instance.
+                                stub(:valid_input_name_data?) { |name| name != seed }
+
+                            mutable.mutations( seed, param_flip: true ).
+                                select { |m| m.inputs.keys.include? seed }.
+                                size.should == 0
+                        end
+                    end
+                end
             end
 
             describe :format do
@@ -209,7 +229,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
                                                 skip_original: true ).first
-                        m.inputs[m.affected_input_name].should == seed
+                        m[m.affected_input_name].should == seed
                     end
                 end
                 describe 'Format::APPEND' do
@@ -217,7 +237,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::APPEND],
                                                 skip_original: true ).first
-                        m.inputs[m.affected_input_name].should == inputs[m.affected_input_name] + seed
+                        m[m.affected_input_name].should == inputs[m.affected_input_name] + seed
                     end
                 end
                 describe 'Format::NULL' do
@@ -228,7 +248,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::NULL],
                                                 skip_original: true ).first
-                        m.inputs[m.affected_input_name].should == seed + "\0"
+                        m[m.affected_input_name].should == seed + "\0"
                     end
                 end
                 describe 'Format::SEMICOLON' do
@@ -236,7 +256,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::SEMICOLON],
                                                 skip_original: true ).first
-                        m.inputs[m.affected_input_name].should == ';' + seed
+                        m[m.affected_input_name].should == ';' + seed
                     end
                 end
                 describe 'Format::APPEND | Format::NULL' do
@@ -247,7 +267,7 @@ shared_examples_for 'mutable' do |options = {}|
                         format = [Arachni::Element::Capabilities::Mutable::Format::APPEND |
                                       Arachni::Element::Capabilities::Mutable::Format::NULL]
                         m = mutable.mutations( seed, format: format, skip_original: true  ).first
-                        m.inputs[m.affected_input_name].should == inputs[m.affected_input_name] + seed + "\0"
+                        m[m.affected_input_name].should == inputs[m.affected_input_name] + seed + "\0"
                     end
                 end
             end
@@ -271,27 +291,6 @@ shared_examples_for 'mutable' do |options = {}|
 
                     mutable.mutations('1').
                         select { |m| m.affected_input_value.include? seed }.
-                        size.should == 0
-                end
-            end
-
-            context 'as a name',
-                    if: !described_class.ancestors.include?(
-                        Arachni::Element::Capabilities::Auditable::DOM
-                    ) && described_class != Arachni::Element::LinkTemplate do
-
-                it 'skips the mutation' do
-                    seed = 'payload'
-
-                    mutable.mutations( seed, param_flip: true ).
-                        select { |m| m.inputs.keys.include? seed }.
-                        size.should > 0
-
-                    described_class.any_instance.
-                        stub(:valid_input_name_data?) { |name| name != seed }
-
-                    mutable.mutations( seed, param_flip: true ).
-                        select { |m| m.inputs.keys.include? seed }.
                         size.should == 0
                 end
             end

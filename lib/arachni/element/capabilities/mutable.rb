@@ -88,10 +88,10 @@ module Mutable
         self[affected_input_name] = value
     end
 
-    # @param    [String]    value
+    # @param    [String]    name
     #   Sets the name of the fuzzed input.
-    def affected_input_name=( value )
-        @affected_input_name = value.to_s
+    def affected_input_name=( name )
+        @affected_input_name = name.to_s
     end
 
     # @param    [String]    value

@@ -450,13 +450,13 @@ class Framework
 
         if !options.audit.links? && !options.audit.forms? &&
             !options.audit.cookies? && !options.audit.headers? &&
-            !options.audit.link_templates?
+            !options.audit.link_templates? && !options.audit.jsons?
 
             print_info 'No element audit options were specified, will audit ' <<
-                           'links, forms and cookies.'
+                           'links, forms, cookies and JSONS.'
             print_line
 
-            options.audit.elements :links, :forms, :cookies
+            options.audit.elements :links, :forms, :cookies, :jsons
         end
     end
 

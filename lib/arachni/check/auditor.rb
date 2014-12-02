@@ -105,6 +105,8 @@ module Auditor
                         proc { audit.link_templates? && page.link_templates.find { |e| e.inputs.any? } },
                     Element::LinkTemplate::DOM =>
                         proc { audit.link_template_doms? && !!page.link_templates.find(&:dom) },
+                    Element::JSON      =>
+                        proc { audit.jsons? && page.jsons.find { |e| e.inputs.any? } },
                     Element::Body              => !page.body.empty?,
                     Element::GenericDOM        => page.has_script?,
                     Element::Path              => true,
@@ -164,6 +166,18 @@ module Auditor
     # injection strings.
     Format = Element::Capabilities::Mutable::Format
 
+    # Non-DOM auditable elements.
+    ELEMENTS_WITH_INPUTS = [
+        Element::Link, Element::Form, Element::Cookie, Element::Header,
+        Element::LinkTemplate, Element::JSON
+    ]
+
+    # Auditable DOM elements.
+    DOM_ELEMENTS_WITH_INPUTS = [
+        Element::Link::DOM, Element::Form::DOM, Element::Cookie::DOM,
+        Element::LinkTemplate::DOM
+    ]
+
     # Default audit options.
     OPTIONS = {
 
@@ -171,12 +185,9 @@ module Auditor
         #
         # If no elements have been passed to audit methods, candidates will be
         # determined by {#each_candidate_element}.
-        elements:     [Element::Link, Element::Form,
-                        Element::Cookie, Element::Header,
-                        Element::Body, Element::LinkTemplate],
+        elements:     ELEMENTS_WITH_INPUTS,
 
-        dom_elements: [Element::Link::DOM, Element::Form::DOM,
-                       Element::Cookie::DOM, Element::LinkTemplate::DOM],
+        dom_elements: DOM_ELEMENTS_WITH_INPUTS,
 
         # If set to `true` the HTTP response will be analyzed for new elements.
         # Be careful when enabling it, there'll be a performance penalty.
@@ -427,7 +438,6 @@ module Auditor
         types.each do |elem|
             elem = elem.type
 
-            next if elem == Element::Body.type
             next if !Options.audit.elements?( elem )
 
             case elem
@@ -445,6 +455,9 @@ module Auditor
 
                 when Element::LinkTemplate.type
                     prepare_each_element( page.link_templates, &block )
+
+                when Element::JSON.type
+                    prepare_each_element( page.jsons, &block )
 
                 else
                     fail ArgumentError, "Unknown element: #{elem}"

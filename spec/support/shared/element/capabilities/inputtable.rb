@@ -215,7 +215,9 @@ shared_examples_for 'inputtable' do |options = {}|
             a.inputs.should == { 'input1' => 'val1' }
         end
 
-        it 'converts all inputs to strings' do
+        it 'converts all inputs to strings',
+           if: described_class != Arachni::Element::JSON do
+
             subject.inputs = { input1: nil }
             subject.inputs.should == { 'input1' => '' }
         end
@@ -330,7 +332,9 @@ shared_examples_for 'inputtable' do |options = {}|
             end
         end
 
-        it 'converts all inputs to strings' do
+        it 'converts all inputs to strings',
+           if: described_class != Arachni::Element::JSON do
+
             subject.inputs = { 'input1' => 'stuff' }
             subject.update( { 'input1' => nil } )
             subject.inputs.should == { 'input1' => '' }
