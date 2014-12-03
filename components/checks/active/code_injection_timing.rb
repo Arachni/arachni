@@ -35,7 +35,7 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
             jsp:    'Thread.sleep(__TIME__);',
             asp:    'Thread.Sleep(__TIME__);',
         }.inject({}) do |h, (platform, payload)|
-            h[platform] = [ ' ', ' && ', ';' ].map { |sep| "#{sep} #{payload}" }
+            h[platform] = [ ' %s', ';%s', "\";%s#", "';%s#" ].map { |s| s % payload }
             h
         end
     end
