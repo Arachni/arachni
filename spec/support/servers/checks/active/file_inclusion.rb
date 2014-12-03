@@ -116,6 +116,15 @@ def get_variations( system, str )
     OUT[FILE_TO_PLATFORM[file]]
 end
 
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+end
+
 OUT.keys.each do |system|
     system_str = system.to_s
 
@@ -242,18 +251,18 @@ OUT.keys.each do |system|
     end
 
     post "/#{system_str}/json/straight" do
-        data = JSON.load( request.body.read ) rescue return
+        return if !@json
         default = 'arachni_user'
-        return if data['input'].start_with?( default )
+        return if @json['input'].start_with?( default )
 
-        get_variations( system, data['input'] )
+        get_variations( system, @json['input'] )
     end
 
     post "/#{system_str}/json/append" do
-        data = JSON.load( request.body.read ) rescue return
+        return if !@json
         default = 'arachni_user'
-        return if !data['input'].start_with?( default )
+        return if !@json['input'].start_with?( default )
 
-        get_variations( system, data['input'].split( default ).last )
+        get_variations( system, @json['input'].split( default ).last )
     end
 end

@@ -7,6 +7,15 @@ def get_variations( str )
     IO.read( root + 'components/checks/active/ldap_injection/errors.txt' ) if str == "#^($!@$)(()))******"
 end
 
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+end
+
 get '/' do
     <<-EOHTML
         <a href="/link?input=default">Link</a>
@@ -103,17 +112,17 @@ get "/json" do
 end
 
 post "/json/straight" do
-    data = JSON.load( request.body.read ) rescue return
+    return if !@json
     default = 'arachni_user'
-    return if data['input'].start_with?( default )
+    return if @json['input'].start_with?( default )
 
-    get_variations( data['input'] )
+    get_variations( @json['input'] )
 end
 
 post "/json/append" do
-    data = JSON.load( request.body.read ) rescue return
+    return if !@json
     default = 'arachni_user'
-    return if !data['input'].start_with?( default )
+    return if !@json['input'].start_with?( default )
 
-    get_variations( data['input'].split( default ).last )
+    get_variations( @json['input'].split( default ).last )
 end

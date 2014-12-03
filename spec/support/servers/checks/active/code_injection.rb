@@ -33,6 +33,15 @@ def get_variations( lang, str )
     end.compact.to_s
 end
 
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+end
+
 REGEXP.keys.each do |language|
     language_str = language.to_s
 
@@ -177,18 +186,18 @@ REGEXP.keys.each do |language|
     end
 
     post "/#{language_str}/json/straight" do
-        data = JSON.load( request.body.read ) rescue return
+        return if !@json
         default = 'arachni_user'
-        return if data['input'].start_with?( default )
+        return if @json['input'].start_with?( default )
 
-        get_variations( language, data['input'] )
+        get_variations( language, @json['input'] )
     end
 
     post "/#{language_str}/json/append" do
-        data = JSON.load( request.body.read ) rescue return
+        return if !@json
         default = 'arachni_user'
-        return if !data['input'].start_with?( default )
+        return if !@json['input'].start_with?( default )
 
-        get_variations( language, data['input'].split( default ).last )
+        get_variations( language, @json['input'].split( default ).last )
     end
 end

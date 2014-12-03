@@ -19,6 +19,15 @@ def get_variations( platform, str )
     @@errors[platform] if variations.include?( str )
 end
 
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+end
+
 @@errors.keys.each do |platform|
     platform_str = platform.to_s
 
@@ -148,15 +157,15 @@ end
     end
 
     post "/#{platform_str}/json/flip" do
-        data = JSON.load( request.body.read ) rescue return
-        data.keys.map { |k| get_variations( platform, k ) }.to_s
+        return if !@json
+        @json.keys.map { |k| get_variations( platform, k ) }.to_s
     end
 
     post "/#{platform_str}/json/append" do
-        data = JSON.load( request.body.read ) rescue return
+        return if !@json
         default = 'arachni_user'
-        return if !data['input'].start_with?( default )
+        return if !@json['input'].start_with?( default )
 
-        get_variations( platform, data['input'].split( default ).last )
+        get_variations( platform, @json['input'].split( default ).last )
     end
 end
