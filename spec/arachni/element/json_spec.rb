@@ -28,6 +28,19 @@ describe Arachni::Element::JSON do
         end
     end
 
+    describe '#to_h' do
+        it 'includes :json' do
+            subject.to_h[:json].should == subject.json
+        end
+    end
+
+    describe '#submit' do
+        it 'encodes the JSON data in the HTTP body' do
+            subject.submit( mode: :sync ).request.body.should_not == subject.to_json
+            subject.submit( mode: :sync ).request.body.should == ::URI.encode_www_form_component( subject.to_json )
+        end
+    end
+
     describe '#to_json' do
         let(:inputs) do
             {

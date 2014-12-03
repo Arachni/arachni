@@ -217,6 +217,10 @@ class JSON < Base
         @inputs.to_json
     end
 
+    def to_h
+        super.merge( json: @json )
+    end
+
     # @return   [Hash]
     #   Simple representation of self in the form of `{ {#action} => {#inputs} }`.
     def simple
@@ -287,7 +291,7 @@ class JSON < Base
     private
 
     def http_request( opts, &block )
-        opts[:body]   = URI.encode_www_form_component( self.to_json )
+        opts[:body]   = ::URI.encode_www_form_component( self.to_json )
         opts[:method] = self.http_method
         http.request( self.action, opts, &block )
     end
