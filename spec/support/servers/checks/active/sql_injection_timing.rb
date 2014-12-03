@@ -1,3 +1,4 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
