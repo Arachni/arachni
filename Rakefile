@@ -162,7 +162,7 @@ begin
                     $spec_issues.each { |i| Arachni::Data.issues << i }
 
                     Arachni::Options.url = 'http://test.com'
-                    Arachni::Options.audit.elements Arachni::Page::ELEMENTS
+                    Arachni::Options.audit.elements Arachni::Page::ELEMENTS - [:link_templates]
                     Arachni::Options.audit.link_templates = [
                         /\/input\/(?<input>.+)\//,
                         /input\|(?<input>.+)/
