@@ -265,6 +265,20 @@
             <xs:element name="vector" type="vector"/>
             <xs:element name="digest" type="xs:integer"/>
             <xs:element name="variations" type="issuevariations"/>
+            <xs:element name="check" type="check"/>
+        </xs:all>
+    </xs:complexType>
+
+    <!--
+        Check information.
+    -->
+    <xs:complexType name="check">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="author" type="xs:string"/>
+            <xs:element name="version" type="xs:string"/>
+            <xs:element name="shortname" type="xs:string"/>
         </xs:all>
     </xs:complexType>
 
