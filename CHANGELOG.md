@@ -46,6 +46,7 @@
         - `path_traversal` -- Fixed MS Windows output pattern.
         - `sql_injection_differential` -- Set platform to generic `sql`.
         - `no_sql_injection_differential` -- Set platform to generic  `nosql`.
+        - `unvalidated_redirect` -- Disable `follow_location`.
     - Passive
         - `common_files` -- Added `.svn/all-wcprops`.
 
