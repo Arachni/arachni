@@ -995,6 +995,7 @@ class Browser
                         "--webdriver=#{port}",
                         "--proxy=http://#{@proxy.address}/",
                         '--ignore-ssl-errors=true',
+                        '--disk-cache=true',
                         "--debug=#{!!debug?}"
                     )
                     @process.detach = true

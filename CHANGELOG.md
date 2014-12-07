@@ -4,6 +4,8 @@
 
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
+- `Browser`
+    - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
 
 ## 1.0.6 _(December 07, 2014)_
 
