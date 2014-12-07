@@ -1,5 +1,10 @@
 # ChangeLog
 
+## _Under development_
+
+- `Page::DOM`
+    - `#restore` -- Added debugging messages.
+
 ## 1.0.6 _(December 07, 2014)_
 
 - `arachni_rpcd` -- Fixed bug causing the `--nickname` option to not be understood.
