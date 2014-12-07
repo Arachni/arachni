@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.0.6 _(December 07, 2014)_
 
 - `arachni_rpcd` -- Fixed bug causing the `--nickname` option to not be understood.
 - `UI::Output` -- Flush output stream after each message.
