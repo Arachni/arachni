@@ -6,7 +6,7 @@
     - `#restore` -- Added debugging messages.
 - `Browser`
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
-    - `Javascript::TaintTracer#digest` -- Removed `data-arachni-id` from digest.
+    - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
 
 ## 1.0.6 _(December 07, 2014)_
 
