@@ -7,6 +7,10 @@
 - `Browser`
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
+-  Checks
+    - Active
+        - `trainer` -- Disabled parameter flip for the payload to avoid parameter
+            pollution.
 
 ## 1.0.6 _(December 07, 2014)_
 

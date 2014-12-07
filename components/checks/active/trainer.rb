@@ -12,7 +12,7 @@
 # It also forces Arachni to train itself by analyzing the server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.3
+# @version 0.1.4
 class Arachni::Checks::Trainer < Arachni::Check::Base
 
     def run
@@ -21,7 +21,7 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
         # wasting bandwidth.
         return if framework.page_limit_reached?
 
-        audit( "_arachni_trainer_#{random_seed}", submit: { train: true }, param_flip: true ){}
+        audit( "_arachni_trainer_#{random_seed}", submit: { train: true } ){}
     end
 
     def self.info
@@ -33,7 +33,7 @@ It also forces Arachni to train itself by analyzing the server responses.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
-            version:     '0.1.3'
+            version:     '0.1.4'
         }
     end
 
