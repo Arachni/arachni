@@ -1,9 +1,17 @@
+**NOTICE**:
+
+* Arachni's license has changed, please see the _LICENSE_ file before working
+    with the project.
+* v1.0 is not backwards compatible with v0.4.
+
+<hr/>
+
 # Arachni - Web Application Security Scanner Framework
 
 <table>
     <tr>
         <th>Version</th>
-        <td>1.0.5</td>
+        <td>1.0.6</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -348,7 +356,6 @@ Active checks engage the web application via its inputs.
 
 - SQL injection (`sql_injection`) -- Error based detection.
     - Oracle
-    - ColdFusion
     - InterBase
     - PostgreSQL
     - MySQL

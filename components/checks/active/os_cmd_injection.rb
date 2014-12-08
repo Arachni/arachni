@@ -10,7 +10,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.2.1
+# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -23,8 +23,8 @@ class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
                     /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
-                    /\[boot loader\](.*)\[operating systems\]/im,
-                    /\[fonts\](.*)\[extensions\]/im
+                    /\[boot loader\].*\[operating systems\]/im,
+                    /\[fonts\].*\[extensions\]/im
                 ]
             },
             format: [ Format::STRAIGHT, Format::APPEND ]
@@ -49,7 +49,13 @@ class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
         }.inject({}) do |h, (platform, payloads)|
             h[platform] ||= []
             payloads.each do |payload|
-                h[platform] |= [ '', '&&', '|', ';' ].map { |sep| "#{sep} #{payload}" }
+                h[platform] << "#{payload}"
+
+                ['', '\'', '"'].each do |q|
+                    h[platform] |= [ '&&', '|', ';' ].
+                        map { |sep| "#{q} #{sep} #{payload} #{sep} #{q}" }
+                end
+
                 h[platform] << "` #{payload}`"
             end
             h
@@ -69,7 +75,7 @@ Tries to find Operating System command injections.
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.1',
+            version:     '0.2.2',
             platforms:   payloads.keys,
 
             issue:       {

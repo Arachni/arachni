@@ -188,9 +188,7 @@ module Differential
                         signatures[:controls][altered_hash].refine!(res.body) :
                         Support::Signature.new(res.body)
 
-                @data_gathering[:received_responses] += 1
-
-                finalize_if_done( opts, signatures )
+                increase_received_responses( opts, signatures )
             end
         end
     end
@@ -260,8 +258,7 @@ module Differential
 
                     signature_sieve( altered_hash, signatures, pair_hash )
 
-                    @data_gathering[:received_responses] += 1
-                    finalize_if_done( opts, signatures )
+                    increase_received_responses( opts, signatures )
                 end
             end
         end

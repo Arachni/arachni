@@ -227,7 +227,7 @@ class Framework
         return false if aborting? || aborted?
 
         if !running?
-            fail Error::StateNotAbortable, 'Cannot suspend an idle state.'
+            fail Error::StateNotAbortable, 'Cannot abort an idle state.'
         end
 
         set_status_message :aborting
@@ -262,6 +262,12 @@ class Framework
     #   `true` if the system is being aborted, `false` otherwise.
     def aborting?
         @status == :aborting
+    end
+
+    # @return   [Bool]
+    #   `true` if the system has completed successfully, `false` otherwise.
+    def done?
+        @status == :done
     end
 
     # @param    [Bool]  block

@@ -12,14 +12,27 @@ describe name_from_filename do
           Element::LinkTemplate ]
     end
 
-    def issue_count_per_element
-        {
-            Element::Form         => 10,
-            Element::Link         => 10,
-            Element::Cookie       => 10,
-            Element::Header       => 9,
-            Element::LinkTemplate => 10
+    def issue_count_per_element_per_platform
+        h = {}
+        [:unix, :bsd, :aix].each do |platform|
+            h[platform] = {
+                Element::Form         => 22,
+                Element::Link         => 22,
+                Element::Cookie       => 22,
+                Element::Header       => 19,
+                Element::LinkTemplate => 21
+            }
+        end
+
+        h[:windows] = {
+            Element::Form         => 44,
+            Element::Link         => 44,
+            Element::Cookie       => 44,
+            Element::Header       => 38,
+            Element::LinkTemplate => 44
         }
+
+        h
     end
 
     easy_test

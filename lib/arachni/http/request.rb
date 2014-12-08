@@ -97,6 +97,10 @@ class Request < Message
     # @return   [Bool]
     attr_accessor :high_priority
 
+    # @return   [Integer]
+    #   Maximum HTTP response size to accept, in bytes.
+    attr_accessor :response_max_size
+
     # @private
     attr_accessor :root_redirect_id
 
@@ -447,8 +451,6 @@ class Request < Message
         end
     end
 
-    private
-
     def prepare_headers
         headers['Cookie'] = effective_cookies.
             map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
@@ -461,6 +463,8 @@ class Request < Message
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
     end
+
+    private
 
     def fill_in_data_from_typhoeus_response( response )
         @headers_string = response.debug_info.header_out.first

@@ -396,19 +396,13 @@ describe Arachni::HTTP::Client do
             called.should be_false
         end
 
-        context 'when the callback creates new requests and nested callbacks' do
+        context 'when the callback creates new requests' do
             it 'run these too' do
                 called = false
                 subject.after_run do
-                    subject.after_run { called = true }
-                end
-                subject.run
-                called.should be_false
-
-                called = false
-                subject.after_run do
-                    subject.get
-                    subject.after_run { called = true }
+                    subject.get do
+                        called = true
+                    end
                 end
                 subject.run
                 called.should be_true
@@ -416,6 +410,17 @@ describe Arachni::HTTP::Client do
                 called = false
                 subject.run
                 called.should be_false
+            end
+        end
+
+        context 'when the callback creates new callbacks' do
+            it 'run these too' do
+                called = false
+                subject.after_run do
+                    subject.after_run { called = true }
+                end
+                subject.run
+                called.should be_true
             end
         end
     end

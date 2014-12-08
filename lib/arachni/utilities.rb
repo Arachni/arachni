@@ -413,6 +413,16 @@ module Utilities
         nil
     end
 
+    def regexp_array_match( regexps, str )
+        regexps = [regexps].flatten.compact.
+            map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+        return true if regexps.empty?
+
+        cnt = 0
+        regexps.each { |filter| cnt += 1 if str =~ filter }
+        cnt == regexps.size
+    end
+
     def remove_constants( mod, skip = [] )
         return if skip.include?( mod )
         return if !(mod.is_a?( Class ) || mod.is_a?( Module )) ||

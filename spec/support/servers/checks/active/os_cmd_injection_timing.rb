@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 REGEXP = {
     windows: 'ping \-n (\d+) localhost',
@@ -27,10 +28,14 @@ def variations
 end
 
 def get_variations( platform, str )
-    variations.map do |v|
-        pre, post = v.split( '%s' )
-        exec( platform, str, pre, post )
-    end.compact.to_s
+    # current_check.payloads[platform].each do |payload|
+        time = str.scan( Regexp.new( REGEXP[platform] ) ).flatten.first
+        return if !time
+
+        sleep( Integer( time ) - 1 )
+    # end
+
+    ''
 end
 
 REGEXP.keys.each do |platform|

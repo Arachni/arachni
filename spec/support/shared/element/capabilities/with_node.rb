@@ -14,6 +14,31 @@ shared_examples_for 'with_node' do |html|
         end
     end
 
+    describe '#html=' do
+        context 'when given' do
+            context String do
+                let(:string) { 'stuff' }
+
+                it 'recodes it' do
+                    expect(string).to receive(:recode)
+                    with_node.html = string
+                end
+
+                it 'sets the #html' do
+                    with_node.html = string
+                    with_node.html.should == string
+                end
+            end
+
+            context 'nil' do
+                it 'sets the #html' do
+                    with_node.html = nil
+                    with_node.html.should be_nil
+                end
+            end
+        end
+    end
+
     describe '#node' do
         it 'returns the set node' do
             node = with_node.node

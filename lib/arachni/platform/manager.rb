@@ -60,26 +60,29 @@ class Manager
         windows: {}
     }
 
-    DB = [
-        :mysql,
-        :pgsql,
-        :mssql,
-        :oracle,
-        :sqlite,
-        :emc,
-        :db2,
-        :coldfusion,
-        :interbase,
-        :informix,
-        :firebird,
-        :maxdb,
-        :sybase,
-        :frontbase,
-        :ingres,
-        :hsqldb,
-        :access,
-        :mongodb
-    ]
+    DB = {
+        sql: {
+            mysql:      {},
+            pgsql:      {},
+            mssql:      {},
+            oracle:     {},
+            sqlite:     {},
+            ingres:     {},
+            emc:        {},
+            db2:        {},
+            interbase:  {},
+            informix:   {},
+            firebird:   {},
+            maxdb:      {},
+            sybase:     {},
+            frontbase:  {},
+            hsqldb:     {},
+            access:     {},
+        },
+        nosql: {
+            mongodb:    {}
+        }
+    }
 
     SERVERS = [
         :apache,
@@ -114,6 +117,7 @@ class Manager
         windows:    'MS Windows',
 
         # Databases
+        sql:        'Generic SQL family',
         mysql:      'MySQL',
         pgsql:      'Postgresql',
         mssql:      'MSSQL',
@@ -121,7 +125,6 @@ class Manager
         sqlite:     'SQLite',
         emc:        'EMC',
         db2:        'DB2',
-        coldfusion: 'ColdFusion',
         interbase:  'InterBase',
         informix:   'Informix',
         firebird:   'Firebird',
@@ -131,6 +134,7 @@ class Manager
         ingres:     'IngresDB',
         hsqldb:     'HSQLDB',
         access:     'MS Access',
+        nosql:      'Generic NoSQL family',
         mongodb:    'MongoDB',
 
         # Web servers

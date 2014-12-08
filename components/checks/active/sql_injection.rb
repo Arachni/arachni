@@ -40,7 +40,7 @@ class Arachni::Checks::SqlInjection < Arachni::Check::Base
     # Prepares the payloads that will hopefully cause the webapp to output SQL
     # error messages if included as part of an SQL query.
     def self.payloads
-        @payloads ||= [ '\'`--', ')' ]
+        @payloads ||= [ '"\'`--', ')' ]
     end
 
     def self.options

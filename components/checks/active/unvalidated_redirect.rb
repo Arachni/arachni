@@ -12,7 +12,7 @@
 # header field to determine whether the attack was successful.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
+# @version 0.2.1
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
 
@@ -32,7 +32,7 @@ class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
     end
 
     def run
-        audit( self.class.payloads ) do |response, element|
+        audit( self.class.payloads, submit: { follow_location: false } ) do |response, element|
             # If this was a sample/default value submission ignore it, we only
             # care about our payloads.
             next if !payload? element.seed
@@ -67,7 +67,7 @@ URL to determine whether the attack was successful.
 },
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
 
             issue:       {
                 name:            %q{Unvalidated redirect},

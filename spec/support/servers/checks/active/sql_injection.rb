@@ -11,7 +11,7 @@ end
 @@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../components/checks/active/sql_injection/regexp_ignore.txt' )
 
 def variations
-    @@variations ||= [ '\'`--', ')' ]
+    @@variations ||= [ '"\'`--', ')' ]
 end
 
 def get_variations( platform, str )

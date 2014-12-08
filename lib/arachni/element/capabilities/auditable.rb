@@ -245,7 +245,9 @@ module Auditable
         submit( options ) do |response|
             element = response.request.performer
             if !element.audit_options[:silent]
-                print_status  "Analyzing response ##{response.request.id}..."
+                print_status "Analyzing response ##{response.request.id} for " <<
+                    "#{self.type} input '#{affected_input_name}'" <<
+                    " pointing to: '#{audit_status_message_action}'"
             end
 
             exception_jail( false ){ block.call( response, element ) }

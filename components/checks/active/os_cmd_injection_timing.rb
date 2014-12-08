@@ -10,7 +10,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.3
+# @version 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -23,8 +23,15 @@ class Arachni::Checks::OsCmdInjectionTiming < Arachni::Check::Base
             unix:    'sleep __TIME__',
             windows: 'ping -n __TIME__ localhost'
         }.inject({}) do |h, (platform, payload)|
-            h[platform] = [ '', '&', '&&', '|', ';' ].map { |sep| "#{sep} #{payload}" }
-            h[platform] << "`#{payload}`"
+            h[platform] ||= []
+            h[platform] << "#{payload}"
+
+            ['', '\'', '"'].each do |q|
+                h[platform] |= [ '&', '&&', '|', ';' ].
+                    map { |sep| "#{q} #{sep} #{payload} #{sep} #{q}" }
+            end
+
+            h[platform] << "` #{payload}`"
             h
         end
     end
@@ -46,7 +53,7 @@ Tries to find operating system command injections using timing attacks.
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3',
+            version:     '0.3.1',
             platforms:   payloads.keys,
 
             issue:       {

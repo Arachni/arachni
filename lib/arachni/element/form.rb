@@ -466,7 +466,7 @@ class Form < Base
         # @return   [String]
         def encode( str )
             ::URI.encode(
-                ::URI.encode( str, '+%' ).recode.gsub( ' ', '+' ),
+                ::URI.encode( str.to_s, '+%' ).recode.gsub( ' ', '+' ),
                 ";&\\=\0"
             )
         end

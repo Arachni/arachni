@@ -1,5 +1,55 @@
 # ChangeLog
 
+## 1.0.6 _(December 07, 2014)_
+
+- `arachni_rpcd` -- Fixed bug causing the `--nickname` option to not be understood.
+- `UI::Output` -- Flush output stream after each message.
+- `Platform::Manager`
+    - Removed 'coldfusion`.
+    - Added `sql` and `nosql` parents for DBs.
+- `Check::Auditor#skip?` -- Ignore mutations when checking for redundancies.
+- `Browser` -- Fixed issue causing `select` inputs in forms to not be set.
+- `Element::Cookie.encode` -- Added '&' to the list of reserved characters.
+- `Issue`
+    - `#recheck` -- Rechecks the existence of the issue.
+- `Element::Capabilities`
+    - `WithNode`
+        - `#html=` -- Recode string before storing.
+    - `WithDOM`
+        - `#dom` -- Return `nil` on `Inputtable::Error`.
+    - `Auditable` -- Updated response analysis messages to include vector type,
+        name and action URL.
+- `Framework` -- Split into `Parts`:
+    - `Audit`
+        - If `Options.platforms` are given, checks which don't support them are
+            completely skipped.
+    - `Browser`
+    - `Check`
+    - `Data`
+        - `#pop_page_from_url_queue` -- Fixed issue causing multiple-choice
+            redirections to cause an error.
+    - `Platform`
+    - `Plugin`
+    - `Report`
+    - `Scope`
+    - `State`
+- `State::Framework`
+    - Added `#done?`
+    - `#abort` -- Fixed exception message.
+- Checks
+    - Active
+        - `sql_injection` -- Slight payload update to catch double-quote cases.
+        - `code_injection` -- Slight PHP payload update, to ensure it works in more cases.
+        - `code_injection_timing` -- Updated payloads to mirror `code_injection`.
+        - `os_command_injection` -- Updated payloads to handle chained commands.
+        - `os_command_injection_timing` -- Updated payloads to handle chained commands.
+        - `path_traversal` -- Fixed MS Windows output pattern.
+        - `sql_injection_differential` -- Set platform to generic `sql`.
+        - `no_sql_injection_differential` -- Set platform to generic  `nosql`.
+        - `unvalidated_redirect` -- Disable `follow_location`.
+    - Passive
+        - `common_files` -- Added `.svn/all-wcprops`.
+
 ## 1.0.5 _(November 14, 2014)_
 
 - Executables

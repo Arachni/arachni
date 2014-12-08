@@ -1211,6 +1211,19 @@ describe Arachni::Browser do
                                     inputs[:email]
                             end
 
+                            context 'when one of those inputs is a' do
+                                context 'select' do
+                                    let(:url) { "#{@url}/fire_event/form/select" }
+
+                                    it 'selects it' do
+                                        @browser.watir.div( id: 'container-name' ).text.should ==
+                                            inputs[:name]
+                                        @browser.watir.div( id: 'container-email' ).text.should ==
+                                            inputs[:email]
+                                    end
+                                end
+                            end
+
                             context 'but has missing values' do
                                 let(:inputs) do
                                     { name:  'The Dude' }
