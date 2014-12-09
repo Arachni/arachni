@@ -180,13 +180,13 @@ class Instance
 
         if !@options.audit.links? && !@options.audit.forms? &&
             !@options.audit.cookies? && !@options.audit.headers? &&
-            !@options.audit.link_templates?
+            !@options.audit.link_templates? && !@options.audit.jsons?
 
             print_info 'No element audit options were specified, will audit ' <<
-                           'links, forms and cookies.'
+                           'links, forms, cookies and JSONs.'
             print_line
 
-            @options.audit.elements :links, :forms, :cookies
+            @options.audit.elements :links, :forms, :cookies, :jsons
         end
 
         if @options.http.cookie_jar_filepath

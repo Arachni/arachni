@@ -453,7 +453,7 @@ class Framework
             !options.audit.link_templates? && !options.audit.jsons?
 
             print_info 'No element audit options were specified, will audit ' <<
-                           'links, forms, cookies and JSONS.'
+                           'links, forms, cookies and JSONs.'
             print_line
 
             options.audit.elements :links, :forms, :cookies, :jsons

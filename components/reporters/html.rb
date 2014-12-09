@@ -370,7 +370,8 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 Element::Body.type   => 0,
                 Element::Path.type   => 0,
                 Element::Server.type => 0,
-                Element::GenericDOM.type => 0
+                Element::GenericDOM.type => 0,
+                Element::JSON.type       => 0
             },
             verification:     {
                 'Yes' => 0,

@@ -219,10 +219,10 @@ class Response < Message
             headers_string: response.response_headers,
             body:           response.body,
             redirections:   redirections,
-            time:           response.time,
-            app_time:       response.timed_out? ? response.time :
-                                response.start_transfer_time - response.pretransfer_time,
-            total_time:     response.total_time,
+            time:           response.time.to_f,
+            app_time:       (response.timed_out? ? response.time :
+                                response.start_transfer_time - response.pretransfer_time).to_f,
+            total_time:     response.total_time.to_f,
             return_code:    response.return_code,
             return_message: response.return_message
         )
