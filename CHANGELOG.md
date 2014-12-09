@@ -6,6 +6,7 @@
     - `#restore` -- Added debugging messages.
 - `Browser`
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
+    - `#fire_event` -- Recode input values to fix encoding errors.
     - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
 -  Checks
     - Active

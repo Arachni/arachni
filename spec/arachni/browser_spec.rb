@@ -1177,7 +1177,7 @@ describe Arachni::Browser do
                         context 'is given' do
                             let(:inputs) do
                                 {
-                                    name:  'The Dude',
+                                    name:  "The Dude",
                                     email: 'the.dude@abides.com'
                                 }
                             end
@@ -1209,6 +1209,24 @@ describe Arachni::Browser do
                                     inputs[:name]
                                 @browser.watir.div( id: 'container-email' ).text.should ==
                                     inputs[:email]
+                            end
+
+                            context 'when the inputs contains non-UTF8 data' do
+                                context 'is given' do
+                                    let(:inputs) do
+                                        {
+                                            name:  "The Dude \xC7",
+                                            email: "the.dude@abides.com \xC7"
+                                        }
+                                    end
+                                end
+
+                                it 'recodes them' do
+                                    @browser.watir.div( id: 'container-name' ).text.should ==
+                                        inputs[:name].recode
+                                    @browser.watir.div( id: 'container-email' ).text.should ==
+                                        inputs[:email].recode
+                                end
                             end
 
                             context 'when one of those inputs is a' do
