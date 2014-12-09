@@ -200,6 +200,10 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.link_templates |= [pattern]
         end
 
+        on( '--audit-jsons', 'Audit JSON request inputs.' ) do
+            options.audit.jsons = true
+        end
+
         on( '--audit-with-both-methods',
                'Audit elements with both GET and POST requests.',
                '(*WARNING*: This will severely increase the scan-time.)'

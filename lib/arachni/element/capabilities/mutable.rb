@@ -88,10 +88,10 @@ module Mutable
         self[affected_input_name] = value
     end
 
-    # @param    [String]    value
+    # @param    [String]    name
     #   Sets the name of the fuzzed input.
-    def affected_input_name=( value )
-        @affected_input_name = value.to_s
+    def affected_input_name=( name )
+        @affected_input_name = name.to_s
     end
 
     # @param    [String]    value
@@ -159,11 +159,11 @@ module Mutable
                     next
                 end
 
-                elem                     = self.dup
-                elem.seed                = payload
-                elem.affected_input_name = k.dup
-                elem.inputs              = cinputs.merge( k => str )
-                elem.format              = format
+                elem                      = self.dup
+                elem.seed                 = payload
+                elem.affected_input_name  = k
+                elem.affected_input_value = str
+                elem.format               = format
 
                 if !generated.include?( elem )
                     print_debug_mutation elem

@@ -1,9 +1,19 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
 def get_variations( str )
     root = File.dirname( __FILE__ ) + '/../../../../../'
     IO.read( root + 'components/checks/active/ldap_injection/errors.txt' ) if str == "#^($!@$)(()))******"
+end
+
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
 end
 
 get '/' do
@@ -13,6 +23,7 @@ get '/' do
         <a href="/cookie">Cookie</a>
         <a href="/header">Header</a>
         <a href="/link-template">Link template</a>
+        <a href="/json">JSON</a>
     EOHTML
 end
 
@@ -86,3 +97,32 @@ get '/header/append' do
     get_variations( env['HTTP_USER_AGENT'].split( default ).last )
 end
 
+get "/json" do
+    <<-EOHTML
+        <script type="application/javascript">
+            http_request = new XMLHttpRequest();
+            http_request.open( "POST", "/json/straight", true);
+            http_request.send( '{"input": "arachni_user"}' );
+
+            http_request = new XMLHttpRequest();
+            http_request.open( "POST", "/json/append", true);
+            http_request.send( '{"input": "arachni_user"}' );
+        </script>
+    EOHTML
+end
+
+post "/json/straight" do
+    return if !@json
+    default = 'arachni_user'
+    return if @json['input'].start_with?( default )
+
+    get_variations( @json['input'] )
+end
+
+post "/json/append" do
+    return if !@json
+    default = 'arachni_user'
+    return if !@json['input'].start_with?( default )
+
+    get_variations( @json['input'].split( default ).last )
+end

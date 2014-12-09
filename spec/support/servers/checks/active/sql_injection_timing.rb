@@ -1,3 +1,4 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -16,6 +17,15 @@ def get_variations( platform, str )
     sleep( Integer( time ) ) if time
 end
 
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+end
+
 REGEXP.keys.each do |platform|
 
     get "/#{platform}"do
@@ -25,6 +35,7 @@ REGEXP.keys.each do |platform|
             <a href="/#{platform}/cookie">Cookie</a>
             <a href="/#{platform}/header">Header</a>
             <a href="/#{platform}/link-template">Link template</a>
+            <a href="/#{platform}/json">JSON</a>
         EOHTML
     end
 
@@ -142,4 +153,33 @@ REGEXP.keys.each do |platform|
         get_variations( platform, env['HTTP_USER_AGENT'] )
     end
 
+    get "/#{platform}/json" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{platform}/json/straight", true);
+                http_request.send( '{"input": "arachni_user"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{platform}/json/append", true);
+                http_request.send( '{"input": "arachni_user"}' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{platform}/json/straight" do
+        return if !@json
+        default = 'arachni_user'
+        return if @json['input'].start_with?( default )
+
+        get_variations( platform, @json['input'] )
+    end
+
+    post "/#{platform}/json/append" do
+        return if !@json
+        default = 'arachni_user'
+        return if !@json['input'].start_with?( default )
+
+        get_variations( platform, @json['input'].split( default ).last )
+    end
 end

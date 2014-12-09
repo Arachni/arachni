@@ -596,6 +596,25 @@ get '/with-ajax' do
 HTML
 end
 
+get '/with-ajax-json' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            post_ajax = new XMLHttpRequest();
+            post_ajax.open( "POST", "/post-ajax-json", true );
+            post_ajax.send( '#{{ 'post-name' => 'post-value' }.to_json}' );
+        </script>
+    <head>
+</html>
+HTML
+end
+
+post '/post-ajax-json' do
+    <<HTML
+HTML
+end
+
 get '/get-ajax' do
     return if params['ajax-token'] != 'my-token'
 

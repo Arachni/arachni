@@ -51,7 +51,7 @@ module Capabilities::Inputtable
     # @note Will convert keys and values to strings.
     #
     # @param  [Hash]  hash
-    #   Inputs data.
+    #   Input data.
     #
     # @raise   [Error::InvalidData::Name]
     # @raise   [Error::InvalidData::Value]
@@ -100,7 +100,7 @@ module Capabilities::Inputtable
     # Resets the inputs to their original format/values.
     def reset
         super if defined?( super )
-        self.inputs = @default_inputs.dup
+        self.inputs = @default_inputs.deep_clone
         self
     end
 

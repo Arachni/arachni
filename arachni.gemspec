@@ -43,6 +43,8 @@ Gem::Specification.new do |s|
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
+    s.add_dependency 'rack'
+
     s.add_dependency 'bundler'
 
     # For compressing/decompressing system state archives.

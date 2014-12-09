@@ -1267,13 +1267,21 @@ class Browser
     def capture( request )
         return if !@last_url || !capture?
 
+        elements = {
+            forms: [],
+            jsons: []
+        }
+
+        if (json = JSON.from_request( @last_url, request ))
+            elements[:jsons] << json
+        end
+
         case request.method
             when :get
-                inputs =  request.parsed_url.query_parameters
+                inputs = request.parsed_url.query_parameters
                 return if inputs.empty?
 
-                # Make this a Link.
-                 form = Form.new(
+                elements[:forms] << Form.new(
                     url:    @last_url,
                     action: request.url,
                     method: request.method,
@@ -1281,32 +1289,32 @@ class Browser
                 )
 
             when :post
-                inputs = request.body_parameters
-                return if inputs.empty?
-
-                form = Form.new(
-                    url:    @last_url,
-                    action: request.url,
-                    method: request.method,
-                    inputs: inputs
-                )
-
+                if (inputs = request.body_parameters).any?
+                    elements[:forms] << Form.new(
+                        url:    @last_url,
+                        action: request.url,
+                        method: request.method,
+                        inputs: inputs
+                    )
+                end
             else
                 return
         end
 
-        # Don't bother if the system in general has already seen the vector.
-        return if ElementFilter.include?( form )
+        el = elements.values.flatten
+
+        # Don't bother if the system in general has already seen the vectors.
+        return if el.empty? || !el.find { |e| !ElementFilter.include?( e ) }
 
         begin
-            return if skip_state?( form.id )
-            skip_state form.id
+            return if !el.find { |e| !skip_state?( e ) }
+            el.each { |e| skip_state e.id }
         # This could be an orphaned HTTP request, without a job, if running in
         # BrowserCluster::Worker.
         rescue NoMethodError
         end
 
-        page = Page.from_data( url: request.url, forms: [form] )
+        page = Page.from_data( elements.merge( url: request.url ) )
         page.response.request = request
         page.dom.push_transition Page::DOM::Transition.new( request.url, :request )
 

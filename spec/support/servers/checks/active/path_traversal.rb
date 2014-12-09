@@ -1,3 +1,4 @@
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -101,9 +102,16 @@ def get_variations( system, str )
     file = str.gsub( /\.{2,}/, '' ).gsub( '\\', '/' ).gsub( /\/+/, '/' )
     file = "/#{file}" if file[0] != '/'
 
-    ap file
-
     OUT[FILE_TO_PLATFORM[file]] if system == FILE_TO_PLATFORM[file]
+end
+
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
 end
 
 OUT.keys.each do |system|
@@ -116,6 +124,7 @@ OUT.keys.each do |system|
             <a href="/#{system_str}/cookie">Cookie</a>
             <a href="/#{system_str}/header">Header</a>
             <a href="/#{system_str}/link-template">Link template</a>
+            <a href="/#{system_str}/json">JSON</a>
         EOHTML
     end
 
@@ -216,4 +225,42 @@ OUT.keys.each do |system|
         get_variations( system, env['HTTP_USER_AGENT'] )
     end
 
+    get "/#{system_str}/json" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/json/straight", true);
+                http_request.send( '{"input": "#{default}"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/json/with_null", true);
+                http_request.send( '{"input": "#{default}"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/json/append", true);
+                http_request.send( '{"input": "#{default}"}' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{system_str}/json/straight" do
+        return if !@json
+        return if @json['input'].start_with?( default )
+
+        get_variations( system, @json['input'] )
+    end
+
+    post "/#{system_str}/json/with_null" do
+        return if !@json
+        return if !@json['input'].include?( "\00." )
+
+        get_variations( system, @json['input'] )
+    end
+
+    post "/#{system_str}/json/append" do
+        return if !@json
+        return if !@json['input'].start_with?( default )
+
+        get_variations( system, @json['input'].split( default ).last )
+    end
 end

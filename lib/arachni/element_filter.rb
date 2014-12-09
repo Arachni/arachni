@@ -17,7 +17,7 @@ module Arachni
 class ElementFilter
 class <<self
 
-    TYPES = [:links, :forms, :cookies]
+    TYPES = State::ElementFilter::TYPES
 
     def reset
         @mutex = Mutex.new
@@ -34,6 +34,14 @@ class <<self
     #   @return    [Support::LookUp::HashSet]
 
     # @!method cookies
+    #
+    #   @return    [Support::LookUp::HashSet]
+
+    # @!method link_templates
+    #
+    #   @return    [Support::LookUp::HashSet]
+
+    # @!method jsons
     #
     #   @return    [Support::LookUp::HashSet]
 
@@ -55,6 +63,18 @@ class <<self
     #
     #   @return   [Bool]
 
+    # @!method link_templates_include?( link_template )
+    #
+    #   @param    [Element::LinkTemplate] link_template
+    #
+    #   @return   [Bool]
+
+    # @!method jsons_include?( json )
+    #
+    #   @param    [Element::JSON] json
+    #
+    #   @return   [Bool]
+
     # @!method update_links( links )
     #
     #   @param    [Array<Element::Link>] links
@@ -69,12 +89,26 @@ class <<self
     #   @return   [Integer]
     #       Amount of new forms.
 
-    # @!method update_cookie( cookies )
+    # @!method update_cookies( cookies )
     #
     #   @param    [Array<Element::Cookie>] cookies
     #
     #   @return   [Integer]
     #       Amount of new cookies.
+
+    # @!method update_link_templates( link_templates )
+    #
+    #   @param    [Array<Element::LinkTemplate>] link_templates
+    #
+    #   @return   [Integer]
+    #       Amount of new link templates.
+
+    # @!method update_jsons( jsons )
+    #
+    #   @param    [Array<Element::JSON>] jsons
+    #
+    #   @return   [Integer]
+    #       Amount of new jsons.
 
     TYPES.each do |type|
         define_method type do

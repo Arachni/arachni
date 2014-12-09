@@ -2305,19 +2305,38 @@ describe Arachni::Browser do
         end
 
         context 'when a POST request is performed' do
-            it "is added as an #{Arachni::Element::Form} to the page" do
-                @browser.load @url + '/with-ajax'
+            context 'with form data' do
+                it "is added as an #{Arachni::Element::Form} to the page" do
+                    @browser.load @url + '/with-ajax'
 
-                pages = @browser.captured_pages
-                pages.size.should == 2
+                    pages = @browser.captured_pages
+                    pages.size.should == 2
 
-                form = find_page_with_form_with_input( pages, 'post-name' ).
-                    forms.find { |form| form.inputs.include? 'post-name' }
+                    form = find_page_with_form_with_input( pages, 'post-name' ).
+                        forms.find { |form| form.inputs.include? 'post-name' }
 
-                form.url.should == @url + 'with-ajax'
-                form.action.should == @url + 'post-ajax'
-                form.inputs.should == { 'post-name' => 'post-value' }
-                form.method.should == :post
+                    form.url.should == @url + 'with-ajax'
+                    form.action.should == @url + 'post-ajax'
+                    form.inputs.should == { 'post-name' => 'post-value' }
+                    form.method.should == :post
+                end
+            end
+
+            context 'with JSON data' do
+                it "is added as an #{Arachni::Element::JSON} to the page" do
+                    @browser.load @url + '/with-ajax-json'
+
+                    pages = @browser.captured_pages
+                    pages.size.should == 1
+
+                    form = find_page_with_json_with_input( pages, 'post-name' ).
+                        jsons.find { |json| json.inputs.include? 'post-name' }
+
+                    form.url.should == @url + 'with-ajax-json'
+                    form.action.should == @url + 'post-ajax-json'
+                    form.inputs.should == { 'post-name' => 'post-value' }
+                    form.method.should == :post
+                end
             end
         end
     end
