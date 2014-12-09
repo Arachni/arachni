@@ -12,7 +12,7 @@ require 'pony'
 # of the scan over SMTP.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.3
+# @version 0.1.4
 class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
 
     def run
@@ -37,7 +37,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 user_name:            options[:username],
                 password:             options[:password],
                 authentication:       !options[:authentication].empty? ? options[:authentication].to_sym : nil,
-                domain:               'localhost.localdomain'
+                domain:               options[:domain]
             }
         }
 
@@ -59,7 +59,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             name:        'E-mail notify',
             description: %q{Sends a notification (and optionally a report) over SMTP at the end of the scan.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
             options:     [
                 Options::String.new( :to,
                     required:    true,
@@ -93,6 +93,10 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 Options::String.new( :password,
                     required:    true,
                     description: 'SMTP password.'
+                ),
+                Options::String.new( :domain,
+                    description: 'Domain.',
+                    default: 'localhost.localdomain'
                 ),
                 Options::MultipleChoice.new( :authentication,
                     description:  'Authentication.',

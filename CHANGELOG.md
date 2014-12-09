@@ -12,6 +12,8 @@
     - Active
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
+- Plugins
+    - `email_notify` -- Added `domain` option.
 
 ## 1.0.6 _(December 07, 2014)_
 
