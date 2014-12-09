@@ -2,9 +2,12 @@
 
 ## _Under development_
 
+- `Element`
+    - `JSON` -- Represents JSON input vectors.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`
+    - Updated to extract JSON input vectors from HTTP requests.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
     - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
