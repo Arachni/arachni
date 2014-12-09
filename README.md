@@ -6,9 +6,10 @@
 
 <hr/>
 
-# JSON input vector WiP
+# v1.1 WiP
 
-This branch contains experimental/WiP code for JSON input vector support.
+This branch contains experimental/WiP code for the
+[v1.1 milestone](https://github.com/Arachni/arachni/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.1).
 
 ## Source
 
@@ -21,7 +22,7 @@ resolve its dependencies:
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
-    git checkout feature/json-vectors
+    git checkout v1.1
     bundle install --without prof # to resolve dev dependencies
 
 Then you can run Arachni using the the executables under `bin/`.<br/>
