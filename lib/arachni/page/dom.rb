@@ -169,8 +169,12 @@ class DOM
         #
         # However, this check doesn't cost us much so it's worth a shot.
         if browser_page.dom === self
+            browser.print_debug "Loaded snapshot by URL: #{url}"
             return browser
         end
+
+        browser.print_debug "Could not load snapshot by URL (#{url}), " <<
+            'will load by replaying transitions.'
 
         # The URL restore failed, so, navigate to the pure version of the URL and
         # replay its transitions.

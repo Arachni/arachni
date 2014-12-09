@@ -75,6 +75,21 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     'id=my-id-div><DIV class=my-class-div><STRONG><EM><I><B>' +
                     '<STRONG><SCRIPT><A href=#stuff>'
         end
+
+        it 'does not include <p> elements' do
+            load '/digest/p'
+            subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascript' <<
+                '.browser.arachni/taint_tracer.js><SCRIPT><SCRIPT src=http://' <<
+                'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><STRONG>'
+        end
+
+        it "does not include 'data-arachni-id' attributes" do
+            load '/digest/data-arachni-id'
+            subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascript' <<
+                '.browser.arachni/taint_tracer.js><SCRIPT><SCRIPT src=http://' <<
+                'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><DIV ' <<
+                'id=my-id-div><DIV class=my-class-div>'
+        end
     end
 
     describe '#timeouts' do

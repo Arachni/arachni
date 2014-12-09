@@ -4,9 +4,8 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.platforms
-        [:access, :coldfusion, :db2, :emc, :firebird, :frontbase, :hsqldb,
-         :informix, :ingres, :interbase, :maxdb, :mssql, :mysql, :oracle,
-         :pgsql, :sqlite, :sybase]
+        [:access, :db2, :emc, :firebird, :frontbase, :hsqldb, :informix, :ingres,
+         :interbase, :maxdb, :mssql, :mysql, :oracle, :pgsql, :sqlite, :sybase]
     end
 
     def self.elements

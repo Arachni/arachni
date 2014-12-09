@@ -895,7 +895,7 @@ class Browser
             value      = inputs ? inputs[name_or_id] : value_for( input )
 
             begin
-                input.set( value.to_s )
+                input.set( value.to_s.recode )
             # Disabled inputs and such...
             rescue Watir::Exception::ObjectDisabledException,
                 Watir::Exception::ObjectReadOnlyException,
@@ -910,7 +910,7 @@ class Browser
             value      = inputs ? inputs[name_or_id] : value_for( input )
 
             begin
-                input.select_value( value.to_s )
+                input.select_value( value.to_s.recode )
             # Disabled inputs and such...
             rescue Watir::Exception::ObjectDisabledException,
                 Watir::Exception::ObjectReadOnlyException,
@@ -995,6 +995,7 @@ class Browser
                         "--webdriver=#{port}",
                         "--proxy=http://#{@proxy.address}/",
                         '--ignore-ssl-errors=true',
+                        '--disk-cache=true',
                         "--debug=#{!!debug?}"
                     )
                     @process.detach = true

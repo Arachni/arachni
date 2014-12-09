@@ -2,6 +2,21 @@
 
 ## _Under development_
 
+- `Page::DOM`
+    - `#restore` -- Added debugging messages.
+- `Browser`
+    - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
+    - `#fire_event` -- Recode input values to fix encoding errors.
+    - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
+-  Checks
+    - Active
+        - `trainer` -- Disabled parameter flip for the payload to avoid parameter
+            pollution.
+- Plugins
+    - `email_notify` -- Added `domain` option.
+
+## 1.0.6 _(December 07, 2014)_
+
 - `arachni_rpcd` -- Fixed bug causing the `--nickname` option to not be understood.
 - `UI::Output` -- Flush output stream after each message.
 - `Platform::Manager`
@@ -46,6 +61,7 @@
         - `path_traversal` -- Fixed MS Windows output pattern.
         - `sql_injection_differential` -- Set platform to generic `sql`.
         - `no_sql_injection_differential` -- Set platform to generic  `nosql`.
+        - `unvalidated_redirect` -- Disable `follow_location`.
     - Passive
         - `common_files` -- Added `.svn/all-wcprops`.
 
