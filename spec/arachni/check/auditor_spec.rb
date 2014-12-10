@@ -48,7 +48,7 @@ end
 describe Arachni::Check::Auditor do
     before :each do
         @opts = Arachni::Options.instance
-        @opts.audit.elements :links, :forms, :cookies, :headers, :jsons
+        @opts.audit.elements :links, :forms, :cookies, :headers, :jsons, :xmls
 
         @opts.url = web_server_url_for( :auditor )
         @url      = @opts.url
@@ -175,7 +175,8 @@ describe Arachni::Check::Auditor do
                            Arachni::Element::Form, Arachni::Element::Form::DOM,
                            Arachni::Element::Cookie, Arachni::Element::Cookie::DOM,
                            Arachni::Element::Header, Arachni::Element::LinkTemplate,
-                           Arachni::Element::LinkTemplate::DOM, Arachni::Element::JSON ]
+                           Arachni::Element::LinkTemplate::DOM, Arachni::Element::JSON,
+                           Arachni::Element::XML ]
 
         element_classes.each do |element|
             context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
@@ -363,6 +364,7 @@ describe Arachni::Check::Auditor do
             Arachni::Options.audit.link_templates = /link-template\/input\/(?<input>.+)/
             auditor.load_page_from "#{@url}each_candidate_element"
             auditor.page.jsons = [Factory[:json]]
+            auditor.page.xmls  = [Factory[:xml]]
         end
 
         it 'sets the auditor' do
