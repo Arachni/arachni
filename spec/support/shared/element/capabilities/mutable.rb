@@ -341,6 +341,10 @@ shared_examples_for 'mutable' do |options = {}|
         it 'preserves #format' do
             dupped.format.should == mutation.format
         end
+        it 'preserves #immutables' do
+            mutation.immutables << 'stuff'
+            dupped.immutables.should == mutation.immutables
+        end
     end
 
     describe '#to_h' do

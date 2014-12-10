@@ -240,6 +240,12 @@ module Mutable
         h
     end
 
+    def to_rpc_data
+        d = super
+        d.delete 'immutables'
+        d
+    end
+
     def dup
         copy_mutable( super )
     end
@@ -257,8 +263,11 @@ module Mutable
             other.affected_input_name = self.affected_input_name.dup
         end
 
-        other.seed   = self.seed.dup if self.seed
-        other.format = self.format
+        other.seed       = self.seed.dup if self.seed
+        other.format     = self.format
+
+        # Carry over the immutables.
+        other.immutables.merge self.immutables
         other
     end
 
