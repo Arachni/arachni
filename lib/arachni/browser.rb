@@ -1269,11 +1269,21 @@ class Browser
 
         elements = {
             forms: [],
-            jsons: []
+            jsons: [],
+            xmls:  []
         }
 
         if (json = JSON.from_request( @last_url, request ))
             elements[:jsons] << json
+        end
+
+        if request.method == :post
+            ap request.body
+            ap XML.from_request( @last_url, request )
+        end
+
+        if (xml = XML.from_request( @last_url, request ))
+            elements[:xmls] << xml
         end
 
         case request.method

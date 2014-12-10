@@ -257,6 +257,7 @@ Arachni is able to extract and audit the following elements and their inputs:
  - Generic client-side elements like `input`s which have associated DOM events.
  - AJAX-request parameters.
  - JSON request data.
+ - XML request data.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
@@ -318,6 +319,7 @@ Arachni is able to extract and audit the following elements and their inputs:
     - Headers
     - Generic client-side DOM elements like `input`s.
     - JSON request data.
+    - XML request data.
  - Can ignore binary/non-text pages.
  - Can optionally audit elements using both `GET` and `POST` HTTP methods.
  - Can optionally submit all links and forms of the page along with the cookie

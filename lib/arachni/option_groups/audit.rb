@@ -113,6 +113,12 @@ class Audit < Arachni::OptionGroup
     #   Audit JSON request inputs.
     attr_accessor :jsons
 
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit XML request inputs.
+    attr_accessor :xmls
+
     set_defaults(
         exclude_vector_patterns: [],
         include_vector_patterns: [],
@@ -205,7 +211,7 @@ class Audit < Arachni::OptionGroup
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
-     :jsons].each do |attribute|
+     :jsons, :xmls].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )
         end

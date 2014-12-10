@@ -5,6 +5,8 @@ shared_examples_for 'inputtable' do |options = {}|
     end
 
     let(:inputs) do
+        return opts[:inputs] if opts[:inputs]
+
         if opts[:single_input]
             { 'input1' => 'value1' }
         else
@@ -315,21 +317,10 @@ shared_examples_for 'inputtable' do |options = {}|
         it 'updates the auditable inputs using the given hash' do
             a = subject.dup
 
-            updates =   if opts[:single_input]
-                            { 'input1' => 'val1' }
-                        else
-                            { 'input1' => 'val1', 'input2' => 'val3' }
-                        end
+            updates = keys.inject({}) { |h, k| h.merge!( k => "#{k} val")}
 
             a.update( updates )
             a.inputs.should == updates
-
-            if !opts[:single_input]
-                c = a.dup
-                c.update( input1: '1' ).update( input2: '2' )
-                c['input1'].should == '1'
-                c['input2'].should == '2'
-            end
         end
 
         it 'converts all inputs to strings',

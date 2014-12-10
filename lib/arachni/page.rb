@@ -101,7 +101,7 @@ class Page
     end
 
     ELEMENTS = [
-        :links, :forms, :cookies, :headers, :link_templates, :jsons
+        :links, :forms, :cookies, :headers, :link_templates, :jsons, :xmls
     ]
 
     # @return       [DOM]
@@ -484,7 +484,7 @@ class Page
         data['element_audit_whitelist'] = element_audit_whitelist.to_a
         data['response'] = data['response'].to_rpc_data
 
-        %w(links forms cookies).each do |e|
+        (ELEMENTS - :headers).map(&:to_s).each do |e|
             next if !data[e]
             data[e] = send(e).map(&:to_rpc_data)
         end

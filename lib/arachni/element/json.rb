@@ -291,6 +291,8 @@ class JSON < Base
     private
 
     def http_request( opts, &block )
+        opts.delete :parameters
+
         opts[:body]   = ::URI.encode_www_form_component( self.to_json )
         opts[:method] = self.http_method
         http.request( self.action, opts, &block )

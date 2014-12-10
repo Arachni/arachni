@@ -526,4 +526,16 @@ describe Arachni::Element::JSON do
         end
     end
 
+    describe '.from_request' do
+        it 'parses a request into an element'
+
+        context 'when the body is empty' do
+            it 'returns nil'
+        end
+
+        context 'when there are no inputs' do
+            it 'returns nil'
+        end
+    end
+
 end

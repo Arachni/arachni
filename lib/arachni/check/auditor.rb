@@ -107,6 +107,8 @@ module Auditor
                         proc { audit.link_template_doms? && !!page.link_templates.find(&:dom) },
                     Element::JSON      =>
                         proc { audit.jsons? && page.jsons.find { |e| e.inputs.any? } },
+                    Element::XML      =>
+                        proc { audit.xmls? && page.xmls.find { |e| e.inputs.any? } },
                     Element::Body              => !page.body.empty?,
                     Element::GenericDOM        => page.has_script?,
                     Element::Path              => true,
@@ -169,7 +171,7 @@ module Auditor
     # Non-DOM auditable elements.
     ELEMENTS_WITH_INPUTS = [
         Element::Link, Element::Form, Element::Cookie, Element::Header,
-        Element::LinkTemplate, Element::JSON
+        Element::LinkTemplate, Element::JSON, Element::XML
     ]
 
     # Auditable DOM elements.
@@ -458,6 +460,9 @@ module Auditor
 
                 when Element::JSON.type
                     prepare_each_element( page.jsons, &block )
+
+                when Element::XML.type
+                    prepare_each_element( page.xmls, &block )
 
                 else
                     fail ArgumentError, "Unknown element: #{elem}"

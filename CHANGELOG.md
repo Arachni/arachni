@@ -4,6 +4,7 @@
 
 - `Element`
     - `JSON` -- Represents JSON input vectors.
+    - `XML` -- Represents XML input vectors.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`

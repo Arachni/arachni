@@ -143,7 +143,8 @@ shared_examples_for 'mutable' do |options = {}|
             describe :respect_method,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::JSON do
+                     ) && described_class != Arachni::Element::JSON &&
+                             described_class != Arachni::Element::XML do
 
                 describe true do
                     it 'does not fuzz methods' do
@@ -164,10 +165,12 @@ shared_examples_for 'mutable' do |options = {}|
                     end
                 end
             end
+
             describe 'Options.audit.with_both_http_methods',
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::JSON do
+                     ) && described_class != Arachni::Element::JSON &&
+                        described_class != Arachni::Element::XML do
 
                 it 'serves as the default value of :respect_method' do
                     Arachni::Options.audit.with_both_http_methods = true
@@ -191,7 +194,8 @@ shared_examples_for 'mutable' do |options = {}|
             describe :param_flip,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::LinkTemplate do
+                     ) && described_class != Arachni::Element::LinkTemplate &&
+                             described_class != Arachni::Element::XML do
 
                 it 'uses the seed as a param name' do
                     mutable.mutations(

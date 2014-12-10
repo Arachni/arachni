@@ -21,6 +21,7 @@ describe Arachni::Element::Form do
     end
 
     subject { described_class.new( options ) }
+    let(:inputs) { options[:inputs] }
     let(:url) { utilities.normalize_url( web_server_url_for( :form ) ) }
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }

@@ -219,6 +219,11 @@ class Parser
         @jsons ||= [JSON.from_request( @url, response.request )].compact
     end
 
+    # @return [Array<Element::XML>]
+    def xmls
+        @xmls ||= [XML.from_request( @url, response.request )].compact
+    end
+
     # @return   [Hash]
     #   Parameters found in {#url}.
     def link_vars

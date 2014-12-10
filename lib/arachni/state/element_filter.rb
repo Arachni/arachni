@@ -14,7 +14,7 @@ class State
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ElementFilter
 
-    TYPES = [:forms, :links, :link_templates, :cookies, :jsons]
+    TYPES = [:forms, :links, :link_templates, :cookies, :jsons, :xmls]
 
     TYPES.each do |type|
         attr_reader type

@@ -45,6 +45,10 @@ class <<self
     #
     #   @return    [Support::LookUp::HashSet]
 
+    # @!method xmls
+    #
+    #   @return    [Support::LookUp::HashSet]
+
     # @!method forms_include?( form )
     #
     #   @param    [Element::Form] form
@@ -72,6 +76,12 @@ class <<self
     # @!method jsons_include?( json )
     #
     #   @param    [Element::JSON] json
+    #
+    #   @return   [Bool]
+
+    # @!method xmls_include?( xml )
+    #
+    #   @param    [Element::XML] xml
     #
     #   @return   [Bool]
 
@@ -109,6 +119,13 @@ class <<self
     #
     #   @return   [Integer]
     #       Amount of new jsons.
+
+    # @!method update_xmls( xmls )
+    #
+    #   @param    [Array<Element::XML>] xmls
+    #
+    #   @return   [Integer]
+    #       Amount of new xmls.
 
     TYPES.each do |type|
         define_method type do

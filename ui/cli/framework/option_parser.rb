@@ -204,6 +204,10 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.jsons = true
         end
 
+        on( '--audit-xmls', 'Audit XML request inputs.' ) do
+            options.audit.xmls = true
+        end
+
         on( '--audit-with-both-methods',
                'Audit elements with both GET and POST requests.',
                '(*WARNING*: This will severely increase the scan-time.)'
