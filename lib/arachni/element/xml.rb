@@ -10,15 +10,12 @@ require_relative 'base'
 
 module Arachni::Element
 
-# Represents an auditable JSON element
+# Represents an auditable XML element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class XML < Base
+    include Capabilities::WithSource
     include Capabilities::Analyzable
-
-    # @return   [String]
-    #   Original XML data.
-    attr_accessor :source
 
     class Error < Arachni::Element::Error
         class MissingSource < Error
@@ -40,7 +37,6 @@ class XML < Base
 
         super( options )
 
-        @source = options[:source]
         fail Error::MissingSource if !@source
 
         self.inputs = (self.inputs || {}).merge( options[:inputs] || {} )
@@ -79,14 +75,6 @@ class XML < Base
     end
     def to_s
         to_xml
-    end
-
-    def to_h
-        super.merge( source: @source )
-    end
-
-    def to_rpc_data
-        super.merge( 'source' => @source )
     end
 
     # @return   [Hash]

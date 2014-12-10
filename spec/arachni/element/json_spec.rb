@@ -12,7 +12,7 @@ describe Arachni::Element::JSON do
         http.run
     end
 
-    subject { described_class.new( url: "#{url}/submit", inputs: inputs, json: inputs.to_json ) }
+    subject { described_class.new( url: "#{url}/submit", inputs: inputs, source: inputs.to_json ) }
     let(:inputs) { { 'input1' => 'value1' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :json ) ) }
     let(:http) { Arachni::HTTP::Client }
@@ -20,18 +20,6 @@ describe Arachni::Element::JSON do
 
     it 'is be assigned to Arachni::JSON for easy access' do
         Arachni::JSON.should == described_class
-    end
-
-    describe '#json' do
-        it 'returns the original JSON data' do
-            subject.json.should == inputs.to_json
-        end
-    end
-
-    describe '#to_h' do
-        it 'includes :json' do
-            subject.to_h[:json].should == subject.json
-        end
     end
 
     describe '#submit' do

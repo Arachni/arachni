@@ -16,11 +16,8 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class JSON < Base
+    include Capabilities::WithSource
     include Capabilities::Analyzable
-
-    # @return   [String]
-    #   Original JSON data.
-    attr_accessor :json
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -35,12 +32,10 @@ class JSON < Base
 
         super( options )
 
-        @json = options[:json]
-
         self.inputs = (self.inputs || {}).merge( options[:inputs] || {} )
 
-        if @json && self.inputs.empty?
-            self.inputs = JSON.load( self.json )
+        if @source && self.inputs.empty?
+            self.inputs = JSON.load( self.source )
         end
 
         @default_inputs = self.inputs.dup.freeze
@@ -218,7 +213,7 @@ class JSON < Base
     end
 
     def to_h
-        super.merge( json: @json )
+        super.merge( source: @source )
     end
 
     # @return   [Hash]
@@ -244,10 +239,7 @@ class JSON < Base
     end
 
     def dup
-        d = super
-        d.json   = @json
-        d.inputs = @inputs.deep_clone
-        d
+        super.tap { |e| e.inputs = @inputs.deep_clone }
     end
 
     class <<self

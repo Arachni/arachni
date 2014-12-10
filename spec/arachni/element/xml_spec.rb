@@ -4,7 +4,9 @@ describe Arachni::Element::XML do
     inputtable_source = '<input1>value1</input1><input2>value2</input2>'
 
     it_should_behave_like 'element'
-    it_should_behave_like 'auditable', inputs: described_class.parse_inputs( inputtable_source )
+    it_should_behave_like 'with_source', inputtable_source
+    it_should_behave_like 'auditable',
+                          inputs: described_class.parse_inputs( inputtable_source )
 
     def auditable_extract_parameters( resource )
         described_class.parse_inputs( resource.body )

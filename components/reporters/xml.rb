@@ -11,7 +11,7 @@ require 'nokogiri'
 # Creates an XML report of the audit.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.3.1
+# @version 0.3.2
 class Arachni::Reporters::XML < Arachni::Reporter::Base
 
     LOCAL_SCHEMA  = File.dirname( __FILE__ ) + '/xml/schema.xsd'
@@ -69,8 +69,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                 xml.url vector.url
                                 xml.action vector.action
 
-                                if vector.respond_to? :html
-                                    xml.html vector.html
+                                if vector.respond_to? :source
+                                    xml.source vector.source
                                 end
 
                                 if issue.active?
@@ -163,7 +163,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             description:  %q{Exports the audit results as an XML (.xml) file.},
             content_type: 'text/xml',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.3.1',
+            version:      '0.3.2',
             options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end

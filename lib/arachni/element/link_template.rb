@@ -204,7 +204,7 @@ class LinkTemplate < Base
                     action:   href.freeze,
                     inputs:   inputs || {},
                     template: template,
-                    html:     link.to_html.freeze
+                    source:   link.to_html.freeze
                 )
             end.compact
         end

@@ -34,7 +34,7 @@ describe Arachni::Element::Form do
                 'hidden_field' => 'hidden-value',
                 'password'     => 's3cr3t'
             },
-            html: html
+            source: html
         }
     end
 
@@ -168,7 +168,7 @@ describe Arachni::Element::Form do
 
         context 'when there is no #node' do
             it 'returns nil' do
-                subject.html = nil
+                subject.source = nil
                 subject.dom.should be_nil
             end
         end
@@ -644,7 +644,7 @@ describe Arachni::Element::Form do
                     'hidden_field' => 'hidden-value',
                     'password'     => 's3cr3t'
                 },
-                html: html
+                source: html
             }
         end
     end

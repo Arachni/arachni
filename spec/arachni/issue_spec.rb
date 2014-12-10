@@ -461,7 +461,7 @@ describe Arachni::Issue do
                         action: 'http://test.com/',
                         inputs:  { 'stuff' => '1' },
                         affected_input_name:  'stuff',
-                        html: nil
+                        source: nil
                     },
                     cwe_url:         'http://cwe.mitre.org/data/definitions/1.html'
                 }

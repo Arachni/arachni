@@ -17,6 +17,7 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class GenericDOM < Base
+    include Capabilities::WithSource
     include Capabilities::WithAuditor
 
     # @return   [Page::DOM::Transition]
@@ -31,6 +32,7 @@ class GenericDOM < Base
         @transition = options[:transition]
         fail 'Missing element locator.' if !@transition
 
+        self.source = element.to_s
         @initialization_options = options
     end
 

@@ -45,12 +45,12 @@ module DOM
             @url    = parent.url.dup.freeze    if parent.url
             @action = parent.action.dup.freeze if parent.action
             @page   = parent.page              if parent.page
-            @html   = parent.html.dup.freeze   if parent.respond_to?(:html) && parent.html
+            @source = parent.source.dup.freeze   if parent.respond_to?(:source) && parent.source
         else
             @url    = options[:url].freeze
             @action = options[:action].freeze
             @page   = options[:page]
-            @html   = options[:html].freeze
+            @source = options[:source].freeze
         end
 
         @audit_options = {}
@@ -136,7 +136,7 @@ module DOM
         options[:url]    = url.dup     if @url
         options[:action] = @action.dup if @action
         options[:page]   = page        if page
-        options[:html]   = @html.dup   if @html
+        options[:source] = @source.dup if @source
         options
     end
 

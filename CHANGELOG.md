@@ -2,7 +2,7 @@
 
 ## _Under development_
 
-- `Element`
+- `Element` -- Renamed `#html` to `#source`.
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
 - `Page::DOM`
@@ -18,6 +18,7 @@
             pollution.
 - Plugins
     - `email_notify` -- Added `domain` option.
+- Report -- Renamed `#html` to `#source` for all elements.
 
 ## 1.0.6 _(December 07, 2014)_
 

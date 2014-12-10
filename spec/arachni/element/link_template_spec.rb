@@ -129,14 +129,14 @@ describe Arachni::Element::LinkTemplate do
     describe '#dom' do
         context 'when there are no DOM#inputs' do
             it 'returns nil' do
-                subject.html = '<a href="/stuff">Bla</a>'
+                subject.source = '<a href="/stuff">Bla</a>'
                 subject.dom.should be_nil
             end
         end
 
         context 'when there is no #node' do
             it 'returns nil' do
-                subject.html = nil
+                subject.source = nil
                 subject.dom.should be_nil
             end
         end
@@ -158,20 +158,20 @@ describe Arachni::Element::LinkTemplate do
     describe '#coverage_id' do
         it "takes into account #{described_class::DOM}#template names" do
             e = subject.dup
-            e.html = "<a href='http://test.com/#/param/val'>stuff</a>"
+            e.source ="<a href='http://test.com/#/param/val'>stuff</a>"
 
             c = subject.dup
-            c.html = "<a href='http://test.com/#/param/val2'>stuff</a>"
+            c.source ="<a href='http://test.com/#/param/val2'>stuff</a>"
 
             c.coverage_id.should == e.coverage_id
 
             e = subject.dup
-            e.html = "<a href='http://test.com/#/param/val'>stuff</a>"
+            e.source ="<a href='http://test.com/#/param/val'>stuff</a>"
 
             Arachni::Options.audit.link_templates << /param2\/(?<param2>\w+)/
 
             c = subject.dup
-            c.html = "<a href='http://test.com/#/param2/val'>stuff</a>"
+            c.source ="<a href='http://test.com/#/param2/val'>stuff</a>"
 
             c.coverage_id.should_not == e.coverage_id
         end
@@ -180,26 +180,26 @@ describe Arachni::Element::LinkTemplate do
     describe '#id' do
         it "takes into account #{described_class::DOM}#inputs" do
             e = subject.dup
-            e.html = "<a href='http://test.com/#/param/val'>stuff</a>"
+            e.source ="<a href='http://test.com/#/param/val'>stuff</a>"
 
             c = subject.dup
-            c.html = "<a href='http://test.com/#/param/val'>stuff</a>"
+            c.source ="<a href='http://test.com/#/param/val'>stuff</a>"
 
             c.id.should == e.id
 
             e = subject.dup
-            e.html = "<a href='http://test.com/#/param/val'>stuff</a>"
+            e.source ="<a href='http://test.com/#/param/val'>stuff</a>"
 
             c = subject.dup
-            c.html = "<a href='http://test.com/#/param/val1'>stuff</a>"
+            c.source ="<a href='http://test.com/#/param/val1'>stuff</a>"
 
             c.id.should_not == e.id
 
             e = subject.dup
-            e.html = "<a href='http://test.com/#/param/val'>stuff</a>"
+            e.source ="<a href='http://test.com/#/param/val'>stuff</a>"
 
             c = subject.dup
-            c.html = "<a href='http://test.com/#/param2/val'>stuff</a>"
+            c.source ="<a href='http://test.com/#/param2/val'>stuff</a>"
 
             c.id.should_not == e.id
         end
@@ -207,7 +207,7 @@ describe Arachni::Element::LinkTemplate do
 
     describe '#to_rpc_data' do
         it "does not include 'dom_data'" do
-            subject.html = html
+            subject.source =html
             subject.dom.should be_true
 
             subject.to_rpc_data.should_not include 'dom_data'

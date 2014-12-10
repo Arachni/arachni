@@ -318,10 +318,11 @@
             <xs:element name="url" type="xs:anyURI"/>
 
             <!--
-                HTML representation of the element according to the page
-                at "url".
+                Source representation of the element according to the page
+                at "url". This depends based on the type of element, can be HTML,
+                JSON, XML, whatever.
             -->
-            <xs:element name="html" type="xs:string" minOccurs="0"/>
+            <xs:element name="source" type="xs:string" minOccurs="0"/>
 
             <!--
                 Unlike "url", this is the location that will be requested

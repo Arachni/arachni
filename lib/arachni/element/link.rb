@@ -150,7 +150,7 @@ class Link < Base
                 new(
                     url:    url.freeze,
                     action: href.freeze,
-                    html:   link.to_html.freeze
+                    source: link.to_html.freeze
                 )
             end.compact
         end

@@ -402,7 +402,7 @@ class Form < Base
             options[:url]    = url.freeze
             options[:action] = to_absolute( options[:action], url ).freeze
             options[:inputs] = {}
-            options[:html]   = node.to_html.freeze
+            options[:source] = node.to_html.freeze
 
             if (parsed_url = Arachni::URI( options[:action] ))
                 return if !ignore_scope && parsed_url.scope.out?

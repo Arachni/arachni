@@ -2,7 +2,7 @@ shared_examples_for 'with_dom' do |html = nil|
 
     let(:with_dom) do
         dupped = subject.dup
-        dupped.html = html
+        dupped.source = html if dupped.respond_to?( :source= )
         # It is lazy-loaded.
         dupped.dom
         dupped
