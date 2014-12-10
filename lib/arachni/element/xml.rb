@@ -30,9 +30,11 @@ class XML < Base
     #   URL of the page which includes the link.
     # @option   options [String]    :action
     #   Link URL -- defaults to `:url`.
-    # @option   options [Hash]    :inputs
-    #   Query parameters as `name => value` pairs. If none have been provided
-    #   they will automatically be extracted from {#action}.
+    # @option   options [String]    :source
+    #   XML data, to be parsed into inputs.
+    #
+    # @raise    [Error::MissingSource]
+    #   On missing `:source`.
     def initialize( options )
         self.http_method = options[:method] || :post
 
