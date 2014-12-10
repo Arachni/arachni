@@ -3,8 +3,8 @@ require 'spec_helper'
 describe Arachni::Element::XML do
     inputtable_source = '<input1>value1</input1><input2>value2</input2>'
 
-    # it_should_behave_like 'element'
-    # it_should_behave_like 'auditable', inputs: described_class.parse_inputs( inputtable_source )
+    it_should_behave_like 'element'
+    it_should_behave_like 'auditable', inputs: described_class.parse_inputs( inputtable_source )
 
     def auditable_extract_parameters( resource )
         described_class.parse_inputs( resource.body )
@@ -76,11 +76,17 @@ EOXML
     end
 
     describe '#initialize' do
-        context "when the 'source' is missing" do
-            it 'fails' do
-                expect do
-                    described_class.new( url: "#{url}submit" )
-                end.to raise_error described_class::Error::MissingSource
+        describe ':source' do
+            it 'parses it into #inputs' do
+                subject.inputs.should == described_class.parse_inputs( source )
+            end
+
+            context 'when missing' do
+                it 'fails' do
+                    expect do
+                        described_class.new( url: "#{url}submit" )
+                    end.to raise_error described_class::Error::MissingSource
+                end
             end
         end
     end
@@ -168,7 +174,38 @@ EOXML
     end
 
     describe '.parse_inputs' do
-        it 'parses an XML document into a hash of inputs'
+        it 'parses an XML document into a hash of inputs' do
+            described_class.parse_inputs( source ).should == {
+                'bookstore > book:nth-of-type(1) > title > text()' => 'Everyday Italian',
+                'bookstore > book:nth-of-type(1) > title > @lang' => 'en',
+                'bookstore > book:nth-of-type(1) > author > text()' => 'Giada De Laurentiis',
+                'bookstore > book:nth-of-type(1) > year > text()' => '2005',
+                'bookstore > book:nth-of-type(1) > price > text()' => '30.00',
+                'bookstore > book:nth-of-type(1) > @category' => 'COOKING',
+                'bookstore > book:nth-of-type(2) > title > text()' => 'Harry Potter',
+                'bookstore > book:nth-of-type(2) > title > @lang' => 'en',
+                'bookstore > book:nth-of-type(2) > author > text()' => 'J K. Rowling',
+                'bookstore > book:nth-of-type(2) > year > text()' => '2005',
+                'bookstore > book:nth-of-type(2) > price > text()' => '29.99',
+                'bookstore > book:nth-of-type(2) > @category' => 'CHILDREN',
+                'bookstore > book:nth-of-type(3) > title > text()' => 'XQuery Kick Start',
+                'bookstore > book:nth-of-type(3) > title > @lang' => 'en',
+                'bookstore > book:nth-of-type(3) > author:nth-of-type(1) > text()' => 'James McGovern',
+                'bookstore > book:nth-of-type(3) > author:nth-of-type(2) > text()' => 'Per Bothner',
+                'bookstore > book:nth-of-type(3) > author:nth-of-type(3) > text()' => 'Kurt Cagle',
+                'bookstore > book:nth-of-type(3) > author:nth-of-type(4) > text()' => 'James Linn',
+                'bookstore > book:nth-of-type(3) > author:nth-of-type(5) > text()' => 'Vaidyanathan Nagarajan',
+                'bookstore > book:nth-of-type(3) > year > text()' => '2003',
+                'bookstore > book:nth-of-type(3) > price > text()' => '49.99',
+                'bookstore > book:nth-of-type(3) > @category' => 'WEB',
+                'bookstore > book:nth-of-type(4) > title > text()' => 'Learning XML',
+                'bookstore > book:nth-of-type(4) > title > @lang' => 'en',
+                'bookstore > book:nth-of-type(4) > author > text()' => 'Erik T. Ray',
+                'bookstore > book:nth-of-type(4) > year > text()' => '2003',
+                'bookstore > book:nth-of-type(4) > price > text()' => '39.95',
+                'bookstore > book:nth-of-type(4) > @category' => 'WEB'
+            }
+        end
     end
 
     describe '.encode' do
