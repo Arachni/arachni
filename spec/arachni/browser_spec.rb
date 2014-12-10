@@ -2333,8 +2333,25 @@ describe Arachni::Browser do
                         jsons.find { |json| json.inputs.include? 'post-name' }
 
                     form.url.should == @url + 'with-ajax-json'
-                    form.action.should == @url + 'post-ajax-json'
+                    form.action.should == @url + 'post-ajax'
                     form.inputs.should == { 'post-name' => 'post-value' }
+                    form.method.should == :post
+                end
+            end
+
+            context 'with XML data' do
+                it "is added as an #{Arachni::Element::XML} to the page" do
+                    @browser.load @url + '/with-ajax-xml'
+
+                    pages = @browser.captured_pages
+                    pages.size.should == 1
+
+                    form = find_page_with_xml_with_input( pages, 'input > text()' ).
+                        xmls.find { |xml| xml.inputs.include? 'input > text()' }
+
+                    form.url.should == @url + 'with-ajax-xml'
+                    form.action.should == @url + 'post-ajax'
+                    form.inputs.should == { 'input > text()' => 'stuff' }
                     form.method.should == :post
                 end
             end

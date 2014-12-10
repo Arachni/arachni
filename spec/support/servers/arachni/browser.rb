@@ -596,22 +596,31 @@ get '/with-ajax' do
 HTML
 end
 
-get '/with-ajax-json' do
+get '/with-ajax-xml' do
     <<HTML
 <html>
     <head>
         <script>
             post_ajax = new XMLHttpRequest();
-            post_ajax.open( "POST", "/post-ajax-json", true );
-            post_ajax.send( '#{{ 'post-name' => 'post-value' }.to_json}' );
+            post_ajax.open( "POST", "/post-ajax", true );
+            post_ajax.send( '<input>stuff</input>' );
         </script>
     <head>
 </html>
 HTML
 end
 
-post '/post-ajax-json' do
+get '/with-ajax-json' do
     <<HTML
+<html>
+    <head>
+        <script>
+            post_ajax = new XMLHttpRequest();
+            post_ajax.open( "POST", "/post-ajax", true );
+            post_ajax.send( '#{{ 'post-name' => 'post-value' }.to_json}' );
+        </script>
+    <head>
+</html>
 HTML
 end
 

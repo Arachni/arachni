@@ -1273,17 +1273,16 @@ class Browser
             xmls:  []
         }
 
+        found_element = false
+
         if (json = JSON.from_request( @last_url, request ))
             elements[:jsons] << json
+            found_element = true
         end
 
-        if request.method == :post
-            ap request.body
-            ap XML.from_request( @last_url, request )
-        end
-
-        if (xml = XML.from_request( @last_url, request ))
+        if !found_element && (xml = XML.from_request( @last_url, request ))
             elements[:xmls] << xml
+            found_element = true
         end
 
         case request.method
@@ -1299,7 +1298,7 @@ class Browser
                 )
 
             when :post
-                if (inputs = request.body_parameters).any?
+                if !found_element && (inputs = request.body_parameters).any?
                     elements[:forms] << Form.new(
                         url:    @last_url,
                         action: request.url,
@@ -1307,6 +1306,7 @@ class Browser
                         inputs: inputs
                     )
                 end
+
             else
                 return
         end
