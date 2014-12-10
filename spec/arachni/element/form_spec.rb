@@ -803,6 +803,39 @@ EOHTML
                 end
             end
 
+            context 'with multiple submit inputs' do
+                it 'returns forms for each value' do
+                    html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=submit name="choice" value="value 1" />
+                                <input type=submit name="choice" value="value 2" />
+                            </form>
+                        </body>
+                    </html>'
+
+                    forms = described_class.from_document( url, html )
+                    forms.size.should == 2
+
+                    form = forms.first
+                    form.action.should == utilities.normalize_url( url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == url
+                    form.method.should == :get
+                    form.field_type_for( 'choice' ).should == :submit
+                    form.inputs['choice'].should == 'value 1'
+
+                    form = forms[1]
+                    form.action.should == utilities.normalize_url( url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == url
+                    form.method.should == :get
+                    form.field_type_for( 'choice' ).should == :submit
+                    form.inputs['choice'].should == 'value 2'
+                end
+            end
+
             context 'with selects' do
                 context 'with values' do
                     it 'returns an array of forms' do
@@ -933,8 +966,6 @@ EOHTML
                         end
                     end
                 end
-
-
             end
 
             context 'with a base attribute' do

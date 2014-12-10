@@ -5,6 +5,7 @@
 - `Element` -- Renamed `#html` to `#source`.
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
+    - `Form` -- Support forms with multiple values for `submit` inputs with same names.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`

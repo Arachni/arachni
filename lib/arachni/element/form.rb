@@ -211,6 +211,11 @@ class Form < Base
 
         generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutable_id )
 
+        # Completely remove fake inputs prior to mutation generation, they'll
+        # be restored at the end of this method.
+        pre_inputs = @inputs
+        @inputs    = @inputs.reject{ |name, _| fake_field?( name ) }
+
         super( payload, opts ) do |elem|
             elem.mirror_password_fields
             yield elem if !generated.include?( elem )
@@ -253,6 +258,8 @@ class Form < Base
             yield elem if !generated.include?( elem )
             generated << elem
         end
+    ensure
+        @inputs = pre_inputs
     end
 
     def mirror_password_fields
@@ -341,6 +348,10 @@ class Form < Base
         details_for( name )[:type] || :text
     end
 
+    def fake_field?( name )
+        field_type_for( name ) == :fake
+    end
+
     # @param   (see .encode)
     # @return  (see .encode)
     #
@@ -391,10 +402,14 @@ class Form < Base
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
 
             document.search( '//form' ).map do |node|
-                next if !(form = from_node( base_url, node, ignore_scope ))
-                form.url = url.freeze
-                form
-            end.compact
+                next if !(forms = from_node( base_url, node, ignore_scope ))
+                next if forms.empty?
+
+                forms.each do |form|
+                    form.url = url.freeze
+                    form
+                end
+            end.flatten.compact
         end
 
         def from_node( url, node, ignore_scope = false )
@@ -408,6 +423,12 @@ class Form < Base
                 return if !ignore_scope && parsed_url.scope.out?
             end
 
+            # Forms can have many submit inputs with identical names but different
+            # values, to act as a sort of multiple choice.
+            # However, each Arachni Form can have only unique input names, so
+            # we keep track of this here and create a new form for each choice.
+            multiple_choice_submits = {}
+
             %w(textarea input select button).each do |attr|
                 options[attr] ||= []
                 node.search( ".//#{attr}" ).each do |elem|
@@ -420,6 +441,13 @@ class Form < Base
                     # Handle the easy stuff first...
                     if elem.name != 'select'
                         options[:inputs][name]           = elem_attrs
+
+                        if elem_attrs[:type] == :submit
+                            multiple_choice_submits[name] ||= Set.new
+                            multiple_choice_submits[name] <<
+                                elem_attrs[:value]
+                        end
+
                         options[:inputs][name][:type]  ||= :text
                         options[:inputs][name][:value] ||= ''
                         next
@@ -451,7 +479,29 @@ class Form < Base
                 end
             end
 
-            new options
+            return [new( options )] if multiple_choice_submits.empty?
+
+            # If there are multiple submit with the same name but different values,
+            # create forms for each value.
+            multiple_choice_submits.map do |name, values|
+                values.map.with_index do |value, i|
+
+                    o = options
+                    if values.size > 1
+                        o = options.deep_clone
+                        o[:inputs][name][:value] = value
+
+                        # We need to add this here because if the forms have the
+                        # same input names only the first one will be audited.
+                        o[:inputs]["_#{name}_#{i}"] = {
+                            type: :fake,
+                            value: value
+                        }
+                    end
+
+                    new( o )
+                end
+            end.flatten.compact
         end
 
         def attributes_to_hash( attributes )
