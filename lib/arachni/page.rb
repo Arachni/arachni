@@ -484,7 +484,7 @@ class Page
         data['element_audit_whitelist'] = element_audit_whitelist.to_a
         data['response'] = data['response'].to_rpc_data
 
-        (ELEMENTS - :headers).map(&:to_s).each do |e|
+        (ELEMENTS - [:headers]).map(&:to_s).each do |e|
             next if !data[e]
             data[e] = send(e).map(&:to_rpc_data)
         end
