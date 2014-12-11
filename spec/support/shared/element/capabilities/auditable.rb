@@ -28,11 +28,11 @@ shared_examples_for 'auditable' do |options = {}|
 
     let(:auditable) do
         if defined? super
-            return super().tap { |s| s.auditor = auditor }
+            super().tap { |s| s.auditor = auditor }
         else
             s = subject.dup
             s.auditor = auditor
-            s.inputs = { subject.inputs.keys.first => subject.inputs.values.first }
+            s.inputs = { subject.inputs.keys.first => '1' }
             s
         end
     end
