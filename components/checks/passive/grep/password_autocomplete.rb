@@ -18,7 +18,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             next if form.simple[:autocomplete] == 'off'
             next if has_input_with_autocomplete_off? form
 
-            log( proof: form.html, vector: form )
+            log( proof: form.source, vector: form )
         end
     end
 
