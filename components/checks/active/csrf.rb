@@ -66,8 +66,12 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
     # @return   [Bool]
     #   `true` if the form has no anti-CSRF token, `false` otherwise
     def unsafe?( form )
-        # if a form has a nonce then we're cool, bail out early
-        return false if form.has_nonce? || !form.html
+        # If a form has a nonce then we're cool, bail out early
+        return false if form.has_nonce?
+
+        # If the form has no source then it was dynamically provided by some
+        # component, so skip them.
+        return false if !form.source
 
         #
         # Nobody says that tokens must be in a +value+ attribute, they can
