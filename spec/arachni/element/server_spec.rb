@@ -51,7 +51,7 @@ describe Arachni::Element::Server do
         end
 
         context 'when a remote file exists' do
-            it 'logs an issue ' do
+            it 'logs an issue' do
                 file = @base_url + 'true'
                 auditable.log_remote_file_if_exists( file )
                 @framework.http.run
@@ -66,6 +66,14 @@ describe Arachni::Element::Server do
                 logged_issue.name.should == @auditor.class.info[:issue][:name]
                 logged_issue.trusted.should be_true
             end
+
+            it "does not push the response to the #{Arachni::Trainer}" do
+                file = @base_url + 'true'
+                auditable.log_remote_file_if_exists( file )
+
+                @framework.trainer.should_not receive(:push)
+                @framework.http.run
+            end
         end
 
         context 'when a remote file does not exist' do
@@ -73,6 +81,16 @@ describe Arachni::Element::Server do
                 auditable.log_remote_file_if_exists( @base_url + 'false' )
                 @framework.http.run
                 Arachni::Data.issues.should be_empty
+            end
+        end
+
+        context 'when issues are too similar' do
+            it "does not push the responses to the #{Arachni::Trainer}" do
+                file = @base_url + 'true'
+                10.times { auditable.log_remote_file_if_exists( file ) }
+
+                @framework.trainer.should_not receive(:push)
+                @framework.http.run
             end
         end
     end

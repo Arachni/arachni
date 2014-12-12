@@ -6,6 +6,12 @@
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
     - `Form` -- Support forms with multiple values for `submit` inputs with same names.
+    - `Server`
+        - `#log_remote_file_if_exists` -- Perform some rudimentary meta-analysis
+            on possible issues and only feed the identified resources back to the
+            system if they are above a certain threshold of similarity.
+            This fixes infinite loop scenarios when dealing with unreliable
+            custom-404 fingerprints.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`

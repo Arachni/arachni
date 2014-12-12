@@ -10,15 +10,30 @@ require Arachni::Options.paths.lib + 'element/base'
 
 module Arachni::Element
 
-# Represents a remote server, mainly by checking for and logging remote resources.
+# Represents a remote server, mainly for checking for and logging remote resources.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Server < Base
     include Capabilities::WithAuditor
 
+    # Used to determine how different a resource should be in order to be sent
+    # to the {Trainer#push}.
+    #
+    # Ideally, all identified resources should be analyzed by the {Trainer} but
+    # there can be cases where unreliable custom-4o4 signatures lead to FPs and
+    # feeding FPs to the system can create an infinite loop.
+    SIMILARITY_TOLERANCE = 0.25
+
     def initialize( url )
         super url: url
         @initialization_options = url
+
+        # Holds possible issue responses, they'll be logged after #analyze
+        # goes over them.
+        @candidates = []
+
+        # Process responses that may point to issues.
+        http.after_run( &method(:analyze) )
     end
 
     # @note Ignores custom 404 responses.
@@ -44,16 +59,11 @@ class Server < Base
         return nil if !url
 
         auditor.print_status( "Checking for #{url}" ) if !silent
-        remote_file_exist?( url ) do |bool, res|
-            auditor.print_status( 'Analyzing response for: ' + url ) if !silent
+        remote_file_exist?( url ) do |bool, response|
+            auditor.print_status( "Analyzing response for: #{url}" ) if !silent
             next if !bool
 
-            block.call( res ) if block_given?
-            auditor.log_remote_file( res )
-
-            # If the file exists let the trainer parse it since it may contain
-            # brand new data to audit.
-            auditor.framework.trainer.push( res )
+            @candidates << [response, block]
         end
         true
     end
@@ -88,7 +98,61 @@ class Server < Base
     alias :remote_file_exists? :remote_file_exist?
 
     def http
-        auditor.http
+        Arachni::HTTP::Client
+    end
+
+    private
+
+    def analyze
+        return if @candidates.empty?
+
+        if @candidates.size == 1
+            response, block = @candidates.first
+
+            # Single issue, not enough confidence to use it for training, err
+            # on the side of caution.
+            log response, false, &block
+
+            return
+        end
+
+        baseline = nil
+        size_sum = 0
+        @candidates.each.with_index do |(response, _), i|
+            size_sum += response.body.size
+
+            # Treat all responses as if they were for the same resource and
+            # create a baseline from their bodies.
+            #
+            # Large deviations between responses are good because it means that
+            # we're not dealing with some custom-404 response (or something
+            # similar) as these types of responses stay pretty close.
+            baseline = baseline ? baseline.rdiff( response.body ) : response.body
+        end
+
+        similarity = Float( baseline.size * @candidates.size ) / size_sum
+
+        # Don't train if the responses are too similar, we may be feeding the
+        # framework custom-404s and get into an infinite loop.
+        train = similarity < SIMILARITY_TOLERANCE
+
+        @candidates.each do |response, block|
+            log response, train, &block
+        end
+
+    ensure
+        @candidates.clear
+    end
+
+    def log( response, train = true, &block )
+        block.call( response ) if block_given?
+
+        auditor.log_remote_file( response )
+
+        return if !train
+
+        # Use the newly identified resource to increase the scan scope.
+        auditor.framework.trainer.push( response )
     end
 
 end
