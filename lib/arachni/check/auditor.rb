@@ -239,8 +239,8 @@ module Auditor
     #
     # @see Element::Server#remote_file_exist?
     def log_remote_file_if_exists( url, silent = false, &block )
-        Element::Server.new( page.url ).tap { |s| s.auditor = self }.
-            log_remote_file_if_exists( url, silent, &block )
+        @server ||= Element::Server.new( page.url ).tap { |s| s.auditor = self }
+        @server.log_remote_file_if_exists( url, silent, &block )
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
@@ -254,8 +254,8 @@ module Auditor
     #
     # @see Element::Body#match_and_log
     def match_and_log( patterns, &block )
-        Element::Body.new( self.page.url ).tap { |b| b.auditor = self }.
-            match_and_log( patterns, &block )
+        @body ||= Element::Body.new( self.page.url ).tap { |b| b.auditor = self }
+        @body.match_and_log( patterns, &block )
     end
 
     # Populates and logs an {Arachni::Issue}.
