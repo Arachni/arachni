@@ -5,12 +5,21 @@ describe name_from_filename do
 
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header,
-          Element::LinkTemplate, Element::JSON ]
+          Element::LinkTemplate, Element::JSON, Element::XML ]
     end
 
-    def issue_count
-        current_check.error_strings.size
-    end
+    def issue_count_per_element
+        i = current_check.error_strings.size
 
+        {
+            Element::Form         => i,
+            Element::Link         => i,
+            Element::Cookie       => i,
+            Element::Header       => i,
+            Element::LinkTemplate => i,
+            Element::JSON         => i,
+            Element::XML          => i * 2
+        }
+    end
     easy_test
 end

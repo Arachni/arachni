@@ -1,3 +1,4 @@
+require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
@@ -123,6 +124,12 @@ before do
     rescue JSON::ParserError
     end
     request.body.rewind
+
+    begin
+        @xml = Nokogiri::XML( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
 end
 
 OUT.keys.each do |system|
@@ -136,6 +143,7 @@ OUT.keys.each do |system|
             <a href="/#{system_str}/header">Header</a>
             <a href="/#{system_str}/link-template">Link template</a>
             <a href="/#{system_str}/json">JSON</a>
+            <a href="/#{system_str}/xml">XML</a>
         EOHTML
     end
 
@@ -265,4 +273,71 @@ OUT.keys.each do |system|
 
         get_variations( system, @json['input'].split( default ).last )
     end
+
+    get "/#{system_str}/xml" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/xml/text/straight", true);
+                http_request.send( '<input>arachni_user</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/xml/text/append", true);
+                http_request.send( '<input>arachni_user</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/xml/attribute/straight", true);
+                http_request.send( '<input my-attribute="arachni_user">stuff</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{system_str}/xml/attribute/append", true);
+                http_request.send( '<input my-attribute="arachni_user">stuff</input>' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{system_str}/xml/text/straight" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first.content
+
+        return if input.start_with?( default )
+
+        get_variations( system, input )
+    end
+
+    post "/#{system_str}/xml/text/append" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first.content
+
+        return if !input.start_with?( default )
+
+        get_variations( system, input.split( default ).last )
+    end
+
+    post "/#{system_str}/xml/attribute/straight" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first['my-attribute']
+
+        return if input.start_with?( default )
+
+        get_variations( system, input )
+    end
+
+    post "/#{system_str}/xml/attribute/append" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first['my-attribute']
+
+        return if !input.start_with?( default )
+
+        get_variations( system, input.split( default ).last )
+    end
+
 end

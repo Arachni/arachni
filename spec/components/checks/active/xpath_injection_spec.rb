@@ -5,11 +5,19 @@ describe name_from_filename do
 
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header,
-          Element::LinkTemplate, Element::JSON ]
+          Element::LinkTemplate, Element::JSON, Element::XML ]
     end
 
-    def issue_count
-        75
+    def issue_count_per_element
+        {
+            Element::Form         => 75,
+            Element::Link         => 75,
+            Element::Cookie       => 75,
+            Element::Header       => 75,
+            Element::LinkTemplate => 75,
+            Element::JSON         => 75,
+            Element::XML          => 150
+        }
     end
 
     easy_test

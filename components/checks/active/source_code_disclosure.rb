@@ -92,6 +92,7 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
     def prepare
         candidate_paths  = page.paths
         candidate_paths |= page.jsons.map(&:action)
+        candidate_paths |= page.xmls.map(&:action)
 
         # Let's look for fresh a payload -- i.e. an identifiable server-side resource.
         candidate_paths.each do |path|

@@ -1,3 +1,4 @@
+require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
@@ -26,6 +27,12 @@ before do
     rescue JSON::ParserError
     end
     request.body.rewind
+
+    begin
+        @xml = Nokogiri::XML( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
 end
 
 @@errors.keys.each do |platform|
@@ -39,6 +46,7 @@ end
             <a href="/#{platform_str}/header">Header</a>
             <a href="/#{platform_str}/link-template">Link template</a>
             <a href="/#{platform_str}/json">JSON</a>
+            <a href="/#{platform_str}/xml">XML</a>
         EOHTML
     end
 
@@ -167,5 +175,41 @@ end
         return if !@json['input'].start_with?( default )
 
         get_variations( platform, @json['input'].split( default ).last )
+    end
+
+    get "/#{platform_str}/xml" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{platform_str}/xml/text/append", true);
+                http_request.send( '<input>arachni_user</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{platform_str}/xml/attribute/append", true);
+                http_request.send( '<input my-attribute="arachni_user">stuff</input>' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{platform_str}/xml/text/append" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first.content
+
+        return if !input.start_with?( default )
+
+        get_variations( platform, input.split( default ).last )
+    end
+
+    post "/#{platform_str}/xml/attribute/append" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first['my-attribute']
+
+        return if !input.start_with?( default )
+
+        get_variations( platform, input.split( default ).last )
     end
 end

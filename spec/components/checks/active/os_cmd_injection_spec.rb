@@ -9,7 +9,7 @@ describe name_from_filename do
 
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header,
-          Element::LinkTemplate, Element::JSON ]
+          Element::LinkTemplate, Element::JSON, Element::XML ]
     end
 
     def issue_count_per_element_per_platform
@@ -21,7 +21,8 @@ describe name_from_filename do
                 Element::Cookie       => 22,
                 Element::Header       => 19,
                 Element::LinkTemplate => 21,
-                Element::JSON         => 22
+                Element::JSON         => 22,
+                Element::XML          => 44
             }
         end
 
@@ -31,7 +32,8 @@ describe name_from_filename do
             Element::Cookie       => 44,
             Element::Header       => 38,
             Element::LinkTemplate => 44,
-            Element::JSON         => 44
+            Element::JSON         => 44,
+            Element::XML          => 88
         }
 
         h

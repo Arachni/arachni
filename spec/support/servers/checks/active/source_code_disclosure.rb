@@ -1,7 +1,8 @@
+require 'ap'
+require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
-require 'ap'
 
 def default
     "default.html"
@@ -26,6 +27,12 @@ before do
     rescue JSON::ParserError
     end
     request.body.rewind
+
+    begin
+        @xml = Nokogiri::XML( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
 end
 
 OUT.keys.each do |language|
@@ -40,6 +47,7 @@ OUT.keys.each do |language|
             <a href="/#{language}/header">Header</a>
             <a href="/#{language}/link-template">Link template</a>
             <a href="/#{language}/json">JSON</a>
+            <a href="/#{language}/xml">XML</a>
         EOHTML
     end
 
@@ -153,4 +161,67 @@ OUT.keys.each do |language|
 
         get_variations( language, @json['input'].split( "\0.html" ).first )
     end
+
+    get "/#{language}/xml" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language}/xml/text/straight.#{language}", true);
+                http_request.send( '<input>#{default}</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language}/xml/text/with_null.#{language}", true);
+                http_request.send( '<input>#{default}</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language}/xml/attribute/straight.#{language}", true);
+                http_request.send( '<input my-attribute="#{default}">stuff</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language}/xml/attribute/with_null.#{language}", true);
+                http_request.send( '<input my-attribute="#{default}">stuff</input>' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{language}/xml/text/straight.#{language}" do
+        return if !@xml
+
+        input = @xml.css('input').first.content
+
+        return if input.include?( "\0" )
+
+        get_variations( language, input )
+    end
+
+    post "/#{language}/xml/text/with_null.#{language}" do
+        return if !@xml
+
+        input = @xml.css('input').first.content
+
+        return if !input.end_with?( "\00.html" )
+
+        get_variations( language, input.split( "\00.html" ).last )
+    end
+
+    post "/#{language}/xml/attribute/straight.#{language}" do
+        return if !@xml
+
+        input = @xml.css('input').first['my-attribute']
+
+        return if input.include?( "\0" )
+
+        get_variations( language, input )
+    end
+
+    post "/#{language}/xml/attribute/with_null.#{language}" do
+        return if !@xml
+
+        input = @xml.css('input').first['my-attribute']
+
+        return if !input.end_with?( "\00.html" )
+
+        get_variations( language, input.split( "\00.html" ).last )
+    end
+
 end
