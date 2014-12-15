@@ -46,7 +46,7 @@ class Manager
                     # I'd rather this be an INT but WEBrick's INT traps write to
                     # the Logger and multiple INT signals force it to write to a
                     # closed logger and crash.
-                    Process.kill( 'KILL', pid )
+                    Process.kill( Gem.win_platform? ? 'QUIT' : 'KILL', pid )
                 rescue Errno::ESRCH
                     @pids.delete pid
                     return
