@@ -57,7 +57,7 @@ class XML < Base
     #
     # @see Capabilities::Mutable#each_mutation
     def each_mutation( payload, opts = {}, &block )
-        opts.delete( :param_flip )
+        opts.delete( :fuzz_names )
         super( payload, opts, &block )
     end
 

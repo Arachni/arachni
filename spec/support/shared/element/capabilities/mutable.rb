@@ -191,7 +191,7 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :param_flip,
+            describe :fuzz_names,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
                      ) && described_class != Arachni::Element::LinkTemplate &&
@@ -201,7 +201,7 @@ shared_examples_for 'mutable' do |options = {}|
                     mutable.mutations(
                         seed,
                         format:        [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
-                        param_flip:    true,
+                        fuzz_names:    true,
                         skip_original: true
                     ).select { |m| m.inputs.include? seed }.size.should > 0
                 end
@@ -211,14 +211,14 @@ shared_examples_for 'mutable' do |options = {}|
                         it 'skips the mutation' do
                             seed = 'payload'
 
-                            mutable.mutations( seed, param_flip: true ).
+                            mutable.mutations( seed, fuzz_names: true ).
                                 select { |m| m.inputs.keys.include? seed }.
                                 size.should > 0
 
                             described_class.any_instance.
                                 stub(:valid_input_name_data?) { |name| name != seed }
 
-                            mutable.mutations( seed, param_flip: true ).
+                            mutable.mutations( seed, fuzz_names: true ).
                                 select { |m| m.inputs.keys.include? seed }.
                                 size.should == 0
                         end

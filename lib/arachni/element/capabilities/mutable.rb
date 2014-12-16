@@ -54,8 +54,8 @@ module Mutable
         format:         [ Format::STRAIGHT, Format::APPEND,
                             Format::NULL, Format::APPEND | Format::NULL ],
 
-        # Flip injection value and input name.
-        param_flip:     false,
+        # Place the payload in the input names.
+        fuzz_names:     false,
 
         # Array of parameter names remain untouched.
         skip:           [],
@@ -183,7 +183,7 @@ module Mutable
             end
         end
 
-        if opts[:param_flip]
+        if opts[:fuzz_names]
             if valid_input_name_data?( payload )
                 elem                     = self.dup
                 elem.affected_input_name = 'Parameter flip'

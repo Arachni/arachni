@@ -34,7 +34,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
         @options ||= {
             substring: (rand1.to_i + rand2.to_i).to_s,
             format:    [Format::APPEND, Format::STRAIGHT],
-            param_flip: false
+            fuzz_names: false
         }
     end
 

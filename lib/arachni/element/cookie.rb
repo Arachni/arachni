@@ -187,7 +187,7 @@ class Cookie < Base
     # @see Capabilities::Mutable#each_mutation
     def each_mutation( payload, opts = {}, &block )
         opts        = opts.dup
-        flip        = opts.delete( :param_flip )
+        flip        = opts.delete( :fuzz_names )
         extensively = opts[:extensively]
         extensively = Arachni::Options.audit.cookies_extensively? if extensively.nil?
 

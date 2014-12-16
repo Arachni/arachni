@@ -43,9 +43,9 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#mutations' do
-        describe :param_flip do
+        describe :fuzz_names do
             it 'creates a new cookie' do
-                subject.mutations( 'seed', param_flip: true ).last.inputs.keys.should ==
+                subject.mutations( 'seed', fuzz_names: true ).last.inputs.keys.should ==
                     %w(seed)
             end
         end

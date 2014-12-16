@@ -184,7 +184,7 @@ class JSON < Base
             end
         end
 
-        if opts[:param_flip]
+        if opts[:fuzz_names]
             if valid_input_name_data?( payload )
                 elem                     = self.dup
                 elem.affected_input_name = 'Parameter flip'

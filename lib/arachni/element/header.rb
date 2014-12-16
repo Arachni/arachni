@@ -40,7 +40,7 @@ class Header < Base
     #
     # @see Capabilities::Mutable#each_mutation
     def each_mutation( payload, opts = {}, &block )
-        flip = opts.delete( :param_flip )
+        flip = opts.delete( :fuzz_names )
         super( payload, opts, &block )
 
         return if !flip

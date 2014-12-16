@@ -12,6 +12,8 @@
             system if they are above a certain threshold of similarity.
             This fixes infinite loop scenarios when dealing with unreliable
             custom-404 fingerprints.
+    - `Capabilities`
+        - `Mutable` -- `:param_flip` => `:fuzz_names`
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`
