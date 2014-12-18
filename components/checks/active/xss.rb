@@ -43,8 +43,7 @@ class Arachni::Checks::Xss < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format:     [Format::APPEND],
-            flip_param: true
+            format: [Format::APPEND],
         }
     end
 

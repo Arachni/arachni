@@ -22,6 +22,30 @@ class Audit < Arachni::OptionGroup
         end
     end
 
+    # @note Default is `true`.
+    #
+    # @return    [Bool]
+    #   Inject payloads into parameter values.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :parameter_values
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Inject payloads into parameter names.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :parameter_names
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Inject payloads into extra element parameters.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :with_extra_parameter
+
     # @note Default is `false`.
     #
     # @return   [Bool]
@@ -120,9 +144,10 @@ class Audit < Arachni::OptionGroup
     attr_accessor :xmls
 
     set_defaults(
+        parameter_values:        true,
         exclude_vector_patterns: [],
         include_vector_patterns: [],
-        link_templates:  []
+        link_templates:          []
     )
 
     # @param    [Array<Regexp>] templates
@@ -211,7 +236,8 @@ class Audit < Arachni::OptionGroup
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
-     :jsons, :xmls].each do |attribute|
+     :jsons, :xmls, :parameter_values, :parameter_names, :with_extra_parameter
+    ].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )
         end

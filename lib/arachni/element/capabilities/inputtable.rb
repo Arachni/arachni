@@ -136,6 +136,8 @@ module Capabilities::Inputtable
     # @raise   [Error::InvalidData::Name]
     # @raise   [Error::InvalidData::Value]
     def update( hash )
+        return self if hash.empty?
+
         self.inputs = @inputs.merge( hash )
         self
     end

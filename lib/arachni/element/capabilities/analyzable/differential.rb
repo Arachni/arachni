@@ -37,7 +37,9 @@ module Differential
 
         # Override global fuzzing settings and only use the default method of the
         # element under audit.
-        respect_method: true,
+        with_both_http_methods: false,
+        parameter_names:        false,
+        with_extra_parameter:   false,
 
         # Disable {Arachni::Options#audit_cookies_extensively}, there's little
         # to be gained in this case and just causes interference.

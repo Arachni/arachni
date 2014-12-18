@@ -185,31 +185,49 @@ class Cookie < Base
     # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
-    def each_mutation( payload, opts = {}, &block )
-        opts        = opts.dup
-        flip        = opts.delete( :fuzz_names )
-        extensively = opts[:extensively]
-        extensively = Arachni::Options.audit.cookies_extensively? if extensively.nil?
+    def each_mutation( payload, options = {}, &block )
+        options              = prepare_mutation_options( options )
+        parameter_names      = options.delete( :parameter_names )
+        with_extra_parameter = options.delete( :with_extra_parameter )
+        extensively          = options[:extensively]
+        extensively          = Arachni::Options.audit.cookies_extensively? if extensively.nil?
 
-        super( payload, opts ) do |elem|
-            yield elem
+        super( payload, options ) do |element|
+            yield element
 
             next if !extensively
-            elem.each_extensive_mutation( elem, &block )
+            element.each_extensive_mutation( element, &block )
         end
 
-        return if !flip
+        if with_extra_parameter
+            if valid_input_name?( EXTRA_NAME )
+                each_formatted_payload( payload, options[:format] ) do |format, formatted_payload|
 
-        if !valid_input_name_data?( payload )
-            print_debug_level_2 'Payload not supported as input name by' <<
-                                    " #{audit_id}: #{payload.inspect}"
-            return
+                    element                     = self.dup
+                    element.affected_input_name = EXTRA_NAME
+                    element.inputs              = { EXTRA_NAME => formatted_payload }
+                    element.format              = format
+                    yield element if block_given?
+                end
+            else
+                print_debug_level_2 'Extra name not supported as input name by' <<
+                                        " #{audit_id}: #{payload.inspect}"
+            end
         end
 
-        elem = self.dup
-        elem.affected_input_name = 'Parameter flip'
-        elem.inputs = { payload => seed }
-        yield elem if block_given?
+        if parameter_names
+            if valid_input_name_data?( payload )
+                element                     = self.dup
+                element.affected_input_name = FUZZ_NAME
+                element.inputs              = { payload => FUZZ_NAME_VALUE }
+                yield element if block_given?
+            else
+                print_debug_level_2 'Payload not supported as input name by' <<
+                                        " #{audit_id}: #{payload.inspect}"
+            end
+        end
+
+        nil
     end
 
     def each_extensive_mutation( mutation )
@@ -219,7 +237,7 @@ class Cookie < Base
             next if e.inputs.empty?
 
             c = e.dup
-            c.affected_input_name = "mutation for the '#{name}' cookie"
+            c.affected_input_name = "Mutation for the '#{name}' cookie"
             c.auditor = auditor
             c.audit_options[:submit] ||= {}
             c.audit_options[:submit][:cookies] = mutation.inputs.dup

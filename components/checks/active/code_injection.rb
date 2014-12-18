@@ -33,8 +33,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
     def self.options
         @options ||= {
             substring: (rand1.to_i + rand2.to_i).to_s,
-            format:    [Format::APPEND, Format::STRAIGHT],
-            fuzz_names: false
+            format:    [Format::APPEND, Format::STRAIGHT]
         }
     end
 

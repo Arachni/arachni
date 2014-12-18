@@ -33,9 +33,9 @@ describe Arachni::Element::Header do
     end
 
     describe '#mutations' do
-        describe :fuzz_names do
+        describe :parameter_names do
             it 'creates a new header' do
-                subject.mutations( 'seed', fuzz_names: true ).last.
+                subject.mutations( 'seed', parameter_names: true ).last.
                     inputs.keys.should == %w(seed)
             end
         end

@@ -39,21 +39,21 @@ class Header < Base
     # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
-    def each_mutation( payload, opts = {}, &block )
-        flip = opts.delete( :fuzz_names )
-        super( payload, opts, &block )
+    def each_mutation( payload, options = {}, &block )
+        parameter_names = options.delete( :parameter_names )
+        super( payload, options, &block )
 
-        return if !flip
+        return if !parameter_names
 
         if !valid_input_name_data?( payload )
             print_debug_level_2 'Payload not supported as input name by' <<
                                     " #{audit_id}: #{payload.inspect}"
             return
         end
-        
+
         elem = self.dup
-        elem.affected_input_name = 'Parameter flip'
-        elem.inputs = { payload => seed }
+        elem.affected_input_name = FUZZ_NAME
+        elem.inputs = { payload => FUZZ_NAME_VALUE }
         yield elem
     end
 

@@ -8,6 +8,8 @@ shared_examples_for 'mutable' do |options = {}|
     end
 
     let(:inputs) do
+        return opts[:inputs] if opts[:inputs]
+
         if opts[:single_input]
             { 'input1' => 'value1' }
         else
@@ -17,6 +19,8 @@ shared_examples_for 'mutable' do |options = {}|
             }
         end
     end
+
+    let(:valid_key) { inputs.keys.first.to_s }
 
     let(:seed) { 'my_seed' }
     let(:mutable) do
@@ -135,94 +139,179 @@ shared_examples_for 'mutable' do |options = {}|
             it 'returns all combinations' do
                 # We set the skip_original option because it only applies to forms.
                 mutable.mutations( seed, skip_original: true ).size.should ==
-                    (opts[:single_input] ? 4 : 8) / (opts[:supports_nulls] ? 1 : 2)
+                    (inputs.size * 4) / (opts[:supports_nulls] ? 1 : 2)
             end
         end
 
         context 'with option' do
-            describe :respect_method,
+            describe :parameter_values do
+                describe true do
+                    it 'injects the payload into parameter values' do
+                        mutable.mutations( seed, parameter_values: true ).
+                            find { |m| m.affected_input_value.include? seed }.
+                            should be_true
+                    end
+                end
+                describe false do
+                    it 'does not inject the payload into parameter values' do
+                        mutable.mutations( seed, parameter_values: false ).
+                            find { |m| m.affected_input_value.include? seed }.
+                            should be_false
+                    end
+                end
+                describe 'nil' do
+                    it 'injects the payload into parameter names' do
+                        mutable.mutations( seed ).
+                            find { |m| m.affected_input_value.include? seed }.
+                            should be_true
+                    end
+                end
+
+                describe "#{Arachni::OptionGroups::Audit}#parameter_values" do
+                    it 'serves as the default value of :parameter_values' do
+                        Arachni::Options.audit.parameter_values = true
+                        mutable.mutations( seed ).
+                            find { |m| m.affected_input_value.include? seed }.
+                            should be_true
+
+                        Arachni::Options.audit.parameter_values = false
+                        mutable.mutations( seed ).
+                            find { |m| m.affected_input_value.include? seed }.
+                            should be_false
+                    end
+                end
+            end
+
+            describe :with_extra_parameter,
+                     if: !described_class.ancestors.include?(
+                         Arachni::Element::Capabilities::Auditable::DOM
+                     ) && described_class != Arachni::Element::LinkTemplate &&
+                             described_class != Arachni::Element::XML do
+
+                let(:extra_name) { described_class::EXTRA_NAME }
+
+                describe true do
+                    it 'injects the payload into an extra parameter' do
+                        mutable.mutations( seed, with_extra_parameter: true ).
+                            find { |m| m[extra_name].to_s.include? seed }.should be_true
+                    end
+                end
+                describe false do
+                    it 'does not inject the payload into an extra parameter' do
+                        mutable.mutations( seed, with_extra_parameter: false ).
+                            find { |m| m[extra_name].to_s.include? seed }.should be_false
+                    end
+                end
+                describe 'nil' do
+                    it 'does not inject the payload into an extra parameter' do
+                        mutable.mutations( seed ).
+                            find { |m| m[extra_name].to_s.include? seed }.should be_false
+                    end
+                end
+
+                describe "#{Arachni::OptionGroups::Audit}#with_extra_parameter" do
+                    it 'serves as the default value of :with_extra_parameter' do
+                        Arachni::Options.audit.with_extra_parameter = true
+                        mutable.mutations( seed ).
+                            find { |m| m[extra_name].to_s.include? seed }.should be_true
+
+                        Arachni::Options.audit.with_extra_parameter = false
+                        mutable.mutations( seed ).
+                            find { |m| m[extra_name].to_s.include? seed }.should be_false
+                    end
+                end
+            end
+
+            describe :with_both_http_methods,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
                      ) && described_class != Arachni::Element::JSON &&
                              described_class != Arachni::Element::XML do
 
-                describe true do
+                describe false do
                     it 'does not fuzz methods' do
-                        respect_method = mutable.mutations( seed, respect_method: true )
-                        respect_method.map{ |m| m.method }.uniq.should eq [mutable.method]
+                        mutable.mutations( seed, with_both_http_methods: false ).
+                            map(&:method).uniq.should eq [mutable.method]
                     end
                 end
-                describe false do
+                describe true do
                     it 'fuzzes methods' do
-                        no_respect_method = mutable.mutations( seed, respect_method: false )
-                        no_respect_method.map{ |m| m.method }.uniq.should eq [:get, :post]
+                        mutable.mutations( seed, with_both_http_methods: true ).
+                            map(&:method).uniq.should eq [:get, :post]
                     end
                 end
                 describe 'nil' do
                     it 'does not fuzz methods' do
-                        respect_method = mutable.mutations( seed )
-                        respect_method.map{ |m| m.method }.uniq.should == [mutable.method]
+                        mutable.mutations( seed ).map(&:method).uniq.
+                            should == [mutable.method]
+                    end
+                end
+
+                describe "#{Arachni::OptionGroups::Audit}#with_both_http_methods" do
+                    it 'serves as the default value of :with_both_http_methods' do
+                        Arachni::Options.audit.with_both_http_methods = true
+                        mutable.mutations( seed ).map(&:method).uniq.
+                            should eq [:get, :post]
+
+                        Arachni::Options.audit.with_both_http_methods = false
+                        mutable.mutations( seed ).map(&:method).uniq.
+                            should == [mutable.method]
                     end
                 end
             end
 
-            describe 'Options.audit.with_both_http_methods',
+            describe :parameter_names,
                      if: !described_class.ancestors.include?(
                          Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::JSON &&
-                        described_class != Arachni::Element::XML do
+                     ) && described_class != Arachni::Element::LinkTemplate &&
+                             described_class != Arachni::Element::XML do
 
-                it 'serves as the default value of :respect_method' do
-                    Arachni::Options.audit.with_both_http_methods = true
-                    no_respect_method = mutable.mutations( seed )
+                describe true do
+                    it 'uses the seed as a parameter name' do
+                        mutable.mutations( seed, parameter_names: true ).
+                            find { |m| m.inputs.keys.include? seed }.
+                            should be_true
+                    end
+                end
+                describe false do
+                    it 'does not use the seed as a parameter name' do
+                        described_class.any_instance.
+                            stub(:valid_input_name_data?) { |name| name != seed }
 
-                    no_respect_method.map{ |m| m.method }.uniq.should eq [:get, :post]
+                        mutable.mutations( seed, parameter_names: false ).
+                            find { |m| m.inputs.keys.include? seed }.
+                            should be_false
+                    end
+                end
+                describe 'nil' do
+                    it 'does not use the seed as a parameter name' do
+                        described_class.any_instance.
+                            stub(:valid_input_name_data?) { |name| name != seed }
 
-                    Arachni::Options.audit.with_both_http_methods = false
-                    respect_method = mutable.mutations( seed )
+                        mutable.mutations( seed ).
+                            find { |m| m.inputs.keys.include? seed }.
+                            should be_false
+                    end
+                end
 
-                    respect_method.map{ |m| m.method }.uniq.should == [mutable.method]
+                describe "#{Arachni::OptionGroups::Audit}#parameter_names" do
+                    it 'serves as the default value of :parameter_names' do
+                        Arachni::Options.audit.parameter_names = true
+                        mutable.mutations( seed ).
+                            find { |m| m.inputs.keys.include? seed }.
+                            should be_true
+
+                        Arachni::Options.audit.parameter_names = false
+                        mutable.mutations( seed ).
+                            find { |m| m.inputs.keys.include? seed }.
+                            should be_false
+                    end
                 end
             end
 
             describe :skip do
                 it 'skips mutation of parameters with these names' do
                     mutable.mutations( seed, skip: [ 'input_one' ] )
-                end
-            end
-
-            describe :fuzz_names,
-                     if: !described_class.ancestors.include?(
-                         Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::LinkTemplate &&
-                             described_class != Arachni::Element::XML do
-
-                it 'uses the seed as a param name' do
-                    mutable.mutations(
-                        seed,
-                        format:        [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
-                        fuzz_names:    true,
-                        skip_original: true
-                    ).select { |m| m.inputs.include? seed }.size.should > 0
-                end
-
-                context 'when the payload is not supported' do
-                    context 'as a name'do
-                        it 'skips the mutation' do
-                            seed = 'payload'
-
-                            mutable.mutations( seed, fuzz_names: true ).
-                                select { |m| m.inputs.keys.include? seed }.
-                                size.should > 0
-
-                            described_class.any_instance.
-                                stub(:valid_input_name_data?) { |name| name != seed }
-
-                            mutable.mutations( seed, fuzz_names: true ).
-                                select { |m| m.inputs.keys.include? seed }.
-                                size.should == 0
-                        end
-                    end
                 end
             end
 

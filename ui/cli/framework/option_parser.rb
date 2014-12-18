@@ -208,6 +208,18 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.xmls = true
         end
 
+        on( '--audit-parameter-names',
+            'Inject payloads into parameter names.'
+        ) do
+            options.audit.parameter_names = true
+        end
+
+        on( '--audit-with-extra-parameter',
+            'Inject payloads into extra element parameters.'
+        ) do
+            options.audit.with_extra_parameter = true
+        end
+
         on( '--audit-with-both-methods',
                'Audit elements with both GET and POST requests.',
                '(*WARNING*: This will severely increase the scan-time.)'

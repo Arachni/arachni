@@ -143,7 +143,7 @@ class JSON < Base
     # @yield    (see Capabilities::Mutable#each_mutation)
     #
     # @see  Capabilities::Mutable#each_mutation
-    def each_mutation( payload, opts = {} )
+    def each_mutation( payload, options = {}, &block )
         return if self.inputs.empty?
 
         if !valid_input_data?( payload )
@@ -151,55 +151,53 @@ class JSON < Base
             return
         end
 
-        print_debug_trainer( opts )
-        print_debug_formatting( opts )
+        print_debug_trainer( options )
+        print_debug_formatting( options )
 
-        opts = MUTATION_OPTIONS.merge( opts )
-
+        options   = prepare_mutation_options( options )
         generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutable_id )
 
-        opts[:format].each do |format|
-            traverse_inputs do |path, value|
-                next if self[path] == seed || immutable_input?( path )
+        if options[:parameter_values]
+            options[:format].each do |format|
+                traverse_inputs do |path, value|
+                    next if immutable_input?( path )
 
-                str = format_str( payload, value.to_s, format )
-                if !valid_input_value_data?( str )
-                    print_debug_level_2 'Payload not supported as input value by' <<
-                                            " #{audit_id}: #{str.inspect}"
-                    next
+                    create_and_yield_if_unique( generated, {}, payload, path,
+                        format_str( payload, format, value.to_s ), format, &block
+                    )
                 end
-
-                elem                      = self.dup
-                elem.seed                 = payload
-                elem.affected_input_name  = path
-                elem.affected_input_value = str
-                elem.format               = format
-
-                if !generated.include?( elem )
-                    print_debug_mutation elem
-                    yield elem
-                end
-
-                generated << elem
             end
         end
 
-        if opts[:fuzz_names]
+        if options[:with_extra_parameter]
+            if valid_input_name?( EXTRA_NAME )
+                each_formatted_payload( payload, options[:format] ) do |format, formatted_payload|
+                    elem                     = self.dup
+                    elem.affected_input_name = EXTRA_NAME
+                    elem.inputs              =
+                        elem.inputs.merge( EXTRA_NAME => formatted_payload )
+                    elem.seed                = payload
+                    elem.format              = format
+
+                    yield_if_unique( elem, generated, &block )
+                end
+            else
+                print_debug_level_2 'Extra name not supported as input name by' <<
+                                        " #{audit_id}: #{payload.inspect}"
+            end
+        end
+
+        if options[:parameter_names]
             if valid_input_name_data?( payload )
                 elem                     = self.dup
-                elem.affected_input_name = 'Parameter flip'
-                elem.inputs              = elem.inputs.merge( payload => seed )
+                elem.affected_input_name = FUZZ_NAME
+                elem.inputs              = elem.inputs.merge( payload => FUZZ_NAME_VALUE )
                 elem.seed                = payload
 
-                if !generated.include?( elem )
-                    print_debug_mutation elem
-                    yield elem
-                end
-                generated << elem
+                yield_if_unique( elem, generated, &block )
             else
                 print_debug_level_2 'Payload not supported as input name by' <<
                                         " #{audit_id}: #{payload.inspect}"
-                return
             end
         end
 

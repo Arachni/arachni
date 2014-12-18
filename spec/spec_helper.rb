@@ -33,6 +33,7 @@ RSpec.configure do |config|
     config.run_all_when_everything_filtered = true
     config.color = true
     config.add_formatter :documentation
+    config.include PageHelpers
 
     config.before( :all ) do
         killall

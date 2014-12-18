@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- New options
+    - `--audit-parameter-names` -- Injects payloads into parameter names.
+    - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
 - `Element` -- Renamed `#html` to `#source`.
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
@@ -13,7 +16,10 @@
             This fixes infinite loop scenarios when dealing with unreliable
             custom-404 fingerprints.
     - `Capabilities`
-        - `Mutable` -- `:param_flip` => `:fuzz_names`
+        - `Mutable`
+            - `:param_flip` => `:parameter_names`
+            - Added `:parameter_values` option.
+            - Added `:with_extra_parameter` option.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`

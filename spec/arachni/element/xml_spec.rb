@@ -22,6 +22,7 @@ describe Arachni::Element::XML do
 
     subject { described_class.new( url: "#{url}submit", source: source ) }
     let(:auditable) { inputtable }
+    let(:mutable) { inputtable }
     let(:inputtable) do
         described_class.new(
             url:      "#{url}submit",

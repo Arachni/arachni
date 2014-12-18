@@ -39,9 +39,12 @@ class XML < Base
 
         fail Error::MissingSource if !@source
 
-        self.inputs = (self.inputs || {}).merge( options[:inputs] || {} )
-        if self.inputs.empty?
-            self.inputs = self.class.parse_inputs( @source )
+        @inputs = options[:inputs] || {}
+        if @inputs.empty?
+            # The ivar needs to be set first because it's used as an input name
+            # validator by the setter later on.
+            @inputs = self.class.parse_inputs( @source )
+            self.inputs = @inputs
         end
 
         @default_inputs = self.inputs.dup.freeze
@@ -56,9 +59,10 @@ class XML < Base
     # @yieldparam (see Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
-    def each_mutation( payload, opts = {}, &block )
-        opts.delete( :fuzz_names )
-        super( payload, opts, &block )
+    def each_mutation( payload, options = {}, &block )
+        options.delete( :parameter_names )
+        options.delete( :with_extra_parameter )
+        super( payload, options, &block )
     end
 
     # @return   [String]
@@ -73,8 +77,19 @@ class XML < Base
 
         doc.to_xml
     end
+
     def to_s
         to_xml
+    end
+
+    # @param    [String]    name
+    #   Input name.
+    #
+    # @return   [Bool]
+    #   `true` if the `name` is a valid CSS path for the XML {#source},
+    #   `false` otherwise.
+    def valid_input_name?( name )
+        @inputs.include? name
     end
 
     # @return   [Hash]
