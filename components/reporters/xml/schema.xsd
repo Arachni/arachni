@@ -656,6 +656,8 @@
             <xs:enumeration value="Arachni::Element::LinkTemplate" />
             <xs:enumeration value="Arachni::Element::LinkTemplate::DOM"/>
             <xs:enumeration value="Arachni::Element::GenericDOM" />
+            <xs:enumeration value="Arachni::Element::JSON" />
+            <xs:enumeration value="Arachni::Element::XML" />
         </xs:restriction>
     </xs:simpleType>
 
