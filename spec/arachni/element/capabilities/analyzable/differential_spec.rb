@@ -41,6 +41,15 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 results.should be_any
                 results.first.vector.affected_input_name.should == 'input'
             end
+
+            it 'adds remarks' do
+                auditable = Arachni::Element::Link.new( url: @url + '/true', inputs: @params )
+                auditable.auditor = @auditor
+                auditable.differential_analysis( @opts )
+                @auditor.http.run
+
+                Arachni::Data.issues.first.variations.first.remarks[:differential_analysis].size.should == 3
+            end
         end
 
         context 'when responses are\'t consistent with vuln behavior' do

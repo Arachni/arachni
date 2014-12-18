@@ -23,6 +23,8 @@
         - `Analyzable`
             - `Timeout` -- Added remarks to each issue containing extra information
                 regarding the state of the web application during analysis.
+            - `Differential` -- Added remarks to each issue containing extra information
+                regarding the used payloads.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`

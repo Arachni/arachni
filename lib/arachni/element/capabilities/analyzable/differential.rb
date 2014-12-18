@@ -58,6 +58,8 @@ module Differential
         false:          '-1'
     }
 
+    attr_accessor :differential_analysis_options
+
     # Performs differential analysis and logs an issue should there be one.
     #
     #     opts = {
@@ -112,6 +114,7 @@ module Differential
             return false
         end
 
+        @differential_analysis_options = opts.dup
         opts = self.class::MUTATION_OPTIONS.merge( DIFFERENTIAL_OPTIONS.merge( opts ) )
 
         mutations_size = 0
@@ -153,6 +156,14 @@ module Differential
         end
 
         true
+    end
+
+    def dup
+        e = super
+        return e if !differential_analysis_options
+
+        e.differential_analysis_options = @differential_analysis_options.dup
+        e
     end
 
     private
@@ -336,7 +347,7 @@ module Differential
         controls_verification = signatures.delete( :controls_verification )
         corrupted             = signatures.delete( :corrupted )
 
-        signatures.each do |_, data|
+        signatures.each do |pair_hash, data|
             data.each do |input, result|
                 next if !result[:response] || result[:corrupted] || corrupted[input]
 
@@ -363,8 +374,26 @@ module Differential
                 http.custom_404?( result[:response] ) do |is_custom_404|
                     # If this is a custom 404 page bail out.
                     next if is_custom_404
-                    @auditor.log vector: result[:mutation],
-                                 response: result[:response]
+
+                    options = result[:mutation].differential_analysis_options
+                    pair    = options[:pairs].find { |pair| pair.hash == pair_hash }
+
+                    issue_data = {
+                        vector:   result[:mutation],
+                        response: result[:response]
+                    }
+
+                    if pair
+                        issue_data[:remarks] = {
+                            :differential_analysis => [
+                                "True expression: #{pair.keys.first}",
+                                "False expression: #{pair.values.first}",
+                                "Control false expression: #{options[:false]}"
+                            ]
+                        }
+                    end
+
+                    @auditor.log( issue_data )
                 end
             end
         end
