@@ -23,6 +23,9 @@ shared_examples_for 'check' do
         reset_framework
         options.url = @url
 
+        options.audit.parameter_names      = true
+        options.audit.with_extra_parameter = true
+
         framework.checks.load @name
 
         # Do not deduplicate, the check tests need to see everything.
