@@ -292,6 +292,19 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
     end
 
     describe '#timeout_analysis' do
+        it 'assigns assigns :timing_attack remarks' do
+            subject.timeout_analysis(
+                '__TIME__',
+                options.merge(
+                    timeout_divider: 1000,
+                    timeout:         2000
+                )
+            )
+            run
+
+            issues.first.remarks[:timing_attack].size.should == 3
+        end
+
         context 'when the element action matches a skip rule' do
             subject do
                 Arachni::Element::Link.new(

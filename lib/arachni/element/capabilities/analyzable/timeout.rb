@@ -177,8 +177,27 @@ module Timeout
 
                 @logged << elem
 
+                remarks = []
+
+                delays = elem.timing_attack_remark_data[:delays].
+                    map { |d| d / 1000.0 }
+                remarks << ('Delays (in seconds) used for each phase: ' <<
+                    delays.join(', '))
+
+                controls = elem.timing_attack_remark_data[:control_times]
+                remarks << ('Response times (in seconds) for control requests ' <<
+                    "prior to phases 2 & 3: #{controls.join(', ')}")
+
+                stabilizations = elem.timing_attack_remark_data[:stabilization_times]
+                remarks << ('Response times (in seconds) for stabilization ' <<
+                    "requests after each phase: #{stabilizations.join(', ')}")
+
                 elem.print_info '* Verification was successful.'
-                elem.auditor.log vector: elem, response: response
+                elem.auditor.log(
+                    vector:   elem,
+                    response: response,
+                    remarks:  { timing_attack: remarks }
+                )
             end
         end
 
@@ -195,6 +214,18 @@ module Timeout
             @logged.include? element
         end
 
+    end
+
+    attr_accessor :timing_attack_remark_data
+
+    def initialize(*)
+        super
+
+        @timing_attack_remark_data = {
+            control_times:       [],
+            stabilization_times: [],
+            delays:              []
+        }
     end
 
     # Performs timeout/time-delay analysis and logs an issue should there be one.
@@ -277,6 +308,8 @@ module Timeout
             print_bad "#{prepend}Max waiting time exceeded."
             false
         else
+            @timing_attack_remark_data[:stabilization_times] << response.time
+
             print_info "#{prepend}OK, got a response after #{response.time} seconds."
             true
         end
@@ -331,6 +364,8 @@ module Timeout
 
         audit( payloads, options ) do |response, mutation|
             next if !response.timed_out?
+
+            mutation.timing_attack_remark_data[:delays] << options[:delay]
             block.call( mutation, response )
         end
     end
@@ -392,6 +427,7 @@ module Timeout
                     next
                 end
 
+                @timing_attack_remark_data[:delays] << timeout
                 block.call( response )
 
                 ensure_responsiveness
@@ -399,6 +435,12 @@ module Timeout
         end
 
         http.run
+    end
+
+    def dup
+        e = super
+        e.timing_attack_remark_data = @timing_attack_remark_data.dup
+        e
     end
 
     private
@@ -411,6 +453,8 @@ module Timeout
                 print_info '* Control check failed, aborting.'
                 next
             end
+
+            @timing_attack_remark_data[:control_times] << control.time
 
             print_info '* Control check was successful, progressing' <<
                            ' to verification.'

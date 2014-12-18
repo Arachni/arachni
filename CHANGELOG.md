@@ -20,6 +20,9 @@
             - `:param_flip` => `:parameter_names`
             - Added `:parameter_values` option.
             - Added `:with_extra_parameter` option.
+        - `Analyzable`
+            - `Timeout` -- Added remarks to each issue containing extra information
+                regarding the state of the web application during analysis.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`
