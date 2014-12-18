@@ -272,7 +272,7 @@ class JSON < Base
                 action: request.url,
                 method: request.method,
                 inputs: data,
-                json:   request.body
+                source: request.body
             )
         end
 
