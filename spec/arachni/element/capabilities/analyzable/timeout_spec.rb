@@ -41,6 +41,12 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         }
     end
 
+    describe '#to_rpc_data' do
+        it "does not include 'timing_attack_remark_data'" do
+            subject.to_rpc_data.should_not include 'timing_attack_remark_data'
+        end
+    end
+
     describe '#timeout_id' do
         let(:action) { "#{@url}/action" }
 

@@ -11,6 +11,13 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
         @auditor.framework.reset
     end
 
+    describe '#to_rpc_data' do
+        it "does not include 'differential_analysis_options'" do
+            auditable = Arachni::Element::Link.new( url: @url + '/non200_false', inputs: @params )
+            auditable.to_rpc_data.should_not include 'differential_analysis_options'
+        end
+    end
+
     describe '#differential_analysis' do
         before do
             @opts = {

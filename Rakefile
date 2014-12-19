@@ -145,14 +145,17 @@ begin
                 begin
                     $spec_issues = []
 
-                    # Rake::Task['spec:checks'].execute rescue nil
-                    RSpec::Core::Runner.run(FileList[ 'spec/components/checks/**/*_spec.rb' ])
+                    # RSpec::Core::Runner.run(FileList[ 'spec/components/checks/**/*_spec.rb' ])
+                    RSpec::Core::Runner.run(FileList[ 'spec/components/checks/active/no_sql_injection_differential_spec.rb' ])
 
                     ($spec_issues.size / 3).times do |i|
                         # Add remarks to some issues.
                         issue = $spec_issues.sample
                         issue.add_remark( :stuff, 'Blah' )
                         issue.add_remark( :stuff, 'Blah2' )
+
+                        issue.add_remark( :stuff2, '2 Blah' )
+                        issue.add_remark( :stuff2, '2 Blah2' )
 
                         # Flag some issues as untrusted.
                         $spec_issues.sample.trusted = false

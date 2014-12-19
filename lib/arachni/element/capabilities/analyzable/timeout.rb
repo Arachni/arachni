@@ -443,6 +443,10 @@ module Timeout
         e
     end
 
+    def to_rpc_data
+        super.tap { |data| data.delete 'timing_attack_remark_data' }
+    end
+
     private
 
     def if_timeout_control_check_ok( timeout, &block )

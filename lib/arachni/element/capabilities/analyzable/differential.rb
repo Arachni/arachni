@@ -166,6 +166,10 @@ module Differential
         e
     end
 
+    def to_rpc_data
+        super.tap { |data| data.delete 'differential_analysis_options' }
+    end
+
     private
 
     # Performs requests using the 'false' control seed and generates/stores
