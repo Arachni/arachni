@@ -145,8 +145,7 @@ begin
                 begin
                     $spec_issues = []
 
-                    # RSpec::Core::Runner.run(FileList[ 'spec/components/checks/**/*_spec.rb' ])
-                    RSpec::Core::Runner.run(FileList[ 'spec/components/checks/active/no_sql_injection_differential_spec.rb' ])
+                    RSpec::Core::Runner.run(FileList[ 'spec/components/checks/**/*_spec.rb' ])
 
                     ($spec_issues.size / 3).times do |i|
                         # Add remarks to some issues.
