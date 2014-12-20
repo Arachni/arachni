@@ -1131,10 +1131,10 @@ describe Arachni::Browser do
                         attributes: { 'id' => 'blahblah' }
                     )
 
-                    element.stub(:locate){ raise Selenium::WebDriver::Error::UnknownError }
+                    element.stub(:locate){ raise Selenium::WebDriver::Error::WebDriverError }
                     @browser.fire_event( element, :click ).should be_nil
 
-                    element.stub(:locate){ raise Watir::Exception::UnknownObjectException }
+                    element.stub(:locate){ raise Watir::Exception::Error }
                     @browser.fire_event( element, :click ).should be_nil
                 end
             end
@@ -1153,16 +1153,16 @@ describe Arachni::Browser do
         context 'when the trigger fails with' do
             let(:element) { @browser.watir.div( id: 'my-div' ) }
 
-            context Selenium::WebDriver::Error::UnknownError do
+            context Selenium::WebDriver::Error::WebDriverError do
                 it 'returns nil' do
-                    element.stub(:fire_event){ raise Selenium::WebDriver::Error::UnknownError }
+                    element.stub(:fire_event){ raise Selenium::WebDriver::Error::WebDriverError }
                     @browser.fire_event( element, :click ).should be_nil
                 end
             end
 
-            context Watir::Exception::UnknownObjectException do
+            context Watir::Exception::Error do
                 it 'returns nil' do
-                    element.stub(:fire_event){ raise Watir::Exception::UnknownObjectException }
+                    element.stub(:fire_event){ raise Watir::Exception::Error }
                     @browser.fire_event( element, :click ).should be_nil
                 end
             end
