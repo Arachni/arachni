@@ -421,9 +421,13 @@ class Browser
                     end
             end
 
-            state = "#{tag_name}#{attributes}#{events}"
-            next if events.empty? || (mark_state && skip_state?( state ))
-            skip_state state if mark_state
+            next if events.empty?
+
+            if mark_state
+                state = "#{tag_name}#{attributes}#{events}"
+                next if skip_state?( state )
+                skip_state state
+            end
 
             yield ElementLocator.new( tag_name: tag_name, attributes: attributes ),
                     events
