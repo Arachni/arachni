@@ -1062,6 +1062,7 @@ class Browser
 
         @process     = nil
         @watir       = nil
+        @selenium    = nil
         @pid         = nil
         @browser_url = nil
     end
