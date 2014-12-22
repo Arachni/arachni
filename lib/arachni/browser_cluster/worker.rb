@@ -255,19 +255,17 @@ class Worker < Arachni::Browser
 
         kill_process
 
-        @watir    = nil
-        @selenium = nil
+        @proxy.shutdown
 
         # Browser may fail to respawn but there's nothing we can do about
         # that, just leave it dead and try again at the next job.
         begin
             @watir = ::Watir::Browser.new( selenium )
-
-            ensure_open_window
-
             true
-        rescue Browser::Error::Spawn => e
-            print_error 'Could not respawn the browser, will try again at the next job.'
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Browser::Error::Spawn => e
+            print_error 'Could not respawn the browser, will try again at the ' <<
+                            "next job. (#{e})"
             nil
         end
     end

@@ -8,6 +8,9 @@
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
     - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
+- `BrowserCluster`
+    - `Worker`
+        - `#browser_respawn` -- Catch Watir/Selenium errors.
 -  Checks
     - Active
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
