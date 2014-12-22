@@ -492,6 +492,7 @@ Passive checks look for the existence of files, folders and signatures.
 - Cookie set for parent domain (`cookie_set_for_parent_domain`)
 - Missing `Strict-Transport-Security` headers for HTTPS sites (`hsts`).
 - Missing `X-Frame-Options` headers (`x_frame_options`).
+- Insecure CORS policy (`insecure_cors_policy`).
 
 #### Reporters
 

@@ -36,6 +36,8 @@
     - Active
         - Added
             - `x_frame_options` -- Logs missing `X-Frame-Options` headers per host.
+            - `insecure_cors_policy` -- Logs wildcard `Access-Control-Allow-Origin`
+            headers per host.
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
 - Plugins
