@@ -17,7 +17,7 @@ describe name_from_filename do
         issues.should be_any
     end
 
-    it 'logs hosts missing the header' do
+    it 'does not log hosts with the header' do
         options.url = "#{url}/safe"
         run
         issues.should be_empty
