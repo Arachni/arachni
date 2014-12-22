@@ -23,7 +23,7 @@ class Arachni::Checks::Hsts < Arachni::Check::Base
     def self.info
         {
             name:        'HTTP Strict Transport Security',
-            description: %q{Checks HTTPS pages for missing 'Strict-Transport-Security' headers.},
+            description: %q{Checks HTTPS pages for missing `Strict-Transport-Security` headers.},
             author:      'Tasos Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
             elements:    [ Element::Server ],
