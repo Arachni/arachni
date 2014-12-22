@@ -22,7 +22,7 @@ class Arachni::Checks::XFrameOptions < Arachni::Check::Base
     def self.info
         {
             name:        'Missing X-Frame-Options header',
-            description: %q{Checks the host for a missing X-Frame-Options header.},
+            description: %q{Checks the host for a missing `X-Frame-Options` header.},
             author:      'Tasos Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
             elements:    [ Element::Server ],
