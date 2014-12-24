@@ -160,7 +160,7 @@ module Differential
 
     def dup
         e = super
-        return e if !differential_analysis_options
+        return e if !@differential_analysis_options
 
         e.differential_analysis_options = @differential_analysis_options.dup
         e
