@@ -623,11 +623,16 @@ class Browser
 
                 if tag_name == :form
                     fill_in_form_inputs( element, options[:inputs] )
+
+                    if event == :submit
+                        element.to_subtype.submit
+                        had_special_trigger = true
+                    end
                 elsif tag_name == :input && event == :click &&
                         element.attribute_value(:type) == 'image'
 
+                    element.to_subtype.click
                     had_special_trigger = true
-                    watir.button( type: 'image' ).click
 
                 elsif [:keyup, :keypress, :keydown, :change, :input, :focus, :blur, :select].include? event
 
