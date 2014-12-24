@@ -27,6 +27,9 @@
                 regarding the used payloads.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
+- `URI`
+    - `Scope`
+        - `#auto_redundant?` -- Only consider URLs with query parameters.
 - `Browser`
     - Updated to extract JSON input vectors from HTTP requests.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
