@@ -623,12 +623,6 @@ class Browser
 
                 if tag_name == :form
                     fill_in_form_inputs( element, options[:inputs] )
-
-                    if event == :submit
-                        had_special_trigger = true
-                        element.submit
-                    end
-
                 elsif tag_name == :input && event == :click &&
                         element.attribute_value(:type) == 'image'
 

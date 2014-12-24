@@ -31,6 +31,9 @@
     - Updated to extract JSON input vectors from HTTP requests.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
+    - `ElementLocator`
+        - `#css` -- Returns a CSS locator.
+        - `#locate` -- Updated to use `#css`.
     - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
 -  Checks
     - Active

@@ -65,7 +65,11 @@ class ElementLocator
     # @return   [Watir::HTMLElement]
     #   Locates and returns the element based on {#tag_name} and {#attributes}.
     def locate( browser )
-        browser.watir.send( tag_name, locatable_attributes )
+        browser.watir.element( css: css )
+    end
+
+    def css
+        "#{tag_name}#{attributes.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
     end
 
     # @return   [String]
