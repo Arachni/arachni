@@ -439,6 +439,8 @@ module Timeout
 
     def dup
         e = super
+        return e if !@timing_attack_remark_data
+
         e.timing_attack_remark_data = @timing_attack_remark_data.dup
         e
     end
