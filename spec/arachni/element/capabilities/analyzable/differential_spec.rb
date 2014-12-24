@@ -19,7 +19,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
     describe '#dup' do
         context 'when #differential_analysis_options is' do
             context 'nil' do
-                it 'skips #differential_analysis_options' do
+                it 'skips it' do
                     subject.differential_analysis_options.should be_nil
                     dupped = subject.dup
                     dupped.should == dupped
@@ -28,7 +28,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
             end
 
             context 'not nil' do
-                it 'duplicates #differential_analysis_options' do
+                it 'duplicates it' do
                     h = { stuff: 1 }
 
                     subject.differential_analysis_options = h
@@ -36,6 +36,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                     dupped = subject.dup
                     dupped.should == dupped
                     dupped.differential_analysis_options.should == h
+                    dupped.differential_analysis_options.object_id.should_not == h.object_id
                 end
             end
         end
