@@ -12,7 +12,7 @@ require 'pony'
 # of the scan over SMTP.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.4
+# @version 0.1.5
 class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
 
     def run
@@ -42,8 +42,12 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
         }
 
         if options[:report] != 'none'
+            extension = framework.reporters[options[:report]].
+                outfile_option.default.split( '.', 2 ).last
+            framework.reporters.delete( options[:report] )
+
             opts[:attachments] = {
-                "report.#{options[:report]}" => framework.report_as( options[:report] )
+                "report.#{extension}" => framework.report_as( options[:report] )
             }
         end
 
@@ -59,7 +63,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             name:        'E-mail notify',
             description: %q{Sends a notification (and optionally a report) over SMTP at the end of the scan.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
             options:     [
                 Options::String.new( :to,
                     required:    true,

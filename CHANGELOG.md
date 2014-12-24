@@ -2,53 +2,18 @@
 
 ## _Under development_
 
-- New options
-    - `--audit-parameter-names` -- Injects payloads into parameter names.
-    - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
-- `Element` -- Renamed `#html` to `#source`.
-    - `JSON` -- Represents JSON input vectors.
-    - `XML` -- Represents XML input vectors.
-    - `Form` -- Support forms with multiple values for `submit` inputs with same names.
-    - `Server`
-        - `#log_remote_file_if_exists` -- Perform some rudimentary meta-analysis
-            on possible issues and only feed the identified resources back to the
-            system if they are above a certain threshold of similarity.
-            This fixes infinite loop scenarios when dealing with unreliable
-            custom-404 fingerprints.
-    - `Capabilities`
-        - `Mutable`
-            - `:param_flip` => `:parameter_names`
-            - Added `:parameter_values` option.
-            - Added `:with_extra_parameter` option.
-        - `Analyzable`
-            - `Timeout` -- Added remarks to each issue containing extra information
-                regarding the state of the web application during analysis.
-            - `Differential` -- Added remarks to each issue containing extra information
-                regarding the used payloads.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
-- `URI`
-    - `Scope`
-        - `#auto_redundant?` -- Only consider URLs with query parameters.
 - `Browser`
-    - Updated to extract JSON input vectors from HTTP requests.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
-    - `ElementLocator`
-        - `#css` -- Returns a CSS locator.
-        - `#locate` -- Updated to use `#css`.
     - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
 -  Checks
     - Active
-        - Added
-            - `x_frame_options` -- Logs missing `X-Frame-Options` headers per host.
-            - `insecure_cors_policy` -- Logs wildcard `Access-Control-Allow-Origin`
-            headers per host.
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
 - Plugins
     - `email_notify` -- Added `domain` option.
-- Report -- Renamed `#html` to `#source` for all elements.
 
 ## 1.0.6 _(December 07, 2014)_
 

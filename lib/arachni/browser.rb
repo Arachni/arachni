@@ -575,8 +575,8 @@ class Browser
 
             begin
                 element = element.locate( self )
-            rescue Selenium::WebDriver::Error::UnknownError,
-                Watir::Exception::UnknownObjectException => e
+            rescue Selenium::WebDriver::Error::WebDriverError,
+                Watir::Exception::Error => e
 
                 print_debug "Element '#{locator}' could not be located for triggering '#{event}'."
                 print_debug
@@ -645,9 +645,8 @@ class Browser
                 element.fire_event( event ) if !had_special_trigger
                 wait_for_pending_requests
             end
-        rescue Selenium::WebDriver::Error::InvalidElementStateError,
-            Selenium::WebDriver::Error::UnknownError,
-            Watir::Exception::UnknownObjectException => e
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error => e
 
             sleep 0.1
 
@@ -811,7 +810,7 @@ class Browser
             # this out ourselves, by checking for JS visibility.
             javascript.run( 'return document.cookie' )
         # We may not have a page.
-        rescue Selenium::WebDriver::Error::UnknownError
+        rescue Selenium::WebDriver::Error::WebDriverError
             ''
         end
 
@@ -900,9 +899,8 @@ class Browser
             begin
                 input.set( value.to_s.recode )
             # Disabled inputs and such...
-            rescue Watir::Exception::ObjectDisabledException,
-                Watir::Exception::ObjectReadOnlyException,
-                Selenium::WebDriver::Error::InvalidElementStateError => e
+            rescue Selenium::WebDriver::Error::WebDriverError,
+                Watir::Exception::Error => e
                 print_debug_level_2 "Could not fill in form input '#{name_or_id}'" <<
                                         " because: #{e} [#{e.class}"
             end
@@ -915,10 +913,8 @@ class Browser
             begin
                 input.select_value( value.to_s.recode )
             # Disabled inputs and such...
-            rescue Watir::Exception::ObjectDisabledException,
-                Watir::Exception::ObjectReadOnlyException,
-                Watir::Exception::NoValueFoundException,
-                Selenium::WebDriver::Error::InvalidElementStateError => e
+            rescue Selenium::WebDriver::Error::WebDriverError,
+                Watir::Exception::Error => e
                 print_debug_level_2 "Could not fill in form select '#{name_or_id}'" <<
                                         " because: #{e} [#{e.class}"
             end
@@ -1069,6 +1065,7 @@ class Browser
 
         @process     = nil
         @watir       = nil
+        @selenium    = nil
         @pid         = nil
         @browser_url = nil
     end
