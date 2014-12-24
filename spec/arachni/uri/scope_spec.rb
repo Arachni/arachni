@@ -89,6 +89,17 @@ describe Arachni::URI::Scope do
                 subject.auto_redundant?.should be_false
             end
         end
+
+        describe 'when the URL has no parameters' do
+            subject { Arachni::URI( 'http://test.com/').scope }
+
+            it 'returns false' do
+                scope.auto_redundant_paths = 1
+                3.times do
+                    subject.auto_redundant?.should be_false
+                end
+            end
+        end
     end
 
     describe '#exclude?' do

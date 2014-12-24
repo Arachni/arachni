@@ -123,8 +123,9 @@ class Scope < Arachni::Scope
     # @see OptionGroups::Scope#auto_redundant_paths
     def auto_redundant?
         return false if !options.auto_redundant?
+        return false if (params = @url.query_parameters).empty?
 
-        h = "#{@url.without_query}#{@url.query_parameters.keys.sort}".hash
+        h = "#{@url.without_query}#{params.keys.sort}".hash
 
         if options.auto_redundant_counter[h] >= options.auto_redundant_paths
             return true
