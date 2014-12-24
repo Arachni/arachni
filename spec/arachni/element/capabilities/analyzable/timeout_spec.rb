@@ -41,6 +41,23 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         }
     end
 
+    describe '#dup' do
+        context 'when #timing_attack_remark_data is' do
+            context 'not nil' do
+                it 'duplicates it' do
+                    h = { stuff: 1 }
+
+                    subject.timing_attack_remark_data = h
+
+                    dupped = subject.dup
+                    dupped.should == dupped
+                    dupped.timing_attack_remark_data.should == h
+                    dupped.timing_attack_remark_data.object_id.should_not == h.object_id
+                end
+            end
+        end
+    end
+
     describe '#to_rpc_data' do
         it "does not include 'timing_attack_remark_data'" do
             subject.to_rpc_data.should_not include 'timing_attack_remark_data'
