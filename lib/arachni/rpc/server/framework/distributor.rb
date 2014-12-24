@@ -278,7 +278,7 @@ module Distributor
     # TODO: Replace this with Page#elements_within_scope to also take
     #   into account all scope restrictions.
     def build_element_list( page )
-        [:links, :forms, :cookies, :headers].map do |type|
+        Page::ELEMENTS.map do |type|
             filter_elements( page.send(type) ) if options.audit.element? type
         end.flatten.compact
     end
