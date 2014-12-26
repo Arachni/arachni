@@ -125,7 +125,7 @@ class BrowserCluster
         # Javascript token to share across all workers, this needs to be static
         # because of the browsers' disk-cache which leads to cached responses
         # being used between runs.
-        @javascript_token = '_ArachniJSNamespace'
+        @javascript_token = 'arachni_js_namespace'
 
         @consumed_pids = []
         initialize_workers
