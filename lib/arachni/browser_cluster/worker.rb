@@ -255,8 +255,6 @@ class Worker < Arachni::Browser
 
         kill_process
 
-        @proxy.shutdown
-
         # Browser may fail to respawn but there's nothing we can do about
         # that, just leave it dead and try again at the next job.
         begin
