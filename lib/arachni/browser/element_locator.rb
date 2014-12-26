@@ -78,6 +78,7 @@ class ElementLocator
         "<#{tag_name}#{' ' if attributes.any?}" <<
             attributes.map { |k, v| "#{k}=#{v.inspect}" }.join( ' ' ) << '>'
     end
+    alias :inspect :to_s
 
     def dup
         self.class.new to_h

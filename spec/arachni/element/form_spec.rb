@@ -67,6 +67,54 @@ describe Arachni::Element::Form do
         end
     end
 
+    describe '#skip_dom' do
+        context 'when' do
+            context true do
+                before do
+                    subject.skip_dom = true
+                end
+
+                it 'forces #dom to return nil' do
+                    subject.dom.should be_nil
+                end
+            end
+
+            context false do
+                before do
+                    subject.skip_dom = false
+                end
+
+                it 'forces #dom to return nil' do
+                    subject.dom.should be_true
+                end
+            end
+        end
+    end
+
+    describe '#skip_dom?' do
+        context 'when #skip_dom is' do
+            context true do
+                before do
+                    subject.skip_dom = true
+                end
+
+                it 'returns true' do
+                    subject.skip_dom?.should be_true
+                end
+            end
+
+            context false do
+                before do
+                    subject.skip_dom = false
+                end
+
+                it 'forces #dom to return nil' do
+                    subject.skip_dom?.should be_false
+                end
+            end
+        end
+    end
+
     describe '#mutation_with_original_values?' do
         it 'returns false' do
             subject.mutation_with_original_values?.should be_false

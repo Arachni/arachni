@@ -102,6 +102,7 @@ module State
 
         if shutdown_browsers
             state.set_status_message :browser_cluster_shutdown
+            shutdown_browser
             shutdown_browser_cluster
         end
 
@@ -413,7 +414,7 @@ module State
     end
 
     def suspend_to_disk
-        while wait_for_browser?
+        while wait_for_browser_cluster?
             last_pending_jobs ||= 0
             pending_jobs = browser_cluster.pending_job_counter
 
@@ -432,8 +433,8 @@ module State
         options.plugins = plugins.loaded.
             inject({}) { |h, name| h[name.to_s] = Options.plugins[name.to_s] || {}; h }
 
-        if browser_job_skip_states
-            state.browser_skip_states.merge browser_job_skip_states
+        if browser_cluster_job_skip_states
+            state.browser_skip_states.merge browser_cluster_job_skip_states
         end
 
         state.set_status_message :suspending_plugins

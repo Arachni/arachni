@@ -201,6 +201,12 @@ describe Arachni::Browser::ElementLocator do
         end
     end
 
+    describe '#inspect' do
+        it 'is aliased to #to_s' do
+            subject.to_s.should == subject.inspect
+        end
+    end
+
     describe '#to_hash' do
         it 'converts it to a Hash' do
             subject.to_hash.should == options

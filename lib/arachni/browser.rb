@@ -190,6 +190,15 @@ class Browser
         ensure_open_window
     end
 
+    def clear_buffers
+        @preloads.clear
+        @cache.clear
+        @captured_pages.clear
+        @page_snapshots.clear
+        @page_snapshots_with_sinks.clear
+        @window_responses.clear
+    end
+
     # @return   [String]
     #   Prefixes each source line with a number.
     def source_with_line_numbers
@@ -337,7 +346,12 @@ class Browser
     end
 
     def shutdown
-        watir.close if browser_alive?
+        begin
+            watir.close if browser_alive?
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error
+        end
+
         kill_process
         @proxy.shutdown
     end
@@ -397,7 +411,7 @@ class Browser
                     href = attributes['href'].to_s
 
                     if !href.empty?
-                        if href.start_with?( 'javascript:' )
+                        if href.downcase.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
                             next if skip_path?( to_absolute( href, current_url ) )
@@ -413,7 +427,7 @@ class Browser
                     action = attributes['action'].to_s
 
                     if !action.empty?
-                        if action.start_with?( 'javascript:' )
+                        if action.downcase.start_with?( 'javascript:' )
                             events << [ :submit, action ]
                         else
                             next if skip_path?( to_absolute( action, current_url ) )
@@ -456,7 +470,7 @@ class Browser
                     href = attributes['href'].to_s
 
                     if !href.empty?
-                        if href.start_with?( 'javascript:' )
+                        if href.downcase.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
                             absolute = to_absolute( href, current_url )
@@ -475,7 +489,7 @@ class Browser
                     action = attributes['action'].to_s
 
                     if !action.empty?
-                        if action.start_with?( 'javascript:' )
+                        if action.downcase.start_with?( 'javascript:' )
                             events << [ :submit, action ]
                         else
                             absolute = to_absolute( action, current_url )
@@ -578,7 +592,8 @@ class Browser
             rescue Selenium::WebDriver::Error::WebDriverError,
                 Watir::Exception::Error => e
 
-                print_debug "Element '#{locator}' could not be located for triggering '#{event}'."
+                print_debug "Element '#{element.inspect}' could not be " <<
+                                "located for triggering '#{event}'."
                 print_debug
                 print_debug_exception e
                 return
@@ -592,12 +607,13 @@ class Browser
                 sleep 0.1 while !element.exists?
             end
         rescue Timeout::Error
-            print_debug_level_2 "#{locator} did not appear in #{ELEMENT_APPEARANCE_TIMEOUT}."
+            print_debug_level_2 "#{element.inspect} did not appear in " <<
+                                    "#{ELEMENT_APPEARANCE_TIMEOUT}."
             return
         end
 
         if !element.visible?
-            print_debug_level_2 "#{locator} is not visible, skipping..."
+            print_debug_level_2 "#{element.inspect} is not visible, skipping..."
             return
         end
 
@@ -718,8 +734,8 @@ class Browser
     def to_page
         return if !(r = response)
 
-        page         = r.to_page
-        page.body    = source
+        page      = r.to_page
+        page.body = source
 
         page.dom.url                  = watir.url
         page.dom.digest               = @javascript.dom_digest
@@ -727,6 +743,26 @@ class Browser
         page.dom.data_flow_sinks      = @javascript.data_flow_sinks
         page.dom.transitions          = @transitions.dup
         page.dom.skip_states          = skip_states.dup
+
+        # Go through auditable DOM forms and remove the DOM from them if no
+        # events are associated with it.
+        #
+        # This can save **A LOT** of time during the audit.
+        if Options.audit.form_doms?
+            page.forms.each do |form|
+                next if !form.node || !form.dom
+
+                action = form.node['action'].to_s
+                form.dom.browser = self
+
+                next if action.downcase.start_with?( 'javascript:' ) ||
+                    form.dom.locate.events.any?
+
+                form.skip_dom = true
+            end
+
+            page.update_metadata
+        end
 
         page
     end

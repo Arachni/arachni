@@ -31,7 +31,7 @@ module WithDOM
     private
 
     def copy_with_dom( other )
-        other.dom = dom.dup.tap { |d| d.parent = other } if @dom
+        other.dom = @dom.dup.tap { |d| d.parent = other } if @dom
         other
     end
 

@@ -5,10 +5,23 @@
 - New options
     - `--audit-parameter-names` -- Injects payloads into parameter names.
     - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
+- `Framework`
+    - `Parts`
+        - `Audit`
+            - `#audit_page`
+                - Apply DOM metadata to pages not originated from `Browser#to_page`.
+        - `Browser`
+            - Added utility `#browser`.
+            - Added `#use_browsers?`, determining whether system options and
+                capabilities allow for browsers to be used.
+            - `#wait_for_browsers?` => `#wait_for_browser_cluster?`
 - `Element` -- Renamed `#html` to `#source`.
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
-    - `Form` -- Support forms with multiple values for `submit` inputs with same names.
+    - `Form`
+        - Support forms with multiple values for `submit` inputs with same names.
+        - Added `#skip_dom` (set via `Browser#to_page`), to prevent `Form::DOM`s
+            from being loaded and audited when there are no associated events.
     - `Server`
         - `#log_remote_file_if_exists` -- Perform some rudimentary meta-analysis
             on possible issues and only feed the identified resources back to the
@@ -25,13 +38,19 @@
                 regarding the state of the web application during analysis.
             - `Differential` -- Added remarks to each issue containing extra information
                 regarding the used payloads.
-- `Page::DOM`
-    - `#restore` -- Added debugging messages.
+- `Page`
+    - Added `#update_metadata`, updating `#metadata` from `#cache` elements.
+    - Added `#reload_metadata`, updating `#cache` elements from `#metadata`.
+    - Added `#import_metadata`, importing `#metadata` from other page.
+    - `DOM`
+        - `#restore` -- Added debugging messages.
 - `URI`
     - `Scope`
         - `#auto_redundant?` -- Only consider URLs with query parameters.
 - `Browser`
     - Updated to extract JSON input vectors from HTTP requests.
+    - `#shutdown` -- Fixed Selenium exceptions on dead browser process.
+    - `#to_page` -- Apply DOM metadata to page elements.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
     - `ElementLocator`

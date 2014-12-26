@@ -92,7 +92,8 @@ module Audit
         end
 
         if host_has_browser?
-            print_info "DOM depth: #{page.dom.depth} (Limit: #{options.scope.dom_depth_limit})"
+            print_info "DOM depth: #{page.dom.depth} (Limit: " <<
+                           "#{options.scope.dom_depth_limit})"
 
             if page.dom.transitions.any?
                 print_info '  Transitions:'
@@ -108,33 +109,33 @@ module Audit
         @current_url = page.dom.url.to_s
 
         http.update_cookies( page.cookie_jar )
+
+        # Pass the page to the BrowserCluster to explore its DOM and feed
+        # resulting pages back to the framework.
         perform_browser_analysis( page )
 
         # Remove elements which have already passed through here.
         pre_audit_element_filter( page )
 
+        # Filter the page through the browser and apply DOM metadata to itself
+        # and its elements in order to allow for audit optimizations down the
+        # line.
+        #
+        # For example, if a DOM element has no associated events, there's no
+        # point in it getting audited.
+        apply_dom_metadata( page )
+
         # Run checks which **don't** benefit from fingerprinting first, so that
         # we can use the responses of their HTTP requests to fingerprint the
         # webapp platforms, so that the checks which **do** benefit from knowing
         # the remote platforms can run more efficiently.
-        ran = false
-        @checks.without_platforms.values.each do |check|
-            ran = true if check_page( check, page )
-        end
-        harvest_http_responses if ran
-        run_http = ran
-
-        ran = false
-        @checks.with_platforms.values.each do |check|
-            ran = true if check_page( check, page )
-        end
-        harvest_http_responses if ran
-        run_http ||= ran
+        run_http = run_checks( @checks.without_platforms, page )
+        run_http = true if run_checks( @checks.with_platforms, page )
 
         if Arachni::Check::Auditor.has_timeout_candidates?
             print_line
-            print_status "Verifying timeout-analysis candidates for: #{page.dom.url}"
-            print_info '---------------------------------------'
+            print_status "Processing timeout-analysis candidates for: #{page.dom.url}"
+            print_info   '-------------------------------------------'
             Arachni::Check::Auditor.timeout_audit_run
             run_http = true
         end
@@ -166,7 +167,7 @@ module Audit
         # browsers have stopped spinning.
         loop do
             show_workload_msg = true
-            while !has_audit_workload? && wait_for_browser?
+            while !has_audit_workload? && wait_for_browser_cluster?
                 if show_workload_msg
                     print_line
                     print_status 'Workload exhausted, waiting for new pages' <<
@@ -187,7 +188,7 @@ module Audit
             audit_queues
 
             break if page_limit_reached?
-            break if !has_audit_workload? && !wait_for_browser?
+            break if !has_audit_workload? && !wait_for_browser_cluster?
         end
     end
 

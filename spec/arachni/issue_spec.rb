@@ -333,7 +333,7 @@ describe Arachni::Issue do
     describe '#to_h' do
         it 'converts self to a Hash' do
             page = Factory[:page].dup
-            page.body << 'stuff'
+            page.body = "#{page.body}stuff"
 
             issue.referring_page = page
             issue_h = issue.to_h
@@ -421,7 +421,7 @@ describe Arachni::Issue do
         context 'when the issue has variations' do
             it 'includes those variations' do
                 page = Factory[:page].dup
-                page.body << 'stuff'
+                page.body = "#{page.body}stuff"
 
                 issue_with_variations.variations.each { |v| v.referring_page = page }
 

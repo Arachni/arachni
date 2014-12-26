@@ -21,8 +21,7 @@ module Browser
     #   {OptionGroups::Scope#dom_depth_limit} are 0 or not
     #   {#host_has_browser?}.
     def browser_cluster
-        return if options.browser_cluster.pool_size == 0 ||
-            Options.scope.dom_depth_limit == 0 || !host_has_browser?
+        return if !use_browsers?
 
         # Initialization may take a while so since we lazy load this make sure
         # that only one thread gets to this code at a time.
@@ -37,22 +36,64 @@ module Browser
         end
     end
 
+    def browser
+        return if !use_browsers?
+
+        @browser ||= Arachni::Browser.new( store_pages: false )
+    end
+
     # @return   [Bool]
     #   `true` if the environment has a browser, `false` otherwise.
     def host_has_browser?
         Arachni::Browser.has_executable?
     end
 
-    def wait_for_browser?
+    def wait_for_browser_cluster?
         @browser_cluster && !browser_cluster.done?
     end
 
-    def browser_job_skip_states
+    # @private
+    def browser_cluster_job_skip_states
         return if !@browser_cluster
         browser_cluster.skip_states( browser_job.id )
     end
 
+    # @private
+    def apply_dom_metadata( page )
+        return false if page.dom.depth > 0 || !page.has_script? ||
+            !browser
+
+        # This optimization only affects Form::DOM elements, so don't bother
+        # if none of the checks are interested in any of them.
+        return false if !checks.values.find do |c|
+            c.check? page, Element::Form::DOM
+        end
+
+        bp = browser.load( page ).to_page
+
+        # Request timeout or some other failure...
+        return if !bp
+
+        page.import_metadata( bp, :skip_dom )
+
+        true
+    ensure
+        browser.clear_buffers if browser
+    end
+
+    def use_browsers?
+        options.browser_cluster.pool_size > 0 &&
+            options.scope.dom_depth_limit > 0 && host_has_browser?
+    end
+
     private
+
+    def shutdown_browser
+        return if !@browser
+
+        @browser.shutdown
+        @browser = nil
+    end
 
     def shutdown_browser_cluster
         return if !@browser_cluster

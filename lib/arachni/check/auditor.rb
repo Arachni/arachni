@@ -76,13 +76,16 @@ module Auditor
             # check is configured to audit and user options.
             #
             # @param    [Page]    page
+            # @param    [Element::Base, Array<Element::Base>]    restrict_to_elements
+            #   Element types to check for.
             #
             # @return   [Bool]
-            def self.check?( page )
+            def self.check?( page, restrict_to_elements = nil )
                 return false if issue_limit_reached?
                 return true  if elements.empty?
 
-                audit = Arachni::Options.audit
+                audit                = Arachni::Options.audit
+                restrict_to_elements = [restrict_to_elements].flatten.compact
 
                 {
                     # We use procs to make the decision, to avoid loading the page
@@ -114,6 +117,8 @@ module Auditor
                     Element::Path              => true,
                     Element::Server            => true
                 }.each do |type, decider|
+                    next if restrict_to_elements.any? && !restrict_to_elements.include?( type )
+
                     return true if elements.include?( type ) &&
                         (decider.is_a?( Proc ) ? decider.call : decider)
                 end

@@ -51,6 +51,15 @@ module Check
 
     private
 
+    def run_checks( checks, page )
+        ran = false
+        checks.values.each do |check|
+            ran = true if check_page( check, page )
+        end
+        harvest_http_responses if ran
+        ran
+    end
+
     # Passes a page to the check and runs it.
     # It also handles any exceptions thrown by the check at runtime.
     #

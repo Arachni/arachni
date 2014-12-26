@@ -104,6 +104,8 @@ class Page
         :links, :forms, :cookies, :headers, :link_templates, :jsons, :xmls
     ]
 
+    METADATA = [ :nonce_name, :skip_dom ]
+
     # @return       [DOM]
     #   DOM snapshot.
     attr_accessor   :dom
@@ -446,6 +448,36 @@ class Page
         self.class.new to_initialization_options
     end
 
+    def update_metadata
+        ELEMENTS.each do |type|
+            next if !@cache[type]
+
+            @cache[type].each { |e| store_to_metadata e }
+        end
+    end
+
+    def reload_metadata
+        ELEMENTS.each do |type|
+            next if !@cache[type]
+
+            @cache[type].each { |e| restore_from_metadata e }
+        end
+    end
+
+    def import_metadata( other, metas = METADATA )
+        [metas].flatten.each do |meta|
+            other.metadata.each do |element_type, data|
+                @metadata[element_type] ||= {}
+                @metadata[element_type][meta.to_s] ||= {}
+                @metadata[element_type][meta.to_s].merge!( data[meta.to_s] )
+            end
+        end
+
+        reload_metadata
+
+        self
+    end
+
     def to_initialization_options
         h = {}
         [:body, :cookie_jar, :element_audit_whitelist, :metadata].each do |m|
@@ -507,16 +539,6 @@ class Page
                         when 'response'
                             HTTP::Response.from_rpc_data( value )
 
-                        when 'metadata'
-                            sanitized = {}
-                            %w(link form cookie header).each do |e|
-                                next if !value[e] || !value[e]['nonces']
-
-                                sanitized[e.to_sym] = {}
-                                sanitized[e.to_sym][:nonces] = value[e]['nonces']
-                            end
-                            sanitized
-
                         when *ELEMENTS.map(&:to_s)
                             value.map do |e|
                                 Element.const_get(name[0...-1].capitalize.to_sym).from_rpc_data( e )
@@ -567,32 +589,39 @@ class Page
     def assign_page_to_elements( list )
         list.map do |e|
             e.page = self
-            store_nonce_to_metadata e
-            restore_nonce_from_metadata e
+
+            store_to_metadata e
+            restore_from_metadata e
+
             e
         end.freeze
     end
 
-    def store_nonce_to_metadata( element )
-        ensure_metadata_nonces( element )
+    def store_to_metadata( element )
+        METADATA.each do |meta|
+            next if !element.respond_to?(meta)
 
-        return if !element.respond_to?(:has_nonce?) || !element.has_nonce?
-
-        @metadata[element.type][:nonces][element.coverage_hash] =
-            element.nonce_name
+            ensure_metadata( element, meta )
+            @metadata[element.type.to_s][meta.to_s][element.coverage_hash] ||=
+                element.send(meta)
+        end
     end
 
-    def restore_nonce_from_metadata( element )
-        ensure_metadata_nonces( element )
+    def restore_from_metadata( element )
+        METADATA.each do |meta|
+            next if !element.respond_to?( "#{meta}=" )
 
-        return if !element.respond_to?(:nonce_name=) || element.has_nonce?
-
-        element.nonce_name = @metadata[element.type][:nonces][element.coverage_hash]
+            ensure_metadata( element, meta )
+            element.send(
+                "#{meta}=",
+                @metadata[element.type.to_s][meta.to_s][element.coverage_hash]
+            )
+        end
     end
 
-    def ensure_metadata_nonces( element )
-        @metadata[element.type] ||= {}
-        @metadata[element.type][:nonces] ||= {}
+    def ensure_metadata( element, meta )
+        @metadata[element.type.to_s] ||= {}
+        @metadata[element.type.to_s][meta.to_s] ||= {}
     end
 
     def try_dup( v )

@@ -1072,6 +1072,48 @@ describe Arachni::Browser do
             event['type'].should == 'submit'
         end
 
+        context "when the page has #{Arachni::Element::Form::DOM} elements" do
+            context "and #{Arachni::OptionGroups::Audit}#forms is" do
+                context true do
+                    before do
+                        Arachni::Options.audit.elements :form
+                    end
+
+                    context 'a JavaScript action' do
+                        it 'does not set #skip_dom' do
+                            @browser.load "#{@url}/each_element_with_events/form/action/javascript"
+                            @browser.to_page.forms.first.skip_dom.should be_nil
+                        end
+                    end
+
+                    context 'with DOM events' do
+                        it 'does not set #skip_dom' do
+                            @browser.load "#{@url}/fire_event/form/onsubmit"
+                            @browser.to_page.forms.first.skip_dom.should be_nil
+                        end
+                    end
+
+                    context 'without DOM events' do
+                        it 'sets #skip_dom to true' do
+                            @browser.load "#{@url}/each_element_with_events/form/action/regular"
+                            @browser.to_page.forms.first.skip_dom.should be_true
+                        end
+                    end
+                end
+
+                context false do
+                    before do
+                        Arachni::Options.audit.skip_elements :form
+                    end
+
+                    it 'does not set #skip_dom' do
+                        @browser.load "#{@url}/each_element_with_events/form/action/regular"
+                        @browser.to_page.forms.first.skip_dom.should be_nil
+                    end
+                end
+            end
+        end
+
         context 'when the resource is out-of-scope' do
             it 'returns nil' do
                 Arachni::Options.url = @url

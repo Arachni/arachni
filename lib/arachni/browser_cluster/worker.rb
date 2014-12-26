@@ -121,12 +121,7 @@ class Worker < Arachni::Browser
     ensure
         @javascript.taint = nil
 
-        @preloads.clear
-        @cache.clear
-        @captured_pages.clear
-        @page_snapshots.clear
-        @page_snapshots_with_sinks.clear
-        @window_responses.clear
+        clear_buffers
 
         # The jobs may have configured callbacks to capture pages etc.,
         # remove them.
