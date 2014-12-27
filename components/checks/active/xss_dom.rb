@@ -40,7 +40,7 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
         return if !browser_cluster
 
         each_candidate_dom_element do |element|
-            element.dom.audit( self.class.strings, self.class.options, &method(:check_and_log) )
+            element.audit( self.class.strings, self.class.options, &method(:check_and_log) )
         end
     end
 

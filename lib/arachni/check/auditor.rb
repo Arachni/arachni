@@ -436,8 +436,8 @@ module Auditor
     #   Element types to audit (see {OPTIONS}`[:elements]`).
     #
     # @yield       [element]
-    #   Each candidate element.
-    # @yieldparam [Arachni::Element]
+    #   Each candidate DOM element.
+    # @yieldparam [Arachni::Capabilities::Auditable::DOM]
     def each_candidate_element( types = [], &block )
         types = self.class.info[:elements] if types.empty?
         types = OPTIONS[:elements]         if types.empty?
@@ -636,8 +636,8 @@ module Auditor
         elements.each do |e|
             next if skip?( e ) || !e.dom || e.dom.inputs.empty?
 
-            d = e.dup
-            d.dom.auditor = self
+            d = e.dup.dom
+            d.auditor = self
             block.call d
         end
     end

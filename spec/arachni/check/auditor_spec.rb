@@ -454,7 +454,7 @@ describe Arachni::Check::Auditor do
             auditor.class.info[:elements].clear
 
             auditor.each_candidate_dom_element do |element|
-                element.dom.auditor.should == auditor
+                element.auditor.should == auditor
             end
         end
 
@@ -466,7 +466,7 @@ describe Arachni::Check::Auditor do
                 end
 
                 elements.should be_any
-                elements.should == auditor.page.links.select { |l| l.dom }
+                elements.should == auditor.page.links.select { |l| l.dom }.map(&:dom)
             end
 
             context 'and are not supported' do
@@ -487,7 +487,7 @@ describe Arachni::Check::Auditor do
                     elements << element
                 end
 
-                elements.should == auditor.page.forms
+                elements.should == auditor.page.forms.map(&:dom)
             end
 
             context 'and no types are specified by the check' do
@@ -500,9 +500,9 @@ describe Arachni::Check::Auditor do
                     end
 
                     elements.should ==
-                        auditor.page.links.select { |l| l.dom } |
+                        (auditor.page.links.select { |l| l.dom } |
                             auditor.page.forms | auditor.page.cookies |
-                            auditor.page.link_templates
+                            auditor.page.link_templates).map(&:dom)
                 end
             end
         end

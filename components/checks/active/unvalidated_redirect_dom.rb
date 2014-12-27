@@ -38,7 +38,7 @@ class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
 
     def run
         each_candidate_dom_element do |element|
-            element.dom.audit( self.class.payloads, self.class.options, &method(:check_and_log) )
+            element.audit( self.class.payloads, self.class.options, &method(:check_and_log) )
         end
     end
 

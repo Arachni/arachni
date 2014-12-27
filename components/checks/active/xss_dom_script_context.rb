@@ -43,7 +43,7 @@ class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
         return if !browser_cluster
 
         each_candidate_dom_element do |element|
-            element.dom.audit(
+            element.audit(
                 taints,
                 self.class.options.merge( submit: { taint: seed } ),
                 &method(:check_and_log)
