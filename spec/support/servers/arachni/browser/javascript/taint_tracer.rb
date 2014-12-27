@@ -83,7 +83,7 @@ get '/data_trace/user-defined-global-functions' do
     EOHTML
 end
 
-%w(eval encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
+%w(escape unescape encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
     get "/data_trace/window.#{function}" do
         <<-EOHTML
     <html>

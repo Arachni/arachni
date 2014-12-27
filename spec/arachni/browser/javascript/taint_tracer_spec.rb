@@ -85,7 +85,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
             end
 
             context 'window' do
-                %w(encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
+                %w(escape unescape encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
                     context ".#{function}" do
                         it 'logs it' do
                             load_with_taint "data_trace/window.#{function}"

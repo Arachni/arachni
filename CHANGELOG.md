@@ -57,7 +57,11 @@
     - `ElementLocator`
         - `#css` -- Returns a CSS locator.
         - `#locate` -- Updated to use `#css`.
-    - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
+    - `Javascript`
+        - `DOMMonitor`
+            - `#digest` -- Removed `data-arachni-id` from digest.
+        - `TaintTracer`
+            - Added tracing for deprecated `escape()` & `unescape()` functions.
 - `BrowserCluster`
     - `Worker`
         - `#browser_respawn` -- Catch Watir/Selenium errors.
