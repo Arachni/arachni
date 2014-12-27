@@ -48,7 +48,7 @@
     - `Scope`
         - `#auto_redundant?` -- Only consider URLs with query parameters.
 - `Browser`
-    - Updated to extract JSON input vectors from HTTP requests.
+    - Updated to extract JSON and XML input vectors from HTTP requests.
     - `#shutdown` -- Fixed Selenium exceptions on dead browser process.
     - `#to_page` -- Apply DOM metadata to page elements.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
