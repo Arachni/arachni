@@ -137,7 +137,6 @@ shared_examples_for 'mutable' do |options = {}|
 
         context 'with no options' do
             it 'returns all combinations' do
-                # We set the skip_original option because it only applies to forms.
                 mutable.mutations( seed, skip_original: true ).size.should ==
                     (inputs.size * 4) / (opts[:supports_nulls] ? 1 : 2)
             end
@@ -367,6 +366,7 @@ shared_examples_for 'mutable' do |options = {}|
 
         context 'when the payload is not supported' do
             it 'returns an empty array' do
+                mutable
                 described_class.any_instance.stub(:valid_input_data?) { |i| i != '1' }
 
                 mutable.mutations('1', skip_original: true ).size.should == 0

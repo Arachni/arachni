@@ -410,7 +410,7 @@ shared_examples_for 'inputtable' do |options = {}|
         context 'when the operation is successful' do
             it 'returns true' do
                 subject.try_input do
-                    subject.inputs = inputs
+                    subject.inputs = subject.inputs
                     nil
                 end.should be_true
             end

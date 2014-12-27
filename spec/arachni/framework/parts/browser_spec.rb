@@ -244,14 +244,7 @@ describe Arachni::Framework::Parts::Browser do
         context "when #{Arachni::Browser}#to_page returns" do
             context 'empty page' do
                 before do
-                    subject.browser.stub(:to_page) do
-                        Arachni::Page.from_data(
-                            response: {
-                                code: 0,
-                                url:  page.url
-                            }
-                        )
-                    end
+                    subject.browser.stub(:to_page) { Factory[:empty_page] }
                 end
 
                 it 'returns nil' do

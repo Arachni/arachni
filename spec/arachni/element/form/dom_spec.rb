@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Form::DOM do
-    it_should_behave_like 'element_dom'
+    it_should_behave_like 'element_dom', inputs: { 'param' => '1' }
 
     def auditable_extract_parameters( page )
         YAML.load( page.document.css( 'body' ).text )

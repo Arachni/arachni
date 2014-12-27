@@ -204,20 +204,6 @@ shared_examples_for 'element_dom' do |options = {}|
             end
         end
 
-        context 'when Browser#to_page returns nil' do
-            it 'does not call the block' do
-                Arachni::BrowserCluster::Worker.
-                    any_instance.stub(:to_page).and_return(nil)
-
-                called = false
-                subject.submit do
-                    called = true
-                end
-                subject.auditor.browser_cluster.wait
-                called.should be_false
-            end
-        end
-
         describe :options do
             describe :custom_code do
                 it 'injects the given code' do

@@ -18,13 +18,20 @@ class DOM < Base
     def initialize( options )
         super
 
-        self.inputs     = (options[:inputs] || self.parent.inputs).dup
+        inputs = (options[:inputs] || self.parent.inputs).dup
+        @valid_input_names = inputs.keys.map(&:to_s)
+
+        self.inputs     = inputs
         @default_inputs = self.inputs.dup.freeze
     end
 
     # Submits the form using the configured {#inputs}.
     def trigger
         browser.fire_event element, :submit, inputs: inputs.dup
+    end
+
+    def valid_input_name?( name )
+        @valid_input_names.include? name.to_s
     end
 
     def encode( *args )

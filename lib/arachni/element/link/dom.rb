@@ -48,6 +48,10 @@ class DOM < Base
         browser.goto to_s, take_snapshot: false, update_transitions: false
     end
 
+    def valid_input_name?( name )
+        @valid_input_names.include? name
+    end
+
     # @return   [String]
     #   URL including the DOM {#inputs}.
     def to_s
@@ -108,6 +112,8 @@ class DOM < Base
 
     def prepare_data_from_node
         return if !(data = self.class.data_from_node( node ))
+
+        @valid_input_names = data[:inputs].keys
 
         self.inputs     = data[:inputs]
         @default_inputs = self.inputs.dup.freeze
