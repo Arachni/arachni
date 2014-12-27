@@ -62,8 +62,7 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
 Injects an HTML element into page DOM inputs and then parses the HTML markup of
 tainted responses to look for proof of vulnerability.
 },
-            elements:    [Element::Form::DOM, Element::Link::DOM,
-                          Element::Cookie::DOM, Element::LinkTemplate::DOM ],
+            elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
 
