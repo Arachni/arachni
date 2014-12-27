@@ -12,7 +12,7 @@
 # @version 0.1
 #
 # @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
-class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
+class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
 
     def self.payloads
         @payloads ||= [
