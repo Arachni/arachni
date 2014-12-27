@@ -443,6 +443,7 @@ Active checks engage the web application via its inputs.
     - Windows
 - Remote file inclusion (`rfi`).
 - Unvalidated redirects (`unvalidated_redirect`).
+- Unvalidated DOM redirects (`unvalidated_redirect_dom`).
 - XPath injection (`xpath_injection`).
     - Generic
     - PHP
