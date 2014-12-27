@@ -72,7 +72,7 @@ module Browser
         bp = browser.load( page ).to_page
 
         # Request timeout or some other failure...
-        return if !bp
+        return if bp.code == 0
 
         page.import_metadata( bp, :skip_dom )
 

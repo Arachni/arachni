@@ -87,7 +87,8 @@ module DOM
 
             # If we've wondered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
-            if (transition = trigger) && (page = browser.to_page)
+            if (transition = trigger)
+                page = browser.to_page
                 page.dom.transitions << transition
                 block.call page.tap { |p| p.request.performer = self }
             end

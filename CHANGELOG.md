@@ -53,6 +53,7 @@
     - `#to_page` -- Apply DOM metadata to page elements.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
+    - `#to_page` -- Return empty page on unavailable response data instead of `nil`.
     - `ElementLocator`
         - `#css` -- Returns a CSS locator.
         - `#locate` -- Updated to use `#css`.

@@ -108,7 +108,7 @@ describe Arachni::Browser do
                     Arachni::Options.scope.exclude_path_patterns << /sleep/
 
                     subject.load @url + '/ajax_sleep'
-                    subject.to_page.should be_nil
+                    subject.to_page.code.should == 0
                 end
             end
 
@@ -121,7 +121,7 @@ describe Arachni::Browser do
                     Arachni::Options.scope.exclude_path_patterns << /sleep/
 
                     subject.load @url + '/ajax_sleep'
-                    subject.to_page.should be_nil
+                    subject.to_page.code.should == 0
                 end
             end
         end
@@ -1115,10 +1115,15 @@ describe Arachni::Browser do
         end
 
         context 'when the resource is out-of-scope' do
-            it 'returns nil' do
+            it 'returns an empty page' do
                 Arachni::Options.url = @url
-                @browser.load 'http://google.com/'
-                @browser.to_page.should be_nil
+                subject.load 'http://google.com/'
+                page = subject.to_page
+
+                page.code.should == 0
+                page.url.should  == subject.url
+                page.body.should be_empty
+                page.dom.url.should == subject.watir.url
             end
         end
     end

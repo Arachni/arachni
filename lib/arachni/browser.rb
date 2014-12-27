@@ -732,11 +732,20 @@ class Browser
     # @return   [Page]
     #   Converts the current browser window to a {Page page}.
     def to_page
-        return if !(r = response)
+        if !(r = response)
+            return Page.from_data(
+                dom: {
+                    url: watir.url
+                },
+                response: {
+                    code: 0,
+                    url:  url
+                }
+            )
+        end
 
-        page      = r.to_page
-        page.body = source
-
+        page                          = r.to_page
+        page.body                     = source
         page.dom.url                  = watir.url
         page.dom.digest               = @javascript.dom_digest
         page.dom.execution_flow_sinks = @javascript.execution_flow_sinks

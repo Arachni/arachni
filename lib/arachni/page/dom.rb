@@ -159,7 +159,7 @@ class DOM
 
         # We were probably led to an out-of-scope page via a JS redirect,
         # bail out.
-        return if !browser_page
+        return if browser_page.code == 0
 
         # Check to see if just loading the DOM URL was enough.
         #
