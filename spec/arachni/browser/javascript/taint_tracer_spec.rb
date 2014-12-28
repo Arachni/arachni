@@ -371,11 +371,11 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/ngRoute/'
 
                             sink = subject.data_flow_sinks
-                            sink.size.should == 6
+                            sink.size.should == 8
 
                             # ngRoute module first schedules an HTTP request to grab
                             # the template from the given 'templateUrl'...
-                            entry = sink[4]
+                            entry = sink[6]
                             entry.object.should == 'XMLHttpRequestPrototype'
                             entry.function.name.should == 'open'
                             entry.function.arguments.should == [
@@ -386,7 +386,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             entry.trace[0].url.should == "#{@url}angular.js"
 
                             #... and then updates the app with the (tainted) template content.
-                            entry = sink[5]
+                            entry = sink[7]
                             entry.object.should == 'angular.element'
                             entry.function.name.should == 'html'
                             entry.function.arguments.should == ["Blah blah blah #{@javascript.taint}\n"]
@@ -833,6 +833,48 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
                         trace = entry.trace[0]
                         @browser.source.split("\n")[trace.line].should include 'concat('
+                        trace.url.should == @browser.url
+                    end
+                end
+
+                context '.indexOf' do
+                    it 'logs it' do
+                        load_with_taint 'data_trace/String.indexOf'
+
+                        sink = subject.data_flow_sinks
+                        sink.size.should == 1
+
+                        entry = sink[0]
+                        entry.object.should == 'String'
+                        entry.function.name.should == 'indexOf'
+                        entry.function.source.should start_with 'function indexOf'
+                        entry.function.arguments.should == [ "stuff #{@javascript.taint}" ]
+                        entry.tainted_value.should == "stuff #{@javascript.taint}"
+                        entry.taint.should == @javascript.taint
+
+                        trace = entry.trace[0]
+                        @browser.source.split("\n")[trace.line].should include 'indexOf('
+                        trace.url.should == @browser.url
+                    end
+                end
+
+                context '.lastIndexOf' do
+                    it 'logs it' do
+                        load_with_taint 'data_trace/String.lastIndexOf'
+
+                        sink = subject.data_flow_sinks
+                        sink.size.should == 1
+
+                        entry = sink[0]
+                        entry.object.should == 'String'
+                        entry.function.name.should == 'lastIndexOf'
+                        entry.function.source.should start_with 'function lastIndexOf'
+                        entry.function.arguments.should == [ "stuff #{@javascript.taint}" ]
+                        entry.tainted_value.should == "stuff #{@javascript.taint}"
+                        entry.taint.should == @javascript.taint
+
+                        trace = entry.trace[0]
+                        @browser.source.split("\n")[trace.line].should include 'lastIndexOf('
                         trace.url.should == @browser.url
                     end
                 end

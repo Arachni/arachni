@@ -588,6 +588,26 @@ get '/data_trace/String.concat' do
     EOHTML
 end
 
+get '/data_trace/String.lastIndexOf' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            'my string'.lastIndexOf( 'stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/String.indexOf' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            'my string'.indexOf( 'stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/Document.createTextNode' do
     <<-EOHTML
     <html>

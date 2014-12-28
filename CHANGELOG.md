@@ -61,7 +61,12 @@
         - `DOMMonitor`
             - `#digest` -- Removed `data-arachni-id` from digest.
         - `TaintTracer`
-            - Added tracing for deprecated `escape()` & `unescape()` functions.
+            - Added tracing for:
+                - `escape()`
+                - `unescape()`
+                - `String`
+                    - `indexOf()`
+                    - `lastIndexOf()`
 - `BrowserCluster`
     - `Worker`
         - `#browser_respawn` -- Catch Watir/Selenium errors.
