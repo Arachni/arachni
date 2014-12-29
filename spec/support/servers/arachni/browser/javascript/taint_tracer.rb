@@ -15,6 +15,11 @@ get '/jquery.js' do
     IO.read "#{JS_LIB}/jquery-2.0.3.js"
 end
 
+get '/jquery.cookie.js' do
+    content_type 'text/javascript'
+    IO.read "#{JS_LIB}/jquery.cookie.js"
+end
+
 get '/angular.js' do
     content_type 'text/javascript'
     IO.read "#{JS_LIB}/angular-1.2.8.js"
@@ -371,6 +376,19 @@ get '/data_trace/AngularJS/jqLite.replaceWith' do
 
         <script type="text/javascript">
             angular.element(document.getElementById("my-div")).replaceWith( 'Stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/jQuery.cookie' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+        <script src="/jquery.cookie.js" type="text/javascript"></script>
+
+        <script type="text/javascript">
+            $.cookie( 'cname', 'mystuff ' + #{params[:taint].inspect} );
         </script>
     </html>
     EOHTML

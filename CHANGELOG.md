@@ -68,6 +68,8 @@
                 - `String`
                     - `indexOf()`
                     - `lastIndexOf()`
+                - `jQuery`
+                    - `cookie()` plugin.
 - `BrowserCluster`
     - `Worker`
         - `#browser_respawn` -- Catch Watir/Selenium errors.

@@ -614,6 +614,26 @@ describe Arachni::Browser::Javascript::TaintTracer do
             end
 
             context 'jQuery' do
+                context '.cookie' do
+                    it 'logs it' do
+                        load_with_taint 'data_trace/jQuery.cookie'
+
+                        sink = subject.data_flow_sinks[taint]
+                        sink.size.should == 2
+
+                        entry = sink[0]
+                        entry.object.should == 'jQuery'
+                        entry.function.name.should == 'cookie'
+                        entry.function.arguments.should == ['cname', "mystuff #{taint}"]
+                        entry.tainted_value.should == "mystuff #{taint}"
+                        entry.taint.should == taint
+
+                        trace = entry.trace[0]
+                        @browser.source.split("\n")[trace.line].should include 'cookie('
+                        trace.url.should == @browser.url
+                    end
+                end
+
                 context '.ajax' do
                     it 'logs it' do
                         load_with_taint 'data_trace/jQuery.ajax'
