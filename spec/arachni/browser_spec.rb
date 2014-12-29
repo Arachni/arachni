@@ -464,7 +464,8 @@ describe Arachni::Browser do
         end
 
         it 'assigns blocks to handle each page with data-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: { name: 'blah' } )}"
+            @browser.javascript.taint = 'taint'
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( @browser.javascript.taint, function: { name: 'blah' } )}"
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
@@ -839,7 +840,8 @@ describe Arachni::Browser do
         end
 
         it 'returns data-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: 'blah' )}"
+            @browser.javascript.taint = 'taint'
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( @browser.javascript.taint, function: 'blah' )}"
             @browser.explore_and_flush
 
             pages = @browser.page_snapshots_with_sinks
@@ -973,13 +975,6 @@ describe Arachni::Browser do
 
             browser_response.url.should == raw_response.url
 
-            browser_sanitized_body =
-                Nokogiri::HTML(browser_response.body).css('body').to_s.gsub("\n", '')
-            raw_response_sanitized_body =
-                Nokogiri::HTML(raw_response.body).css('body').to_s.gsub("\n", '')
-
-            browser_sanitized_body.should == raw_response_sanitized_body
-
             [:url, :method].each do |attribute|
                 browser_request.send(attribute).should == raw_request.send(attribute)
             end
@@ -1015,10 +1010,10 @@ describe Arachni::Browser do
         it "assigns the proper #{Arachni::Page::DOM}#digest" do
             @browser.load( @url )
             @browser.to_page.dom.instance_variable_get(:@digest).should ==
-                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' +
-                    'taint_tracer.js><SCRIPT><SCRIPT src=http://javascript.' +
-                    'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><DIV' +
-                    '><SCRIPT type=text/javascript>'
+                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' <<
+                    'taint_tracer.js><SCRIPT><SCRIPT src=http://javascript.' <<
+                    'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
+                    'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
         end
 
         it "assigns the proper #{Arachni::Page::DOM}#transitions" do

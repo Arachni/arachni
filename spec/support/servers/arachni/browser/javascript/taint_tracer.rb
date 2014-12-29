@@ -68,6 +68,25 @@ get '/data_trace/XMLHttpRequest.setRequestHeader' do
 HTML
 end
 
+get '/data_trace/multiple-taints' do
+    <<-EOHTML
+    <html>
+
+        <body>
+        </body>
+
+        <script type="text/javascript">
+            function process( data ) {}
+            process({ my_data11: 'blah11', input11: '#{params[:taint1]}' });
+            process({ my_data12: 'blah12', input12: '#{params[:taint1]}' });
+
+            process({ my_data21: 'blah21', input21: '#{params[:taint2]}' });
+            process({ my_data22: 'blah22', input22: '#{params[:taint2]}' });
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/user-defined-global-functions' do
     <<-EOHTML
     <html>

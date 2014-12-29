@@ -106,7 +106,7 @@ class Javascript
     attr_accessor :token
 
     # @return   [String]
-    #   Taint to look for and trace in the JS data flow.
+    #   Taints to look for and trace in the JS data flow.
     attr_accessor :taint
 
     # @return   [String]
@@ -228,7 +228,7 @@ class Javascript
     # @return   (see TaintTracer#data_flow_sinks)
     def data_flow_sinks
         return [] if !supported?
-        taint_tracer.data_flow_sinks
+        taint_tracer.data_flow_sinks[@taint] || []
     end
 
     # @return   (see TaintTracer#flush_execution_flow_sinks)
@@ -240,7 +240,7 @@ class Javascript
     # @return   (see TaintTracer#flush_data_flow_sinks)
     def flush_data_flow_sinks
         return [] if !supported?
-        taint_tracer.flush_data_flow_sinks
+        taint_tracer.flush_data_flow_sinks[@taint] || []
     end
 
     # Sets a custom ID attribute to elements with events but without a proper ID.
@@ -327,30 +327,27 @@ class Javascript
 
         body = response.body.dup
 
-        # If we've got no taint to trace don't bother...
-        if @taint
-            # Schedule a tracer update at the beginning of each script block in order
-            # to put our hooks into any newly introduced functions.
-            #
-            # The fact that our update call seems to be taking place before any
-            # functions get the chance to be defined doesn't seem to matter.
-            body.gsub!(
-                /<script(.*?)>/i,
-                "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
-            )
+        # Schedule a tracer update at the beginning of each script block in order
+        # to put our hooks into any newly introduced functions.
+        #
+        # The fact that our update call seems to be taking place before any
+        # functions get the chance to be defined doesn't seem to matter.
+        body.gsub!(
+            /<script(.*?)>/i,
+            "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
+        )
 
-            # Also perform an update after each script block, this is for external
-            # scripts.
-            body.gsub!(
-                /<\/script>/i,
-                "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
-                    "</script> <!-- Script injected by #{self.class} -->\n"
-            )
-        end
+        # Also perform an update after each script block, this is for external
+        # scripts.
+        body.gsub!(
+            /<\/script>/i,
+            "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
+                "</script> <!-- Script injected by #{self.class} -->\n"
+        )
 
         response.body = <<-EOHTML
             <script src="#{script_url_for( :taint_tracer )}"></script> <!-- Script injected by #{self.class} -->
-            <script> #{@taint_tracer.stub.function( :initialize, @taint )} </script> <!-- Script injected by #{self.class} -->
+            <script> #{@taint_tracer.stub.function( :initialize, [@taint].compact )} </script> <!-- Script injected by #{self.class} -->
 
             <script src="#{script_url_for( :dom_monitor )}"></script> <!-- Script injected by #{self.class} -->
             <script>

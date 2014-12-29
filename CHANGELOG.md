@@ -61,6 +61,7 @@
         - `DOMMonitor`
             - `#digest` -- Removed `data-arachni-id` from digest.
         - `TaintTracer`
+            - Added support for tracing multiple taints in groups.
             - Added tracing for:
                 - `escape()`
                 - `unescape()`
