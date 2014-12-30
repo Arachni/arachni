@@ -33,8 +33,10 @@
             - Added `:parameter_values` option.
             - Added `:with_extra_parameter` option.
         - `Analyzable`
-            - `Timeout` -- Added remarks to each issue containing extra information
-                regarding the state of the web application during analysis.
+            - `Timeout`
+                - Updated algorithm to be resilient to WAF/IDS/IPS filtering.
+                - Added remarks to each issue containing extra information
+                    regarding the state of the web application during analysis.
             - `Differential` -- Added remarks to each issue containing extra information
                 regarding the used payloads.
         - `WithDOM`

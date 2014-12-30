@@ -332,8 +332,8 @@ module Timeout
             # any interference during timing attacks.
             skip_original:     true,
 
-            # Disable {Arachni::OptionGroups::Audit#cookies_extensively}, there's little
-            # to be gained in this case and just causes interference.
+            # Disable {Arachni::OptionGroups::Audit#cookies_extensively},
+            # there's little to be gained in this case and just causes interference.
             extensively:       false,
 
             # Intercept each element mutation prior to it being submitted and
@@ -411,7 +411,7 @@ module Timeout
         # doesn't time out by default.
         #
         # If it does, then there's no way for us to test it reliably.
-        if_timeout_control_check_ok timeout do
+        if_timeout_control_check_ok seed, timeout do
 
             # Update our candidate mutation's affected input with the new payload.
             self.affected_input_value = payload
@@ -451,10 +451,13 @@ module Timeout
 
     private
 
-    def if_timeout_control_check_ok( timeout, &block )
+    def if_timeout_control_check_ok( seed, timeout, &block )
         print_info '* Performing control check.'
 
-        timeout_control.submit( response_max_size: 0, timeout: timeout ) do |control|
+        # Use a real payload with a delay of 0, this way we can avoid getting
+        # tricked by WAFs/IDS/IPS dropping packets.
+        self.affected_input_value = seed.sub( '__TIME__', '0' )
+        submit( response_max_size: 0, timeout: timeout ) do |control|
             if control.timed_out?
                 print_info '* Control check failed, aborting.'
                 next

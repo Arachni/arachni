@@ -279,31 +279,61 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
             end
         end
 
-        context 'when the request times out by default' do
-            subject do
-                e = Arachni::Element::Link.new(
-                    url:    @url + '/sleep',
-                    inputs: inputs
-                )
-                e.auditor = auditor
-                e
+        context 'when the request times out' do
+            context 'by default' do
+                subject do
+                    e = Arachni::Element::Link.new(
+                        url:    @url + '/sleep',
+                        inputs: inputs
+                    )
+                    e.auditor = auditor
+                    e
+                end
+
+                it 'does not call the given block' do
+                    candidate = nil
+                    subject.timing_attack_probe( '__TIME__', options ) do |element|
+                        candidate ||= element
+                    end
+                    run
+
+                    candidate.should be_true
+
+                    verified = nil
+                    candidate.timing_attack_verify( 1000 ) do
+                        verified = true
+                    end
+
+                    verified.should be_nil
+                end
             end
 
-            it 'does not call the given block' do
-                candidate = nil
-                subject.timing_attack_probe( '__TIME__', options ) do |element|
-                    candidate ||= element
-                end
-                run
-
-                candidate.should be_true
-
-                verified = nil
-                candidate.timing_attack_verify( 1000 ) do
-                    verified = true
+            context 'due to filtering' do
+                subject do
+                    e = Arachni::Element::Link.new(
+                        url:    @url + '/waf',
+                        inputs: inputs
+                    )
+                    e.auditor = auditor
+                    e
                 end
 
-                verified.should be_nil
+                it 'does not call the given block' do
+                    candidate = nil
+                    subject.timing_attack_probe( 'payload-__TIME__', options ) do |element|
+                        candidate ||= element
+                    end
+                    run
+
+                    candidate.should be_true
+
+                    verified = nil
+                    candidate.timing_attack_verify( 1000 ) do
+                        verified = true
+                    end
+
+                    verified.should be_nil
+                end
             end
         end
 
