@@ -7,7 +7,6 @@
 =end
 
 require_relative 'base'
-require_relative 'capabilities/with_node'
 
 module Arachni::Element
 
@@ -46,10 +45,6 @@ class Form < Base
     # @return     [String, nil]
     #   Name of the form, if it has one.
     attr_accessor :name
-
-    # @return     [Bool, nil]
-    #   Force {#dom} to return `nil` -- used as an audit optimization.
-    attr_accessor :skip_dom
 
     # @param    [Hash]    options
     # @option   options [String]    :name
@@ -97,13 +92,8 @@ class Form < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    def skip_dom?
-        !!@skip_dom
-    end
-
     # @return   [DOM]
     def dom
-        return if skip_dom?
         return @dom if @dom
         return if !node || inputs.empty?
         super
@@ -385,7 +375,6 @@ class Form < Base
             f.mutation_with_sample_values   if mutation_with_sample_values?
 
             f.requires_password = requires_password?
-            f.skip_dom = @skip_dom
         end
     end
 

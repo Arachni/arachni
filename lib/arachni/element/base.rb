@@ -163,6 +163,7 @@ class Base
         data.each do |name, value|
             value = case name
                         when 'dom'
+                            next if !value
                             self::DOM.from_rpc_data( value )
 
                         when 'initialization_options'

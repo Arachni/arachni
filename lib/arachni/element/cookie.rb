@@ -86,13 +86,8 @@ class Cookie < Base
 
     # @return   [DOM]
     def dom
-        return if @skip_dom || inputs.empty?
-
-        # In case the cookie already has input data not supported by its DOM
-        # extension.
-        @skip_dom = !try_input { super }
-
-        @dom
+        return if inputs.empty?
+        super
     end
 
     # Indicates whether the cookie must be only sent over an encrypted channel.

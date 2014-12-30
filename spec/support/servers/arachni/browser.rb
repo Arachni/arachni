@@ -644,10 +644,56 @@ get '/update-cookies' do
     cookies[:update] = 'this'
 end
 
-get '/with-image' do
-    @@image_hit = false
+get '/update-cookies' do
+    cookies[:update] = 'this'
+end
+
+get '/dom-cookies-names' do
+    cookies['my-cookie']  = 'stuff'
+    cookies['my-cookie2'] = 'stuff'
+    cookies['my-cookie3'] = 'stuff'
+
     <<HTML
-    <img src="/image.png" />
+    <html>
+        <script>
+            function getCookie( cname ) {
+                var name = cname + '=';
+                var ca = document.cookie.split(';');
+
+                for( var i = 0; i < ca.length; i++ ) {
+                    var c = ca[i].trim();
+
+                    if( c.indexOf( name ) == 0 ) {
+                        return c.substring( name.length, c.length )
+                    }
+                }
+
+                return '';
+            }
+
+            getCookie('my-cookie');
+            getCookie('my-cookie2');
+        </script>
+    </html>
+HTML
+end
+
+get '/dom-cookies-values' do
+    cookies['my-cookie']  = 'stuff1'
+    cookies['my-cookie2'] = 'stuff2'
+    cookies['my-cookie3'] = 'stuff3'
+
+    <<HTML
+    <html>
+        <script>
+            function cookiesHaveValue( value ) {
+                return document.cookie.indexOf( value ) != -1;
+            }
+
+            cookiesHaveValue('stuff1');
+            cookiesHaveValue('stuff2');
+        </script>
+    </html>
 HTML
 end
 

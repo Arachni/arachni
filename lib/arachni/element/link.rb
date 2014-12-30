@@ -7,7 +7,6 @@
 =end
 
 require_relative 'base'
-require_relative 'capabilities/with_node'
 
 module Arachni::Element
 

@@ -215,9 +215,9 @@ describe Arachni::Framework::Parts::Browser do
             end
         end
 
-        context "when #{Arachni::Check::Auditor}.check? for #{Arachni::Element::Form::DOM} is" do
+        context "when #{Arachni::Check::Auditor}.check? for [#{Arachni::Element::Form::DOM}, #{Arachni::Element::Cookie::DOM}] is" do
             before do
-                check.should receive(:check?).with( page, Arachni::Element::Form::DOM )
+                check.should receive(:check?).with( page, [Arachni::Element::Form::DOM, Arachni::Element::Cookie::DOM] )
             end
 
             context false do

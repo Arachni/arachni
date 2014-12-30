@@ -19,9 +19,8 @@
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
     - `Form`
-        - Support forms with multiple values for `submit` inputs with same names.
-        - Added `#skip_dom` (set via `Browser#to_page`), to prevent `Form::DOM`s
-            from being loaded and audited when there are no associated events.
+        - Support forms with multiple values for `submit` inputs with sa
+        me names.
     - `Server`
         - `#log_remote_file_if_exists` -- Perform some rudimentary meta-analysis
             on possible issues and only feed the identified resources back to the
@@ -38,6 +37,9 @@
                 regarding the state of the web application during analysis.
             - `Differential` -- Added remarks to each issue containing extra information
                 regarding the used payloads.
+        - `WithDOM`
+            - Added `#skip_dom` (set via `Browser#to_page`), to prevent `DOM`s
+                from being loaded and audited when there are no associated events.
 - `Page`
     - Added `#update_metadata`, updating `#metadata` from `#cache` elements.
     - Added `#reload_metadata`, updating `#cache` elements from `#metadata`.

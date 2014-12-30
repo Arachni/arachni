@@ -1071,7 +1071,7 @@ describe Arachni::Browser do
             context "and #{Arachni::OptionGroups::Audit}#forms is" do
                 context true do
                     before do
-                        Arachni::Options.audit.elements :form
+                        Arachni::Options.audit.elements :forms
                     end
 
                     context 'a JavaScript action' do
@@ -1098,12 +1098,83 @@ describe Arachni::Browser do
 
                 context false do
                     before do
-                        Arachni::Options.audit.skip_elements :form
+                        Arachni::Options.audit.skip_elements :forms
                     end
 
                     it 'does not set #skip_dom' do
                         @browser.load "#{@url}/each_element_with_events/form/action/regular"
                         @browser.to_page.forms.first.skip_dom.should be_nil
+                    end
+                end
+            end
+        end
+
+        context "when the page has #{Arachni::Element::Cookie::DOM} elements" do
+            let(:cookies) { @browser.to_page.cookies }
+
+            context "and #{Arachni::OptionGroups::Audit}#cookies is" do
+                context true do
+                    before do
+                        Arachni::Options.audit.elements :cookies
+
+                        @browser.load "#{@url}/#{page}"
+                        @browser.load "#{@url}/#{page}"
+                    end
+
+                    context 'with DOM processing of cookie' do
+                        context 'names' do
+                            let(:page) { 'dom-cookies-names' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie' }.skip_dom.should be_nil
+                                cookies.find { |c| c.name == 'my-cookie2' }.skip_dom.should be_nil
+                            end
+                        end
+
+                        context 'values' do
+                            let(:page) { 'dom-cookies-values' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie' }.skip_dom.should be_nil
+                                cookies.find { |c| c.name == 'my-cookie2' }.skip_dom.should be_nil
+                            end
+                        end
+                    end
+
+                    context 'without DOM processing of cookie' do
+                        context 'names' do
+                            let(:page) { 'dom-cookies-names' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie3' }.skip_dom.should be_true
+                            end
+                        end
+
+                        context 'values' do
+                            let(:page) { 'dom-cookies-values' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie3' }.skip_dom.should be_true
+                            end
+                        end
+                    end
+                end
+
+                context false do
+                    before do
+                        Arachni::Options.audit.skip_elements :cookies
+
+                        @browser.load "#{@url}/#{page}"
+                        @browser.load "#{@url}/#{page}"
+                    end
+
+                    let(:page) { 'dom-cookies-names' }
+
+                    it 'does not set #skip_dom' do
+                        cookies.should be_any
+                        cookies.each do |cookie|
+                            cookie.skip_dom.should be_nil
+                        end
                     end
                 end
             end
@@ -2549,7 +2620,7 @@ describe Arachni::Browser do
                 context 'and is out of scope' do
                     let(:url) { @url + '/each_element_with_events/form/action/out-of-scope' }
 
-                    it 'is ignored'do
+                    it 'is ignored' do
                         snapshot_id.should == empty_snapshot_id
                     end
                 end

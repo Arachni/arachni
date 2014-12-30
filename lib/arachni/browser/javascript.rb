@@ -345,9 +345,17 @@ class Javascript
                 "</script> <!-- Script injected by #{self.class} -->\n"
         )
 
+        taints = [@taint]
+        # Include cookie names and values in the trace so that the browser will
+        # be able to infer whether they're being used, to avoid unnecessary audits.
+        if Options.audit.cookie_doms?
+            taints |= @browser.cookies.map { |c| c.inputs.to_a }.flatten
+        end
+        taints = taints.flatten.reject { |v| v.to_s.empty? }
+
         response.body = <<-EOHTML
             <script src="#{script_url_for( :taint_tracer )}"></script> <!-- Script injected by #{self.class} -->
-            <script> #{@taint_tracer.stub.function( :initialize, [@taint].compact )} </script> <!-- Script injected by #{self.class} -->
+            <script> #{@taint_tracer.stub.function( :initialize, taints )} </script> <!-- Script injected by #{self.class} -->
 
             <script src="#{script_url_for( :dom_monitor )}"></script> <!-- Script injected by #{self.class} -->
             <script>

@@ -66,7 +66,7 @@ module Browser
         # This optimization only affects Form::DOM elements, so don't bother
         # if none of the checks are interested in any of them.
         return false if !checks.values.find do |c|
-            c.check? page, Element::Form::DOM
+            c.check? page, [Element::Form::DOM, Element::Cookie::DOM]
         end
 
         bp = browser.load( page ).to_page

@@ -753,8 +753,8 @@ class Browser
         page.dom.transitions          = @transitions.dup
         page.dom.skip_states          = skip_states.dup
 
-        # Go through auditable DOM forms and remove the DOM from them if no
-        # events are associated with it.
+        # Go through auditable DOM forms and cookies and remove the DOM from
+        # them if no events are associated with it.
         #
         # This can save **A LOT** of time during the audit.
         if Options.audit.form_doms?
@@ -768,6 +768,18 @@ class Browser
                     form.dom.locate.events.any?
 
                 form.skip_dom = true
+            end
+
+            page.update_metadata
+        end
+
+        if Options.audit.cookie_doms?
+            sinks = @javascript.taint_tracer.data_flow_sinks
+            page.cookies.each do |cookie|
+                next if sinks.include?( cookie.name ) ||
+                    sinks.include?( cookie.value )
+
+                cookie.skip_dom = true
             end
 
             page.update_metadata
