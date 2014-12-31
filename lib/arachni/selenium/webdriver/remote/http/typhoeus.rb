@@ -35,7 +35,21 @@ class Typhoeus < Common
         end
 
         response = ::Typhoeus::Request.send( verb, url, options )
-        create_response response.code, response.body, response.headers['Content-Type']
+
+        create_response extract_real_code( response ), response.body,
+                        response.headers['Content-Type']
+    end
+
+    def extract_real_code( response )
+        # Typhoeus sometimes gets confused when running under JRuby from multiple
+        # threads:
+        #  https://github.com/typhoeus/typhoeus/issues/411
+        if Arachni.jruby?
+            code = response.response_headers.match( /HTTP\/1\.\d\s(\d+)\s/ )[1] || 0
+            code.to_i
+        else
+            response.code
+        end
     end
 
 end
