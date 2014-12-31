@@ -15,6 +15,10 @@
             - Added `#use_browsers?`, determining whether system options and
                 capabilities allow for browsers to be used.
             - `#wait_for_browsers?` => `#wait_for_browser_cluster?`
+- `HTTP`
+    - `Response`
+        - Set `#return_message` to an empty string when under JRuby to work around
+            an unknown (Ethon/JRuby/FFI ?) error.
 - `Element` -- Renamed `#html` to `#source`.
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
