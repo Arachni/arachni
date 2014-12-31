@@ -6,10 +6,9 @@
     web site for more information on licensing and terms of use.
 =end
 
-module Arachni
-
 require 'nokogiri'
-require Options.paths.lib + 'nokogiri/xml/node'
+
+module Arachni
 
 module Element
 
