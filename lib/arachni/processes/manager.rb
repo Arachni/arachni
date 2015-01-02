@@ -105,7 +105,12 @@ class Manager
         fork = true if fork.nil?
 
         options[:options] ||= {}
-        options[:options]   = Options.to_h.merge( options[:options] )
+        options[:options] = Options.to_h.merge( options[:options] )
+
+        # Paths are not included in RPC nor Hash representations as they're
+        # considered local, in this case though they're necessary to provide
+        # the same environment the processes.
+        options[:options][:paths] = Options.paths.to_h
 
         executable      = "#{Options.paths.executables}/#{executable}.rb"
         encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
