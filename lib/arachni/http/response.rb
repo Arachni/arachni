@@ -224,11 +224,7 @@ class Response < Message
                                 response.start_transfer_time - response.pretransfer_time).to_f,
             total_time:     response.total_time.to_f,
             return_code:    response.return_code,
-
-            # Typhoeus explodes when #return_message is called to many times
-            # under JRuby:
-            #  https://github.com/typhoeus/typhoeus/issues/412
-            return_message: Arachni.jruby? ? '' : response.return_message
+            return_message: response.return_message
         )
     end
 

@@ -30,4 +30,6 @@ gem 'arachni-rpc',     github: 'arachni/arachni-rpc',     branch: 'experimental'
 # gem 'arachni-reactor', path: '/home/zapotek/workspace/arachni-reactor'
 # gem 'arachni-rpc', path: '/home/zapotek/workspace/arachni-rpc'
 
+gem 'ethon', github: 'typhoeus/ethon', branch: 'easy_code'
+
 gemspec
