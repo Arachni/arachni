@@ -7,6 +7,7 @@
 =end
 
 require 'singleton'
+require 'childprocess'
 require 'arachni/reactor'
 
 module Arachni
@@ -24,6 +25,7 @@ class Manager
     attr_reader :pids
 
     def initialize
+        @processes      = {}
         @pids           = []
         @discard_output = true
     end
@@ -40,12 +42,13 @@ class Manager
 
     # @param    [Integer]   pid PID of the process to kill.
     def kill( pid )
+        if (process = @processes[pid])
+            return process.stop
+        end
+
         Timeout.timeout 10 do
             while sleep 0.1 do
                 begin
-                    # I'd rather this be an INT but WEBrick's INT traps write to
-                    # the Logger and multiple INT signals force it to write to a
-                    # closed logger and crash.
                     Process.kill( Gem.win_platform? ? 'QUIT' : 'KILL', pid )
                 rescue Errno::ESRCH
                     @pids.delete pid
@@ -64,8 +67,8 @@ class Manager
 
     # Kills all {#pids processes}.
     def killall
-        kill_many @pids.dup
-        @pids.clear
+        kill_many @processes.keys
+        @processes.clear
     end
 
     # Stops the Reactor.
@@ -142,14 +145,26 @@ class Manager
                 ARGV.replace( argv )
                 load RUNNER
             end
+
+            @processes[pid] = nil
         else
-            # It's very, **VERY** important that we use this argument format as
-            # it bypasses the OS shell and we can thus count on a 1-to-1 process
-            # creation and that the PID we get will be for the actual process.
-            pid = Process.spawn( RbConfig.ruby, RUNNER, *argv )
+            process = ChildProcess.build( RbConfig.ruby, RUNNER, *argv )
+            process.detach = true
+            process.start
+
+            begin
+                pid = process.pid
+
+            # For JRuby on MS Windows, make up our own PID.
+            rescue NotImplementedError
+                loop do
+                    pid = rand(99999)
+                    break if !@processes.include?( pid )
+                end
+            end
+            @processes[pid] = process
         end
 
-        self << pid
         pid
     end
 
