@@ -158,6 +158,11 @@ module Utilities
         URI.normalize( url )
     end
 
+    # @see URI.full_and_absolute?
+    def full_and_absolute_url?( url )
+        Arachni::URI.full_and_absolute?( url.to_s )
+    end
+
     # @param   [String]   url
     #
     # @return  [String]   path

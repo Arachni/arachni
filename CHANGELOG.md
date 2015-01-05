@@ -48,7 +48,10 @@
     - Added `#import_metadata`, importing `#metadata` from other page.
     - `DOM`
         - `#restore` -- Added debugging messages.
+- `Utilities`
+    - Added `.full_and_absolute_url?`.
 - `URI`
+    - Added `.full_and_absolute?`.
     - `Scope`
         - `#auto_redundant?` -- Only consider URLs with query parameters.
 - `Browser`

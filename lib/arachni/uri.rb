@@ -465,6 +465,20 @@ class URI
 
             parse( url ).query_parameters
         end
+
+        # @param    [String]    url
+        #   URL to check.
+        #
+        # @return   [Bool]
+        #   `true` is the URL is full and absolute, `false` otherwise.
+        def full_and_absolute?( url )
+            return false if url.to_s.empty?
+
+            parsed = parse( url.to_s )
+            return false if !parsed
+
+            parsed.absolute?
+        end
     end
 
     # @note Will discard the fragment component, if there is one.

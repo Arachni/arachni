@@ -292,6 +292,26 @@ describe Arachni::URI do
         end
     end
 
+    describe '.full_and_absolute?' do
+        context 'when given a nil URL' do
+            it 'returns false' do
+                described_class.full_and_absolute?( nil ).should be_false
+            end
+        end
+
+        context 'when given an non absolute URL' do
+            it 'returns false' do
+                described_class.full_and_absolute?( '433' ).should be_false
+            end
+        end
+
+        context 'when given an absolute URL' do
+            it 'returns true' do
+                described_class.full_and_absolute?( 'http://stuff/' ).should be_true
+            end
+        end
+    end
+
     describe '#initialize' do
         context String do
             it 'normalizes and parse the string' do
