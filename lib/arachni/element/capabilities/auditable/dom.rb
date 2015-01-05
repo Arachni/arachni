@@ -7,7 +7,6 @@
 =end
 
 require 'forwardable'
-require_relative '../with_node'
 
 module Arachni
 module Element::Capabilities
@@ -17,7 +16,6 @@ module Auditable
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module DOM
-    include WithNode
     include Auditable
     extend ::Forwardable
 

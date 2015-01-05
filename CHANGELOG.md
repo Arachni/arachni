@@ -15,7 +15,10 @@
             - Added `#use_browsers?`, determining whether system options and
                 capabilities allow for browsers to be used.
             - `#wait_for_browsers?` => `#wait_for_browser_cluster?`
-- `Element` -- Renamed `#html` to `#source`.
+- `Element`
+    - All
+        - Renamed `#html` to `#source`.
+        - Moved element-specific capabilities to their own files.
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
     - `Form`

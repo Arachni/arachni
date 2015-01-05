@@ -274,7 +274,7 @@ shared_examples_for 'mutable' do |options = {}|
                 end
                 describe false do
                     it 'does not use the seed as a parameter name' do
-                        described_class.any_instance.
+                        mutable.class.any_instance.
                             stub(:valid_input_name_data?) { |name| name != seed }
 
                         mutable.mutations( seed, parameter_names: false ).
@@ -367,7 +367,7 @@ shared_examples_for 'mutable' do |options = {}|
         context 'when the payload is not supported' do
             it 'returns an empty array' do
                 mutable
-                described_class.any_instance.stub(:valid_input_data?) { |i| i != '1' }
+                mutable.class.any_instance.stub(:valid_input_data?) { |i| i != '1' }
 
                 mutable.mutations('1', skip_original: true ).size.should == 0
             end
@@ -378,7 +378,7 @@ shared_examples_for 'mutable' do |options = {}|
                         select { |m| m.affected_input_value.include? seed }.
                         size.should > 0
 
-                    described_class.any_instance.
+                    mutable.class.any_instance.
                         stub(:valid_input_value_data?) { |value| value.include? seed }
 
                     mutable.mutations('1').

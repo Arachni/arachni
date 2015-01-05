@@ -14,13 +14,17 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class XML < Base
-    include Capabilities::WithSource
-    include Capabilities::Analyzable
+    # Load and include all JSON-specific capability overrides.
+    lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
+    Dir.glob( lib ).each { |f| require f }
 
-    class Error < Arachni::Element::Error
-        class MissingSource < Error
-        end
-    end
+    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Analyzable
+    include Arachni::Element::Capabilities::WithSource
+
+    # XML-specific overrides.
+    include Capabilities::Inputtable
+    include Capabilities::Mutable
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -37,7 +41,7 @@ class XML < Base
 
         super( options )
 
-        fail Error::MissingSource if !@source
+        fail Arachni::Element::Capabilities::WithSource::Error::MissingSource if !@source
 
         @inputs = options[:inputs] || {}
         if @inputs.empty?
@@ -48,21 +52,6 @@ class XML < Base
         end
 
         @default_inputs = self.inputs.dup.freeze
-    end
-
-    # Overrides {Capabilities::Mutable#each_mutation} to handle XML-specific
-    # limitations.
-    #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
-    #
-    # @see Capabilities::Mutable#each_mutation
-    def each_mutation( payload, options = {}, &block )
-        options.delete( :parameter_names )
-        options.delete( :with_extra_parameter )
-        super( payload, options, &block )
     end
 
     # @return   [String]
@@ -80,16 +69,6 @@ class XML < Base
 
     def to_s
         to_xml
-    end
-
-    # @param    [String]    name
-    #   Input name.
-    #
-    # @return   [Bool]
-    #   `true` if the `name` is a valid CSS path for the XML {#source},
-    #   `false` otherwise.
-    def valid_input_name?( name )
-        @inputs.include? name
     end
 
     # @return   [Hash]

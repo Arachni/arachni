@@ -12,6 +12,11 @@ module Element::Capabilities
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module WithSource
 
+    class Error < Arachni::Element::Error
+        class MissingSource < Error
+        end
+    end
+
     # @return   [String]
     #   Source for the element.
     attr_accessor :source

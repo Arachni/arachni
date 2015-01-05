@@ -13,7 +13,7 @@ class Cookie
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < Base
-    include Capabilities::Auditable::DOM
+    include Arachni::Element::Capabilities::Auditable::DOM
 
     def initialize( options )
         super

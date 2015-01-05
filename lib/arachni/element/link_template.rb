@@ -17,9 +17,17 @@ module Arachni::Element
 class LinkTemplate < Base
     require_relative 'link_template/dom'
 
-    include Capabilities::WithNode
+    # Load and include all link-template-specific capability overrides.
+    lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
+    Dir.glob( lib ).each { |f| require f }
+
+    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Analyzable
+
+    # LinkTemplate-specific overrides.
     include Capabilities::WithDOM
-    include Capabilities::Analyzable
+    include Capabilities::Inputtable
+    include Capabilities::Auditable
 
     INVALID_INPUT_DATA = [
         # Protocol URLs require a // which we can't preserve.
@@ -63,37 +71,6 @@ class LinkTemplate < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # @return   [DOM]
-    def dom
-        return @dom if @dom
-        return if !dom_data
-
-        super
-    end
-
-    # @param    [String]    name
-    #   Input name.
-    #
-    # @return   [Bool]
-    #   `true` if the `name` can be found as a named capture in {#template},
-    #   `false` otherwise.
-    def valid_input_name?( name )
-        return if !@template
-        @template.names.include? name
-    end
-
-    # @param    [String]    data
-    #   Input data.
-    #
-    # @return   [Bool]
-    #   `true` if the `data` don't contain strings specified in
-    #   #{INVALID_INPUT_DATA}, `false` otherwise.
-    #
-    # @see INVALID_INPUT_DATA
-    def valid_input_data?( data )
-        !INVALID_INPUT_DATA.find { |c| data.include? c }
-    end
-
     # @return   [Hash]
     #   Simple representation of self in the form of `{ {#action} => {#inputs} }`.
     def simple
@@ -117,10 +94,6 @@ class LinkTemplate < Base
 
     def decode( *args )
         self.class.decode( *args )
-    end
-
-    def coverage_id
-        dom_data ? "#{super}:#{dom_data[:inputs].keys.sort}" : super
     end
 
     def id
@@ -192,7 +165,7 @@ class LinkTemplate < Base
                 next if !(href = to_absolute( link['href'], base_url ))
 
                 template, inputs = extract_inputs( href, templates )
-                next if !template && !DOM.data_from_node( link )
+                next if !template && !self::DOM.data_from_node( link )
 
                 if (parsed_url = Arachni::URI( href ))
                     next if parsed_url.scope.out?
@@ -244,14 +217,6 @@ class LinkTemplate < Base
     end
 
     private
-
-    def dom_data
-        return @dom_data if @dom_data
-        return if @dom_data == false
-        return if !node
-
-        @dom_data ||= (DOM.data_from_node( node ) || false)
-    end
 
     def http_request( opts, &block )
         opts.delete :parameters

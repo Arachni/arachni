@@ -13,7 +13,8 @@ class LinkTemplate
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < Base
-    include Capabilities::Auditable::DOM
+    include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::Capabilities::Auditable::DOM
 
     # @return   [String, nil]
     #   URL fragment.

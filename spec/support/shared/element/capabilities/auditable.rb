@@ -265,7 +265,7 @@ shared_examples_for 'auditable' do |options = {}|
                         payload = 'stuff-here'
                         called  = 0
 
-                        described_class.any_instance.stub(:valid_input_data?) { |i| i != payload }
+                        auditable.class.any_instance.stub(:valid_input_data?) { |i| i != payload }
 
                         auditable.audit( payload,
                                          format: [ Arachni::Check::Auditor::Format::STRAIGHT ],

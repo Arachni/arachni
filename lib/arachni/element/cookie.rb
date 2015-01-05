@@ -20,8 +20,17 @@ module Arachni::Element
 class Cookie < Base
     require_relative 'cookie/dom'
 
+    # Load and include all cookie-specific capability overrides.
+    lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
+    Dir.glob( lib ).each { |f| require f }
+
+    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Analyzable
+
+    # Cookie-specific overrides.
     include Capabilities::WithDOM
-    include Capabilities::Analyzable
+    include Capabilities::Inputtable
+    include Capabilities::Mutable
 
     # Default cookie values
     DEFAULT = {
@@ -84,12 +93,6 @@ class Cookie < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # @return   [DOM]
-    def dom
-        return if inputs.empty?
-        super
-    end
-
     # Indicates whether the cookie must be only sent over an encrypted channel.
     #
     # @return   [Bool]
@@ -140,106 +143,6 @@ class Cookie < Base
     #   `key` and the cookie value as `value`.
     def simple
         self.inputs.dup
-    end
-
-    # @example
-    #    p c = Cookie.from_set_cookie( 'http://owner-url.com', 'session=stuffstuffstuff' ).first
-    #    #=> ["session=stuffstuffstuff"]
-    #
-    #    p c.inputs
-    #    #=> {"session"=>"stuffstuffstuff"}
-    #
-    #    p c.inputs = { 'new-name' => 'new-value' }
-    #    #=> {"new-name"=>"new-value"}
-    #
-    #    p c
-    #    #=> new-name=new-value
-    #
-    # @param    [Hash]  inputs
-    #   Sets inputs.
-    def inputs=( inputs )
-        k = inputs.keys.first.to_s
-        v = inputs.values.first.to_s
-
-        @data[:name]  = k
-        @data[:value] = v
-
-        if k.to_s.empty?
-            super( {} )
-        else
-            super( { k => v } )
-        end
-    end
-
-    # Overrides {Capabilities::Mutable#each_mutation} to handle cookie-specific
-    # limitations and the {Arachni::OptionGroups::Audit#cookies_extensively} option.
-    #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
-    #
-    # @see Capabilities::Mutable#each_mutation
-    def each_mutation( payload, options = {}, &block )
-        options              = prepare_mutation_options( options )
-        parameter_names      = options.delete( :parameter_names )
-        with_extra_parameter = options.delete( :with_extra_parameter )
-        extensively          = options[:extensively]
-        extensively          = Arachni::Options.audit.cookies_extensively? if extensively.nil?
-
-        super( payload, options ) do |element|
-            yield element
-
-            next if !extensively
-            element.each_extensive_mutation( element, &block )
-        end
-
-        if with_extra_parameter
-            if valid_input_name?( EXTRA_NAME )
-                each_formatted_payload( payload, options[:format] ) do |format, formatted_payload|
-
-                    element                     = self.dup
-                    element.affected_input_name = EXTRA_NAME
-                    element.inputs              = { EXTRA_NAME => formatted_payload }
-                    element.format              = format
-                    yield element if block_given?
-                end
-            else
-                print_debug_level_2 'Extra name not supported as input name by' <<
-                                        " #{audit_id}: #{payload.inspect}"
-            end
-        end
-
-        if parameter_names
-            if valid_input_name_data?( payload )
-                element                     = self.dup
-                element.affected_input_name = FUZZ_NAME
-                element.inputs              = { payload => FUZZ_NAME_VALUE }
-                yield element if block_given?
-            else
-                print_debug_level_2 'Payload not supported as input name by' <<
-                                        " #{audit_id}: #{payload.inspect}"
-            end
-        end
-
-        nil
-    end
-
-    def each_extensive_mutation( mutation )
-        return if orphan?
-
-        (auditor.page.links | auditor.page.forms).each do |e|
-            next if e.inputs.empty?
-
-            c = e.dup
-            c.affected_input_name = "Mutation for the '#{name}' cookie"
-            c.auditor = auditor
-            c.audit_options[:submit] ||= {}
-            c.audit_options[:submit][:cookies] = mutation.inputs.dup
-            c.inputs = Arachni::Options.input.fill( c.inputs.dup )
-
-            yield c
-        end
     end
 
     # Uses the method name as a key to cookie attributes in {DEFAULT}.

@@ -16,10 +16,19 @@ module Arachni::Element
 class Form < Base
     require_relative 'form/dom'
 
-    include Capabilities::WithNode
+    # Load and include all form-specific capability overrides.
+    lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
+    Dir.glob( lib ).each { |f| require f }
+
+    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Analyzable
+    include Arachni::Element::Capabilities::Refreshable
+
+    # Form-specific overrides.
     include Capabilities::WithDOM
-    include Capabilities::Analyzable
-    include Capabilities::Refreshable
+    include Capabilities::Auditable
+    include Capabilities::Submittable
+    include Capabilities::Mutable
 
     # {Form} error namespace.
     #
@@ -92,28 +101,8 @@ class Form < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # @return   [DOM]
-    def dom
-        return @dom if @dom
-        return if !node || inputs.empty?
-        super
-    end
-
     def force_train?
         mutation_with_original_values? || mutation_with_sample_values?
-    end
-
-    # @param    (see Capabilities::Submittable#action=)
-    # @@return  (see Capabilities::Submittable#action=)
-    def action=( url )
-        if self.method == :get
-            rewritten   = uri_parse( url ).rewrite
-            self.inputs = rewritten.query_parameters.merge( self.inputs || {} )
-
-            super rewritten.without_query
-        else
-            super url
-        end
     end
 
     # @param    [String]    input
@@ -135,130 +124,6 @@ class Form < Base
     #   A simple representation of self including attributes and inputs.
     def simple
         @initialization_options.merge( url: url, action: action, inputs: inputs )
-    end
-
-    # @return   [Bool]
-    #   `true` if the element has not been mutated, `false` otherwise.
-    def mutation_with_original_values?
-        !!@mutation_with_original_values
-    end
-
-    def mutation_with_original_values
-        @mutation_with_original_values = true
-    end
-
-    # @return   [Bool]
-    #   `true` if the element has been populated with sample
-    #   ({Arachni::OptionGroups::Input.fill}) values, `false` otherwise.
-    #
-    # @see Arachni::OptionGroups::Input
-    def mutation_with_sample_values?
-        !!@mutation_with_sample_values
-    end
-
-    def mutation_with_sample_values
-        @mutation_with_sample_values = true
-    end
-
-    def audit_status_message
-        override = nil
-        if mutation_with_original_values?
-            override = 'original'
-        elsif mutation_with_sample_values?
-            override = 'sample'
-        end
-
-        if override
-            "Submitting form with #{override} values for #{inputs.keys.join(', ')}" <<
-                " at '#{@action}'."
-        else
-            super
-        end
-    end
-
-    # @param   (see Capabilities::Auditable#audit_id)
-    # @return  (see Capabilities::Auditable#audit_id)
-    def audit_id( payload = nil )
-        force_train? ? id : super( payload )
-    end
-
-    # Overrides {Arachni::Element::Mutable#each_mutation} adding support
-    # for mutations with:
-    #
-    # * Sample values (filled by {Arachni::OptionGroups::Input.fill}).
-    # * Original values.
-    # * Password fields requiring identical values (in order to pass
-    #   server-side validation)
-    #
-    # @param    [String]    payload
-    #   Payload to inject.
-    # @param    [Hash]      opts
-    #   Mutation options.
-    # @option   opts    [Bool]  :skip_original
-    #   Whether or not to skip adding a mutation holding original values and
-    #   sample values.
-    #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
-    #
-    # @see Capabilities::Mutable#each_mutation
-    # @see Arachni::OptionGroups::Input.fill
-    def each_mutation( payload, opts = {} )
-        opts = MUTATION_OPTIONS.merge( opts )
-
-        generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutable_id )
-
-        # Completely remove fake inputs prior to mutation generation, they'll
-        # be restored at the end of this method.
-        pre_inputs = @inputs
-        @inputs    = @inputs.reject{ |name, _| fake_field?( name ) }
-
-        super( payload, opts ) do |elem|
-            elem.mirror_password_fields
-            yield elem if !generated.include?( elem )
-            generated << elem
-        end
-
-        return if opts[:skip_original]
-
-        elem = self.dup
-        elem.mutation_with_original_values
-        elem.affected_input_name = ORIGINAL_VALUES
-        yield elem if !generated.include?( elem )
-        generated << elem
-
-        # Default values, in case they reveal new resources.
-        if node
-            inputs.keys.each do |input|
-                next if field_type_for( input ) != :select
-
-                node.xpath( "select[@name=\"#{input}\"]" ).css('option').each do |option|
-                    try_input do
-                        elem = self.dup
-                        elem.mutation_with_original_values
-                        elem.affected_input_name  = input
-                        elem.affected_input_value = option['value'] || option.text
-                        yield elem if !generated.include?( elem )
-                        generated << elem
-                    end
-                end
-
-            end
-        end
-
-        try_input do
-            # Sample values, in case they reveal new resources.
-            elem = self.dup
-            elem.inputs = Arachni::Options.input.fill( inputs.dup )
-            elem.affected_input_name = SAMPLE_VALUES
-            elem.mutation_with_sample_values
-            yield elem if !generated.include?( elem )
-            generated << elem
-        end
-    ensure
-        @inputs = pre_inputs
     end
 
     def mirror_password_fields
