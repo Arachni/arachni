@@ -470,11 +470,11 @@ class Issue
     def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
+            next if ivar == :@parent
+
             data[ivar.to_s.gsub('@','')] =
                 instance_variable_get( ivar ).to_rpc_data_or_self
         end
-
-        data.delete 'parent'
 
         if data['check'] && data['check'][:elements]
             data['check'] = data['check'].dup
