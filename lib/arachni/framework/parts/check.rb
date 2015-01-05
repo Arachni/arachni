@@ -71,7 +71,7 @@ module Check
         # even bother running it.
         if !check.supports_platforms?( Options.platforms )
             print_info "Check #{check.shortname} does not support: " <<
-                           Options.platforms.join( ', ' )
+                           Options.platforms.join( ' + ' )
             return false
         end
 
