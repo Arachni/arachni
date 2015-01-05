@@ -77,6 +77,8 @@ module Serializer
     # @return   [String]
     #   Decompressed string.
     def decompress( string )
+        return '' if string.to_s.empty?
+
         # Just an ID representing a serialized, empty data structure.
         return string if string.size == 1
 
