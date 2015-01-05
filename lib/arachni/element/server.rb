@@ -50,13 +50,13 @@ class Server < Base
     #   the HTTP response.
     #
     # @return   [Object]
-    #   * `nil` if no URL was provided.
-    #   * `false` if the request couldn't be fired.
+    #   * `false` if an invalid URL was provided.
     #   * `true` if everything went fine.
     #
     # @see #remote_file_exist?
     def log_remote_file_if_exists( url, silent = false, &block )
-        return nil if !url
+        # Make sure the URL is valid.
+        return false if !full_and_absolute_url?( url )
 
         auditor.print_status( "Checking for #{url}" ) if !silent
         remote_file_exist?( url ) do |bool, response|
@@ -65,7 +65,6 @@ class Server < Base
 
             @candidates << [response, block]
         end
-        true
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
@@ -78,7 +77,14 @@ class Server < Base
     # @param    [Block] block
     #   Block to be passed  `true` if the resource exists or `false` otherwise
     #   and the response for the resource check.
+    #
+    # @return   [Object]
+    #   * `false` if an invalid URL was provided.
+    #   * `true` if everything went fine.
     def remote_file_exist?( url, &block )
+        # Make sure the URL is valid.
+        return false if !full_and_absolute_url?( url )
+
         if http.needs_custom_404_check?( url )
             http.get( url, performer: self ) do |r|
                 if r.code == 200
@@ -93,7 +99,7 @@ class Server < Base
             end
         end
 
-        nil
+        true
     end
     alias :remote_file_exists? :remote_file_exist?
 
