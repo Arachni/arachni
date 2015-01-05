@@ -348,7 +348,10 @@ class Javascript
         taints = [@taint]
         # Include cookie names and values in the trace so that the browser will
         # be able to infer whether they're being used, to avoid unnecessary audits.
-        if Options.audit.cookie_doms?
+        #
+        # Also, make sure we've got a Watir browser, this may be a delayed
+        # request and hit us in the middle of a respawn.
+        if Options.audit.cookie_doms? && @browser.watir
             taints |= @browser.cookies.map { |c| c.inputs.to_a }.flatten
         end
         taints = taints.flatten.reject { |v| v.to_s.empty? }
