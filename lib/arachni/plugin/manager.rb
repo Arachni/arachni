@@ -84,7 +84,7 @@ class Manager < Arachni::Component::Manager
 
         return if @jobs.empty?
 
-        print_status 'Waiting for plugins to finish preparing...'
+        print_status 'Preparing plugins...'
         self.size.times { prepared_signals.pop }
         print_status '... done.'
     end
