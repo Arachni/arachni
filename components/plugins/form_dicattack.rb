@@ -11,9 +11,6 @@
 class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
 
     def prepare
-        framework_pause
-        print_info 'System paused.'
-
         @url = framework.options.url
 
         @users   = File.read( options[:username_list] ).split( "\n" )
@@ -28,6 +25,9 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
     end
 
     def run
+        framework_pause
+        print_info 'System paused.'
+
         form = session.find_login_form(
             url:    @url,
             inputs: [ @user_field, @passwd_field ]

@@ -21,12 +21,12 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
     def prepare
         script = IO.read( @options[:script] )
         @script = proc { |browser| eval script }
-
-        framework_pause
-        print_info 'System paused.'
     end
 
     def run
+        framework_pause
+        print_info 'System paused.'
+
         session.record_login_sequence do |browser|
             print_info 'Running the script.'
             @script.call browser ? browser.watir : nil

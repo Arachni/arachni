@@ -32,11 +32,9 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         'for other resources of similar type. This is a strong indication that ' +
         'the logged issue is a false positive.'
 
-    def prepare
-        wait_while_framework_running
-    end
-
     def run
+        wait_while_framework_running
+
         # URL path => Issue hashes.
         issue_digests_per_path = {}
 

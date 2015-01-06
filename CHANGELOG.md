@@ -86,6 +86,10 @@
 - `Check`
     - `Auditor`
         - `#each_candidate_dom_element` -- Yield element DOMs instead of parent elements.
+- `Plugin`
+    - `Manager`
+        - `#run` -- Optimized plugin initialization by using a queue to signal
+            a ready-state, instead of blocking for 1 second.
 -  Checks
     - Active
         - Added
@@ -96,6 +100,9 @@
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
 - Plugins
+    - All
+        - Updated `#prepare` methods to not block, in accordance with the new
+            `Plugin::Manager#run` behavior.
     - `email_notify`
         - Added `domain` option.
         - Fixed extension for `html` reporter.

@@ -11,9 +11,6 @@
 class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
 
     def prepare
-        framework_pause
-        print_info 'System paused.'
-
         @url = framework.options.url.to_s
 
         @users   = File.read( options[:username_list] ).split( "\n" )
@@ -28,6 +25,9 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
             print_info 'Aborting...'
             return
         end
+
+        framework_pause
+        print_info 'System paused.'
 
         url = uri_parse( @url )
 

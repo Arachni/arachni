@@ -36,8 +36,11 @@ class Base < Component::Base
 
     # @note **OPTIONAL**
     #
-    # Gets called right after the plugin is initialized and it used to prepare
-    # its data.
+    # Gets called right after the plugin is initialized and is used to prepare
+    # its data or setup hooks.
+    #
+    # This method should not block as the system will wait for it to return prior
+    # to progressing.
     #
     # @abstract
     def prepare
@@ -58,6 +61,10 @@ class Base < Component::Base
     # @note **REQUIRED**
     #
     # Gets called right after {#prepare} and delivers the plugin payload.
+    #
+    # This method will be ran in its own thread, in parallel to any other system
+    # operation. However, once its job is done, the system will wait for this
+    # method to return prior to exiting.
     #
     # @abstract
     def run

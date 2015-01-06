@@ -16,12 +16,10 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
-    def prepare
+    def run
         framework_pause
         print_status 'System paused.'
-    end
 
-    def run
         # if the 'vectors' option is an array at this point then someone fed
         # them to us programmatically
         if !options[:vectors].is_a? Array

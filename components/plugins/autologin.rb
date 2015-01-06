@@ -24,9 +24,6 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     }
 
     def prepare
-        framework_pause
-        print_info 'System paused.'
-
         @parameters = request_parse_body( options[:parameters] )
         @verifier   = Regexp.new( options[:check] )
         @url        = options[:url].to_s
@@ -34,6 +31,9 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     end
 
     def run
+        framework_pause
+        print_info 'System paused.'
+
         session.configure( url: @url, inputs: @parameters )
 
         response = begin

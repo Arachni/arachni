@@ -37,10 +37,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     SESSION_TOKEN_COOKIE = 'arachni.proxy.session_token'
 
     def prepare
-        # don't let the framework run just yet
-        framework_pause
-        print_info 'System paused.'
-
         require_relative 'proxy/template_scope'
 
         @server = Arachni::HTTP::ProxyServer.new(
@@ -56,6 +52,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def run
+        framework_pause
+        print_info 'System paused.'
+
         print_status "Listening on: http://#{@server[:BindAddress]}:#{@server[:Port]}"
 
         print_info "Control panel URL: #{url_for( :panel )}"
