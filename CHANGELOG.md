@@ -19,6 +19,8 @@
     - All
         - Renamed `#html` to `#source`.
         - Moved element-specific capabilities to their own files.
+    - `Cookie`
+            - `.encode` -- Encode `=` even when in value.
     - `JSON` -- Represents JSON input vectors.
     - `XML` -- Represents XML input vectors.
     - `Form`
