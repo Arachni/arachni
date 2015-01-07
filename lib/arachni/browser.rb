@@ -463,30 +463,35 @@ class Browser
         javascript.dom_elements_with_events.each do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
-            events     = element['events']
+            events     = element['events'] +
+                Javascript.select_event_attributes( attributes ).to_a
+            element_id = attributes['id'].to_s
 
             case tag_name
                 when 'a'
-                    href = attributes['href'].to_s
+                    href        = attributes['href'].to_s
+                    element_id << href
 
                     if !href.empty?
                         if href.downcase.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
                             absolute = to_absolute( href, current_url )
-                            if !skip_path?( absolute )
-                                events << [ :click, absolute ]
-                            end
+                            next if skip_path?( absolute )
+
+                            events << [ :click, href ]
                         end
                     else
                         events << [ :click, current_url ]
                     end
 
                 when 'input', 'textarea', 'select'
-                    events << [ tag_name.to_sym ]
+                    events     << [ tag_name.to_sym ]
+                    element_id << attributes['name'].to_s
 
                 when 'form'
-                    action = attributes['action'].to_s
+                    action      = attributes['action'].to_s
+                    element_id << "#{action}#{attributes['name']}"
 
                     if !action.empty?
                         if action.downcase.start_with?( 'javascript:' )
@@ -503,10 +508,11 @@ class Browser
             end
 
             next if events.empty?
-            id << "#{tag_name}#{attributes}#{events}".hash
+
+            id << "#{tag_name}:#{element_id}:#{events}"
         end
 
-        id.sort.to_s
+        id.uniq.sort.to_s
     end
 
     # Triggers all events on all elements (**once**) and captures
@@ -809,7 +815,7 @@ class Browser
 
                     capture_snapshot_with_sink( page )
 
-                    unique_id = self.snapshot_id
+                    unique_id  = self.snapshot_id
                     next if skip_state? unique_id
                     skip_state unique_id
 

@@ -18,6 +18,20 @@ describe Arachni::Browser::Javascript do
 
     subject { @browser.javascript }
 
+    describe '.select_event_attributes' do
+        it 'selects only attributes that are events' do
+            attributes = {
+                onclick:     'blah();',
+                onmouseover: 'blah2();',
+                id:          'my-id'
+            }
+            described_class.select_event_attributes( attributes ).should == {
+                onclick:     'blah();',
+                onmouseover: 'blah2();'
+            }
+        end
+    end
+
     describe '#dom_monitor' do
         it 'provides access to the DOMMonitor javascript interface' do
             @browser.load "#{@taint_tracer_url}/debug"

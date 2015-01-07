@@ -66,10 +66,13 @@
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
     - `#to_page` -- Return empty page on unavailable response data instead of `nil`.
+    - `#snapshot_id` -- Updated to only consider important element attributes
+        (depending on type) instead of all of them.
     - `ElementLocator`
         - `#css` -- Returns a CSS locator.
         - `#locate` -- Updated to use `#css`.
     - `Javascript`
+        - Added `.select_event_attributes`.
         - `DOMMonitor`
             - `#digest` -- Removed `data-arachni-id` from digest.
         - `TaintTracer`

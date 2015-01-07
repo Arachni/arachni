@@ -126,6 +126,17 @@ class Javascript
         GLOBAL_EVENTS | EVENTS_PER_ELEMENT.values.flatten.uniq
     end
 
+    # @param    [Hash]  attributes
+    #   Element attributes.
+    #
+    # @return   [Hash]
+    #   `attributes` that include {.events}.
+    def self.select_event_attributes( attributes = {} )
+        attributes = attributes.my_stringify
+        Hash[(self.events.flatten.map(&:to_s) & attributes.keys).
+            map { |event| [event.to_sym, attributes[event]] }]
+    end
+
     # @param    [Browser]   browser
     def initialize( browser )
         @browser      = browser
