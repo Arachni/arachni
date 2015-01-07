@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- `Element`
+    - `Cookie`
+        - `.encode` -- Encode `=` even when in value.
 - `Page::DOM`
     - `#restore` -- Added debugging messages.
 - `Browser`
