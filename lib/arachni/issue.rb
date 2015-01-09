@@ -158,6 +158,8 @@ class Issue
             f.checks.load( parent ? parent.check[:shortname] : check[:shortname] )
             f.push_to_page_queue referring_page
 
+            f.options.scope.do_not_crawl
+
             f.run
 
             new_issue = Data.issues[digest]
