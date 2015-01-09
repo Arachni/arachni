@@ -154,6 +154,7 @@ class Issue
 
             f.options.url = referring_page.url
             f.options.audit.elements vector.class.type
+            f.options.audit.include_vector_patterns = [affected_input_name]
 
             f.checks.load( parent ? parent.check[:shortname] : check[:shortname] )
             f.push_to_page_queue referring_page
