@@ -194,7 +194,7 @@ class Base < Component::Base
 
     # Will block until the scan finishes.
     def wait_while_framework_running
-        sleep 1 while framework.running?
+        sleep 0.1 while framework.running?
     end
 
 end
