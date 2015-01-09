@@ -495,7 +495,8 @@ class Client
                 get( generator.call,
                      follow_location: true,
                      # This is important, helps us reduce waiting callers.
-                     high_priority: true
+                     high_priority:   true,
+                     performer:       self
                 ) do |c_res|
 
                     gathered_responses += 1
@@ -600,6 +601,12 @@ class Client
         parsed = parsed.dup
         parsed.path = trv_back
         parsed.to_s
+    end
+
+    def inspect
+        s = "#<#{self.class} "
+        statistics.each { |k, v| s << "@#{k}=#{v.inspect} " }
+        s << '>'
     end
 
     private

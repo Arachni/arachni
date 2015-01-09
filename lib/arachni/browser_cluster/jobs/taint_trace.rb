@@ -45,6 +45,7 @@ class TaintTrace < ResourceExploration
         "#<#{self.class}:#{object_id} @resource=#{@resource} " +
             "@taint=#{@taint.inspect} @injector=#{@injector.inspect}>"
     end
+    alias :inspect :to_s
 
 end
 

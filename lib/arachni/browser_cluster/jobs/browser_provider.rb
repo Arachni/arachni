@@ -23,6 +23,7 @@ class BrowserProvider < Job
     def to_s
         "#<#{self.class}:#{object_id} callback=#{browser.master.callback_for( self ) if browser && browser.master}>"
     end
+    alias :inspect :to_s
 
 end
 

@@ -232,6 +232,18 @@ class Request < Message
         "#{headers_string}#{effective_body}"
     end
 
+    def inspect
+        s = "#<#{self.class} "
+        s << "@id=#{id} "
+        s << "@mode=#{mode} "
+        s << "@method=#{method} "
+        s << "@url=#{url.inspect} "
+        s << "@parameters=#{parameters.inspect} "
+        s << "@high_priority=#{high_priority} "
+        s << "@performer=#{performer.inspect}"
+        s << '>'
+    end
+
     # @note Can be invoked multiple times.
     #
     # @param    [Block] block

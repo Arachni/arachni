@@ -210,8 +210,14 @@ class DOM
     end
 
     def to_s
-        "#<#{self.class}:#{object_id} @url=#{@url.inspect}>"
+        s = "#<#{self.class}:#{object_id} "
+        s << "@url=#{@url.inspect} "
+        s << "@transitions=#{transitions.size} "
+        s << "@data_flow_sinks=#{@data_flow_sinks.size} "
+        s << "@execution_flow_sinks=#{@execution_flow_sinks.size}"
+        s << '>'
     end
+    alias :inspect :to_s
 
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.

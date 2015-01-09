@@ -188,6 +188,15 @@ class Worker < Arachni::Browser
         super()
     end
 
+    def inspect
+        s = "#<#{self.class} "
+        s << "pid=#{@pid} "
+        s << "job=#{@job.inspect} "
+        s << "last-url=#{@last_url.inspect} "
+        s << "transitions=#{@transitions.size}"
+        s << '>'
+    end
+
     def self.name
         "BrowserCluster Worker##{object_id}"
     end

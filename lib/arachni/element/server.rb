@@ -107,6 +107,17 @@ class Server < Base
         Arachni::HTTP::Client
     end
 
+    def inspect
+        s = "#<#{self.class} "
+
+        if !orphan?
+            s << "auditor=#{auditor.class} "
+        end
+
+        s << "url=#{url.inspect}"
+        s << '>'
+    end
+
     private
 
     def analyze

@@ -258,6 +258,28 @@ module Mutable
         h
     end
 
+    def inspect
+        s = "#<#{self.class} (#{http_method}) "
+
+        if !orphan?
+            s << "auditor=#{auditor.class} "
+        end
+
+        s << "url=#{url.inspect} "
+        s << "action=#{action.inspect} "
+
+        s << "default-inputs=#{default_inputs.inspect} "
+        s << "inputs=#{inputs.inspect} "
+
+        if mutation?
+            s << "seed=#{seed.inspect} "
+            s << "affected-input-name=#{affected_input_name.inspect} "
+            s << "affected-input-value=#{affected_input_value.inspect}"
+        end
+
+        s << '>'
+    end
+
     def to_rpc_data
         d = super
         d.delete 'immutables'

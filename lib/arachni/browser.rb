@@ -952,6 +952,14 @@ class Browser
         )
     end
 
+    def inspect
+        s = "#<#{self.class} "
+        s << "pid=#{@pid} "
+        s << "last-url=#{@last_url.inspect} "
+        s << "transitions=#{@transitions.size}"
+        s << '>'
+    end
+
     private
 
     def fill_in_form_inputs( form, inputs = nil )
@@ -1262,6 +1270,8 @@ class Browser
     end
 
     def request_handler( request, response )
+        request.performer = self
+
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete( 'X-Arachni-Browser-Auth' )
 

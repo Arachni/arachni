@@ -149,6 +149,25 @@ class Framework
         }
     end
 
+    def inspect
+        stats = statistics
+
+        s = "#<#{self.class} (#{status}) "
+
+        s << "runtime=#{stats[:runtime]} "
+        s << "found-pages=#{stats[:found_pages]} "
+        s << "audited-pages=#{stats[:audited_pages]} "
+        s << "issues=#{Data.issues.size} "
+
+        if @current_url
+            s << "current_url=#{@current_url.inspect} "
+        end
+
+        s << "checks=#{@checks.keys.join(',')} "
+        s << "plugins=#{@plugins.keys.join(',')}"
+        s << '>'
+    end
+
     # @return    [String]
     #   Returns the version of the framework.
     def version

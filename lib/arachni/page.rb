@@ -427,6 +427,7 @@ class Page
     def to_s
         "#<#{self.class}:#{object_id} @url=#{@url.inspect} @dom=#{@dom}>"
     end
+    alias :inspect :to_s
 
     def persistent_hash
         digest.persistent_hash

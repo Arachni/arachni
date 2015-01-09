@@ -56,6 +56,7 @@ class ResourceExploration < Job
     def to_s
         "#<#{self.class}:#{object_id} @resource=#{@resource}>"
     end
+    alias :inspect :to_s
 
 end
 
