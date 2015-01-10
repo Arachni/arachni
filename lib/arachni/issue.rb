@@ -148,6 +148,8 @@ class Issue
     # @return   [Issue,nil]
     #   Fresh {Issue} if the issue still exists, `nil` otherwise.
     def recheck( framework = nil )
+        original_options = Options.to_h
+
         new_issue = nil
         checker = proc do |f|
             referring_page.update_element_audit_whitelist vector
@@ -169,10 +171,13 @@ class Issue
         if framework
             checker.call framework
         else
-            Arachni::Framework.new( &checker )
+            Framework.new( &checker )
         end
 
         new_issue
+    ensure
+        Options.reset
+        Options.set original_options
     end
 
     # @return   [HTTP::Response]
