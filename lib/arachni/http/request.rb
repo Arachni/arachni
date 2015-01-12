@@ -400,7 +400,7 @@ class Request < Message
 
     def marshal_dump
         callbacks = @on_complete.dup
-        performer = @performer ? @performer.dup : nil
+        performer = @performer
 
         @performer   = nil
         @on_complete = []
@@ -412,7 +412,7 @@ class Request < Message
         end
     ensure
         @on_complete = callbacks
-        @performer   = performer.dup if performer
+        @performer   = performer
     end
 
     def marshal_load( h )
