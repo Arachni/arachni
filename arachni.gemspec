@@ -75,16 +75,16 @@ Gem::Specification.new do |s|
     s.add_dependency 'pony',              '1.8'
 
     # Printing complex objects.
-    s.add_dependency 'awesome_print',     '1.2.0'
+    s.add_dependency 'awesome_print',     '~> 1.2.0'
 
     # JSON reporter.
-    s.add_dependency 'json',              '1.8.1'
+    s.add_dependency 'json',              '~> 1.8.1'
 
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '1.6.2.1'
+    s.add_dependency 'nokogiri',          '~> 1.6.5'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'
@@ -97,7 +97,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'kramdown',          '1.4.1'
 
     # Used to scrub Markdown for XSS etc.
-    s.add_dependency 'loofah',            '2.0.0'
+    s.add_dependency 'loofah',            '~> 2.0.0'
 
     s.post_install_message = <<MSG
 
