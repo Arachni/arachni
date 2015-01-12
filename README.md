@@ -15,10 +15,10 @@ This branch contains experimental/WiP code for the
 
 ### Linux and OSX
 
+#### Environment setup
+
 Ruby and library dependency installation can take place via either the official
 build scripts or manually.
-
-#### Environment setup
 
 ##### Using the build scripts
 
