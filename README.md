@@ -54,7 +54,7 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
 ### MS Windows
 
 Windows support is experimental and could use some serious testing.
-Please give it a go and let us know of any (issues)[https://github.com/Arachni/arachni/issues]
+Please give it a go and let us know of any [issues](https://github.com/Arachni/arachni/issues)
 that you may come across.
 
 #### Environment setup
