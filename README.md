@@ -62,14 +62,14 @@ that you may come across.
 Due to stability issues with the official Ruby interpreter, Arachni depends on
 JRuby to run on MS Windows, utilising the Java Virtual Machine.
 
-    * [Install JRuby](https://s3.amazonaws.com/jruby.org/downloads/1.7.18/jruby_windows_x64_jre_1_7_18.exe) -- includes Java.
-    * Install `libcurl`:
-        * [Download curl-7.40.0-win64.zip](http://www.confusedbycode.com/curl/).
-        * Place the contents of the `bin` and `dlls` directories under `C:\jruby-1.7.18\bin`.
-    * Install PhantomJS:
-        * [Download](https://phantomjs.googlecode.com/files/phantomjs-1.9.2-windows.zip).
-        * Place `phantomjs.exe` under `C:\jruby-1.7.18\bin`.
-    * [Install Git](https://msysgit.github.io/).
+* [Install JRuby](https://s3.amazonaws.com/jruby.org/downloads/1.7.18/jruby_windows_x64_jre_1_7_18.exe) -- includes Java.
+* Install `libcurl`:
+    * [Download curl-7.40.0-win64.zip](http://www.confusedbycode.com/curl/).
+    * Place the contents of the `bin` and `dlls` directories under `C:\jruby-1.7.18\bin`.
+* Install PhantomJS:
+    * [Download](https://phantomjs.googlecode.com/files/phantomjs-1.9.2-windows.zip).
+    * Place `phantomjs.exe` under `C:\jruby-1.7.18\bin`.
+* [Install Git](https://msysgit.github.io/).
 
 #### Framework installation
 
