@@ -91,8 +91,9 @@ You can now run Arachni like so:
     exits and be presented with the usual `cmd` prompt. This can be deceiving
     as the scan cleanup will continue. Please wait until the usual end-of-scan
     statistics are printed.
-* You may see notice the sitemap including URLs in the form of `http://127.0.0.1:<port>/`,
-    this has to do with browser communications and is being investigated.
+* You may notice the sitemap including URLs in the form of `http://127.0.0.1:<port>/session/`,
+    which do not correspond with the targetted web application, this has to do
+    with browser communications and is being investigated.
 
 # Arachni - Web Application Security Scanner Framework
 
