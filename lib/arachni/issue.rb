@@ -152,11 +152,13 @@ class Issue
 
         new_issue = nil
         checker = proc do |f|
-            referring_page.update_element_audit_whitelist vector
+            if active?
+                referring_page.update_element_audit_whitelist vector
+                f.options.audit.elements vector.class.type
+                f.options.audit.include_vector_patterns = [affected_input_name]
+            end
 
             f.options.url = referring_page.url
-            f.options.audit.elements vector.class.type
-            f.options.audit.include_vector_patterns = [affected_input_name]
 
             f.checks.load( parent ? parent.check[:shortname] : check[:shortname] )
             f.push_to_page_queue referring_page
