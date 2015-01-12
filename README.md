@@ -46,7 +46,7 @@ very simple and should generally be preferred.
     git checkout v1.1
     bundle install --without prof docs
 
-Then you can now run Arachni using the the executables under `bin/`.
+You can now run Arachni using the the executables under `bin/`.
 
 If you get an error when trying to run Arachni, use `bundle exec` like so:
 `bundle exec <executable>`.
@@ -79,7 +79,7 @@ JRuby to run on MS Windows, utilising the Java Virtual Machine.
     jruby -S gem install bundler
     jruby -S bundle install --without prof docs
 
-Then you can now run Arachni like so:
+You can now run Arachni like so:
 
     jruby bin/arachni http://testhtml5.vulnweb.com/
 
