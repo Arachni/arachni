@@ -11,23 +11,88 @@
 This branch contains experimental/WiP code for the
 [v1.1 milestone](https://github.com/Arachni/arachni/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.1).
 
-## Source
+## Setup
 
-To run from source you first need to setup a
-[development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
+### Linux and OSX
 
-**After** you've setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment),
-run the following to checkout the source code of the `experimental` branch and
-resolve its dependencies:
+Ruby and library dependency installation can take place via either the official
+build scripts or manually.
+
+#### Environment setup
+
+##### Using the build scripts
+
+The build scripts make [setting up a development environment](https://github.com/Arachni/arachni/wiki/Development-environment)
+very simple and should generally be preferred.
+
+##### Using RVM
+
+    # Install system dependencies
+    sudo apt-get install build-essential curl libcurl3 libcurl4-openssl-dev
+
+    # Install GPG keys to verify RVM files.
+    gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3
+
+    # Install RVM and Ruby.
+    curl -sSL https://get.rvm.io | bash -s stable --ruby
+
+    # Use Ruby.
+    rvm use ruby
+
+#### Framework installation
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
     git checkout v1.1
-    bundle install --without prof # to resolve dev dependencies
+    bundle install --without prof docs
 
-Then you can run Arachni using the the executables under `bin/`.<br/>
+Then you can now run Arachni using the the executables under `bin/`.
+
 If you get an error when trying to run Arachni, use `bundle exec` like so:
 `bundle exec <executable>`.
+
+### MS Windows
+
+Windows support is experimental and could use some serious testing.
+Please give it a go and let us know of any (issues)[https://github.com/Arachni/arachni/issues]
+that you may come across.
+
+#### Environment setup
+
+Due to stability issues with the official Ruby interpreter, Arachni depends on
+JRuby to run on MS Windows, utilising the Java Virtual Machine.
+
+    * [Install JRuby](https://s3.amazonaws.com/jruby.org/downloads/1.7.18/jruby_windows_x64_jre_1_7_18.exe) -- includes Java.
+    * Install `libcurl`:
+        * [Download curl-7.40.0-win64.zip](http://www.confusedbycode.com/curl/).
+        * Place the contents of the `bin` and `dlls` directories under `C:\jruby-1.7.18\bin`.
+    * Install PhantomJS:
+        * [Download](https://phantomjs.googlecode.com/files/phantomjs-1.9.2-windows.zip).
+        * Place `phantomjs.exe` under `C:\jruby-1.7.18\bin`.
+    * [Install Git](https://msysgit.github.io/).
+
+#### Framework installation
+
+    git clone git://github.com/Arachni/arachni.git
+    cd arachni
+    git checkout v1.1
+    jruby -S gem install bundler
+    jruby -S bundle install --without prof docs
+
+Then you can now run Arachni like so:
+
+    jruby bin/arachni http://testhtml5.vulnweb.com/
+
+#### Known issues
+
+* You will experience slow start-up times (due to the JVM being launched), but,
+    once the JVM warms up, performance should be quite close to the *nix versions.
+* When aborting a scan via `Ctrl+C` it will appear as if the process immediately
+    exits and be presented with the usual `cmd` prompt. This can be deceiving
+    as the scan cleanup will continue. Please wait until the usual end-of-scan
+    statistics are printed.
+* You may see notice the sitemap including URLs in the form of `http://127.0.0.1:<port>/`,
+    this has to do with browser communications and is being investigated.
 
 # Arachni - Web Application Security Scanner Framework
 
