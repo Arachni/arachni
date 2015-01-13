@@ -552,11 +552,16 @@ class URI
         to_s.split( '?', 2 ).first.to_s
     end
 
-    # @return   [String]    The extension of the URI resource.
+    # @return   [String]
+    #   Name of the resource.
+    def resource_name
+        path.split( '/' ).last
+    end
+
+    # @return   [String, nil]
+    #   The extension of the URI {#file_name}, `nil` if there is none.
     def resource_extension
-        resource_name = path.split( '/' ).last.to_s
-        return if !resource_name.include?( '.' )
-        resource_name.split( '.' ).last
+        resource_name.to_s.split( '.', 2 )[1]
     end
 
     # @return   [String]

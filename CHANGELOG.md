@@ -6,6 +6,7 @@
     - `--audit-parameter-names` -- Injects payloads into parameter names.
     - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
 - `URI::Scope`
+    - Added `#resource_name`.
     - `#redundant?` -- No longer updates counter by default.
     - `#auto_redundant?` -- No longer updates counter by default.
 - `Framework`

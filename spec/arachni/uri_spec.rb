@@ -533,6 +533,20 @@ describe Arachni::URI do
         end
     end
 
+    describe '#resource_name' do
+        context 'when there is no file name' do
+            it 'returns nil' do
+                described_class.new( 'http://stuff.com/' ).resource_name.should be_nil
+            end
+        end
+
+        it 'returns the file name of the resource' do
+            uri = 'http://test.com/direct.ory/resource.php?param=1&param2=2'
+            described_class.new( uri ).resource_name.should == 'resource.php'
+            described_class.new( 'http://stuff.com/test/' ).resource_name.should == 'test'
+        end
+    end
+
     describe '#resource_extension' do
         context 'when there is no extension' do
             it 'returns nil' do
