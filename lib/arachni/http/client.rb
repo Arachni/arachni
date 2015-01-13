@@ -458,7 +458,7 @@ class Client
     #   Checks whether or not the provided response is a custom 404 page.
     # @param  [Block]   block
     #   To be passed true or false depending on the result.
-    def custom_404?( response, &block )
+    def custom_404?( response, refering_url = nil, &block )
         url = response.url
 
         if checked_for_custom_404?( url )
@@ -625,20 +625,22 @@ class Client
         end
     end
 
-    # @return [Array<Proc>]
-    #   Generators for URLs which should elicit a 404 response.
+    # @return   [Array<Proc>]
+    #   Generators for URLs which should elicit 404 responses for different types
+    #   of scenarios.
     def custom_404_probe_generators( url, precision )
-        uri        = uri_parse( url )
-        up_to_path = uri.up_to_path
+        uri           = uri_parse( url )
+        up_to_path    = uri.up_to_path
+        resource_name = uri.resource_name.to_s.split('.').tap(&:pop).join('.')
 
-        trv_back = File.dirname( Arachni::URI(up_to_path).path )
+        trv_back = File.dirname( Arachni::URI( up_to_path ).path )
         trv_back += '/' if trv_back[-1] != '/'
 
         parsed = uri.dup
         parsed.path  = trv_back
         trv_back_url = parsed.to_s
 
-        [
+        probes = [
             # Get a random path with an extension.
             proc { up_to_path + random_string + '.' + random_string[0..precision] },
 
@@ -654,6 +656,13 @@ class Client
             # Get a random directory.
             proc { up_to_path + random_string + '/' }
         ]
+
+        if resource_name
+            # Get an existing resource with a random extension.
+            probes << proc { up_to_path + resource_name + '.' + random_string[0..precision] }
+        end
+
+        probes
     end
 
     def _404_data_for_url( url )

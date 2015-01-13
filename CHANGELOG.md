@@ -13,6 +13,11 @@
         - `#auto_redundant?`
             - No longer updates counter by default.
             - Only consider URLs with query parameters.
+- `HTTP`
+    - `Client`
+        - `#custom_404_probe_generators` -- Added probe to catch cases where
+            handlers respond with HTTP response code `200` for all file extensions
+            for existing resource names.
 - `Framework`
     - `Parts`
         - `Data`
