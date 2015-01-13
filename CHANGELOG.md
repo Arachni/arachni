@@ -5,10 +5,14 @@
 - New options
     - `--audit-parameter-names` -- Injects payloads into parameter names.
     - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
-- `URI::Scope`
+- `URI`
     - Added `#resource_name`.
-    - `#redundant?` -- No longer updates counter by default.
-    - `#auto_redundant?` -- No longer updates counter by default.
+    - Added `.full_and_absolute?`.
+    - `Scope`
+        - `#redundant?` -- No longer updates counter by default.
+        - `#auto_redundant?`
+            - No longer updates counter by default.
+            - Only consider URLs with query parameters.
 - `Framework`
     - `Parts`
         - `Data`
@@ -62,10 +66,6 @@
         - `#restore` -- Added debugging messages.
 - `Utilities`
     - Added `.full_and_absolute_url?`.
-- `URI`
-    - Added `.full_and_absolute?`.
-    - `Scope`
-        - `#auto_redundant?` -- Only consider URLs with query parameters.
 - `Browser`
     - Updated to extract JSON and XML input vectors from HTTP requests.
     - `#shutdown` -- Fixed Selenium exceptions on dead browser process.
