@@ -174,11 +174,10 @@ describe Arachni::Trainer do
                 pages = []
                 trainer.on_new_page { |p| pages << p }
 
-                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 10 }
+                Arachni::Options.scope.redundant_path_patterns = { /match_this/ => 0 }
+                trainer.push( get_response.call )
 
-                100.times { trainer.push( get_response.call ) }
-
-                pages.size.should == 10
+                pages.size.should == 0
             end
         end
     end
