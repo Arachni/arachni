@@ -1959,28 +1959,14 @@ describe Arachni::Browser do
 
         context "with #{Arachni::OptionGroups::Scope}#redundant_path_patterns" do
             it 'respects scope restrictions' do
-                Arachni::Options.scope.redundant_path_patterns = { 'explore' => 3 }
-
-                @browser.load( @url + '/explore' ).response.code.should == 200
-
-                2.times do
-                    @browser.load( @url + '/explore' ).response.code.should == 200
-                end
-
+                Arachni::Options.scope.redundant_path_patterns = { 'explore' => 0 }
                 @browser.load( @url + '/explore' ).response.code.should == 0
             end
         end
 
         context "with #{Arachni::OptionGroups::Scope}#auto_redundant_paths has bee configured" do
             it 'respects scope restrictions' do
-                Arachni::Options.scope.auto_redundant_paths = 3
-
-                @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 200
-
-                2.times do
-                    @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 200
-                end
-
+                Arachni::Options.scope.auto_redundant_paths = 0
                 @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 0
             end
         end
@@ -2072,7 +2058,6 @@ describe Arachni::Browser do
                 end
             end
         end
-
     end
 
     describe '#load' do

@@ -5,8 +5,14 @@
 - New options
     - `--audit-parameter-names` -- Injects payloads into parameter names.
     - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
+- `URI::Scope`
+    - `#redundant?` -- No longer updates counter by default.
+    - `#auto_redundant?` -- No longer updates counter by default.
 - `Framework`
     - `Parts`
+        - `Data`
+            - `#push_to_page_queue` -- Update redundancy scope counters.
+            - `#push_to_url_queue` -- Update redundancy scope counters.
         - `Audit`
             - `#audit_page`
                 - Apply DOM metadata to pages not originated from `Browser#to_page`.

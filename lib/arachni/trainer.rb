@@ -78,7 +78,7 @@ class Trainer
         skip_message = nil
         if @trainings_per_url[response.url] >= MAX_TRAININGS_PER_URL
             skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
-        elsif response.scope.redundant?
+        elsif response.scope.redundant?( true )
             skip_message = 'Matched redundancy filters'
         elsif response.scope.out?
             skip_message = 'Matched exclusion criteria'

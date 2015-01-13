@@ -96,18 +96,22 @@ class Scope < Arachni::Scope
     # @note Will decrease the redundancy counter.
     # @note Will first check with {#auto_redundant?}.
     #
+    # @param    [Bool]   update_counters
+    #   Whether or not to decrement the counters if `self` is redundant.
+    #
     # @return   [Bool]
     #   `true` if the URL is redundant, `false` otherwise.
     #
     # @see OptionGroups::Scope#redundant_path_patterns
-    def redundant?
-        return true if auto_redundant?
+    def redundant?( update_counters = false )
+        return true if auto_redundant?( update_counters )
         url_string = @url.to_s
 
         options.redundant_path_patterns.each do |regexp, count|
             next if !(url_string =~ regexp)
             return true if count == 0
 
+            next if !update_counters
             options.redundant_path_patterns[regexp] -= 1
         end
 
@@ -116,12 +120,15 @@ class Scope < Arachni::Scope
 
     # @note Will decrease the redundancy counter.
     #
+    # @param    [Bool]   update_counters
+    #   Whether or not to increment the counters if `self` is redundant.
+    #
     # @return   [Bool]
     #   `true` if the URL is redundant based on {OptionGroups::Scope#auto_redundant_paths},
     #   `false` otherwise.
     #
     # @see OptionGroups::Scope#auto_redundant_paths
-    def auto_redundant?
+    def auto_redundant?( update_counters = false )
         return false if !options.auto_redundant?
         return false if (params = @url.query_parameters).empty?
 
@@ -131,7 +138,10 @@ class Scope < Arachni::Scope
             return true
         end
 
-        options.auto_redundant_counter[h] += 1
+        if update_counters
+            options.auto_redundant_counter[h] += 1
+        end
+
         false
     end
 
