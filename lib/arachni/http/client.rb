@@ -485,6 +485,7 @@ class Client
         generators = custom_404_probe_generators( url, precision )
 
         real_404s          = 0
+        corrupted          = false
         gathered_responses = 0
         expected_responses = generators.size * precision
 
@@ -498,9 +499,19 @@ class Client
                      high_priority:   true,
                      performer:       self
                 ) do |c_res|
+                    next if corrupted
+
+                    # Well, bad luck, bail out to avoid FPs.
+                    if c_res.code == 0
+                        print_debug "#{__method__} [corrupted]: #{url} #{block}"
+                        corrupted = true
+                        next _404_data_for_url_clear( url )
+                    end
 
                     gathered_responses += 1
-                    real_404s += 1 if c_res.code == 404
+                    if c_res.code == 404
+                        real_404s += 1
+                    end
 
                     if _404_signatures_for_url( url )[i][:body]
                         _404_signatures_for_url( url )[i][:rdiff] =
@@ -647,8 +658,15 @@ class Client
             # Get a random path without an extension.
             proc { up_to_path + random_string },
 
+            # Get a random path without an extension with all caps.
+            #
+            # Yes, this is here due to a real use case...
+            proc { up_to_path + random_string_alpha_capital },
+
             # Move up a dir and get a random file.
             proc { trv_back_url + random_string },
+
+            proc { trv_back_url + random_string_alpha_capital },
 
             # Move up a dir and get a random file with an extension.
             proc { trv_back_url + random_string + '.' + random_string[0..precision] },
@@ -667,6 +685,15 @@ class Client
 
     def _404_data_for_url( url )
         @_404[url_for_custom_404( url )] ||= {
+            analyzed:    false,
+            in_progress: false,
+            waiting:     [],
+            signatures:  []
+        }
+    end
+
+    def _404_data_for_url_clear( url )
+        @_404[url_for_custom_404( url )] = {
             analyzed:    false,
             in_progress: false,
             waiting:     [],
@@ -830,6 +857,10 @@ class Client
 
     def random_string
         Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
+    end
+
+    def random_string_alpha_capital
+        random_string.gsub( /\d/, '' ).upcase
     end
 
     def self.info
