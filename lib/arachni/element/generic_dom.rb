@@ -95,8 +95,8 @@ class GenericDOM < Base
     def to_rpc_data
         data = super
         data['initialization_options'] = data['initialization_options'].dup
-        data['initialization_options'][:transition] =
-            data['initialization_options'][:transition].to_rpc_data
+        data['initialization_options']['transition'] =
+            data['initialization_options']['transition'].to_rpc_data
         data
     end
 

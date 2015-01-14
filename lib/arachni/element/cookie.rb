@@ -191,25 +191,33 @@ class Cookie < Base
 
     def to_rpc_data
         h = super
-        if expires_at
-            h.merge(
-               'initialization_options' => h['initialization_options'].merge( expires: expires_at.to_s ),
-               'data'                   => h['data'].merge( expires: expires_at.to_s )
-            )
-        else
-            h
+
+        if h['initialization_options']['expires']
+            h['initialization_options']['expires'] =
+                h['initialization_options']['expires'].to_s
         end
+
+        h['data'] = h['data'].my_stringify_keys(false)
+        if h['data']['expires']
+            h['data']['expires'] = h['data']['expires'].to_s
+        end
+
+        h
     end
 
     class <<self
 
         def from_rpc_data( data )
-            if data['initialization_options']['expires'] &&
-                !data['initialization_options']['expires'].is_a?( Time )
-
+            if data['initialization_options']['expires']
                 data['initialization_options']['expires'] =
-                    Time.parse( data['initialization_options']['expires'] ) rescue nil
+                    Time.parse( data['initialization_options']['expires'] )
             end
+
+            if data['data']['expires']
+                data['data']['expires'] = Time.parse( data['data']['expires'] )
+            end
+
+            data['data'] = data['data'].my_symbolize_keys(false)
 
             super data
         end

@@ -105,7 +105,7 @@ class LinkTemplate < Base
         return data if !@template
 
         data.merge!( 'template' => @template.source )
-        data['initialization_options'][:template] = data['template']
+        data['initialization_options']['template'] = data['template']
         data.delete 'dom_data'
         data
     end
@@ -113,7 +113,15 @@ class LinkTemplate < Base
     class <<self
 
         def from_rpc_data( data )
-            data['template'] = Regexp.new( data['template'] ) if data['template']
+            if data['initialization_options']['template']
+                data['initialization_options']['template'] =
+                    Regexp.new( data['initialization_options']['template'] )
+            end
+
+            if data['template']
+                data['template'] = Regexp.new( data['template'] )
+            end
+
             super data
         end
 

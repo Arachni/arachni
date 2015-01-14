@@ -152,6 +152,12 @@ class Base
         data.delete 'audit_options'
         data.delete 'scope'
         data['class'] = self.class.to_s
+
+        if data['initialization_options'].is_a? Hash
+            data['initialization_options'] =
+                data['initialization_options'].my_stringify_keys(false)
+        end
+
         data
     end
 

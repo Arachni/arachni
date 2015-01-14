@@ -207,7 +207,7 @@ describe Arachni::Element::LinkTemplate do
 
     describe '#to_rpc_data' do
         it "does not include 'dom_data'" do
-            subject.source =html
+            subject.source = html
             subject.dom.should be_true
 
             subject.to_rpc_data.should_not include 'dom_data'

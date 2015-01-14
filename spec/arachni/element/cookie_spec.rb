@@ -42,6 +42,28 @@ describe Arachni::Element::Cookie do
         end
     end
 
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "converts initialization_options['expires'] to String" do
+            data['initialization_options']['expires'].should == subject.expires_at.to_s
+        end
+
+        it "converts data['expires'] to String" do
+            data['data']['expires'].should == subject.expires_at.to_s
+        end
+    end
+
+    describe '.from_rpc_data' do
+        let(:restored) { described_class.from_rpc_data data }
+        let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
+
+        it "restores initialization_options['expires']" do
+            subject.expires_at.should be_kind_of Time
+            restored.expires_at.to_s.should == subject.expires_at.to_s
+        end
+    end
+
     describe '#mutations' do
         describe :parameter_names do
             it 'creates a new cookie' do
