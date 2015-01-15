@@ -300,7 +300,7 @@ class URI
                     print_debug "Error: #{e}"
                     print_debug_backtrace( e )
     
-                    cache[c_url] = addressable_parse( c_url ).freeze
+                    cache[c_url] = addressable_parse( c_url.recode ).freeze
                 rescue => ex
                     print_debug "Failed to parse '#{c_url}'."
                     print_debug "Error: #{ex}"
@@ -632,7 +632,7 @@ class URI
         q = self.query
         return {} if q.to_s.empty?
 
-        q.recode.split( '&' ).inject( {} ) do |h, pair|
+        q.split( '&' ).inject( {} ) do |h, pair|
             name, value = pair.split( '=', 2 )
             h[::URI.decode( name.to_s )] = ::URI.decode( value.to_s )
             h
