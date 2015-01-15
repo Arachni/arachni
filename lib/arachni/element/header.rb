@@ -16,7 +16,9 @@ module Arachni::Element
 class Header < Base
     include Capabilities::Analyzable
 
-    INVALID_INPUT_DATA = [ "\0" ]
+    INVALID_INPUT_DATA     = [ "\0" ]
+    ENCODE_CHARACTERS      = ["\n", "\r"]
+    ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
 
     def initialize( options )
         super( options )
@@ -74,13 +76,11 @@ class Header < Base
     end
 
     class <<self
-        def encode( header )
-            header = header.to_s
+        def encode( str )
+            str = str.to_s
+            return str if !ENCODE_CHARACTERS.find { |c| str.include? c }
 
-            # Yes, it matters...
-            return header if !(header.include?( "\n" ) || header.include?( "\r" ))
-
-            ::URI.encode( header, "\r\n" )
+            ::URI.encode( str, ENCODE_CHARACTERS_LIST )
         end
 
         def decode( header )
