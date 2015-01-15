@@ -75,7 +75,12 @@ class Header < Base
 
     class <<self
         def encode( header )
-            ::URI.encode( header.to_s, "\r\n" )
+            header = header.to_s
+
+            # Yes, it matters...
+            return header if !(header.include?( "\n" ) || header.include?( "\r" ))
+
+            ::URI.encode( header, "\r\n" )
         end
 
         def decode( header )
