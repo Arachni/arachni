@@ -115,10 +115,19 @@ class Headers < Hash
     private
 
     def format_field_name( field )
+        self.class.format_field_name( field )
+    end
+
+    def self.format_field_name( field )
+        # return field
+
         # If there's a '--' somewhere in there then skip it, it probably is an
         # audit payload.
         return field if field.include?( '--' )
-        field.to_s.split( '-' ).map( &:capitalize ).join( '-' )
+
+        @formatted ||= Hash.new
+        @formatted[field.downcase.hash] ||=
+            field.to_s.split( '-' ).map( &:capitalize ).join( '-' )
     end
 
 end
