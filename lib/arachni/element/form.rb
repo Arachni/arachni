@@ -379,10 +379,7 @@ class Form < Base
         #
         # @return   [String]
         def encode( str )
-            ::URI.encode(
-                ::URI.encode( str.to_s, '+%' ).recode.gsub( ' ', '+' ),
-                ";&\\=\0"
-            )
+            ::URI.encode_www_form_component str.to_s
         end
 
         # Decodes a {String} encoded for an HTTP request's body.
@@ -391,7 +388,7 @@ class Form < Base
         #
         # @return   [String]
         def decode( str )
-            URI.decode( str.to_s.recode.gsub( '+', ' ' ) )
+            ::URI.decode_www_form_component str.to_s
         end
 
     end
