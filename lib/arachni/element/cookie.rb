@@ -165,7 +165,7 @@ class Cookie < Base
     # @return   [String]
     #   To be used in a `Cookie` HTTP request header.
     def to_s
-        "#{encode( name, :name )}=#{encode( value )}"
+        "#{encode( name )}=#{encode( value )}"
     end
 
     # @return   [String]
