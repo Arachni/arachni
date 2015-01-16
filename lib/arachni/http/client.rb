@@ -494,7 +494,6 @@ class Client
 
             precision.times do
                 get( generator.call,
-                     follow_location: true,
                      # This is important, helps us reduce waiting callers.
                      high_priority:   true,
                      performer:       self
