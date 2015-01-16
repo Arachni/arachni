@@ -640,9 +640,10 @@ class Client
     #   Generators for URLs which should elicit 404 responses for different types
     #   of scenarios.
     def custom_404_probe_generators( url, precision )
-        uri           = uri_parse( url )
-        up_to_path    = uri.up_to_path
-        resource_name = uri.resource_name.to_s.split('.').tap(&:pop).join('.')
+        uri                = uri_parse( url )
+        up_to_path         = uri.up_to_path
+        resource_name      = uri.resource_name.to_s.split('.').tap(&:pop).join('.')
+        resource_extension = uri.resource_extension
 
         trv_back = File.dirname( Arachni::URI( up_to_path ).path )
         trv_back += '/' if trv_back[-1] != '/'
@@ -678,6 +679,11 @@ class Client
         if resource_name
             # Get an existing resource with a random extension.
             probes << proc { up_to_path + resource_name + '.' + random_string[0..precision] }
+        end
+
+        if resource_extension
+            # Get a random filename with an existing extension.
+            probes << proc { up_to_path + random_string + '.' + resource_extension }
         end
 
         probes
