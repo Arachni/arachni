@@ -49,7 +49,7 @@ class Cookie < Base
         httponly:    false
     }
 
-    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", "'", '&', '=', ' ']
+    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", "'", '&', '=', ' ', '"']
     ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
 
     attr_reader :data
@@ -394,7 +394,7 @@ class Cookie < Base
         # @return   [String]
         def encode( str )
             str = str.to_s
-            return str if !Header::ENCODE_CHARACTERS.find { |c| str.include? c }
+            return str if !ENCODE_CHARACTERS.find { |c| str.include? c }
 
             ::URI.encode( str, ENCODE_CHARACTERS_LIST )
         end
@@ -409,7 +409,7 @@ class Cookie < Base
         #
         # @return   [String]
         def decode( str )
-            ::URI.decode str.to_s
+            ::URI.decode( str.to_s.gsub('+', ' ' ) )
         end
 
         def keep_for_set_cookie
