@@ -375,7 +375,7 @@ module Differential
 
                 # Check to see if the `true` response we're analyzing
                 # is a custom 404 page.
-                http.custom_404?( result[:response] ) do |is_custom_404|
+                http.dynamic_404_handler._404?( result[:response] ) do |is_custom_404|
                     # If this is a custom 404 page bail out.
                     next if is_custom_404
 

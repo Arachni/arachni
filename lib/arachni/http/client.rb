@@ -19,6 +19,7 @@ require_relative 'headers'
 require_relative 'message'
 require_relative 'request'
 require_relative 'response'
+require_relative 'client/dynamic_404_handler'
 
 # {HTTP} error namespace.
 #
@@ -84,14 +85,6 @@ class Client
     # Default 1 minute timeout for HTTP requests.
     HTTP_TIMEOUT = 60_000
 
-    # Maximum size of the cache that holds 404 signatures.
-    CUSTOM_404_CACHE_SIZE = 50
-
-    # Maximum allowed difference ratio when comparing custom 404 signatures.
-    # The fact that we refine the signatures allows us to set this threshold
-    # really low and still maintain good accuracy.
-    CUSTOM_404_SIGNATURE_THRESHOLD = 0.1
-
     # @return   [String]
     #   Framework target URL, used as reference.
     attr_reader :url
@@ -119,6 +112,9 @@ class Client
     # @return   [Integer]
     #   Amount of responses received for the running requests (of the current burst).
     attr_reader :burst_response_count
+
+    # @return   [Dynamic404Handler]
+    attr_reader :dynamic_404_handler
 
     def initialize
         super
@@ -158,8 +154,7 @@ class Client
 
         @queue_size = 0
 
-        @with_regular_404_handler = Support::LookUp::HashSet.new
-        @_404  = Hash.new
+        @dynamic_404_handler = Dynamic404Handler.new
 
         self
     end
@@ -211,7 +206,7 @@ class Client
             notify_after_each_run
 
             # Prune the custom 404 cache after callbacks have been called.
-            prune_custom_404_cache
+            @dynamic_404_handler.prune
 
             @curr_res_time = 0
             @curr_res_cnt  = 0
@@ -454,163 +449,8 @@ class Client
         notify_on_new_cookies( cookies, response )
     end
 
-    # @param  [Response]  response
-    #   Checks whether or not the provided response is a custom 404 page.
-    # @param  [Block]   block
-    #   To be passed true or false depending on the result.
-    def custom_404?( response, refering_url = nil, &block )
-        url = response.url
-
-        if checked_for_custom_404?( url )
-            result = is_404?( url, response.body )
-            print_debug "#{__method__} [cached]: #{block} #{url} #{result}"
-            return block.call( result )
-        end
-
-        # If someone else is already checking that resource don't bother
-        # duplicating the effort, just let them know that we're waiting on the
-        # results too.
-        if _404_data_for_url( url )[:in_progress]
-            print_debug "#{__method__} [waiting]: #{url} #{block}"
-            _404_data_for_url( url )[:waiting] << [url, response.body, block]
-            return
-        end
-
-        # Call dibs on fingerprinting this url.
-        _404_data_for_url( url )[:in_progress] = true
-
-        print_debug "#{__method__} [checking]: #{url} #{block}"
-
-        precision  = 2
-        generators = custom_404_probe_generators( url, precision )
-
-        real_404s          = 0
-        corrupted          = false
-        gathered_responses = 0
-        expected_responses = generators.size * precision
-
-        generators.each.with_index do |generator, i|
-            _404_signatures_for_url( url )[i] ||= {}
-
-            precision.times do
-                get( generator.call,
-                     # This is important, helps us reduce waiting callers.
-                     high_priority:   true,
-                     performer:       self
-                ) do |c_res|
-                    next if corrupted
-
-                    # Well, bad luck, bail out to avoid FPs.
-                    if c_res.code == 0
-                        print_debug "#{__method__} [corrupted]: #{url} #{block}"
-                        corrupted = true
-                        next _404_data_for_url_clear( url )
-                    end
-
-                    gathered_responses += 1
-                    if c_res.code == 404
-                        real_404s += 1
-                    end
-
-                    if _404_signatures_for_url( url )[i][:body]
-                        _404_signatures_for_url( url )[i][:rdiff] =
-                            _404_signatures_for_url( url )[i][:body].
-                                refine( c_res.body )
-
-                        next if gathered_responses != expected_responses
-
-                        # If we get real 404s flag that there's no handler.
-                        if real_404s == expected_responses
-                            @with_regular_404_handler << url_for_custom_404( url )
-                        end
-
-                        checked_for_custom_404( url )
-
-                        result = is_404?( url, response.body )
-                        print_debug "#{__method__} [checked]: #{block} #{url} #{result}"
-                        block.call result
-
-                        # Process other's request too.
-                        while (waiting = _404_data_for_url( url )[:waiting].pop)
-                            url, body, callback = waiting
-                            result = is_404?( url, body )
-
-                            print_debug "#{__method__} [notify]: #{callback} #{url} #{result}"
-                            callback.call result
-                        end
-
-                        _404_data_for_url( url )[:in_progress] = false
-                    else
-                        _404_signatures_for_url( url )[i][:body] =
-                            Support::Signature.new(
-                                c_res.body, threshold: CUSTOM_404_SIGNATURE_THRESHOLD
-                            )
-                    end
-                end
-            end
-        end
-
-        nil
-    end
-
-    # @param    [String]    url
-    #   URL to check.
-    #
-    # @return   [Bool]
-    #   `true` if the `url` has been checked for the existence of a custom-404
-    #   handler, `false` otherwise.
-    def checked_for_custom_404?( url )
-        _404_data_for_url( url )[:analyzed]
-    end
-
-    # @param    [String]    url
-    #   URL to check.
-    #
-    # @return   [Bool]
-    #   `true` if the `url` has been checked for the existence of a custom-404
-    #   handler but none was identified, `false` otherwise.
-    def checked_but_not_custom_404?( url )
-        @with_regular_404_handler.include?( url_for_custom_404( url ) )
-    end
-
-    # @param    [String]    url
-    #   URL to check.
-    #
-    # @return   [Bool]
-    #   `true` if the `url` needs to be checked for a {#custom_404?}, `false`
-    #   otherwise.
-    def needs_custom_404_check?( url )
-        !checked_for_custom_404?( url ) || !checked_but_not_custom_404?( url )
-    end
-
     def self.method_missing( sym, *args, &block )
         instance.send( sym, *args, &block )
-    end
-
-    # @private
-    def _404_cache
-        @_404
-    end
-
-    def url_for_custom_404( url )
-        parsed = Arachni::URI( url )
-
-        # If we're dealing with a file resource, then its parent directory will
-        # be the applicable custom-404 handler...
-        if parsed.resource_extension
-            trv_back = Arachni::URI( parsed.up_to_path ).path
-
-        # ...however, if we're dealing with a directory, the applicable handler
-        # will be its parent directory.
-        else
-            trv_back = File.dirname( Arachni::URI( parsed.up_to_path ).path )
-        end
-
-        trv_back += '/' if trv_back[-1] != '/'
-
-        parsed = parsed.dup
-        parsed.path = trv_back
-        parsed.to_s
     end
 
     def inspect
@@ -620,119 +460,6 @@ class Client
     end
 
     private
-
-    def prune_custom_404_cache
-        return if @_404.size <= CUSTOM_404_CACHE_SIZE
-
-        @_404.keys.each do |url|
-            # If the path hasn't been analyzed yet skip it.
-            next if !@_404[url][:analyzed]
-
-            # We've done enough...
-            return if @_404.size <= CUSTOM_404_CACHE_SIZE
-
-            @_404.delete( url )
-        end
-    end
-
-    # @return   [Array<Proc>]
-    #   Generators for URLs which should elicit 404 responses for different types
-    #   of scenarios.
-    def custom_404_probe_generators( url, precision )
-        uri                = uri_parse( url )
-        up_to_path         = uri.up_to_path
-        resource_name      = uri.resource_name.to_s.split('.').tap(&:pop).join('.')
-        resource_extension = uri.resource_extension
-
-        trv_back = File.dirname( Arachni::URI( up_to_path ).path )
-        trv_back += '/' if trv_back[-1] != '/'
-
-        parsed = uri.dup
-        parsed.path  = trv_back
-        trv_back_url = parsed.to_s
-
-        probes = [
-            # Get a random path with an extension.
-            proc { up_to_path + random_string + '.' + random_string[0..precision] },
-
-            # Get a random path without an extension.
-            proc { up_to_path + random_string },
-
-            # Get a random path without an extension with all caps.
-            #
-            # Yes, this is here due to a real use case...
-            proc { up_to_path + random_string_alpha_capital },
-
-            # Move up a dir and get a random file.
-            proc { trv_back_url + random_string },
-
-            proc { trv_back_url + random_string_alpha_capital },
-
-            # Move up a dir and get a random file with an extension.
-            proc { trv_back_url + random_string + '.' + random_string[0..precision] },
-
-            # Get a random directory.
-            proc { up_to_path + random_string + '/' }
-        ]
-
-        if resource_name
-            # Get an existing resource with a random extension.
-            probes << proc { up_to_path + resource_name + '.' + random_string[0..precision] }
-        end
-
-        if resource_extension
-            # Get a random filename with an existing extension.
-            probes << proc { up_to_path + random_string + '.' + resource_extension }
-        end
-
-        probes
-    end
-
-    def _404_data_for_url( url )
-        @_404[url_for_custom_404( url )] ||= {
-            analyzed:    false,
-            in_progress: false,
-            waiting:     [],
-            signatures:  []
-        }
-    end
-
-    def _404_data_for_url_clear( url )
-        @_404[url_for_custom_404( url )] = {
-            analyzed:    false,
-            in_progress: false,
-            waiting:     [],
-            signatures:  []
-        }
-    end
-
-    def _404_signatures_for_url( url )
-        _404_data_for_url( url )[:signatures]
-    end
-
-    def checked_for_custom_404( url )
-        _404_data_for_url( url )[:analyzed] = true
-    end
-
-    def is_404?( url, body )
-
-        # First try matching the signatures for the specific URL...
-        _404_data_for_url( url )[:signatures].each do |_404|
-            return true if _404[:rdiff].similar? _404[:body].refine( body )
-        end
-
-        # ...then try the rest for good measure.
-        url = url_for_custom_404( url )
-        @_404.each do |u, data|
-            next if u == url || !data[:analyzed]
-
-            data[:signatures].each do |_404|
-                return true if _404[:rdiff].similar? _404[:body].refine( body )
-            end
-        end
-
-        false
-    end
 
     def run_and_update_statistics
         @running = true
@@ -858,14 +585,6 @@ class Client
 
     def emergency_run?
         @queue_size >= Options.http.request_queue_size && !@running
-    end
-
-    def random_string
-        Digest::SHA1.hexdigest( rand( 9999999 ).to_s )
-    end
-
-    def random_string_alpha_capital
-        random_string.gsub( /\d/, '' ).upcase
     end
 
     def self.info

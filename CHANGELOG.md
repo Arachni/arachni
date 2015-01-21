@@ -15,9 +15,7 @@
             - Only consider URLs with query parameters.
 - `HTTP`
     - `Client`
-        - `#custom_404_probe_generators`
-            - Added probes for dynamic handlers for only file extensions and
-                capital letter filenames.
+        - Overhauled custom-404 identification and moved to `Dynamic404Handler`.
 - `Framework`
     - `Parts`
         - `Data`

@@ -85,10 +85,10 @@ class Server < Base
         # Make sure the URL is valid.
         return false if !full_and_absolute_url?( url )
 
-        if http.needs_custom_404_check?( url )
+        if http.dynamic_404_handler.needs_check?( url )
             http.get( url, performer: self ) do |r|
                 if r.code == 200
-                    http.custom_404?( r ) { |bool| block.call( !bool, r ) }
+                    http.dynamic_404_handler._404?( r ) { |bool| block.call( !bool, r ) }
                 else
                     block.call( false, r )
                 end
