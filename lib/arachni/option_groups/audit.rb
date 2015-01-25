@@ -20,6 +20,10 @@ class Audit < Arachni::OptionGroup
         # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidLinkTemplate < Error
         end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class InvalidElementType < Error
+        end
     end
 
     # @note Default is `true`.
@@ -154,6 +158,8 @@ class Audit < Arachni::OptionGroup
     #   Regular expressions with named captures, serving as templates used to
     #   extract input vectors from paths.
     #
+    # @raise    [Error::InvalidLinkTemplate]
+    #
     # @see Element::LinkTemplate
     def link_templates=( templates )
         return @link_templates = [] if !templates
@@ -191,7 +197,9 @@ class Audit < Arachni::OptionGroup
     #   * `:headers`
     def elements( *element_types )
         element_types.flatten.compact.each do |type|
-            self.send( "#{type}=", true ) rescue self.send( "#{type}s=", true )
+            fail_on_unknown_element_type( type ) do
+                self.send( "#{type}=", true ) rescue self.send( "#{type}s=", true )
+            end
         end
         true
     end
@@ -210,7 +218,9 @@ class Audit < Arachni::OptionGroup
     #   * `:headers`
     def skip_elements( *element_types )
         element_types.flatten.compact.each do |type|
-            self.send( "#{type}=", false ) rescue self.send( "#{type}s=", false )
+            fail_on_unknown_element_type( type ) do
+                self.send( "#{type}=", false ) rescue self.send( "#{type}s=", false )
+            end
         end
         true
     end
@@ -227,9 +237,13 @@ class Audit < Arachni::OptionGroup
     #   * `:headers`
     #
     # @return   [Bool]
+    #
+    # @raise    [Error::InvalidLinkTemplate]
     def elements?( *element_types )
         !(element_types.flatten.compact.map do |type|
-            !!(self.send( "#{type}?" ) rescue self.send( "#{type}s?" ))
+            fail_on_unknown_element_type( type ) do
+                !!(self.send( "#{type}?" ) rescue self.send( "#{type}s?" ))
+            end
         end.uniq.include?( false ))
     end
     alias :element? :elements?
@@ -264,6 +278,16 @@ class Audit < Arachni::OptionGroup
             h[k] = h[k].map(&:to_s)
         end
         h
+    end
+
+    private
+
+    def fail_on_unknown_element_type( type, &block )
+        begin
+            block.call
+        rescue NoMethodError
+            fail Error::InvalidElementType, "Unknown element type: #{type}"
+        end
     end
 
 end
