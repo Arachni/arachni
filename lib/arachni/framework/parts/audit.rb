@@ -20,6 +20,9 @@ module Audit
     # @!method on_page_audit( &block )
     advertise :on_page_audit
 
+    # @!method on_effective_page_audit( &block )
+    advertise :on_effective_page_audit
+
     # @!method after_page_audit( &block )
     advertise :after_page_audit
 
@@ -124,6 +127,8 @@ module Audit
         # For example, if a DOM element has no associated events, there's no
         # point in it getting audited.
         apply_dom_metadata( page )
+
+        notify_on_effective_page_audit( page )
 
         # Run checks which **don't** benefit from fingerprinting first, so that
         # we can use the responses of their HTTP requests to fingerprint the
