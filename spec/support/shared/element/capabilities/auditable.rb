@@ -12,6 +12,11 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     before :each do
+        begin
+            Arachni::Options.audit.elements described_class.type
+        rescue Arachni::OptionGroups::Audit::Error
+        end
+
         @framework ||= Arachni::Framework.new
         @page      = Arachni::Page.from_url( url )
         @auditor   = Auditor.new( @page, @framework )

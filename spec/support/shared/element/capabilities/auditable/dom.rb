@@ -2,6 +2,13 @@ shared_examples_for 'element_dom' do |options = {}|
     it_should_behave_like 'element', options
     it_should_behave_like 'auditable', options.merge( supports_nulls: false )
 
+    before :each do
+        begin
+            Arachni::Options.audit.elements described_class.type
+        rescue Arachni::OptionGroups::Audit::Error
+        end
+    end
+
     def run
         auditor.browser_cluster.wait
     end
