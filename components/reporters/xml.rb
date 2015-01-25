@@ -131,7 +131,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
 
                 xml.plugins {
                     format_plugin_results( false ) do |name, formatter|
-                        xml.send( name ) {
+                        xml.send( "#{name}_" ) {
                             xml.name report.plugins[name][:name]
                             xml.description report.plugins[name][:description]
 
