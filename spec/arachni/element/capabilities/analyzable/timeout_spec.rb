@@ -9,6 +9,8 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :timeout )
+        Arachni::Options.audit.elements :links
+
         @framework = Arachni::Framework.new
     end
 

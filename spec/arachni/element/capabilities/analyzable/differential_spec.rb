@@ -4,6 +4,8 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :differential )
+        Arachni::Options.audit.elements :links
+
         @auditor = Auditor.new( Arachni::Page.from_url( @url ), Arachni::Framework.new )
     end
 
