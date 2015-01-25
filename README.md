@@ -599,6 +599,8 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 - Content-types (`content_types`) -- Logs content-types of server responses aiding in the
     identification of interesting (possibly leaked) files.
+- Vector collector (`vector_collector`) -- Collects information about all seen input vectors
+    which are within the scan scope.
 
 ##### Defaults
 

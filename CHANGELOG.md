@@ -121,6 +121,9 @@
     - `email_notify`
         - Added `domain` option.
         - Fixed extension for `html` reporter.
+    - Added:
+        - `vector_collector` -- Collects information about all seen input vectors
+            which are within the scan scope.
 - Report -- Renamed `#html` to `#source` for all elements.
 
 ## 1.0.6 _(December 07, 2014)_
