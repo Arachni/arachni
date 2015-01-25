@@ -628,6 +628,18 @@ describe Arachni::Page do
         end
     end
 
+    describe '#elements_within_scope' do
+        it 'returns all elements that are within scope' do
+            Arachni::Options.audit.elements :links, :forms, :cookies, :headers
+
+            elements = page.elements
+            element = elements.pop
+            element.scope.stub(:in?) { false }
+
+            page.elements_within_scope.should == (elements - [element])
+        end
+    end
+
     describe '#clear_cache' do
         it 'returns self' do
             subject.clear_cache.should == subject

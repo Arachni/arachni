@@ -312,10 +312,19 @@ class Page
         Platform::Manager[url]
     end
 
-    # @return   [Array]
+    # @return   [Array<Element::Base>]
     #   All page elements.
     def elements
         ELEMENTS.map { |type| send( type ) }.flatten
+    end
+
+    # @return   [Array<Element::Base>]
+    #   All page elements that are within the scope of the scan.
+    def elements_within_scope
+        ELEMENTS.map do |type|
+            next if !Options.audit.element? type
+            send( type ).select { |e| e.scope.in? }
+        end.flatten.compact
     end
 
     # @return    [String]
