@@ -11,7 +11,7 @@ module Element::Capabilities
 module WithScope
 
 # Determines the {Scope scope} status of {Element::Base elements} based on
-# their {Element::Base#action}.
+# their {Element::Base#action} and {Element::Base#type}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Scope < URI::Scope
@@ -21,6 +21,7 @@ class Scope < URI::Scope
     end
 
     def initialize( element )
+        @element = element
         super Arachni::URI( element.action )
     end
 
@@ -28,6 +29,11 @@ class Scope < URI::Scope
     #
     # @return   (see URI::Scope#out?)
     def out?
+        begin
+            return true if !Arachni::Options.audit.element?( @element.type )
+        rescue Arachni::OptionGroups::Audit::Error::InvalidElementType
+        end
+
         super || redundant?
     end
 
