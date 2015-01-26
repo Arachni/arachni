@@ -601,6 +601,7 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
     identification of interesting (possibly leaked) files.
 - Vector collector (`vector_collector`) -- Collects information about all seen input vectors
     which are within the scan scope.
+- Headers collector (`headers_collector`) -- Collects response headers based on specified criteria.
 - Exec (`exec`) -- Calls external executables at different scan stages.
 
 ##### Defaults
