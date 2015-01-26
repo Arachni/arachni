@@ -51,8 +51,5 @@ __URL__link?link_input=blah:
 YAML
     end
 
-    it 'logs the expected results' do
-        run
-        actual_results.should be_eql results
-    end
+    easy_test
 end
