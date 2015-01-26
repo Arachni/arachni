@@ -87,7 +87,14 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
     def self.info
         {
             name:        'Uncommon headers',
-            description: %q{Intercepts HTTP responses and logs uncommon headers.},
+            description: %q{
+Intercepts HTTP responses and logs uncommon headers.
+
+Common headers are:
+
+%s
+
+} % COMMON.to_a.map { |h| "* #{h}" }.join("\n"),
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.3'
         }
