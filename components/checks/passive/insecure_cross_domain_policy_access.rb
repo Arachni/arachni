@@ -10,6 +10,12 @@
 # @version 0.1
 class Arachni::Checks::InsecureCrossDomainPolicyAccess < Arachni::Check::Base
 
+    INSECURE_WILDCARDS = [
+        '*',
+        'http://*',
+        'https://*'
+    ]
+
     def run
         url = "#{page.parsed_url.up_to_path}crossdomain.xml"
         return if audited?( url )
@@ -24,14 +30,18 @@ class Arachni::Checks::InsecureCrossDomainPolicyAccess < Arachni::Check::Base
         policy = Nokogiri::XML( response.body )
         return if !policy
 
-        permissive_access = policy.search( 'allow-access-from[domain="*"]' )
-        return if permissive_access.empty?
+        INSECURE_WILDCARDS.each do |wildcard|
+            permissive_access = policy.search( "allow-access-from[domain='#{wildcard}']" )
+            next if permissive_access.empty?
 
-        log(
-            proof:    permissive_access.to_xml,
-            vector:   Element::Server.new( response.url ),
-            response: response
-        )
+            log(
+                proof:    permissive_access.to_xml,
+                vector:   Element::Server.new( response.url ),
+                response: response
+            )
+            return
+        end
+
     end
 
     def self.info
