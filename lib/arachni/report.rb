@@ -85,6 +85,16 @@ class Report
         self.issues
     end
 
+    # @param    [String]  check
+    #   Check shortname.
+    #
+    # @return    [Array<Issue>]
+    def issues_by_check( check )
+        @issues.map do |_, issue|
+            issue if issue.check[:shortname] == check.to_s
+        end.compact
+    end
+
     # @return    [Array<Issue>]
     #   Logged issues.
     def issues

@@ -147,6 +147,9 @@
         - `headers_collector` -- Collects response headers based on specified criteria.
         - `exec` -- Calls external executables at different scan stages.
 - Report -- Renamed `#html` to `#source` for all elements.
+    - `html`
+        - Summary
+            - Added OWASP Top 10 tab.
 
 ## 1.0.6 _(December 07, 2014)_
 
