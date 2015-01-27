@@ -126,6 +126,12 @@
             headers per host.
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
+    - Passive
+        - Added
+            - `insecure_cross_domain_policy_access` -- Checks `crossdomain.xml`
+                files for `allow-access-from` wildcard policies.
+            - `insecure_cross_domain_policy_headers` -- Checks `crossdomain.xml`
+                files for wildcard `allow-http-request-headers-from` policies.
 - Plugins
     - All
         - Updated `#prepare` methods to not block, in accordance with the new

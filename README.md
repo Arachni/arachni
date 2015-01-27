@@ -560,6 +560,8 @@ Passive checks look for the existence of files, folders and signatures.
 - Missing `Strict-Transport-Security` headers for HTTPS sites (`hsts`).
 - Missing `X-Frame-Options` headers (`x_frame_options`).
 - Insecure CORS policy (`insecure_cors_policy`).
+- Insecure cross-domain policy (allow-access-from) (`insecure_cross_domain_policy_access`)
+- Insecure cross-domain policy (allow-http-request-headers-from) (`insecure_cross_domain_policy_headers`)
 
 #### Reporters
 
