@@ -132,6 +132,8 @@
                 files for `allow-access-from` wildcard policies.
             - `insecure_cross_domain_policy_headers` -- Checks `crossdomain.xml`
                 files for wildcard `allow-http-request-headers-from` policies.
+            - `insecure_client_access_policy` -- Checks `clientaccesspolicy.xml`
+                files for wildcard domain policies.
 - Plugins
     - All
         - Updated `#prepare` methods to not block, in accordance with the new

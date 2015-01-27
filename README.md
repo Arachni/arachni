@@ -562,6 +562,7 @@ Passive checks look for the existence of files, folders and signatures.
 - Insecure CORS policy (`insecure_cors_policy`).
 - Insecure cross-domain policy (allow-access-from) (`insecure_cross_domain_policy_access`)
 - Insecure cross-domain policy (allow-http-request-headers-from) (`insecure_cross_domain_policy_headers`)
+- Insecure client-access policy (`insecure_client_access_policy`)
 
 #### Reporters
 
