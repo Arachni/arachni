@@ -336,6 +336,58 @@ class OptionParser < UI::CLI::OptionParser
         ) do |type|
             options.http.proxy_type = type
         end
+
+        on( '--http-ssl-verify-peer', 'Verify SSL peer.', '(Default: false)' ) do
+            options.http.ssl_verify_peer = true
+        end
+
+        on( '--http-ssl-verify-host', 'Verify SSL host.', '(Default: false)' ) do
+            options.http.ssl_verify_host = true
+        end
+
+        on( '--http-ssl-certificate PATH', 'SSL certificate to use.' ) do |file|
+            options.http.ssl_certificate_filepath = file
+        end
+
+        on( "--http-ssl-certificate-type #{OptionGroups::HTTP::SSL_CERTIFICATE_TYPES.join(',')}",
+            OptionGroups::HTTP::SSL_CERTIFICATE_TYPES,
+            'SSL certificate type.'
+        ) do |type|
+            options.http.ssl_certificate_type = type
+        end
+
+        on( '--http-ssl-key PATH', 'SSL private key to use.' ) do |file|
+            options.http.ssl_key = file
+        end
+
+        on( "--http-ssl-key-type #{OptionGroups::HTTP::SSL_KEY_TYPES.join(',')}",
+            OptionGroups::HTTP::SSL_KEY_TYPES,
+            'SSL key type.'
+        ) do |type|
+            options.http.ssl_key_type = type
+        end
+
+        on( '--http-ssl-key-password PASSWORD',
+            'Password for the SSL private key.' ) do |pass|
+            options.http.ssl_key_password = pass
+        end
+
+        on( '--http-ssl-ca PATH',
+            'File holding one or more certificates with which to verify the peer.' ) do |file|
+            options.http.ssl_ca_filepath = file
+        end
+
+        on( '--http-ssl-ca-directory PATH',
+            'Directory holding multiple certificate files with which to verify the peer.' ) do |path|
+            options.http.ssl_ca_directory = path
+        end
+
+        on( "--http-ssl-version #{OptionGroups::HTTP::SSL_VERSIONS.join(',')}",
+            OptionGroups::HTTP::SSL_VERSIONS,
+            'SSL version to use.'
+        ) do |type|
+            options.http.ssl_version = type
+        end
     end
 
     def checks

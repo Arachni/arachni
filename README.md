@@ -212,11 +212,11 @@ you with its findings.
 
  - Cookie-jar/cookie-string support.
  - Custom header support.
- - SSL support.
+ - SSL support with fine-grained options.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
- - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
+ - Site authentication (SSL-based, form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
  - Automatic log-out detection and re-login during the scan (when the initial
     login was performed via the `autologin`, `login_script` or `proxy` plugins).
  - Custom 404 page detection.
