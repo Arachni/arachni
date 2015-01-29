@@ -1,6 +1,6 @@
 # License
 
-Copyright 2010-2014 [Tasos Laskos](mailto:tasos.laskos@arachni-scanner.com).
+Copyright 2010-2015 [Tasos Laskos](mailto:tasos.laskos@arachni-scanner.com).
 
 The Arachni Framework (henceforth referred to simply as "Arachni") is dual-licensed.
 

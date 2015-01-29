@@ -135,7 +135,7 @@ You can now run Arachni like so:
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2014 Tasos Laskos</td>
+        <td>2010-2015 Tasos Laskos</td>
     </tr>
     <tr>
         <th>License</th>
