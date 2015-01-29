@@ -20,7 +20,10 @@ class Typhoeus < Common
         options = {
             headers:        headers,
             maxredirs:      MAX_REDIRECTS,
-            followlocation: true
+            followlocation: true,
+            # Small trick to cancel out http_proxy env variables which would
+            # otherwise be honoured by libcurl and hinder browser communications.
+            proxy:          ''
         }
 
         options[:timeout] = @timeout if @timeout
