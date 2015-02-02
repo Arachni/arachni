@@ -525,6 +525,11 @@ Active checks engage the web application via its inputs.
 - DOM XSS inputs (`xss_dom_inputs`).
 - DOM XSS script context (`xss_dom_script_context`).
 - Source code disclosure (`source_code_disclosure`)
+- XML External Entity (`xxe`).
+    - Linux
+    - *BSD
+    - Solaris
+    - Windows
 
 ##### Passive
 
