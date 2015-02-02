@@ -211,6 +211,17 @@ EOXML
         end
     end
 
+    describe '#transform_xml' do
+        it 'assigns a callback to process the resulting XML' do
+            subject.transform_xml do |xml|
+                xml.should == Nokogiri::XML( subject.source ).to_xml
+                'stuff'
+            end
+
+            subject.to_xml.should == 'stuff'
+        end
+    end
+
     describe '.encode' do
         it 'returns the string as is' do
             described_class.encode( 'stuff' ).should == 'stuff'

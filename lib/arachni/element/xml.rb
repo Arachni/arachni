@@ -56,15 +56,24 @@ class XML < Base
 
     # @return   [String]
     #   XML formatted {#inputs}.
+    #
+    #   If a {#transform_xml} callback has been set, it will return its value.
     def to_xml
         doc = Nokogiri::XML( source )
+
         inputs.each do |path, content|
             doc.css( path ).each do |node|
                 node.content = content
             end
         end
 
-        doc.to_xml
+        @transform_xml ? @transform_xml.call( doc.to_xml ) : doc.to_xml
+    end
+
+    # @param    [Block] block
+    #   Callback to intercept {#to_xml}'s return value.
+    def transform_xml( &block )
+        @transform_xml = block
     end
 
     def to_s
@@ -95,6 +104,18 @@ class XML < Base
 
     def dup
         super.tap { |e| e.source = @source }
+    end
+
+    def to_rpc_data
+        d = super
+        d.delete 'transform_xml'
+        d
+    end
+
+    def marshal_dump
+        d = super
+        d.delete :@transform_xml
+        d
     end
 
     class <<self
