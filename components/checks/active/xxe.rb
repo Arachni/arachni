@@ -8,7 +8,7 @@
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
-class Arachni::Checks::FileInclusion < Arachni::Check::Base
+class Arachni::Checks::Xxe < Arachni::Check::Base
 
     ENTITY = 'xxe_entity'
 
