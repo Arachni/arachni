@@ -161,7 +161,11 @@ module Taint
             return if !opts[:downcased_body].include?( longest_word_for_regexp( regexp ) )
         end
 
-        match_data = response.body.scan( regexp ).flatten.first.to_s
+        match_data = response.body.match( regexp )
+        return if !match_data
+
+        match_data = match_data[0].to_s
+
         return if match_data.to_s.empty? || ignore?( response, opts )
 
         @candidate_issues << {
