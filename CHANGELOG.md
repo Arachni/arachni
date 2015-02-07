@@ -70,6 +70,7 @@
                     regarding the state of the web application during analysis.
             - `Differential` -- Added remarks to each issue containing extra information
                 regarding the used payloads.
+            - `Taint` -- Don't log issues when unable to get a verification response.
         - `WithDOM`
             - Added `#skip_dom` (set via `Browser#to_page`), to prevent `DOM`s
                 from being loaded and audited when there are no associated events.
