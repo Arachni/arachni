@@ -196,7 +196,7 @@ module Taint
             submit do |response|
                 # Something has gone wrong, timed-out request or closed connection.
                 # If we can't verify the issue bail out...
-                next if response.body.empty?
+                next if response.code == 0
 
                 while (issue = @candidate_issues.pop)
                     # If the body of the control response matches the proof
