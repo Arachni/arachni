@@ -194,6 +194,10 @@ module Taint
 
             # Grab an untainted response.
             submit do |response|
+                # Something has gone wrong, timed-out request or closed connection.
+                # If we can't verify the issue bail out...
+                next if response.body.empty?
+
                 while (issue = @candidate_issues.pop)
                     # If the body of the control response matches the proof
                     # of the current issue don't bother, it'll be a coincidence
