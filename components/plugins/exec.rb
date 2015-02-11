@@ -10,7 +10,7 @@ require 'open3'
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
-class Arachni::Plugins::Script < Arachni::Plugin::Base
+class Arachni::Plugins::Exec < Arachni::Plugin::Base
 
     def prepare
         parsed_url = Arachni::URI( framework.options.url )
