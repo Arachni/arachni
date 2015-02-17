@@ -138,6 +138,9 @@
                 files for wildcard `allow-http-request-headers-from` policies.
             - `insecure_client_access_policy` -- Checks `clientaccesspolicy.xml`
                 files for wildcard domain policies.
+            - `common_directories` -- Added:
+                - `rails/info/routes`
+                - `rails/info/properties`
 - Plugins
     - All
         - Updated `#prepare` methods to not block, in accordance with the new
