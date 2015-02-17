@@ -275,10 +275,6 @@ class Dynamic404Handler
             result = matches_advanced_signatures?( url, body )
             print_debug "#{__method__} [notify]: #{block} #{url} #{result}"
             block.call result
-
-            # Signatures for advanced analysis are per resource, clear them for
-            # the next run.
-            clear_advanced_signatures_for( url )
         end
     end
 
@@ -412,10 +408,6 @@ class Dynamic404Handler
 
     def advanced_signatures_for( url )
         data_for( url )[:signatures][:advanced][url] ||= []
-    end
-
-    def clear_advanced_signatures_for( url )
-        advanced_signatures_for( url ).clear
     end
 
     def signatures_for( url )
