@@ -244,6 +244,26 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#time=' do
+        it 'sets the #time' do
+            r = described_class.new( url: url )
+            r.time = 1.2
+            r.time.should == 1.2
+        end
+
+        it 'casts to Float' do
+            r = described_class.new( url: url )
+            r.time = '1.2'
+            r.time.should == 1.2
+        end
+    end
+
+    describe '#time' do
+        it 'defaults to 0.0' do
+            described_class.new( url: url ).time.should == 0.0
+        end
+    end
+
     describe '#body=' do
         it 'sets the #body' do
             body = 'Stuff...'

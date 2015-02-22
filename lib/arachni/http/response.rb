@@ -69,6 +69,12 @@ class Response < Message
 
         # Holds the redirection responses that eventually led to this one.
         @redirections ||= []
+
+        @time ||= 0.0
+    end
+
+    def time=( t )
+        @time = t.to_f
     end
 
     # @return   [Platform]
@@ -219,7 +225,7 @@ class Response < Message
             headers_string: response.response_headers,
             body:           response.body,
             redirections:   redirections,
-            time:           response.time.to_f,
+            time:           response.time,
             app_time:       (response.timed_out? ? response.time :
                                 response.start_transfer_time - response.pretransfer_time).to_f,
             total_time:     response.total_time.to_f,
