@@ -465,16 +465,20 @@
     </xs:complexType>
 
     <!--
-        System components can attach remarks on issues, usually to explain
-        why an issue has been flagged as untrusted.
+        System components can attach remarks on issues.
     -->
     <xs:complexType name="remarks">
         <xs:sequence>
-            <xs:element name="commenter" type="xs:string"
-                        minOccurs="0" maxOccurs="1"/>
-            <xs:element name="remark" type="xs:string"
+            <xs:element name="remark" type="remark"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
+    </xs:complexType>
+
+    <xs:complexType name="remark">
+        <xs:all>
+            <xs:element name="commenter" type="xs:string"/>
+            <xs:element name="text" type="xs:string"/>
+        </xs:all>
     </xs:complexType>
 
     <!--

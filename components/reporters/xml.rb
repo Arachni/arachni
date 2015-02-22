@@ -11,7 +11,7 @@ require 'nokogiri'
 # Creates an XML report of the audit.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.3.2
+# @version 0.3.3
 class Arachni::Reporters::XML < Arachni::Reporter::Base
 
     LOCAL_SCHEMA  = File.dirname( __FILE__ ) + '/xml/schema.xsd'
@@ -107,9 +107,11 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
 
                                         xml.remarks {
                                             variation.remarks.each do |commenter, remarks|
-                                                xml.commenter commenter
                                                 remarks.each do |remark|
-                                                    xml.remark remark
+                                                    xml.remark {
+                                                        xml.commenter commenter
+                                                        xml.text_ remark
+                                                    }
                                                 end
                                             end
                                         }
@@ -151,6 +153,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             ap error
             has_errors = true
         end
+
         fail 'XML report could not be validated against the XSD.' if has_errors
 
         IO.binwrite( outfile, xml )
@@ -163,7 +166,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             description:  %q{Exports the audit results as an XML (.xml) file.},
             content_type: 'text/xml',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.3.2',
+            version:      '0.3.3',
             options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end
@@ -232,7 +235,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                         xml.transition {
                             xml.element transition.element
                             xml.event transition.event
-                            xml.time transition.time.round( 4 )
+                            xml.time transition.time.to_f.round( 4 )
                         }
                     end
                 }

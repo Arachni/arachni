@@ -157,6 +157,8 @@
     - `html`
         - Summary
             - Added OWASP Top 10 tab.
+    - `xml`
+        - Schema update for issue remarks.
 
 ## 1.0.6 _(December 07, 2014)_
 
