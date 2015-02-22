@@ -31,8 +31,9 @@ class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format:          [ Format::STRAIGHT ],
-            parameter_names: false
+            format:               [ Format::STRAIGHT ],
+            parameter_names:      false,
+            with_extra_parameter: false
         }
     end
 
