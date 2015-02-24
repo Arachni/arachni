@@ -26,7 +26,7 @@ class OptionParser < UI::CLI::OptionParser
     end
 
     def authorized_by
-        on( '--authorized-by EMAIL_ADDRESS', Integer,
+        on( '--authorized-by EMAIL_ADDRESS',
                'E-mail address of the person who authorized the scan.',
                "(It'll make it easier on the sys-admins during log reviews.)",
                "(Will be used as a value for the 'From' HTTP request header.)"

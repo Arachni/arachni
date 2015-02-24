@@ -2,21 +2,23 @@
 
 ## _Under development_
 
-- New options
-    - Audit
-        - `--audit-parameter-names` -- Injects payloads into parameter names.
-        - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
-    - HTTP
-        - `--http-ssl-verify-peer` -- Verify SSL peer.
-        - `--http-ssl-verify-host` -- Verify SSL host.
-        - `--http-ssl-certificate` -- SSL certificate to use.
-        - `--http-ssl-certificate-type` -- SSL certificate type.
-        - `--http-ssl-key` -- SSL private key to use.
-        - `--http-ssl-key-type` -- SSL key type.
-        - `--http-ssl-key-password` -- Password for the SSL private key.
-        - `--http-ssl-ca` -- File holding one or more certificates with which to verify the peer.
-        - `--http-ssl-ca-directory` -- Directory holding multiple certificate files with which to verify the peer.
-        - `--http-ssl-version` -- SSL version to use.
+- Options
+    - `--authorized-by` -- Fixed expected type (`Integer` => `String`).
+    - Added:
+        - Audit
+            - `--audit-parameter-names` -- Injects payloads into parameter names.
+            - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
+        - HTTP
+            - `--http-ssl-verify-peer` -- Verify SSL peer.
+            - `--http-ssl-verify-host` -- Verify SSL host.
+            - `--http-ssl-certificate` -- SSL certificate to use.
+            - `--http-ssl-certificate-type` -- SSL certificate type.
+            - `--http-ssl-key` -- SSL private key to use.
+            - `--http-ssl-key-type` -- SSL key type.
+            - `--http-ssl-key-password` -- Password for the SSL private key.
+            - `--http-ssl-ca` -- File holding one or more certificates with which to verify the peer.
+            - `--http-ssl-ca-directory` -- Directory holding multiple certificate files with which to verify the peer.
+            - `--http-ssl-version` -- SSL version to use.
 - `URI`
     - Added `#resource_name`.
     - Added `.full_and_absolute?`.
