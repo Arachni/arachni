@@ -12,7 +12,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.2.2
+# @version 0.2.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -33,7 +33,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
     def self.options
         @options ||= {
             substring: (rand1.to_i + rand2.to_i).to_s,
-            format:    [Format::APPEND, Format::STRAIGHT]
+            format:    [Format::STRAIGHT]
         }
     end
 
@@ -70,7 +70,7 @@ Injects code snippets and assess whether or not execution was successful.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.2',
+            version:     '0.2.3',
             platforms:   payloads.keys,
 
             issue:       {

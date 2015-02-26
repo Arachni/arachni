@@ -15,24 +15,6 @@ describe name_from_filename do
     def issue_count_per_element_per_platform
         {
             php:    {
-                Element::Form         => 8,
-                Element::Link         => 8,
-                Element::Cookie       => 8,
-                Element::Header       => 8,
-                Element::LinkTemplate => 8,
-                Element::JSON         => 8,
-                Element::XML          => 16
-            },
-            perl:    {
-                Element::Form         => 8,
-                Element::Link         => 8,
-                Element::Cookie       => 8,
-                Element::Header       => 8,
-                Element::LinkTemplate => 8,
-                Element::JSON         => 8,
-                Element::XML          => 16
-            },
-            python:  {
                 Element::Form         => 4,
                 Element::Link         => 4,
                 Element::Cookie       => 4,
@@ -41,23 +23,41 @@ describe name_from_filename do
                 Element::JSON         => 4,
                 Element::XML          => 8
             },
+            perl:    {
+                Element::Form         => 4,
+                Element::Link         => 4,
+                Element::Cookie       => 4,
+                Element::Header       => 4,
+                Element::LinkTemplate => 4,
+                Element::JSON         => 4,
+                Element::XML          => 8
+            },
+            python:  {
+                Element::Form         => 2,
+                Element::Link         => 2,
+                Element::Cookie       => 2,
+                Element::Header       => 2,
+                Element::LinkTemplate => 2,
+                Element::JSON         => 2,
+                Element::XML          => 4
+            },
             asp:    {
-                Element::Form         => 8,
-                Element::Link         => 8,
-                Element::Cookie       => 8,
-                Element::Header       => 8,
-                Element::LinkTemplate => 8,
-                Element::JSON         => 8,
-                Element::XML          => 16
+                Element::Form         => 4,
+                Element::Link         => 4,
+                Element::Cookie       => 4,
+                Element::Header       => 4,
+                Element::LinkTemplate => 4,
+                Element::JSON         => 4,
+                Element::XML          => 8
             },
             ruby:    {
-                Element::Form         => 8,
-                Element::Link         => 8,
-                Element::Cookie       => 8,
-                Element::Header       => 8,
-                Element::LinkTemplate => 8,
-                Element::JSON         => 8,
-                Element::XML          => 16
+                Element::Form         => 4,
+                Element::Link         => 4,
+                Element::Cookie       => 4,
+                Element::Header       => 4,
+                Element::LinkTemplate => 4,
+                Element::JSON         => 4,
+                Element::XML          => 8
             }
         }
     end
