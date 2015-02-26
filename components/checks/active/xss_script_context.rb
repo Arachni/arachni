@@ -11,7 +11,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.2
+# @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -64,10 +64,17 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
 
         @strings = @strings.map { |s| [ s, "#{s}//" ] }.flatten
         @strings << "*/;\n#{seed}/*"
+
+        # In case they're placed as assoc array values.
+        @strings << seed
+        @strings << "\",x:#{seed},y:\""
+        @strings << "',x:#{seed},y:'"
+
+        @strings << "</script><script>#{seed}</script>"
     end
 
     def self.options
-        @options ||= { format: [ Format::STRAIGHT, Format::APPEND ] }
+        @options ||= { format: [ Format::STRAIGHT ] }
     end
 
     def taints( browser_cluster )
@@ -136,7 +143,7 @@ Injects JS taint code and check to see if it gets executed as proof of vulnerabi
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2',
+            version:     '0.2.1',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in script context},

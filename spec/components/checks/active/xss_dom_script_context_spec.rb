@@ -10,10 +10,10 @@ describe name_from_filename do
 
     def issue_count_per_element
         {
-            Element::Form::DOM         => 3,
-            Element::Link::DOM         => 3,
-            Element::Cookie::DOM       => 2,
-            Element::LinkTemplate::DOM => 3
+            Element::Form::DOM         => 2,
+            Element::Link::DOM         => 2,
+            Element::Cookie::DOM       => 1,
+            Element::LinkTemplate::DOM => 2
         }
     end
 

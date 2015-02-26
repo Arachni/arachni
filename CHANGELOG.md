@@ -132,6 +132,11 @@
             - `xxe` -- Logs XML External Entity vulnerabilities.
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
+        - `xss_script_context`
+            - Updated payloads.
+            - Only use straight payload injection instead of straight and append.
+        - `xss_dom_script_context` -- Only use straight payload injection instead
+            of straight and append.
     - Passive
         - Added
             - `insecure_cross_domain_policy_access` -- Checks `crossdomain.xml`

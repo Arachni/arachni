@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
 
     prefer :xss_script_context
@@ -27,7 +27,7 @@ class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
     end
 
     def self.options
-        @options ||= { format: [ Format::STRAIGHT, Format::APPEND ] }
+        @options ||= { format: [ Format::STRAIGHT ] }
     end
 
     def taints
@@ -64,7 +64,7 @@ Injects JS taint code and checks to see if it gets executed as proof of vulnerab
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS) in script context},
