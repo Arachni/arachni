@@ -1446,7 +1446,8 @@ class Browser
             # everything after ';' by treating it as a path parameter.
             # Rightly so...but we need to bypass it when auditing LinkTemplate
             # elements.
-            @window_responses[normalize_watir_url( url )] ||
+            @window_responses[url] ||
+                @window_responses[normalize_watir_url( url )] ||
                 @window_responses[normalize_url( url )]
         end
     end
