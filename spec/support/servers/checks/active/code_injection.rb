@@ -67,7 +67,6 @@ REGEXP.keys.each do |language|
     get "/#{language_str}/link" do
         <<-EOHTML
             <a href="/#{language_str}/link/straight?input=default">Link</a>
-            <a href="/#{language_str}/link/append?input=default">Link</a>
         EOHTML
     end
 
@@ -78,17 +77,9 @@ REGEXP.keys.each do |language|
         get_variations( language, params['input'] )
     end
 
-    get "/#{language_str}/link/append" do
-        default = 'default'
-        return if !params['input'].start_with?( default )
-
-        get_variations( language, params['input'].split( default ).last )
-    end
-
     get "/#{language_str}/link-template" do
         <<-EOHTML
         <a href="/#{language_str}/link-template/straight/input/default/stuff">Link</a>
-        <a href="/#{language_str}/link-template/append/input/default/stuff">Link</a>
         EOHTML
     end
 
@@ -100,21 +91,9 @@ REGEXP.keys.each do |language|
         get_variations( language, val.split( default ).last )
     end
 
-    get "/#{language_str}/link-template/append/input/*/stuff" do
-        val = URI.decode( params[:splat].first )
-        default = 'default'
-        return if !val.start_with?( default )
-
-        get_variations( language, val.split( default ).last )
-    end
-
     get "/#{language_str}/form" do
         <<-EOHTML
             <form action="/#{language_str}/form/straight" method='post'>
-                <input name='input' value='default' />
-            </form>
-
-            <form action="/#{language_str}/form/append">
                 <input name='input' value='default' />
             </form>
         EOHTML
@@ -127,18 +106,9 @@ REGEXP.keys.each do |language|
         get_variations( language, params['input'] )
     end
 
-    get "/#{language_str}/form/append" do
-        default = 'default'
-        return if !params['input'] || !params['input'].start_with?( default )
-
-        get_variations( language, params['input'].split( default ).last )
-    end
-
-
     get "/#{language_str}/cookie" do
         <<-EOHTML
             <a href="/#{language_str}/cookie/straight">Cookie</a>
-            <a href="/#{language_str}/cookie/append">Cookie</a>
         EOHTML
     end
 
@@ -150,18 +120,9 @@ REGEXP.keys.each do |language|
         get_variations( language, cookies['cookie'] )
     end
 
-    get "/#{language_str}/cookie/append" do
-        default = 'cookie value'
-        cookies['cookie2'] ||= default
-        return if !cookies['cookie2'].start_with?( default )
-
-        get_variations( language, cookies['cookie2'].split( default ).last )
-    end
-
     get "/#{language_str}/header" do
         <<-EOHTML
             <a href="/#{language_str}/header/straight">Cookie</a>
-            <a href="/#{language_str}/header/append">Cookie</a>
         EOHTML
     end
 
@@ -172,22 +133,11 @@ REGEXP.keys.each do |language|
         get_variations( language, env['HTTP_USER_AGENT'] )
     end
 
-    get "/#{language_str}/header/append" do
-        default = 'arachni_user'
-        return if !env['HTTP_USER_AGENT'].start_with?( default )
-
-        get_variations( language, env['HTTP_USER_AGENT'].split( default ).last )
-    end
-
     get "/#{language_str}/json" do
         <<-EOHTML
             <script type="application/javascript">
                 http_request = new XMLHttpRequest();
                 http_request.open( "POST", "/#{language_str}/json/straight", true);
-                http_request.send( '{"input": "arachni_user"}' );
-
-                http_request = new XMLHttpRequest();
-                http_request.open( "POST", "/#{language_str}/json/append", true);
                 http_request.send( '{"input": "arachni_user"}' );
             </script>
         EOHTML
@@ -201,14 +151,6 @@ REGEXP.keys.each do |language|
         get_variations( language, @json['input'] )
     end
 
-    post "/#{language_str}/json/append" do
-        return if !@json
-        default = 'arachni_user'
-        return if !@json['input'].start_with?( default )
-
-        get_variations( language, @json['input'].split( default ).last )
-    end
-
     get "/#{language_str}/xml" do
         <<-EOHTML
             <script type="application/javascript">
@@ -217,15 +159,7 @@ REGEXP.keys.each do |language|
                 http_request.send( '<input>arachni_user</input>' );
 
                 http_request = new XMLHttpRequest();
-                http_request.open( "POST", "/#{language_str}/xml/text/append", true);
-                http_request.send( '<input>arachni_user</input>' );
-
-                http_request = new XMLHttpRequest();
                 http_request.open( "POST", "/#{language_str}/xml/attribute/straight", true);
-                http_request.send( '<input my-attribute="arachni_user">stuff</input>' );
-
-                http_request = new XMLHttpRequest();
-                http_request.open( "POST", "/#{language_str}/xml/attribute/append", true);
                 http_request.send( '<input my-attribute="arachni_user">stuff</input>' );
             </script>
         EOHTML
@@ -242,17 +176,6 @@ REGEXP.keys.each do |language|
         get_variations( language, input )
     end
 
-    post "/#{language_str}/xml/text/append" do
-        return if !@xml
-
-        default = 'arachni_user'
-        input = @xml.css('input').first.content
-
-        return if !input.start_with?( default )
-
-        get_variations( language, input.split( default ).last )
-    end
-
     post "/#{language_str}/xml/attribute/straight" do
         return if !@xml
 
@@ -262,17 +185,6 @@ REGEXP.keys.each do |language|
         return if input.start_with?( default )
 
         get_variations( language, input )
-    end
-
-    post "/#{language_str}/xml/attribute/append" do
-        return if !@xml
-
-        default = 'arachni_user'
-        input = @xml.css('input').first['my-attribute']
-
-        return if !input.start_with?( default )
-
-        get_variations( language, input.split( default ).last )
     end
 
 end

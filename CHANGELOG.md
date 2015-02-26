@@ -132,6 +132,8 @@
             - `xxe` -- Logs XML External Entity vulnerabilities.
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
+        - `os_cmd_injection` -- Only use straight payload injection instead
+            of straight and append.
         - `code_injection` -- Only use straight payload injection instead
             of straight and append.
         - `xss_script_context`

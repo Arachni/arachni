@@ -9,7 +9,7 @@
 # Simple OS command injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.3
+# @version 0.2.4
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see http://www.owasp.org/index.php/OS_Command_Injection
@@ -26,7 +26,7 @@ class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
                     /\[fonts\].*\[extensions\]/im
                 ]
             },
-            format: [ Format::STRAIGHT, Format::APPEND ]
+            format: [Format::STRAIGHT]
         }
     end
 
@@ -73,7 +73,7 @@ Tries to find Operating System command injections.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.3',
+            version:     '0.2.4',
             platforms:   payloads.keys,
 
             issue:       {
