@@ -16,6 +16,16 @@ get '/' do
     initial_elements
 end
 
+get '/new-paths' do
+    s = <<HTML
+    <a href='/?foo=bar'>Link</a>
+    <form action="/">
+        <input name='input1' />
+    </form>
+HTML
+    s + " #{request.env["REQUEST_URI"]}/stuff/here"
+end
+
 get '/non_text_content_type' do
     headers 'Content-Type' => "foo"
 end

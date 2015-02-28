@@ -131,6 +131,13 @@ class Trainer
 
             notify_on_new_page incoming_page
             @framework.push_to_page_queue( incoming_page )
+
+        # If the page is pushed, paths will be extracted eventually, if not, we
+        # need to do it now.
+        else
+            incoming_page.paths.each do |path|
+                @framework.push_to_url_queue( path )
+            end
         end
 
         print_debug 'Training complete.'

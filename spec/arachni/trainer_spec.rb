@@ -2,6 +2,7 @@ require 'spec_helper'
 
 class TrainerMockFramework
     attr_reader :pages
+    attr_reader :urls
     attr_reader :opts
     attr_reader :trainer
 
@@ -19,6 +20,7 @@ class TrainerMockFramework
         @opts.url = page.url if page
 
         @sitemap = []
+        @urls    = []
     end
 
     def accepts_more_pages?
@@ -44,6 +46,10 @@ class TrainerMockFramework
     def push_to_page_queue( page )
         @sitemap << page.url
         @pages << page
+    end
+
+    def push_to_url_queue( url )
+        @urls << url
     end
 end
 
@@ -115,12 +121,26 @@ describe Arachni::Trainer do
     context 'when a page' do
         context 'has not changed' do
             it 'is skipped' do
-                @framework.pages.size.should == 0
+                @framework.pages.should be_empty
 
                 Arachni::HTTP::Client.request( @url, train: true )
                 @framework.run
 
                 @framework.pages.should be_empty
+            end
+
+            context 'but has new paths' do
+                it 'pushes them to the framework' do
+                    @framework.urls.should be_empty
+
+                    Arachni::HTTP::Client.request( @url, train: true )
+
+                    Arachni::HTTP::Client.request( @url + '/new-paths', train: true )
+                    @framework.run
+
+                    @framework.pages.should be_empty
+                    @framework.urls.should be_any
+                end
             end
         end
 
