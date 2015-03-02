@@ -1069,6 +1069,7 @@ class Browser
                         "--debug=#{!!debug?}"
                     )
                     @process.leader = true
+                    @process.detach = true
 
                     @process.io.stdout = Tempfile.new( 'phantomjs-out' )
                     @process.io.stderr = @process.io.stdout
