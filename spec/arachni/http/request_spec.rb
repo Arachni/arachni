@@ -529,9 +529,18 @@ describe Arachni::HTTP::Request do
         end
 
         context "#{Arachni::OptionGroups::HTTP}#ssl_verify_peer" do
-            it "sets #{Typhoeus::Request}#options[:ssl_verifypeer]" do
-                Arachni::Options.http.stub(:ssl_verify_peer) { :stuff }
-                subject.options[:ssl_verifypeer].should == :stuff
+            context 'true' do
+                it "sets #{Typhoeus::Request}#options[:ssl_verifypeer]" do
+                    Arachni::Options.http.ssl_verify_peer = true
+                    subject.options[:ssl_verifypeer].should == true
+                end
+            end
+
+            context 'false' do
+                it "sets #{Typhoeus::Request}#options[:ssl_verifypeer]" do
+                    Arachni::Options.http.ssl_verify_peer = false
+                    subject.options[:ssl_verifypeer].should == false
+                end
             end
         end
 
