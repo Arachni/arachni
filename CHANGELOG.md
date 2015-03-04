@@ -136,6 +136,8 @@
             of straight and append.
         - `code_injection` -- Only use straight payload injection instead
             of straight and append.
+        - `xss` -- When auditing links don't require a tainted response for
+            browser analysis.
         - `xss_script_context`
             - Updated payloads.
             - Only use straight payload injection instead of straight and append.

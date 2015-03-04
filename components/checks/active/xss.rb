@@ -13,7 +13,7 @@
 # {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4
+# @version 0.4.1
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -54,10 +54,12 @@ class Arachni::Checks::Xss < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
-        # if the body doesn't include the tag at all bail out early
-        return if !response.body.downcase.include?( self.class.tag )
-
-        print_info 'Response is tainted, looking for proof of vulnerability.'
+        # Bail out if the response is not tainted unless we're dealing with a Link.
+        # The other cases either don't matter or are covered by the xss_dom check.
+        if (self.class.elements - [Arachni::Link]).include?( element.class ) &&
+            !response.body.downcase.include?( self.class.tag )
+            return
+        end
 
         # See if we managed to successfully inject our element in the doc tree.
         if find_proof( response )
@@ -95,7 +97,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4',
+            version:     '0.4.1',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},
