@@ -13,7 +13,7 @@
 #
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
-# @see http://www.owasp.org/index.php/LDAP_injection
+# @see https://www.owasp.org/index.php/LDAP_injection
 class Arachni::Checks::LdapInjection < Arachni::Check::Base
 
     def self.error_strings
@@ -62,7 +62,7 @@ known error messages.
                 tags:            %w(ldap injection regexp),
                 references:  {
                     'WASC'  => 'http://projects.webappsec.org/w/page/13246947/LDAP-Injection',
-                    'OWASP' => 'http://www.owasp.org/index.php/LDAP_injection'
+                    'OWASP' => 'https://www.owasp.org/index.php/LDAP_injection'
                 },
                 cwe:             90,
                 severity:        Severity::HIGH,

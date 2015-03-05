@@ -13,7 +13,7 @@
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
-# @see http://www.owasp.org/index.php/Blind_SQL_Injection
+# @see https://www.owasp.org/index.php/Blind_SQL_Injection
 class Arachni::Checks::SqlInjectionTiming < Arachni::Check::Base
 
     prefer :sql_injection, :sql_injection_differential
@@ -69,7 +69,7 @@ being sent by the server.
 This is known as a time-based blind SQL injection vulnerability.
 },
                 references:  {
-                    'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
+                    'OWASP'         => 'https://www.owasp.org/index.php/Blind_SQL_Injection',
                     'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html',
                     'WASC'          => 'http://projects.webappsec.org/w/page/13246963/SQL%20Injection',
                     'W3 Schools'    => 'http://www.w3schools.com/sql/sql_injection.asp'

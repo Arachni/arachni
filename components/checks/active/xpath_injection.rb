@@ -12,8 +12,8 @@
 # @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
-# @see http://www.owasp.org/index.php/XPATH_Injection
-# @see http://www.owasp.org/index.php/Testing_for_XPath_Injection_%28OWASP-DV-010%29
+# @see https://www.owasp.org/index.php/XPATH_Injection
+# @see https://www.owasp.org/index.php/Testing_for_XPath_Injection_%28OWASP-DV-010%29
 class Arachni::Checks::XpathInjection < Arachni::Check::Base
 
     def self.error_strings
@@ -63,7 +63,7 @@ Arachni injected special XPath query characters into the page and based on the
 responses from the server, has determined that the page is vulnerable to XPath injection.
 },
                 references:  {
-                    'OWASP' => 'http://www.owasp.org/index.php/XPATH_Injection',
+                    'OWASP' => 'https://www.owasp.org/index.php/XPATH_Injection',
                     'WASC' => 'http://projects.webappsec.org/w/page/13247005/XPath%20Injection'
                 },
                 tags:            %w(xpath database error injection regexp),

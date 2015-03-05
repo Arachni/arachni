@@ -12,7 +12,7 @@
 # @version 0.3.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
-# @see http://www.owasp.org/index.php/OS_Command_Injection
+# @see https://www.owasp.org/index.php/OS_Command_Injection
 class Arachni::Checks::OsCmdInjectionTiming < Arachni::Check::Base
 
     prefer :os_cmd_injection
@@ -73,7 +73,7 @@ was able to detect time based OS command injection. This indicates that proper
 input sanitisation is not occurring.
 },
                 references:  {
-                    'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
+                    'OWASP' => 'https://www.owasp.org/index.php/OS_Command_Injection'
                 },
                 tags:            %w(os command code injection timing blind),
                 cwe:             78,

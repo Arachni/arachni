@@ -12,7 +12,7 @@
 # @version 0.2.4
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
-# @see http://www.owasp.org/index.php/OS_Command_Injection
+# @see https://www.owasp.org/index.php/OS_Command_Injection
 class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
 
     def self.options
@@ -95,7 +95,7 @@ from that command contained within the server response. This indicates that prop
 input sanitisation is not occurring.
 },
                 references:  {
-                    'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection',
+                    'OWASP' => 'https://www.owasp.org/index.php/OS_Command_Injection',
                     'WASC'  => 'http://projects.webappsec.org/w/page/13246950/OS%20Commanding'
                 },
                 tags:            %w(os command code injection regexp error),

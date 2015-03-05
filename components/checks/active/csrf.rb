@@ -34,7 +34,7 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
-# @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
+# @see https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
 # @see http://www.cgisecurity.com/csrf-faq.html
 # @see http://cwe.mitre.org/data/definitions/352.html
 class Arachni::Checks::CSRF < Arachni::Check::Base
@@ -195,7 +195,7 @@ content on a forum, etc._
 },
                 references:  {
                     'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
-                    'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
+                    'OWASP'        => 'https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
                     'CGI Security' => 'http://www.cgisecurity.com/csrf-faq.html'
                 },
                 tags:            %w(csrf rdiff form token),
