@@ -12,7 +12,7 @@
 # @version 0.4.4
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
-# @see http://www.owasp.org/index.php/Path_Traversal
+# @see https://www.owasp.org/index.php/Path_Traversal
 # @see http://projects.webappsec.org/Path-Traversal
 class Arachni::Checks::PathTraversal < Arachni::Check::Base
 
@@ -143,7 +143,7 @@ relative path to a common operating system file and have the contents of the fil
 included in the response.
 },
                 references:  {
-                    'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
+                    'OWASP' => 'https://www.owasp.org/index.php/Path_Traversal',
                     'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
                 },
                 tags:            %w(path traversal injection regexp),

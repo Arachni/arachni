@@ -12,7 +12,7 @@
 # @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
-# @see http://www.owasp.org/index.php/HTTP_Response_Splitting
+# @see https://www.owasp.org/index.php/HTTP_Response_Splitting
 # @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
 class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
 
@@ -64,7 +64,7 @@ other attacks.
 },
                 references:  {
                     'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
-                    'OWASP'      => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
+                    'OWASP'      => 'https://www.owasp.org/index.php/HTTP_Response_Splitting'
                 },
                 tags:            %w(response splitting injection header),
                 cwe:             20,

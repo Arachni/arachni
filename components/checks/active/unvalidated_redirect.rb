@@ -14,7 +14,7 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.2.2
 #
-# @see http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
+# @see https://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
 
     def self.payloads
@@ -89,7 +89,7 @@ Arachni has discovered that the server does not validate the parameter value pri
 to redirecting the client to the injected value.
 },
                 references:  {
-                    'OWASP Top 10 2010' => 'http://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
+                    'OWASP Top 10 2010' => 'https://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards'
                 },
                 tags:            %w(unvalidated redirect injection header location),
                 cwe:             819,

@@ -15,7 +15,7 @@
 # @see http://unixwiz.net/techtips/sql-injection.html
 # @see http://en.wikipedia.org/wiki/SQL_injection
 # @see http://www.securiteam.com/securityreviews/5DP0N1P76E.html
-# @see http://www.owasp.org/index.php/SQL_Injection
+# @see https://www.owasp.org/index.php/SQL_Injection
 class Arachni::Checks::SqlInjection < Arachni::Check::Base
 
     def self.error_patterns
@@ -94,7 +94,7 @@ the request with a database related error.
                     'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                     'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',
                     'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
-                    'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection',
+                    'OWASP'      => 'https://www.owasp.org/index.php/SQL_Injection',
                     'WASC'       => 'http://projects.webappsec.org/w/page/13246963/SQL%20Injection',
                     'W3 Schools' => 'http://www.w3schools.com/sql/sql_injection.asp'
                 },
