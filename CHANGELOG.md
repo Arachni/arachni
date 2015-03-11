@@ -155,6 +155,7 @@
             - `common_directories` -- Added:
                 - `rails/info/routes`
                 - `rails/info/properties`
+        - `http_put` -- Try to `DELETE` the `PUT` file.
 - Plugins
     - All
         - Updated `#prepare` methods to not block, in accordance with the new
