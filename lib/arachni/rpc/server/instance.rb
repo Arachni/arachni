@@ -639,6 +639,10 @@ class Instance
                 t << Thread.new { browser_cluster.shutdown false }
             end
 
+            if browser
+                t << Thread.new { browser.shutdown }
+            end
+
             @framework.instance_eval do
                 next if !has_slaves?
 
@@ -699,6 +703,10 @@ class Instance
     end
 
     private
+
+    def browser
+        @framework.instance_eval { @browser }
+    end
 
     def browser_cluster
         @framework.instance_eval { @browser_cluster }
