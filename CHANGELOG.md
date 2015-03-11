@@ -2,6 +2,7 @@
 
 ## _Under development_
 
+- `gemspec` -- Require Ruby >= 2.0.0.
 - Options
     - `--authorized-by` -- Fixed expected type (`Integer` => `String`).
     - Added:
