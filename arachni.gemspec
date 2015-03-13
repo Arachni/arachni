@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     s.authors           = [ 'Tasos Laskos' ]
     s.licenses          = ['Apache-2.0', 'Proprietary']
 
+    s.files            += Dir.glob( 'config/**/**' )
     s.files            += Dir.glob( 'gfx/**/**' )
     s.files            += Dir.glob( 'lib/**/**' )
     s.files            += Dir.glob( 'ui/**/**' )
