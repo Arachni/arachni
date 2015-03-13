@@ -763,7 +763,7 @@ class Browser
         # them if no events are associated with it.
         #
         # This can save **A LOT** of time during the audit.
-        if Options.audit.form_doms?
+        if Options.audit.form_doms? && @javascript.supported?
             page.forms.each do |form|
                 next if !form.node || !form.dom
 
@@ -779,7 +779,7 @@ class Browser
             page.update_metadata
         end
 
-        if Options.audit.cookie_doms?
+        if Options.audit.cookie_doms? && @javascript.supported?
             sinks = @javascript.taint_tracer.data_flow_sinks
             page.cookies.each do |cookie|
                 next if sinks.include?( cookie.name ) ||
