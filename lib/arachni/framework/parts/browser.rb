@@ -69,7 +69,14 @@ module Browser
             c.check? page, [Element::Form::DOM, Element::Cookie::DOM]
         end
 
-        bp = browser.load( page ).to_page
+        begin
+            bp = browser.load( page ).to_page
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error => e
+            print_debug "Could not apply metadata to '#{page.dom.url}'" <<
+                                    " because: #{e} [#{e.class}"
+            return
+        end
 
         # Request timeout or some other failure...
         return if bp.code == 0

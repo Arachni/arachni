@@ -262,5 +262,31 @@ describe Arachni::Framework::Parts::Browser do
                 end
             end
         end
+
+        context "when #{Arachni::Browser}#to_page raises" do
+            context "#{Selenium::WebDriver::Error::WebDriverError}" do
+                before do
+                    subject.browser.stub(:to_page) do
+                        raise Selenium::WebDriver::Error::WebDriverError
+                    end
+                end
+
+                it 'returns nil' do
+                    subject.apply_dom_metadata( page ).should be_nil
+                end
+            end
+
+            context "#{Watir::Exception::Error}" do
+                before do
+                    subject.browser.stub(:to_page) do
+                        raise Watir::Exception::Error
+                    end
+                end
+
+                it 'returns true' do
+                    subject.apply_dom_metadata( page ).should be_nil
+                end
+            end
+        end
     end
 end
