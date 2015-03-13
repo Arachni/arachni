@@ -39,7 +39,7 @@ very simple and should generally be preferred.
     # Use Ruby.
     rvm use ruby
 
-You will also need to make sure that [PhantomJs 1.9.2](https://phantomjs.googlecode.com/files/phantomjs-1.9.2-windows.zip)
+You will also need to make sure that [PhantomJs 1.9.2](https://code.google.com/p/phantomjs/downloads/list)
 is in your `$PATH`.
 
 #### Framework installation
