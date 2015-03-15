@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -46,7 +46,7 @@ class Manager
                     # I'd rather this be an INT but WEBrick's INT traps write to
                     # the Logger and multiple INT signals force it to write to a
                     # closed logger and crash.
-                    Process.kill( 'KILL', pid )
+                    Process.kill( Gem.win_platform? ? 'QUIT' : 'KILL', pid )
                 rescue Errno::ESRCH
                     @pids.delete pid
                     return
@@ -105,7 +105,12 @@ class Manager
         fork = true if fork.nil?
 
         options[:options] ||= {}
-        options[:options]   = Options.to_h.merge( options[:options] )
+        options[:options] = Options.to_h.merge( options[:options] )
+
+        # Paths are not included in RPC nor Hash representations as they're
+        # considered local, in this case though they're necessary to provide
+        # the same environment the processes.
+        options[:options][:paths] = Options.paths.to_h
 
         executable      = "#{Options.paths.executables}/#{executable}.rb"
         encoded_options = Base64.strict_encode64( Marshal.dump( options ) )

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -300,7 +300,7 @@ class URI
                     print_debug "Error: #{e}"
                     print_debug_backtrace( e )
     
-                    cache[c_url] = addressable_parse( c_url ).freeze
+                    cache[c_url] = addressable_parse( c_url.recode ).freeze
                 rescue => ex
                     print_debug "Failed to parse '#{c_url}'."
                     print_debug "Error: #{ex}"
@@ -465,6 +465,20 @@ class URI
 
             parse( url ).query_parameters
         end
+
+        # @param    [String]    url
+        #   URL to check.
+        #
+        # @return   [Bool]
+        #   `true` is the URL is full and absolute, `false` otherwise.
+        def full_and_absolute?( url )
+            return false if url.to_s.empty?
+
+            parsed = parse( url.to_s )
+            return false if !parsed
+
+            parsed.absolute?
+        end
     end
 
     # @note Will discard the fragment component, if there is one.
@@ -538,11 +552,16 @@ class URI
         to_s.split( '?', 2 ).first.to_s
     end
 
-    # @return   [String]    The extension of the URI resource.
+    # @return   [String]
+    #   Name of the resource.
+    def resource_name
+        path.split( '/' ).last
+    end
+
+    # @return   [String, nil]
+    #   The extension of the URI {#file_name}, `nil` if there is none.
     def resource_extension
-        resource_name = path.split( '/' ).last.to_s
-        return if !resource_name.include?( '.' )
-        resource_name.split( '.' ).last
+        resource_name.to_s.split( '.', 2 )[1]
     end
 
     # @return   [String]
@@ -613,7 +632,7 @@ class URI
         q = self.query
         return {} if q.to_s.empty?
 
-        q.recode.split( '&' ).inject( {} ) do |h, pair|
+        q.split( '&' ).inject( {} ) do |h, pair|
             name, value = pair.split( '=', 2 )
             h[::URI.decode( name.to_s )] = ::URI.decode( value.to_s )
             h

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -121,12 +121,7 @@ class Worker < Arachni::Browser
     ensure
         @javascript.taint = nil
 
-        @preloads.clear
-        @cache.clear
-        @captured_pages.clear
-        @page_snapshots.clear
-        @page_snapshots_with_sinks.clear
-        @window_responses.clear
+        clear_buffers
 
         # The jobs may have configured callbacks to capture pages etc.,
         # remove them.
@@ -191,6 +186,15 @@ class Worker < Arachni::Browser
         @consumer.kill if @consumer
 
         super()
+    end
+
+    def inspect
+        s = "#<#{self.class} "
+        s << "pid=#{@pid} "
+        s << "job=#{@job.inspect} "
+        s << "last-url=#{@last_url.inspect} "
+        s << "transitions=#{@transitions.size}"
+        s << '>'
     end
 
     def self.name

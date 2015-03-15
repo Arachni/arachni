@@ -1,3 +1,5 @@
+require 'nokogiri'
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -40,6 +42,21 @@ def get_variations( lang, str )
     end.compact.to_s
 end
 
+before do
+    request.body.rewind
+    begin
+        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+
+    begin
+        @xml = Nokogiri::XML( URI.decode_www_form_component( request.body.read ) )
+    rescue JSON::ParserError
+    end
+    request.body.rewind
+end
+
 REGEXP.keys.each do |language|
     language_str = language.to_s
 
@@ -50,6 +67,8 @@ REGEXP.keys.each do |language|
             <a href="/#{language_str}/cookie">Cookie</a>
             <a href="/#{language_str}/header">Header</a>
             <a href="/#{language_str}/link-template">Link template</a>
+            <a href="/#{language_str}/json">JSON</a>
+            <a href="/#{language_str}/xml">XML</a>
         EOHTML
     end
 
@@ -129,6 +148,102 @@ REGEXP.keys.each do |language|
         return if !env['HTTP_USER_AGENT'] || env['HTTP_USER_AGENT'].start_with?( default )
 
         get_variations( language, env['HTTP_USER_AGENT'] )
+    end
+
+    get "/#{language_str}/json" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/json/straight", true);
+                http_request.send( '{"input": "arachni_user"}' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/json/append", true);
+                http_request.send( '{"input": "arachni_user"}' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{language_str}/json/straight" do
+        return if !@json
+        default = 'arachni_user'
+        return if @json['input'].start_with?( default )
+
+        get_variations( language, @json['input'] )
+    end
+
+    post "/#{language_str}/json/append" do
+        return if !@json
+        default = 'arachni_user'
+        return if !@json['input'].start_with?( default )
+
+        get_variations( language, @json['input'].split( default ).last )
+    end
+
+    get "/#{language_str}/xml" do
+        <<-EOHTML
+            <script type="application/javascript">
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/xml/text/straight", true);
+                http_request.send( '<input>arachni_user</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/xml/text/append", true);
+                http_request.send( '<input>arachni_user</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/xml/attribute/straight", true);
+                http_request.send( '<input my-attribute="arachni_user">stuff</input>' );
+
+                http_request = new XMLHttpRequest();
+                http_request.open( "POST", "/#{language_str}/xml/attribute/append", true);
+                http_request.send( '<input my-attribute="arachni_user">stuff</input>' );
+            </script>
+        EOHTML
+    end
+
+    post "/#{language_str}/xml/text/straight" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first.content
+
+        return if input.start_with?( default )
+
+        get_variations( language, input )
+    end
+
+    post "/#{language_str}/xml/text/append" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first.content
+
+        return if !input.start_with?( default )
+
+        get_variations( language, input.split( default ).last )
+    end
+
+    post "/#{language_str}/xml/attribute/straight" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first['my-attribute']
+
+        return if input.start_with?( default )
+
+        get_variations( language, input )
+    end
+
+    post "/#{language_str}/xml/attribute/append" do
+        return if !@xml
+
+        default = 'arachni_user'
+        input = @xml.css('input').first['my-attribute']
+
+        return if !input.start_with?( default )
+
+        get_variations( language, input.split( default ).last )
     end
 
 end

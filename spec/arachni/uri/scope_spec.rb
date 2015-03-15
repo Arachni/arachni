@@ -37,15 +37,53 @@ describe Arachni::URI::Scope do
     describe '#redundant?' do
         subject { Arachni::URI.parse( 'http://stuff.com/match_this' ).scope }
 
+        context 'when the update_counters option is' do
+            context 'true' do
+                it 'decrements the counters' do
+                    scope.redundant_path_patterns = { /match_this/ => 10 }
+
+                    10.times do
+                        subject.redundant?( true ).should be_false
+                    end
+
+                    scope.redundant_path_patterns[/match_this/].should == 0
+                end
+            end
+
+            context 'false' do
+                it 'does not decrement the counters' do
+                    scope.redundant_path_patterns = { /match_this/ => 10 }
+
+                    10.times do
+                        subject.redundant?.should be_false
+                    end
+
+                    scope.redundant_path_patterns[/match_this/].should == 10
+                end
+            end
+
+            context 'default' do
+                it 'does not decrement the counters' do
+                    scope.redundant_path_patterns = { /match_this/ => 10 }
+
+                    10.times do
+                        subject.redundant?.should be_false
+                    end
+
+                    scope.redundant_path_patterns[/match_this/].should == 10
+                end
+            end
+        end
+
         context "when a URL's counter reaches 0" do
             it 'returns true' do
                 scope.redundant_path_patterns = { /match_this/ => 10 }
 
                 10.times do
-                    subject.redundant?.should be_false
+                    subject.redundant?( true ).should be_false
                 end
 
-                subject.redundant?.should be_true
+                subject.redundant?( true ).should be_true
             end
         end
         context "when a URL's counter has not reached 0" do
@@ -53,10 +91,10 @@ describe Arachni::URI::Scope do
                 scope.redundant_path_patterns = { /match_this/ => 11 }
 
                 10.times do
-                    subject.redundant?.should be_false
+                    subject.redundant?( true ).should be_false
                 end
 
-                subject.redundant?.should be_false
+                subject.redundant?( true ).should be_false
             end
         end
 
@@ -71,22 +109,74 @@ describe Arachni::URI::Scope do
     describe '#auto_redundant?' do
         subject { Arachni::URI( 'http://test.com/?test=2&test2=2').scope }
 
+        context 'when the update_counters option is' do
+            context 'true' do
+                it 'decrements the counters' do
+                    scope.auto_redundant_paths = 10
+
+                    subject.auto_redundant?( true ).should be_false
+                    9.times do
+                        subject.auto_redundant?( true ).should be_false
+                    end
+
+                    subject.auto_redundant?.should be_true
+                end
+            end
+
+            context 'false' do
+                it 'does not decrement the counters' do
+                    scope.auto_redundant_paths = 10
+
+                    subject.auto_redundant?( false ).should be_false
+                    9.times do
+                        subject.auto_redundant?( false ).should be_false
+                    end
+
+                    subject.auto_redundant?( false ).should_not be_true
+                end
+            end
+
+            context 'default' do
+                it 'does not decrement the counters' do
+                    scope.auto_redundant_paths = 10
+
+                    subject.auto_redundant?.should be_false
+                    9.times do
+                        subject.auto_redundant?.should be_false
+                    end
+
+                    subject.auto_redundant?.should_not be_true
+                end
+            end
+        end
+
         context 'when #auto_redundant_paths limit has been reached' do
             it 'returns true' do
                 scope.auto_redundant_paths = 10
 
-                subject.auto_redundant?.should be_false
+                subject.auto_redundant?( true ).should be_false
                 9.times do
-                    subject.auto_redundant?.should be_false
+                    subject.auto_redundant?( true ).should be_false
                 end
 
-                subject.auto_redundant?.should be_true
+                subject.auto_redundant?( true ).should be_true
             end
         end
 
         describe 'by default' do
             it 'returns false' do
                 subject.auto_redundant?.should be_false
+            end
+        end
+
+        describe 'when the URL has no parameters' do
+            subject { Arachni::URI( 'http://test.com/').scope }
+
+            it 'returns false' do
+                scope.auto_redundant_paths = 1
+                3.times do
+                    subject.auto_redundant?.should be_false
+                end
             end
         end
     end

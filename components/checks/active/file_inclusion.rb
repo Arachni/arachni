@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,7 +9,7 @@
 # File inclusion check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.3
+# @version 0.1.4
 #
 # @see http://cwe.mitre.org/data/definitions/98.html
 # @see https://www.owasp.org/index.php/PHP_File_Inclusion
@@ -99,10 +99,9 @@ Injects paths of common files (like `/etc/passwd` and `boot.ini`) and evaluates
 the existence of a file inclusion vulnerability based on the presence of relevant
 content or errors in the HTTP response body.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.3',
+            version:     '0.1.4',
             platforms:   options[:regexp].keys,
 
             issue:       {

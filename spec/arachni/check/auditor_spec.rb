@@ -48,7 +48,7 @@ end
 describe Arachni::Check::Auditor do
     before :each do
         @opts = Arachni::Options.instance
-        @opts.audit.elements :links, :forms, :cookies, :headers
+        @opts.audit.elements Arachni::Page::ELEMENTS - [:link_templates]
 
         @opts.url = web_server_url_for( :auditor )
         @url      = @opts.url
@@ -68,6 +68,15 @@ describe Arachni::Check::Auditor do
         $audit_taint_called        = nil
         $audit_called              = nil
     end
+
+    element_classes = [
+        Arachni::Element::Link, Arachni::Element::Link::DOM,
+        Arachni::Element::Form, Arachni::Element::Form::DOM,
+        Arachni::Element::Cookie, Arachni::Element::Cookie::DOM,
+        Arachni::Element::Header, Arachni::Element::LinkTemplate,
+        Arachni::Element::LinkTemplate::DOM, Arachni::Element::JSON,
+        Arachni::Element::XML
+    ]
 
     let(:auditor) { AuditorTest.new( @framework ) }
     let(:url) { @url }
@@ -132,6 +141,25 @@ describe Arachni::Check::Auditor do
     end
 
     describe '.check?' do
+        context 'when elements have been provided' do
+            it 'restricts the check' do
+                page = Arachni::Page.from_data( url: url, body: 'stuff' )
+                page.stub(:has_script?) { true }
+                auditor.class.info[:elements] =
+                    element_classes + [Arachni::Element::Body, Arachni::Element::GenericDOM]
+
+                auditor.class.check?( page, Arachni::Element::GenericDOM ).should be_true
+                auditor.class.check?( page, Arachni::Element::Body ).should be_true
+
+                element_classes.each do |element|
+                    auditor.class.check?( page, element ).should be_false
+                end
+
+                auditor.class.check?( page, element_classes ).should be_false
+                auditor.class.check?( page, element_classes + [Arachni::Element::Body] ).should be_true
+            end
+        end
+
         context Arachni::Element::Body do
             before(:each) { auditor.class.info[:elements] = Arachni::Element::Body }
 
@@ -170,12 +198,6 @@ describe Arachni::Check::Auditor do
                 end
             end
         end
-
-        element_classes = [Arachni::Element::Link, Arachni::Element::Link::DOM,
-                           Arachni::Element::Form, Arachni::Element::Form::DOM,
-                           Arachni::Element::Cookie, Arachni::Element::Cookie::DOM,
-                           Arachni::Element::Header, Arachni::Element::LinkTemplate,
-                           Arachni::Element::LinkTemplate::DOM ]
 
         element_classes.each do |element|
             context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
@@ -362,6 +384,8 @@ describe Arachni::Check::Auditor do
         before(:each) do
             Arachni::Options.audit.link_templates = /link-template\/input\/(?<input>.+)/
             auditor.load_page_from "#{@url}each_candidate_element"
+            auditor.page.jsons = [Factory[:json]]
+            auditor.page.xmls  = [Factory[:xml]]
         end
 
         it 'sets the auditor' do
@@ -430,7 +454,7 @@ describe Arachni::Check::Auditor do
             auditor.class.info[:elements].clear
 
             auditor.each_candidate_dom_element do |element|
-                element.dom.auditor.should == auditor
+                element.auditor.should == auditor
             end
         end
 
@@ -442,7 +466,7 @@ describe Arachni::Check::Auditor do
                 end
 
                 elements.should be_any
-                elements.should == auditor.page.links.select { |l| l.dom }
+                elements.should == auditor.page.links.select { |l| l.dom }.map(&:dom)
             end
 
             context 'and are not supported' do
@@ -463,7 +487,7 @@ describe Arachni::Check::Auditor do
                     elements << element
                 end
 
-                elements.should == auditor.page.forms
+                elements.should == auditor.page.forms.map(&:dom)
             end
 
             context 'and no types are specified by the check' do
@@ -476,9 +500,9 @@ describe Arachni::Check::Auditor do
                     end
 
                     elements.should ==
-                        auditor.page.links.select { |l| l.dom } |
+                        (auditor.page.links.select { |l| l.dom } |
                             auditor.page.forms | auditor.page.cookies |
-                            auditor.page.link_templates
+                            auditor.page.link_templates).map(&:dom)
                 end
             end
         end

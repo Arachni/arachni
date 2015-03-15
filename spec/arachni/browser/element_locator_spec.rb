@@ -95,7 +95,7 @@ describe Arachni::Browser::ElementLocator do
 
             l = described_class.new( tag_name: :a, attributes: { href: '#stuff'} )
             element = l.locate( browser )
-            element.should be_kind_of Watir::Anchor
+            element.should be_kind_of Watir::HTMLElement
             element.exists?.should be_true
         end
 
@@ -103,6 +103,37 @@ describe Arachni::Browser::ElementLocator do
             it "returns a #{Watir} locator" do
                 browser.load "#{url}/digest"
                 subject.locate( browser ).exists?.should be_false
+            end
+        end
+    end
+
+    describe '#css' do
+        context 'when there are no attributes' do
+            it 'returns a CSS locator with just the tag name' do
+                described_class.new( tag_name: :a ).css.should == 'a'
+            end
+        end
+
+        context 'when there is an attribute' do
+            it 'returns a CSS locator with the attribute' do
+                described_class.new(
+                    tag_name: :a,
+                    attributes: {
+                        stuff: 'blah'
+                    }
+                ).css.should == 'a[stuff="blah"]'
+            end
+        end
+
+        context 'when there are multiple attributes' do
+            it 'returns a CSS locator with the attributes' do
+                described_class.new(
+                    tag_name: :a,
+                    attributes: {
+                        stuff:  'blah',
+                        stuff2: 'blah2'
+                    }
+                ).css.should == 'a[stuff="blah"][stuff2="blah2"]'
             end
         end
     end
@@ -167,6 +198,12 @@ describe Arachni::Browser::ElementLocator do
         it 'converts it to an HTML opening tag' do
             subject.to_s.should == '<a id="my-id" class="my-class">'
             described_class.new( tag_name: tag_name ).to_s.should == '<a>'
+        end
+    end
+
+    describe '#inspect' do
+        it 'is aliased to #to_s' do
+            subject.to_s.should == subject.inspect
         end
     end
 

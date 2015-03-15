@@ -2,26 +2,178 @@
 
 ## _Under development_
 
+- `gemspec` -- Require Ruby >= 2.0.0.
+- Options
+    - `--authorized-by` -- Fixed expected type (`Integer` => `String`).
+    - Added:
+        - Audit
+            - `--audit-parameter-names` -- Injects payloads into parameter names.
+            - `--audit-with-extra-parameter` -- Injects payloads into an extra parameter.
+        - HTTP
+            - `--http-ssl-verify-peer` -- Verify SSL peer.
+            - `--http-ssl-verify-host` -- Verify SSL host.
+            - `--http-ssl-certificate` -- SSL certificate to use.
+            - `--http-ssl-certificate-type` -- SSL certificate type.
+            - `--http-ssl-key` -- SSL private key to use.
+            - `--http-ssl-key-type` -- SSL key type.
+            - `--http-ssl-key-password` -- Password for the SSL private key.
+            - `--http-ssl-ca` -- File holding one or more certificates with which to verify the peer.
+            - `--http-ssl-ca-directory` -- Directory holding multiple certificate files with which to verify the peer.
+            - `--http-ssl-version` -- SSL version to use.
+- `URI`
+    - Added `#resource_name`.
+    - Added `.full_and_absolute?`.
+    - `Scope`
+        - `#redundant?` -- No longer updates counter by default.
+        - `#auto_redundant?`
+            - No longer updates counter by default.
+            - Only consider URLs with query parameters.
+- `HTTP`
+    - `Client`
+        - Overhauled custom-404 identification and moved to `Dynamic404Handler`.
+- `Framework`
+    - `Parts`
+        - `Data`
+            - `#push_to_page_queue` -- Update redundancy scope counters.
+            - `#push_to_url_queue` -- Update redundancy scope counters.
+        - `Audit`
+            - `#audit_page`
+                - Apply DOM metadata to pages not originated from `Browser#to_page`.
+        - `Browser`
+            - Added utility `#browser`.
+            - Added `#use_browsers?`, determining whether system options and
+                capabilities allow for browsers to be used.
+            - `#wait_for_browsers?` => `#wait_for_browser_cluster?`
 - `Element`
+    - All
+        - Renamed `#html` to `#source`.
+        - Moved element-specific capabilities to their own files.
     - `Cookie`
-        - `.encode` -- Encode `=` even when in value.
-- `Page::DOM`
-    - `#restore` -- Added debugging messages.
+            - `.encode` -- Encode `=` even when in value.
+    - `JSON` -- Represents JSON input vectors.
+    - `XML` -- Represents XML input vectors.
+    - `Form`
+        - Support forms with multiple values for `submit` inputs with sa
+        me names.
+    - `Server`
+        - `#log_remote_file_if_exists` -- Perform some rudimentary meta-analysis
+            on possible issues and only feed the identified resources back to the
+            system if they are above a certain threshold of similarity.
+            This fixes infinite loop scenarios when dealing with unreliable
+            custom-404 fingerprints.
+    - `Capabilities`
+        - `Mutable`
+            - `:param_flip` => `:parameter_names`
+            - Added `:parameter_values` option.
+            - Added `:with_extra_parameter` option.
+        - `Analyzable`
+            - `Timeout`
+                - Updated algorithm to be resilient to WAF/IDS/IPS filtering.
+                - Added remarks to each issue containing extra information
+                    regarding the state of the web application during analysis.
+            - `Differential` -- Added remarks to each issue containing extra information
+                regarding the used payloads.
+            - `Taint`
+                - Don't log issues when unable to get a verification response.
+                - Provide all matched data as proof, not only the regexp captured ones.
+        - `WithDOM`
+            - Added `#skip_dom` (set via `Browser#to_page`), to prevent `DOM`s
+                from being loaded and audited when there are no associated events.
+- `Page`
+    - Added `#update_metadata`, updating `#metadata` from `#cache` elements.
+    - Added `#reload_metadata`, updating `#cache` elements from `#metadata`.
+    - Added `#import_metadata`, importing `#metadata` from other page.
+    - `DOM`
+        - `#restore` -- Added debugging messages.
+- `Utilities`
+    - Added `.full_and_absolute_url?`.
 - `Browser`
+    - Updated to extract JSON and XML input vectors from HTTP requests.
+    - `#shutdown` -- Fixed Selenium exceptions on dead browser process.
+    - `#to_page` -- Apply DOM metadata to page elements.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
     - `#fire_event` -- Recode input values to fix encoding errors.
-    - `Javascript::DOMMonitor#digest` -- Removed `data-arachni-id` from digest.
+    - `#to_page` -- Return empty page on unavailable response data instead of `nil`.
+    - `#snapshot_id` -- Updated to only consider important element attributes
+        (depending on type) instead of all of them.
+    - `ElementLocator`
+        - `#css` -- Returns a CSS locator.
+        - `#locate` -- Updated to use `#css`.
+    - `Javascript`
+        - Added `.select_event_attributes`.
+        - `DOMMonitor`
+            - `#digest` -- Removed `data-arachni-id` from digest.
+        - `TaintTracer`
+            - Added support for tracing multiple taints in groups.
+            - Added tracing for:
+                - `escape()`
+                - `unescape()`
+                - `String`
+                    - `indexOf()`
+                    - `lastIndexOf()`
+                - `jQuery`
+                    - `cookie()` plugin.
 - `BrowserCluster`
     - `Worker`
         - `#browser_respawn` -- Catch Watir/Selenium errors.
+- `Check`
+    - `Auditor`
+        - `#each_candidate_dom_element` -- Yield element DOMs instead of parent elements.
+- `Plugin`
+    - `Manager`
+        - `#run` -- Optimized plugin initialization by using a queue to signal
+            a ready-state, instead of blocking for 1 second.
 -  Checks
     - Active
+        - Added
+            - `unvalidated_redirect_dom` -- Logs DOM-based unvalidated redirects.
+            - `x_frame_options` -- Logs missing `X-Frame-Options` headers per host.
+            - `insecure_cors_policy` -- Logs wildcard `Access-Control-Allow-Origin`
+                headers per host.
+            - `xxe` -- Logs XML External Entity vulnerabilities.
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
+        - `os_cmd_injection` -- Only use straight payload injection instead
+            of straight and append.
+        - `code_injection` -- Only use straight payload injection instead
+            of straight and append.
+        - `xss` -- When auditing links don't require a tainted response for
+            browser analysis.
+        - `xss_script_context`
+            - Updated payloads.
+            - Only use straight payload injection instead of straight and append.
+        - `xss_dom_script_context` -- Only use straight payload injection instead
+            of straight and append.
+    - Passive
+        - Added
+            - `insecure_cross_domain_policy_access` -- Checks `crossdomain.xml`
+                files for `allow-access-from` wildcard policies.
+            - `insecure_cross_domain_policy_headers` -- Checks `crossdomain.xml`
+                files for wildcard `allow-http-request-headers-from` policies.
+            - `insecure_client_access_policy` -- Checks `clientaccesspolicy.xml`
+                files for wildcard domain policies.
+            - `common_directories` -- Added:
+                - `rails/info/routes`
+                - `rails/info/properties`
+        - `http_put` -- Try to `DELETE` the `PUT` file.
 - Plugins
+    - All
+        - Updated `#prepare` methods to not block, in accordance with the new
+            `Plugin::Manager#run` behavior.
     - `email_notify`
         - Added `domain` option.
         - Fixed extension for `html` reporter.
+    - Added:
+        - `vector_collector` -- Collects information about all seen input vectors
+            which are within the scan scope.
+        - `headers_collector` -- Collects response headers based on specified criteria.
+        - `exec` -- Calls external executables at different scan stages.
+- Report -- Renamed `#html` to `#source` for all elements.
+    - `html`
+        - Summary
+            - Added OWASP Top 10 tab.
+    - `xml`
+        - Schema update for issue remarks.
 
 ## 1.0.6 _(December 07, 2014)_
 

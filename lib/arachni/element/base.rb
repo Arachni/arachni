@@ -1,15 +1,14 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
     web site for more information on licensing and terms of use.
 =end
 
-module Arachni
-
 require 'nokogiri'
-require Options.paths.lib + 'nokogiri/xml/node'
+
+module Arachni
 
 module Element
 
@@ -153,6 +152,12 @@ class Base
         data.delete 'audit_options'
         data.delete 'scope'
         data['class'] = self.class.to_s
+
+        if data['initialization_options'].is_a? Hash
+            data['initialization_options'] =
+                data['initialization_options'].my_stringify_keys(false)
+        end
+
         data
     end
 
@@ -163,6 +168,7 @@ class Base
         data.each do |name, value|
             value = case name
                         when 'dom'
+                            next if !value
                             self::DOM.from_rpc_data( value )
 
                         when 'initialization_options'

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -51,8 +51,7 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
 Injects code snippets and assess whether or not the injection was successful using
 a time delay.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.3.1',
             platforms:   payloads.keys,

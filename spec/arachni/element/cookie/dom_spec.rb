@@ -72,13 +72,13 @@ describe Arachni::Element::Cookie::DOM do
     end
 
     describe '#type' do
-        it 'returns :link_dom' do
+        it 'returns :cookie_dom' do
             subject.type.should == :cookie_dom
         end
     end
 
     describe '.type' do
-        it 'returns :link_dom' do
+        it 'returns :cookie_dom' do
             described_class.type.should == :cookie_dom
         end
     end

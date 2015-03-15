@@ -415,7 +415,7 @@ describe Arachni::HTTP::Request do
             end
 
             it 'encodes and puts them in the Cookie header' do
-                subject.options[:headers]['Cookie'].should == 'na+me=stu+ff;na+me2=stu+ff2'
+                subject.options[:headers]['Cookie'].should == 'na%20me=stu%20ff;na%20me2=stu%20ff2'
             end
         end
 
@@ -525,6 +525,94 @@ describe Arachni::HTTP::Request do
 
             it 'sets authentication type to :auto' do
                 subject.options[:httpauth].should == :auto
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_verify_peer" do
+            context 'true' do
+                it "sets #{Typhoeus::Request}#options[:ssl_verifypeer]" do
+                    Arachni::Options.http.ssl_verify_peer = true
+                    subject.options[:ssl_verifypeer].should == true
+                end
+            end
+
+            context 'false' do
+                it "sets #{Typhoeus::Request}#options[:ssl_verifypeer]" do
+                    Arachni::Options.http.ssl_verify_peer = false
+                    subject.options[:ssl_verifypeer].should == false
+                end
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_verify_host" do
+            context 'true' do
+                it "sets #{Typhoeus::Request}#options[:ssl_verifyhost] to 2" do
+                    Arachni::Options.http.stub(:ssl_verify_host){ true }
+                    subject.options[:ssl_verifyhost].should == 2
+                end
+            end
+
+            context 'false' do
+                it "sets #{Typhoeus::Request}#options[:ssl_verifyhost] to 2" do
+                    Arachni::Options.http.stub(:ssl_verify_host){ false }
+                    subject.options[:ssl_verifyhost].should == 0
+                end
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_certificate_filepath" do
+            it "sets #{Typhoeus::Request}#options[:sslcert]" do
+                Arachni::Options.http.stub(:ssl_certificate_filepath){ :stuff }
+                subject.options[:sslcert].should == :stuff
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_certificate_type" do
+            it "sets #{Typhoeus::Request}#options[:sslcerttype]" do
+                Arachni::Options.http.stub(:ssl_certificate_type){ :stuff }
+                subject.options[:sslcerttype].should == :stuff
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_key_filepath" do
+            it "sets #{Typhoeus::Request}#options[:sslkey]" do
+                Arachni::Options.http.stub(:ssl_key_filepath){ :stuff }
+                subject.options[:sslkey].should == :stuff
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_key_type" do
+            it "sets #{Typhoeus::Request}#options[:sslkeytype]" do
+                Arachni::Options.http.stub(:ssl_key_type){ :stuff }
+                subject.options[:sslkeytype].should == :stuff
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_key_password" do
+            it "sets #{Typhoeus::Request}#options[:sslkeypasswd]" do
+                Arachni::Options.http.stub(:ssl_key_password){ :stuff }
+                subject.options[:sslkeypasswd].should == :stuff
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_ca_filepath" do
+            it "sets #{Typhoeus::Request}#options[:cainfo]" do
+                Arachni::Options.http.stub(:ssl_ca_filepath){ :stuff }
+                subject.options[:cainfo].should == :stuff
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_ca_directory" do
+            it "sets #{Typhoeus::Request}#options[:capath]" do
+                Arachni::Options.http.stub(:ssl_ca_directory){ :stuff }
+                subject.options[:capath].should == :stuff
+            end
+        end
+
+        context "#{Arachni::OptionGroups::HTTP}#ssl_version" do
+            it "sets #{Typhoeus::Request}#options[:sslversion]" do
+                Arachni::Options.http.stub(:ssl_version){ :stuff }
+                subject.options[:sslversion].should == :stuff
             end
         end
     end

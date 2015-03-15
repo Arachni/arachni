@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,7 +12,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.2.1
+# @version 0.2.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -33,8 +33,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
     def self.options
         @options ||= {
             substring: (rand1.to_i + rand2.to_i).to_s,
-            format:    [Format::APPEND, Format::STRAIGHT],
-            param_flip: false
+            format:    [Format::STRAIGHT]
         }
     end
 
@@ -69,10 +68,9 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
             description: %q{
 Injects code snippets and assess whether or not execution was successful.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.1',
+            version:     '0.2.3',
             platforms:   payloads.keys,
 
             issue:       {

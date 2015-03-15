@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,11 +9,11 @@
 # XPath Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.4
+# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
-# @see http://www.owasp.org/index.php/XPATH_Injection
-# @see http://www.owasp.org/index.php/Testing_for_XPath_Injection_%28OWASP-DV-010%29
+# @see https://www.owasp.org/index.php/XPATH_Injection
+# @see https://www.owasp.org/index.php/Testing_for_XPath_Injection_%28OWASP-DV-010%29
 class Arachni::Checks::XpathInjection < Arachni::Check::Base
 
     def self.error_strings
@@ -37,10 +37,9 @@ class Arachni::Checks::XpathInjection < Arachni::Check::Base
         {
             name:        'XPath Injection',
             description: %q{XPath injection check},
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
 
             issue:       {
                 name:            %q{XPath Injection},
@@ -64,7 +63,7 @@ Arachni injected special XPath query characters into the page and based on the
 responses from the server, has determined that the page is vulnerable to XPath injection.
 },
                 references:  {
-                    'OWASP' => 'http://www.owasp.org/index.php/XPATH_Injection',
+                    'OWASP' => 'https://www.owasp.org/index.php/XPATH_Injection',
                     'WASC' => 'http://projects.webappsec.org/w/page/13247005/XPath%20Injection'
                 },
                 tags:            %w(xpath database error injection regexp),

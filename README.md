@@ -6,36 +6,97 @@
 
 <hr/>
 
-# Experimental/unstable branch -- used for development/integration
+# v1.1 WiP
 
-This branch is where all development takes place, once its code has been tested and
-is considered stable, it is then merged into the `master` branch and released.
+This branch contains experimental/WiP code for the
+[v1.1 milestone](https://github.com/Arachni/arachni/issues?q=is%3Aopen+is%3Aissue+milestone%3Av1.1).
 
-Do not be confused by the version of this branch, `2.0dev` is a placeholder
-which simply means _next release_.
+## Setup
 
-## Nightlies
+### Linux and OSX
 
-For self-contained, nightly snapshot packages take a look at:
-http://downloads.arachni-scanner.com/nightlies/
+#### Environment setup
 
-## Source
+Ruby and library dependency installation can take place via either the official
+build scripts or manually.
 
-To run from source you first need to setup a
-[development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
+##### Using the build scripts
 
-**After** you've setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment),
-run the following to checkout the source code of the `experimental` branch and
-resolve its dependencies:
+The build scripts make [setting up a development environment](https://github.com/Arachni/arachni/wiki/Development-environment)
+very simple and should generally be preferred.
+
+##### Using RVM
+
+    # Install system dependencies
+    sudo apt-get install build-essential curl libcurl3 libcurl4-openssl-dev
+
+    # Install GPG keys to verify RVM files.
+    gpg --keyserver hkp://keys.gnupg.net --recv-keys D39DC0E3
+
+    # Install RVM and Ruby.
+    curl -sSL https://get.rvm.io | bash -s stable --ruby
+
+    # Use Ruby.
+    rvm use ruby
+
+You will also need to make sure that [PhantomJs 1.9.2](https://code.google.com/p/phantomjs/downloads/list)
+is in your `$PATH`.
+
+#### Framework installation
 
     git clone git://github.com/Arachni/arachni.git
     cd arachni
-    git checkout experimental
-    bundle install --without prof # to resolve dev dependencies
+    git checkout v1.1
+    bundle install --without prof docs
 
-Then you can run Arachni using the the executables under `bin/`.<br/>
+You can now run Arachni using the the executables under `bin/`.
+
 If you get an error when trying to run Arachni, use `bundle exec` like so:
 `bundle exec <executable>`.
+
+### MS Windows
+
+Windows support is experimental and could use some serious testing.
+Please give it a go and let us know of any [issues](https://github.com/Arachni/arachni/issues)
+that you may come across.
+
+#### Environment setup
+
+Due to stability issues with the official Ruby interpreter, Arachni depends on
+JRuby to run on MS Windows, utilising the Java Virtual Machine.
+
+* [Install JRuby](https://s3.amazonaws.com/jruby.org/downloads/1.7.18/jruby_windows_x64_jre_1_7_18.exe) -- includes Java.
+* Install `libcurl`:
+    * [Download curl-7.40.0-win64.zip](http://www.confusedbycode.com/curl/).
+    * Place the contents of the `bin` and `dlls` directories under `C:\jruby-1.7.18\bin`.
+* Install PhantomJS:
+    * [Download](https://phantomjs.googlecode.com/files/phantomjs-1.9.2-windows.zip).
+    * Place `phantomjs.exe` under `C:\jruby-1.7.18\bin`.
+* [Install Git](https://msysgit.github.io/).
+
+#### Framework installation
+
+    git clone git://github.com/Arachni/arachni.git
+    cd arachni
+    git checkout v1.1
+    jruby -S gem install bundler
+    jruby -S bundle install --without prof docs
+
+You can now run Arachni like so:
+
+    jruby bin/arachni http://testhtml5.vulnweb.com/
+
+#### Known issues
+
+* You will experience slow start-up times (due to the JVM being launched), but,
+    once the JVM warms up, performance should be quite close to the *nix versions.
+* When aborting a scan via `Ctrl+C` it will appear as if the process immediately
+    exits and be presented with the usual `cmd` prompt. This can be deceiving
+    as the scan cleanup will continue. Please wait until the usual end-of-scan
+    statistics are printed.
+* You may notice the sitemap including URLs in the form of `http://127.0.0.1:<port>/session/`,
+    which do not correspond with the targetted web application, this has to do
+    with browser communications and is being investigated.
 
 # Arachni - Web Application Security Scanner Framework
 
@@ -77,7 +138,7 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2014 Tasos Laskos</td>
+        <td>2010-2015 Tasos Laskos</td>
     </tr>
     <tr>
         <th>License</th>
@@ -154,11 +215,11 @@ you with its findings.
 
  - Cookie-jar/cookie-string support.
  - Custom header support.
- - SSL support.
+ - SSL support with fine-grained options.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
- - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
+ - Site authentication (SSL-based, form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
  - Automatic log-out detection and re-login during the scan (when the initial
     login was performed via the `autologin`, `login_script` or `proxy` plugins).
  - Custom 404 page detection.
@@ -264,6 +325,8 @@ Arachni is able to extract and audit the following elements and their inputs:
  - Headers
  - Generic client-side elements like `input`s which have associated DOM events.
  - AJAX-request parameters.
+ - JSON request data.
+ - XML request data.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
@@ -324,6 +387,8 @@ Arachni is able to extract and audit the following elements and their inputs:
         - Can load them via the integrated browser environment.
     - Headers
     - Generic client-side DOM elements like `input`s.
+    - JSON request data.
+    - XML request data.
  - Can ignore binary/non-text pages.
  - Can optionally audit elements using both `GET` and `POST` HTTP methods.
  - Can optionally submit all links and forms of the page along with the cookie
@@ -447,6 +512,7 @@ Active checks engage the web application via its inputs.
     - Windows
 - Remote file inclusion (`rfi`).
 - Unvalidated redirects (`unvalidated_redirect`).
+- Unvalidated DOM redirects (`unvalidated_redirect_dom`).
 - XPath injection (`xpath_injection`).
     - Generic
     - PHP
@@ -462,6 +528,11 @@ Active checks engage the web application via its inputs.
 - DOM XSS inputs (`xss_dom_inputs`).
 - DOM XSS script context (`xss_dom_script_context`).
 - Source code disclosure (`source_code_disclosure`)
+- XML External Entity (`xxe`).
+    - Linux
+    - *BSD
+    - Solaris
+    - Windows
 
 ##### Passive
 
@@ -495,6 +566,11 @@ Passive checks look for the existence of files, folders and signatures.
 - localstart.asp (`localstart_asp`)
 - Cookie set for parent domain (`cookie_set_for_parent_domain`)
 - Missing `Strict-Transport-Security` headers for HTTPS sites (`hsts`).
+- Missing `X-Frame-Options` headers (`x_frame_options`).
+- Insecure CORS policy (`insecure_cors_policy`).
+- Insecure cross-domain policy (allow-access-from) (`insecure_cross_domain_policy_access`)
+- Insecure cross-domain policy (allow-http-request-headers-from) (`insecure_cross_domain_policy_headers`)
+- Insecure client-access policy (`insecure_client_access_policy`)
 
 #### Reporters
 
@@ -534,6 +610,10 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 - Content-types (`content_types`) -- Logs content-types of server responses aiding in the
     identification of interesting (possibly leaked) files.
+- Vector collector (`vector_collector`) -- Collects information about all seen input vectors
+    which are within the scan scope.
+- Headers collector (`headers_collector`) -- Collects response headers based on specified criteria.
+- Exec (`exec`) -- Calls external executables at different scan stages.
 
 ##### Defaults
 

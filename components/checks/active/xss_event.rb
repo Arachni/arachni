@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -117,7 +117,7 @@ where `INJECTION_HERE` represents the location where the Arachni payload was det
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
                     'Secunia'  => 'http://secunia.com/advisories/9716/',
                     'WASC'     => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
-                    'OWASP'    => 'www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
+                    'OWASP'    => 'https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
                 },
                 tags:            %w(xss event injection dom attribute),
                 cwe:             79,

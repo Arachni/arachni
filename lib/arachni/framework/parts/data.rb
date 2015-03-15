@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -28,7 +28,7 @@ module Data
     #   exclusion criteria or has already been seen.
     def push_to_page_queue( page, force = false )
         return false if !force && (!accepts_more_pages? || state.page_seen?( page ) ||
-            page.scope.out? || page.scope.redundant?)
+            page.scope.out? || page.scope.redundant?( true ))
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)
@@ -57,7 +57,7 @@ module Data
         return if !force && !accepts_more_pages?
 
         url = to_absolute( url ) || url
-        if state.url_seen?( url ) || skip_path?( url ) || redundant_path?( url )
+        if state.url_seen?( url ) || skip_path?( url ) || redundant_path?( url, true )
             return false
         end
 
@@ -103,7 +103,9 @@ module Data
         return if url_queue.empty?
 
         grabbed_page = nil
-        Page.from_url( url_queue.pop, http: { update_cookies: true } ) do |page|
+        Page.from_url( url_queue.pop,
+                       http: { update_cookies: true, performer: self }
+        ) do |page|
             @retries[page.url.hash] ||= 0
 
             if (location = page.response.headers.location)

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -76,13 +76,16 @@ module Auditor
             # check is configured to audit and user options.
             #
             # @param    [Page]    page
+            # @param    [Element::Base, Array<Element::Base>]    restrict_to_elements
+            #   Element types to check for.
             #
             # @return   [Bool]
-            def self.check?( page )
+            def self.check?( page, restrict_to_elements = nil )
                 return false if issue_limit_reached?
                 return true  if elements.empty?
 
-                audit = Arachni::Options.audit
+                audit                = Arachni::Options.audit
+                restrict_to_elements = [restrict_to_elements].flatten.compact
 
                 {
                     # We use procs to make the decision, to avoid loading the page
@@ -105,11 +108,17 @@ module Auditor
                         proc { audit.link_templates? && page.link_templates.find { |e| e.inputs.any? } },
                     Element::LinkTemplate::DOM =>
                         proc { audit.link_template_doms? && !!page.link_templates.find(&:dom) },
+                    Element::JSON      =>
+                        proc { audit.jsons? && page.jsons.find { |e| e.inputs.any? } },
+                    Element::XML      =>
+                        proc { audit.xmls? && page.xmls.find { |e| e.inputs.any? } },
                     Element::Body              => !page.body.empty?,
                     Element::GenericDOM        => page.has_script?,
                     Element::Path              => true,
                     Element::Server            => true
                 }.each do |type, decider|
+                    next if restrict_to_elements.any? && !restrict_to_elements.include?( type )
+
                     return true if elements.include?( type ) &&
                         (decider.is_a?( Proc ) ? decider.call : decider)
                 end
@@ -164,6 +173,18 @@ module Auditor
     # injection strings.
     Format = Element::Capabilities::Mutable::Format
 
+    # Non-DOM auditable elements.
+    ELEMENTS_WITH_INPUTS = [
+        Element::Link, Element::Form, Element::Cookie, Element::Header,
+        Element::LinkTemplate, Element::JSON, Element::XML
+    ]
+
+    # Auditable DOM elements.
+    DOM_ELEMENTS_WITH_INPUTS = [
+        Element::Link::DOM, Element::Form::DOM, Element::Cookie::DOM,
+        Element::LinkTemplate::DOM
+    ]
+
     # Default audit options.
     OPTIONS = {
 
@@ -171,12 +192,9 @@ module Auditor
         #
         # If no elements have been passed to audit methods, candidates will be
         # determined by {#each_candidate_element}.
-        elements:     [Element::Link, Element::Form,
-                        Element::Cookie, Element::Header,
-                        Element::Body, Element::LinkTemplate],
+        elements:     ELEMENTS_WITH_INPUTS,
 
-        dom_elements: [Element::Link::DOM, Element::Form::DOM,
-                       Element::Cookie::DOM, Element::LinkTemplate::DOM],
+        dom_elements: DOM_ELEMENTS_WITH_INPUTS,
 
         # If set to `true` the HTTP response will be analyzed for new elements.
         # Be careful when enabling it, there'll be a performance penalty.
@@ -226,8 +244,8 @@ module Auditor
     #
     # @see Element::Server#remote_file_exist?
     def log_remote_file_if_exists( url, silent = false, &block )
-        Element::Server.new( page.url ).tap { |s| s.auditor = self }.
-            log_remote_file_if_exists( url, silent, &block )
+        @server ||= Element::Server.new( page.url ).tap { |s| s.auditor = self }
+        @server.log_remote_file_if_exists( url, silent, &block )
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
@@ -241,8 +259,8 @@ module Auditor
     #
     # @see Element::Body#match_and_log
     def match_and_log( patterns, &block )
-        Element::Body.new( self.page.url ).tap { |b| b.auditor = self }.
-            match_and_log( patterns, &block )
+        @body ||= Element::Body.new( self.page.url ).tap { |b| b.auditor = self }
+        @body.match_and_log( patterns, &block )
     end
 
     # Populates and logs an {Arachni::Issue}.
@@ -418,8 +436,8 @@ module Auditor
     #   Element types to audit (see {OPTIONS}`[:elements]`).
     #
     # @yield       [element]
-    #   Each candidate element.
-    # @yieldparam [Arachni::Element]
+    #   Each candidate DOM element.
+    # @yieldparam [Arachni::Capabilities::Auditable::DOM]
     def each_candidate_element( types = [], &block )
         types = self.class.info[:elements] if types.empty?
         types = OPTIONS[:elements]         if types.empty?
@@ -427,7 +445,6 @@ module Auditor
         types.each do |elem|
             elem = elem.type
 
-            next if elem == Element::Body.type
             next if !Options.audit.elements?( elem )
 
             case elem
@@ -445,6 +462,12 @@ module Auditor
 
                 when Element::LinkTemplate.type
                     prepare_each_element( page.link_templates, &block )
+
+                when Element::JSON.type
+                    prepare_each_element( page.jsons, &block )
+
+                when Element::XML.type
+                    prepare_each_element( page.xmls, &block )
 
                 else
                     fail ArgumentError, "Unknown element: #{elem}"
@@ -613,8 +636,8 @@ module Auditor
         elements.each do |e|
             next if skip?( e ) || !e.dom || e.dom.inputs.empty?
 
-            d = e.dup
-            d.dom.auditor = self
+            d = e.dup.dom
+            d.auditor = self
             block.call d
         end
     end

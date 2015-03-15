@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -450,13 +450,14 @@ class Framework
 
         if !options.audit.links? && !options.audit.forms? &&
             !options.audit.cookies? && !options.audit.headers? &&
-            !options.audit.link_templates?
+            !options.audit.link_templates? && !options.audit.jsons? &&
+            !options.audit.xmls?
 
             print_info 'No element audit options were specified, will audit ' <<
-                           'links, forms and cookies.'
+                           'links, forms, cookies, JSONs and XMLs.'
             print_line
 
-            options.audit.elements :links, :forms, :cookies
+            options.audit.elements :links, :forms, :cookies, :jsons, :xmls
         end
     end
 

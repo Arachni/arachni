@@ -31,6 +31,66 @@ describe Arachni::OptionGroups::HTTP do
         end
     end
 
+    describe '#proxy_type=' do
+        it 'sets #proxy_type' do
+            subject.proxy_type = 'http'
+            subject.proxy_type.should == 'http'
+        end
+
+        context 'when given an invalid type' do
+            it "raises #{described_class::Error::InvalidProxyType}" do
+                expect do
+                    subject.proxy_type = 'stuff'
+                end.to raise_error described_class::Error::InvalidProxyType
+            end
+        end
+    end
+
+    describe '#ssl_certificate_type=' do
+        it 'sets #ssl_certificate_type' do
+            subject.ssl_certificate_type = 'pem'
+            subject.ssl_certificate_type.should == 'pem'
+        end
+
+        context 'when given an invalid type' do
+            it "raises #{described_class::Error::InvalidSSLCertificateType}" do
+                expect do
+                    subject.ssl_certificate_type = 'stuff'
+                end.to raise_error described_class::Error::InvalidSSLCertificateType
+            end
+        end
+    end
+
+    describe '#ssl_key_type=' do
+        it 'sets #ssl_key_type' do
+            subject.ssl_key_type = 'pem'
+            subject.ssl_key_type.should == 'pem'
+        end
+
+        context 'when given an invalid type' do
+            it "raises #{described_class::Error::InvalidSSLKeyType}" do
+                expect do
+                    subject.ssl_key_type = 'stuff'
+                end.to raise_error described_class::Error::InvalidSSLKeyType
+            end
+        end
+    end
+
+    describe '#ssl_version=' do
+        it 'sets #ssl_version' do
+            subject.ssl_version = 'TLSv1'
+            subject.ssl_version.should == 'TLSv1'
+        end
+
+        context 'when given an invalid type' do
+            it "raises #{described_class::Error::InvalidSSLVersion}" do
+                expect do
+                    subject.ssl_version = 'stuff'
+                end.to raise_error described_class::Error::InvalidSSLVersion
+            end
+        end
+    end
+
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 

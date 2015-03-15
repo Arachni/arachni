@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -27,11 +27,6 @@ class Body < Base
     # @param    [Block] block
     #   Block to verify matches before logging, must return `true`/`false`.
     def match_and_log( patterns, &block )
-        elements = auditor.class.info[:elements]
-        elements = auditor.class::OPTIONS[:elements] if !elements || elements.empty?
-
-        return if !elements.include?( Body )
-
         [patterns].flatten.each do |pattern|
             auditor.page.body.scan( pattern ).flatten.uniq.compact.each do |proof|
                 next if block_given? && !block.call( proof )

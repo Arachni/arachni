@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -21,12 +21,12 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
     def prepare
         script = IO.read( @options[:script] )
         @script = proc { |browser| eval script }
-
-        framework_pause
-        print_info 'System paused.'
     end
 
     def run
+        framework_pause
+        print_info 'System paused.'
+
         session.record_login_sequence do |browser|
             print_info 'Running the script.'
             @script.call browser ? browser.watir : nil

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,7 +7,6 @@
 =end
 
 require 'forwardable'
-require_relative '../with_node'
 
 module Arachni
 module Element::Capabilities
@@ -17,7 +16,6 @@ module Auditable
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module DOM
-    include WithNode
     include Auditable
     extend ::Forwardable
 
@@ -45,12 +43,12 @@ module DOM
             @url    = parent.url.dup.freeze    if parent.url
             @action = parent.action.dup.freeze if parent.action
             @page   = parent.page              if parent.page
-            @html   = parent.html.dup.freeze   if parent.respond_to?(:html) && parent.html
+            @source = parent.source.dup.freeze   if parent.respond_to?(:source) && parent.source
         else
             @url    = options[:url].freeze
             @action = options[:action].freeze
             @page   = options[:page]
-            @html   = options[:html].freeze
+            @source = options[:source].freeze
         end
 
         @audit_options = {}
@@ -87,7 +85,8 @@ module DOM
 
             # If we've wondered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
-            if (transition = trigger) && (page = browser.to_page)
+            if (transition = trigger)
+                page = browser.to_page
                 page.dom.transitions << transition
                 block.call page.tap { |p| p.request.performer = self }
             end
@@ -136,7 +135,7 @@ module DOM
         options[:url]    = url.dup     if @url
         options[:action] = @action.dup if @action
         options[:page]   = page        if page
-        options[:html]   = @html.dup   if @html
+        options[:source] = @source.dup if @source
         options
     end
 

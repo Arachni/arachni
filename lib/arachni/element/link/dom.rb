@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,7 +13,8 @@ class Link
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < Base
-    include Capabilities::Auditable::DOM
+    include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::Capabilities::Auditable::DOM
 
     # @return   [String, nil]
     #   URL fragment.
@@ -46,6 +47,10 @@ class DOM < Base
     # Loads the page with the {#inputs} in the {#fragment}.
     def trigger
         browser.goto to_s, take_snapshot: false, update_transitions: false
+    end
+
+    def valid_input_name?( name )
+        @valid_input_names.include? name
     end
 
     # @return   [String]
@@ -108,6 +113,8 @@ class DOM < Base
 
     def prepare_data_from_node
         return if !(data = self.class.data_from_node( node ))
+
+        @valid_input_names = data[:inputs].keys
 
         self.inputs     = data[:inputs]
         @default_inputs = self.inputs.dup.freeze

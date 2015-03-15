@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -69,6 +69,12 @@ class Response < Message
 
         # Holds the redirection responses that eventually led to this one.
         @redirections ||= []
+
+        @time ||= 0.0
+    end
+
+    def time=( t )
+        @time = t.to_f
     end
 
     # @return   [Platform]
@@ -220,9 +226,9 @@ class Response < Message
             body:           response.body,
             redirections:   redirections,
             time:           response.time,
-            app_time:       response.timed_out? ? response.time :
-                                response.start_transfer_time - response.pretransfer_time,
-            total_time:     response.total_time,
+            app_time:       (response.timed_out? ? response.time :
+                                response.start_transfer_time - response.pretransfer_time).to_f,
+            total_time:     response.total_time.to_f,
             return_code:    response.return_code,
             return_message: response.return_message
         )

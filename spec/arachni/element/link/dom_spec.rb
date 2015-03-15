@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Arachni::Element::Link::DOM do
-    it_should_behave_like 'element_dom'
+    it_should_behave_like 'element_dom', inputs: { 'param' => '1' }
 
     def auditable_extract_parameters( page )
         { 'param' => page.document.css('#container').text }
@@ -90,7 +90,7 @@ describe Arachni::Element::Link::DOM do
                 browser.load subject.page
 
                 element = subject.locate
-                element.should be_kind_of Watir::Anchor
+                element.should be_kind_of Watir::HTMLElement
 
                 parent.class.from_document(
                     parent.url, Nokogiri::HTML(element.html)

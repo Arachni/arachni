@@ -2,6 +2,13 @@ shared_examples_for 'element_dom' do |options = {}|
     it_should_behave_like 'element', options
     it_should_behave_like 'auditable', options.merge( supports_nulls: false )
 
+    before :each do
+        begin
+            Arachni::Options.audit.elements described_class.type
+        rescue Arachni::OptionGroups::Audit::Error
+        end
+    end
+
     def run
         auditor.browser_cluster.wait
     end
@@ -194,20 +201,6 @@ shared_examples_for 'element_dom' do |options = {}|
         context 'when the element could not be submitted' do
             it 'does not call the block' do
                 subject.stub( :trigger ) { false }
-
-                called = false
-                subject.submit do
-                    called = true
-                end
-                subject.auditor.browser_cluster.wait
-                called.should be_false
-            end
-        end
-
-        context 'when Browser#to_page returns nil' do
-            it 'does not call the block' do
-                Arachni::BrowserCluster::Worker.
-                    any_instance.stub(:to_page).and_return(nil)
 
                 called = false
                 subject.submit do

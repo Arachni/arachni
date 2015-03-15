@@ -9,27 +9,31 @@ describe name_from_filename do
 
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header,
-          Element::LinkTemplate ]
+          Element::LinkTemplate, Element::JSON, Element::XML ]
     end
 
     def issue_count_per_element_per_platform
         h = {}
         [:unix, :bsd, :aix].each do |platform|
             h[platform] = {
-                Element::Form         => 22,
-                Element::Link         => 22,
-                Element::Cookie       => 22,
-                Element::Header       => 19,
-                Element::LinkTemplate => 21
+                Element::Form         => 11,
+                Element::Link         => 11,
+                Element::Cookie       => 11,
+                Element::Header       => 8,
+                Element::LinkTemplate => 10,
+                Element::JSON         => 11,
+                Element::XML          => 22
             }
         end
 
         h[:windows] = {
-            Element::Form         => 44,
-            Element::Link         => 44,
-            Element::Cookie       => 44,
-            Element::Header       => 38,
-            Element::LinkTemplate => 44
+            Element::Form         => 22,
+            Element::Link         => 22,
+            Element::Cookie       => 22,
+            Element::Header       => 16,
+            Element::LinkTemplate => 22,
+            Element::JSON         => 22,
+            Element::XML          => 44
         }
 
         h

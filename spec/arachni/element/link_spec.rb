@@ -21,7 +21,7 @@ describe Arachni::Element::Link do
         reset_options
     end
 
-    subject { described_class.new( url: "#{url}submit", inputs: inputs, html: html ) }
+    subject { described_class.new( url: "#{url}submit", inputs: inputs, source: html ) }
     let(:inputs) { { 'name1' => 'value1', 'name2' => 'value2' } }
     let(:url) { utilities.normalize_url( web_server_url_for( :link ) ) }
     let(:http) { Arachni::HTTP::Client }
@@ -110,14 +110,14 @@ describe Arachni::Element::Link do
     describe '#dom' do
         context 'when there are no DOM#inputs' do
             it 'returns nil' do
-                subject.html = '<a href="/stuff">Bla</a>'
+                subject.source = '<a href="/stuff">Bla</a>'
                 subject.dom.should be_nil
             end
         end
 
         context 'when there is no #node' do
             it 'returns nil' do
-                subject.html = nil
+                subject.source = nil
                 subject.dom.should be_nil
             end
         end
@@ -144,18 +144,18 @@ describe Arachni::Element::Link do
     describe '#coverage_id' do
         it "takes into account #{described_class::DOM}#inputs.keys" do
             e = subject.dup
-            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+            e.source = '<a href="/stuff#?stuff=blah">Bla</a>'
 
             c = subject.dup
-            c.html = '<a href="/stuff#?stuff=blooh">Bla</a>'
+            c.source = '<a href="/stuff#?stuff=blooh">Bla</a>'
 
             c.coverage_id.should == e.coverage_id
 
             e = subject.dup
-            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+            e.source = '<a href="/stuff#?stuff=blah">Bla</a>'
 
             c = subject.dup
-            c.html = '<a href="/stuff#?stuff2=blooh">Bla</a>'
+            c.source = '<a href="/stuff#?stuff2=blooh">Bla</a>'
 
             c.coverage_id.should_not == e.coverage_id
         end
@@ -164,18 +164,18 @@ describe Arachni::Element::Link do
     describe '#id' do
         it "takes into account #{described_class::DOM}#inputs" do
             e = subject.dup
-            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+            e.source = '<a href="/stuff#?stuff=blah">Bla</a>'
 
             c = subject.dup
-            c.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+            c.source = '<a href="/stuff#?stuff=blah">Bla</a>'
 
             c.id.should == e.id
 
             e = subject.dup
-            e.html = '<a href="/stuff#?stuff=blah">Bla</a>'
+            e.source = '<a href="/stuff#?stuff=blah">Bla</a>'
 
             c = subject.dup
-            c.html = '<a href="/stuff#?stuff=blooh">Bla</a>'
+            c.source = '<a href="/stuff#?stuff=blooh">Bla</a>'
 
             c.id.should_not == e.id
         end
@@ -183,7 +183,7 @@ describe Arachni::Element::Link do
 
     describe '#to_rpc_data' do
         it "does not include 'dom_data'" do
-            subject.html = html
+            subject.source = html
             subject.dom.should be_true
 
             subject.to_rpc_data.should_not include 'dom_data'

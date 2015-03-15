@@ -54,7 +54,8 @@ describe Arachni::Utilities do
         uri_encode:              [Arachni::URI, :encode],
         uri_decode:              [Arachni::URI, :decode],
         normalize_url:           [Arachni::URI, :normalize],
-        to_absolute:             [Arachni::URI, :to_absolute]
+        to_absolute:             [Arachni::URI, :to_absolute],
+        full_and_absolute_url?:  [Arachni::URI, :full_and_absolute?]
     }.each do |m, (klass, delegated)|
         describe "##{m}" do
             it "delegates to #{klass}.#{delegated}" do

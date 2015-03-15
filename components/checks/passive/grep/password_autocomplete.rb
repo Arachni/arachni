@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -18,7 +18,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             next if form.simple[:autocomplete] == 'off'
             next if has_input_with_autocomplete_off? form
 
-            log( proof: form.html, vector: form )
+            log( proof: form.source, vector: form )
         end
     end
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,7 +13,8 @@ class LinkTemplate
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < Base
-    include Capabilities::Auditable::DOM
+    include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::Capabilities::Auditable::DOM
 
     # @return   [String, nil]
     #   URL fragment.

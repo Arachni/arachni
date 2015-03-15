@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -159,7 +159,7 @@ class DOM
 
         # We were probably led to an out-of-scope page via a JS redirect,
         # bail out.
-        return if !browser_page
+        return if browser_page.code == 0
 
         # Check to see if just loading the DOM URL was enough.
         #
@@ -210,8 +210,14 @@ class DOM
     end
 
     def to_s
-        "#<#{self.class}:#{object_id} @url=#{@url.inspect}>"
+        s = "#<#{self.class}:#{object_id} "
+        s << "@url=#{@url.inspect} "
+        s << "@transitions=#{transitions.size} "
+        s << "@data_flow_sinks=#{@data_flow_sinks.size} "
+        s << "@execution_flow_sinks=#{@execution_flow_sinks.size}"
+        s << '>'
     end
+    alias :inspect :to_s
 
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.

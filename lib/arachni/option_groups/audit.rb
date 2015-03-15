@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -20,7 +20,35 @@ class Audit < Arachni::OptionGroup
         # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidLinkTemplate < Error
         end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class InvalidElementType < Error
+        end
     end
+
+    # @note Default is `true`.
+    #
+    # @return    [Bool]
+    #   Inject payloads into parameter values.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :parameter_values
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Inject payloads into parameter names.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :parameter_names
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Inject payloads into extra element parameters.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :with_extra_parameter
 
     # @note Default is `false`.
     #
@@ -101,16 +129,36 @@ class Audit < Arachni::OptionGroup
     # @see Element::LinkTemplate
     attr_accessor :link_templates
     alias :link_template_doms  :link_templates
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit HTTP request headers.
+    attr_accessor :headers
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit JSON request inputs.
+    attr_accessor :jsons
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit XML request inputs.
+    attr_accessor :xmls
 
     set_defaults(
+        parameter_values:        true,
         exclude_vector_patterns: [],
         include_vector_patterns: [],
-        link_templates:  []
+        link_templates:          []
     )
 
     # @param    [Array<Regexp>] templates
     #   Regular expressions with named captures, serving as templates used to
     #   extract input vectors from paths.
+    #
+    # @raise    [Error::InvalidLinkTemplate]
     #
     # @see Element::LinkTemplate
     def link_templates=( templates )
@@ -149,7 +197,9 @@ class Audit < Arachni::OptionGroup
     #   * `:headers`
     def elements( *element_types )
         element_types.flatten.compact.each do |type|
-            self.send( "#{type}=", true ) rescue self.send( "#{type}s=", true )
+            fail_on_unknown_element_type( type ) do
+                self.send( "#{type}=", true ) rescue self.send( "#{type}s=", true )
+            end
         end
         true
     end
@@ -168,7 +218,9 @@ class Audit < Arachni::OptionGroup
     #   * `:headers`
     def skip_elements( *element_types )
         element_types.flatten.compact.each do |type|
-            self.send( "#{type}=", false ) rescue self.send( "#{type}s=", false )
+            fail_on_unknown_element_type( type ) do
+                self.send( "#{type}=", false ) rescue self.send( "#{type}s=", false )
+            end
         end
         true
     end
@@ -185,15 +237,21 @@ class Audit < Arachni::OptionGroup
     #   * `:headers`
     #
     # @return   [Bool]
+    #
+    # @raise    [Error::InvalidLinkTemplate]
     def elements?( *element_types )
         !(element_types.flatten.compact.map do |type|
-            !!(self.send( "#{type}?" ) rescue self.send( "#{type}s?" ))
+            fail_on_unknown_element_type( type ) do
+                !!(self.send( "#{type}?" ) rescue self.send( "#{type}s?" ))
+            end
         end.uniq.include?( false ))
     end
     alias :element? :elements?
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
-     :with_both_http_methods, :link_doms, :form_doms, :cookie_doms].each do |attribute|
+     :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
+     :jsons, :xmls, :parameter_values, :parameter_names, :with_extra_parameter
+    ].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )
         end
@@ -220,6 +278,16 @@ class Audit < Arachni::OptionGroup
             h[k] = h[k].map(&:to_s)
         end
         h
+    end
+
+    private
+
+    def fail_on_unknown_element_type( type, &block )
+        begin
+            block.call
+        rescue NoMethodError
+            fail Error::InvalidElementType, "Unknown element type: #{type}"
+        end
     end
 
 end

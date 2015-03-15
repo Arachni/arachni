@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -51,7 +51,7 @@ module Capabilities::Inputtable
     # @note Will convert keys and values to strings.
     #
     # @param  [Hash]  hash
-    #   Inputs data.
+    #   Input data.
     #
     # @raise   [Error::InvalidData::Name]
     # @raise   [Error::InvalidData::Value]
@@ -100,7 +100,7 @@ module Capabilities::Inputtable
     # Resets the inputs to their original format/values.
     def reset
         super if defined?( super )
-        self.inputs = @default_inputs.dup
+        self.inputs = @default_inputs.deep_clone
         self
     end
 
@@ -136,6 +136,8 @@ module Capabilities::Inputtable
     # @raise   [Error::InvalidData::Name]
     # @raise   [Error::InvalidData::Value]
     def update( hash )
+        return self if hash.empty?
+
         self.inputs = @inputs.merge( hash )
         self
     end

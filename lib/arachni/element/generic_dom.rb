@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,6 +17,7 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class GenericDOM < Base
+    include Capabilities::WithSource
     include Capabilities::WithAuditor
 
     # @return   [Page::DOM::Transition]
@@ -31,6 +32,7 @@ class GenericDOM < Base
         @transition = options[:transition]
         fail 'Missing element locator.' if !@transition
 
+        self.source = element.to_s
         @initialization_options = options
     end
 
@@ -93,8 +95,8 @@ class GenericDOM < Base
     def to_rpc_data
         data = super
         data['initialization_options'] = data['initialization_options'].dup
-        data['initialization_options'][:transition] =
-            data['initialization_options'][:transition].to_rpc_data
+        data['initialization_options']['transition'] =
+            data['initialization_options']['transition'].to_rpc_data
         data
     end
 

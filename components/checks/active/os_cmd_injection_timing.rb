@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,11 +9,10 @@
 # OS command injection check using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.3.1
+# @version 0.3.2
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
-# @see http://www.owasp.org/index.php/OS_Command_Injection
+# @see https://www.owasp.org/index.php/OS_Command_Injection
 class Arachni::Checks::OsCmdInjectionTiming < Arachni::Check::Base
 
     prefer :os_cmd_injection
@@ -50,10 +49,9 @@ class Arachni::Checks::OsCmdInjectionTiming < Arachni::Check::Base
             description: %q{
 Tries to find operating system command injections using timing attacks.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3.1',
+            version:     '0.3.2',
             platforms:   payloads.keys,
 
             issue:       {
@@ -75,7 +73,7 @@ was able to detect time based OS command injection. This indicates that proper
 input sanitisation is not occurring.
 },
                 references:  {
-                    'OWASP' => 'http://www.owasp.org/index.php/OS_Command_Injection'
+                    'OWASP' => 'https://www.owasp.org/index.php/OS_Command_Injection'
                 },
                 tags:            %w(os command code injection timing blind),
                 cwe:             78,

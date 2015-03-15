@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -19,12 +19,142 @@ require 'fileutils'
 # Creates an HTML report with scan results.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4
+# @version 0.4.1
 class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
     TEMPLATE_FILE = File.dirname( __FILE__ ) + '/html/default.erb'
     TEMPLATE_DIR  = File.dirname( TEMPLATE_FILE ) + '/' +
         File.basename( TEMPLATE_FILE, '.erb' ) + '/'
+
+    OWASP_TOP_10_URL  = 'https://www.owasp.org/index.php/Top_10_2013-Top_10'
+    OWASP_TOP_10_DATA = {
+        'A1-Injection' => {
+            code:       'A1',
+            description: %q{
+Injection flaws, such as SQL, OS, and LDAP injection occur when untrusted data
+is sent to an interpreter as part of a command or query. The attacker’s hostile
+data can trick the interpreter into executing unintended commands or accessing
+data without proper authorization.
+},
+            url:         'https://www.owasp.org/index.php/Top_10_2013-A1-Injection',
+            checks:      [
+                :command_injection,
+                :command_injection_php_input_wrapper,
+                :command_injection_timing,
+                :ldap_injection,
+                :no_sql_injection,
+                :no_sql_injection_differential,
+                :os_cmd_injection,
+                :os_cmd_injection_timing,
+                :sql_injection,
+                :sql_injection_differential,
+                :sql_injection_timing,
+                :xpath_injection
+            ]
+        },
+        'A2-Broken Authentication and Session Management' => {
+            code:        'A2',
+            description: %q{
+Application functions related to authentication and session management are often
+not implemented correctly, allowing attackers to compromise passwords, keys, or
+session tokens, or to exploit other implementation flaws to assume other users’
+identities.
+},
+            url:         'https://www.owasp.org/index.php/Top_10_2013-A2-Broken_Authentication_and_Session_Management',
+            checks:      [
+                :session_fixation
+            ]
+        },
+        'A3-Cross-Site Scripting (XSS)' => {
+            code:        'A3',
+            description: %q{
+XSS flaws occur whenever an application takes untrusted data and sends it to a
+web browser without proper validation or escaping. XSS allows attackers to
+execute scripts in the victim’s browser which can hijack user sessions, deface
+web sites, or redirect the user to malicious sites.
+},
+            url:         'https://www.owasp.org/index.php/Top_10_2013-A3-Cross-Site_Scripting_(XSS)',
+            checks:      [
+                :xss,
+                :xss_dom,
+                :xss_dom_inputs,
+                :xss_dom_script_context,
+                :xss_event,
+                :xss_path,
+                :xss_script_context,
+                :xss_tag
+            ]
+        },
+        'A5-Security Misconfiguration' => {
+            code:        'A5',
+            description: %q{
+Good security requires having a secure configuration defined and deployed for
+the application, frameworks, application server, web server, database server,
+and platform. Secure settings should be defined, implemented, and maintained,
+as defaults are often insecure. Additionally, software should be kept up to date.
+},
+            url:         'https://www.owasp.org/index.php/Top_10_2013-A5-Security_Misconfiguration',
+            checks:      [
+                :cookie_set_for_parent_domain,
+                :hsts,
+                :insecure_cors_policy,
+                :htaccess_limit,
+                :http_put,
+                :insecure_client_access_policy,
+                :insecure_cross_Domain_policy_access,
+                :insecure_cross_Domain_policy_headers,
+                :origin_spood_access_restriction_bypass,
+                :xst
+            ]
+        },
+        'A6-Sensitive Data Exposure' => {
+            code:        'A6',
+            description: %q{
+Many web applications do not properly protect sensitive data, such as credit
+cards, tax IDs, and authentication credentials. Attackers may steal or modify
+such weakly protected data to conduct credit card fraud, identity theft, or other
+crimes. Sensitive data deserves extra protection such as encryption at rest or
+in transit, as well as special precautions when exchanged with the browser.
+},
+            url:         'https://www.owasp.org/index.php/Top_10_2013-A6-Sensitive_Data_Exposure',
+            checks:      [
+                :backup_directories,
+                :backup_files,
+                :credit_card,
+                :cvs_svn_users,
+                :private_ip,
+                :ssn
+            ]
+        },
+        'A8-Sensitive Data Exposure' => {
+            code:        'A8',
+            description: %q{
+A CSRF attack forces a logged-on victim’s browser to send a forged HTTP request,
+including the victim’s session cookie and any other automatically included
+authentication information, to a vulnerable web application. This allows the
+attacker to force the victim’s browser to generate requests the vulnerable
+application thinks are legitimate requests from the victim.
+},
+            url:         'https://www.owasp.org/index.php/Top_10_2013-A8-Cross-Site_Request_Forgery_(CSRF)',
+            checks:      [
+                :csrf
+            ]
+        },
+        'A10-Unvalidated Redirects and Forwards' => {
+            code:        'A10',
+            description: %q{
+Web applications frequently redirect and forward users to other pages and websites,
+and use untrusted data to determine the destination pages. Without proper validation,
+attackers can redirect victims to phishing or malware sites, or use forwards to
+access unauthorized pages.
+},
+            url:         'https://www.owasp.org/index.php/Top_10_2013-A10-Unvalidated_Redirects_and_Forwards',
+            checks:      [
+                :unvalidated_redirect,
+                :unvalidated_redirect_dom
+            ]
+        }
+    }
 
     module TemplateUtilities
 
@@ -314,7 +444,7 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
             description:  %q{Exports the audit results as a compressed HTML report.},
             content_type: 'application/zip',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.4',
+            version:      '0.4.1',
             options:      [
                 Options.outfile( '.html.zip' ),
                 Options.skip_responses
@@ -370,7 +500,9 @@ class Arachni::Reporters::HTML < Arachni::Reporter::Base
                 Element::Body.type   => 0,
                 Element::Path.type   => 0,
                 Element::Server.type => 0,
-                Element::GenericDOM.type => 0
+                Element::GenericDOM.type => 0,
+                Element::JSON.type       => 0,
+                Element::XML.type        => 0
             },
             verification:     {
                 'Yes' => 0,

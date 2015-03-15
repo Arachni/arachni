@@ -4,6 +4,8 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :taint )
+        Arachni::Options.audit.elements :links
+
         @auditor = Auditor.new( Arachni::Page.from_url( @url ), Arachni::Framework.new )
 
         @positive = Arachni::Element::Link.new( url: @url, inputs: { 'input' => '' } )

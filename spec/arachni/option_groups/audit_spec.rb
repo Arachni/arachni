@@ -170,6 +170,14 @@ describe Arachni::OptionGroups::Audit do
             subject.cookies.should be_true
             subject.headers.should be_true
         end
+
+        context 'when given an invalid element type' do
+            it "raises #{described_class::Error::InvalidElementType}" do
+                expect do
+                    subject.elements :stuff
+                end.to raise_error described_class::Error::InvalidElementType
+            end
+        end
     end
 
     describe '#elements=' do
@@ -185,6 +193,14 @@ describe Arachni::OptionGroups::Audit do
             subject.forms.should be_true
             subject.cookies.should be_true
             subject.headers.should be_true
+        end
+
+        context 'when given an invalid element type' do
+            it "raises #{described_class::Error::InvalidElementType}" do
+                expect do
+                    subject.elements = :stuff
+                end.to raise_error described_class::Error::InvalidElementType
+            end
         end
     end
 
@@ -206,6 +222,14 @@ describe Arachni::OptionGroups::Audit do
             subject.cookies?.should be_false
             subject.headers?.should be_false
             subject.link_templates?.should be_false
+        end
+
+        context 'when given an invalid element type' do
+            it "raises #{described_class::Error::InvalidElementType}" do
+                expect do
+                    subject.skip_elements :stuff
+                end.to raise_error described_class::Error::InvalidElementType
+            end
         end
     end
 
@@ -283,6 +307,14 @@ describe Arachni::OptionGroups::Audit do
 
                 subject.elements?( :header, :link, :form, :cookie, :link_templates ).should be_false
                 subject.elements?( [:header, :link, :form, :cookie, :link_templates] ).should be_false
+            end
+        end
+
+        context 'when given an invalid element type' do
+            it "raises #{described_class::Error::InvalidElementType}" do
+                expect do
+                    subject.elements? :stuff
+                end.to raise_error described_class::Error::InvalidElementType
             end
         end
     end

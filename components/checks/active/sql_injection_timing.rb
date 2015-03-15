@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,12 +9,11 @@
 # Blind SQL Injection check using timing attacks.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.3.2
+# @version 0.3.3
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
-# @see http://www.owasp.org/index.php/Blind_SQL_Injection
+# @see https://www.owasp.org/index.php/Blind_SQL_Injection
 class Arachni::Checks::SqlInjectionTiming < Arachni::Check::Base
 
     prefer :sql_injection, :sql_injection_differential
@@ -38,10 +37,9 @@ class Arachni::Checks::SqlInjectionTiming < Arachni::Check::Base
         {
             name:        'Blind SQL injection (timing attack)',
             description: %q{Blind SQL Injection check using timing attacks.},
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.2',
+            version:     '0.3.3',
             platforms:   payloads.keys,
 
             issue:       {
@@ -71,7 +69,7 @@ being sent by the server.
 This is known as a time-based blind SQL injection vulnerability.
 },
                 references:  {
-                    'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
+                    'OWASP'         => 'https://www.owasp.org/index.php/Blind_SQL_Injection',
                     'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html',
                     'WASC'          => 'http://projects.webappsec.org/w/page/13246963/SQL%20Injection',
                     'W3 Schools'    => 'http://www.w3schools.com/sql/sql_injection.asp'

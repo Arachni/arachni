@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -37,7 +37,9 @@ module Differential
 
         # Override global fuzzing settings and only use the default method of the
         # element under audit.
-        respect_method: true,
+        with_both_http_methods: false,
+        parameter_names:        false,
+        with_extra_parameter:   false,
 
         # Disable {Arachni::Options#audit_cookies_extensively}, there's little
         # to be gained in this case and just causes interference.
@@ -55,6 +57,8 @@ module Differential
         # Default value for a forceful 'false' response.
         false:          '-1'
     }
+
+    attr_accessor :differential_analysis_options
 
     # Performs differential analysis and logs an issue should there be one.
     #
@@ -110,6 +114,7 @@ module Differential
             return false
         end
 
+        @differential_analysis_options = opts.dup
         opts = self.class::MUTATION_OPTIONS.merge( DIFFERENTIAL_OPTIONS.merge( opts ) )
 
         mutations_size = 0
@@ -151,6 +156,18 @@ module Differential
         end
 
         true
+    end
+
+    def dup
+        e = super
+        return e if !@differential_analysis_options
+
+        e.differential_analysis_options = @differential_analysis_options.dup
+        e
+    end
+
+    def to_rpc_data
+        super.tap { |data| data.delete 'differential_analysis_options' }
     end
 
     private
@@ -334,7 +351,7 @@ module Differential
         controls_verification = signatures.delete( :controls_verification )
         corrupted             = signatures.delete( :corrupted )
 
-        signatures.each do |_, data|
+        signatures.each do |pair_hash, data|
             data.each do |input, result|
                 next if !result[:response] || result[:corrupted] || corrupted[input]
 
@@ -358,11 +375,29 @@ module Differential
 
                 # Check to see if the `true` response we're analyzing
                 # is a custom 404 page.
-                http.custom_404?( result[:response] ) do |is_custom_404|
+                http.dynamic_404_handler._404?( result[:response] ) do |is_custom_404|
                     # If this is a custom 404 page bail out.
                     next if is_custom_404
-                    @auditor.log vector: result[:mutation],
-                                 response: result[:response]
+
+                    options = result[:mutation].differential_analysis_options
+                    pair    = options[:pairs].find { |pair| pair.hash == pair_hash }
+
+                    issue_data = {
+                        vector:   result[:mutation],
+                        response: result[:response]
+                    }
+
+                    if pair
+                        issue_data[:remarks] = {
+                            :differential_analysis => [
+                                "True expression: #{pair.keys.first}",
+                                "False expression: #{pair.values.first}",
+                                "Control false expression: #{options[:false]}"
+                            ]
+                        }
+                    end
+
+                    @auditor.log( issue_data )
                 end
             end
         end
