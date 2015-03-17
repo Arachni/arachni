@@ -77,7 +77,7 @@ module Timeout
             @candidates_phase_3    = []
             @phase_3_candidate_ids = Support::LookUp::HashSet.new( hasher: :timeout_id )
 
-            @logged = Support::LookUp::HashSet.new( hasher: :audit_id )
+            @logged = Support::LookUp::HashSet.new( hasher: :timeout_id )
 
             deduplicate
         end
