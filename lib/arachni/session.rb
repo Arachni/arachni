@@ -227,11 +227,16 @@ class Session
 
         refresh_browser
 
-        page = @login_sequence ? login_from_sequence : login_from_configuration
+        page = nil
+        exception_jail false do
+            page = @login_sequence ? login_from_sequence : login_from_configuration
+        end
 
         if has_browser?
             http.update_cookies browser.cookies
         end
+
+        shutdown_browser
 
         page
     end

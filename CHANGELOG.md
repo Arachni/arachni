@@ -116,6 +116,8 @@
 - `BrowserCluster`
     - `Worker`
         - `#browser_respawn` -- Catch Watir/Selenium errors.
+- `Session`
+    - Ensure the browser is shut-down after each login operation.
 - `Check`
     - `Auditor`
         - `#each_candidate_dom_element` -- Yield element DOMs instead of parent elements.
