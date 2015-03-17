@@ -91,12 +91,7 @@ class Dynamic404Handler
         # So... we've got nothing cached for the handler for this URL, let's
         # start from scratch.
         preliminary_analysis( url ) do
-            if checked_and_static?( url )
-                checked( url )
-                process_static_callers_for( url )
-            else
-                process_advanced_analysis_callers_for( url )
-            end
+            process_callers_for( url )
         end
 
         nil
@@ -275,6 +270,19 @@ class Dynamic404Handler
             result = matches_advanced_signatures?( url, body )
             print_debug "#{__method__} [notify]: #{block} #{url} #{result}"
             block.call result
+
+            # More callers may have been added to the waiting queue during
+            # the advanced analysis.
+            process_callers_for( url )
+        end
+    end
+
+    def process_callers_for( url )
+        if checked_and_static?( url )
+            checked( url )
+            process_static_callers_for( url )
+        else
+            process_advanced_analysis_callers_for( url )
         end
     end
 
