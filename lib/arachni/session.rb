@@ -222,13 +222,13 @@ class Session
     #   If not {#configured?}.
     # @raise    [Error::FormNotFound]
     #   If the form could not be found.
-    def login
+    def login( raise = false )
         fail Error::NotConfigured, 'Please configure the session first.' if !configured?
 
         refresh_browser
 
         page = nil
-        exception_jail false do
+        exception_jail raise do
             page = @login_sequence ? login_from_sequence : login_from_configuration
         end
 
@@ -236,9 +236,9 @@ class Session
             http.update_cookies browser.cookies
         end
 
-        shutdown_browser
-
         page
+    ensure
+        shutdown_browser
     end
 
     # @param    [Block] block

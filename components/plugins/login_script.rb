@@ -34,10 +34,9 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
         end
 
         begin
-            session.login
+            session.login( true )
         rescue => e
             set_status :error
-            print_exception e
             return
         end
 

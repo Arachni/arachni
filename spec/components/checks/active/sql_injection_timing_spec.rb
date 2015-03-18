@@ -5,11 +5,14 @@ describe name_from_filename do
 
     def self.platforms
         [:mysql, :mssql, :pgsql]
+        # [:mysql, :pgsql]
+        [:mysql, :pgsql]
     end
 
     def self.elements
         [ Element::Form, Element::Link, Element::Cookie, Element::Header,
           Element::LinkTemplate, Element::JSON, Element::XML ]
+        [ Element::Form, Element::Cookie ]
     end
 
     def issue_count_per_element_per_platform
