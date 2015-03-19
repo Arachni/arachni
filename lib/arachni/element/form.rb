@@ -264,6 +264,7 @@ class Form < Base
         def from_document( url, document, ignore_scope = false )
             document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
+            base_url = to_absolute( base_url, url )
 
             document.search( '//form' ).map do |node|
                 next if !(forms = from_node( base_url, node, ignore_scope ))

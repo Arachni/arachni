@@ -970,7 +970,7 @@ EOHTML
 
             context 'with a base attribute' do
                 it 'respects it and adjust the action accordingly' do
-                    base_url = "#{url}/this_is_the_base/"
+                    base_url = "/this_is_the_base/"
                     html = '
                     <html>
                         <head>
@@ -991,7 +991,7 @@ EOHTML
                     forms.size.should == 2
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( base_url + 'form_action/is/here')
+                    form.action.should == utilities.normalize_url( url + base_url + 'form_action/is/here')
                     form.name.should == 'my_form!'
                     form.url.should == url
                     form.method.should == :get
