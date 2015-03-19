@@ -1130,9 +1130,13 @@ class Browser
     end
 
     def kill_process
-        if browser_alive?
-            @process.stop
-            @process.io.close rescue nil
+        begin
+            if @process && @process.alive?
+                @process.stop
+                @process.io.close rescue nil
+            end
+        rescue Errno::ECHILD
+            false
         end
 
         @process     = nil
