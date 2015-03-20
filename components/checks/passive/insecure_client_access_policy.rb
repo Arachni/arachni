@@ -73,7 +73,8 @@ The `ClientAccessPolicy.xml` file deployed on this website opens the server to a
 domains (use of a single asterisk "*" as a pure wildcard is supported).
 },
                 references:      {
-                    'MSDN'  => 'https://msdn.microsoft.com/en-us/library/cc197955%28v=vs.95%29.aspx'
+                    'MSDN'  => 'https://msdn.microsoft.com/en-us/library/cc197955%28v=vs.95%29.aspx',
+                    'OWASP' => 'https://www.owasp.org/index.php/Test_Cross_Origin_Resource_Sharing_%28OTG-CLIENT-007%29'
                 },
                 cwe:             16,
                 severity:        Severity::LOW,
