@@ -49,6 +49,7 @@ embedded into other sites.
                     'RFC'   => 'http://tools.ietf.org/html/rfc7034',
                     'OWASP' => 'https://www.owasp.org/index.php/Clickjacking'
                 },
+                cwe:         693,
                 severity:    Severity::LOW,
                 remedy_guidance: %q{
 Configure your web server to include an X-Frame-Options header.
