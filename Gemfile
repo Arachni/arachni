@@ -25,10 +25,4 @@ group :prof do
     gem 'ruby-mass'
 end
 
-gem 'ethon',           github: 'typhoeus/ethon'
-gem 'arachni-reactor', github: 'arachni/arachni-reactor', branch: 'experimental'
-gem 'arachni-rpc',     github: 'arachni/arachni-rpc',     branch: 'experimental'
-# gem 'arachni-reactor', path: '/home/zapotek/workspace/arachni-reactor'
-# gem 'arachni-rpc', path: '/home/zapotek/workspace/arachni-rpc'
-
 gemspec
