@@ -67,7 +67,11 @@ class Arachni::Checks::Xxe < Arachni::Check::Base
     def self.info
         {
             name:        'XML External Entity',
-            description: %q{},
+            description: %q{
+Injects a custom External Entity into XML documents prior to submitting them and
+determines the existence of a vulnerability by checking whether that entity was
+processed based on the resulting HTTP response.
+},
             elements:    [Element::XML],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
@@ -75,12 +79,30 @@ class Arachni::Checks::Xxe < Arachni::Check::Base
 
             issue:       {
                 name:            %q{XML External Entity},
-                description:     %q{},
-                references:      {},
-                tags:            %w(),
+                description:     %q{
+An XML External Entity attack is a type of attack against an application that
+parses XML input.
+
+This attack occurs when XML input containing a reference to an external entity is
+processed by a weakly configured XML parser.
+
+This attack may lead to the disclosure of confidential data, denial of service,
+port scanning from the perspective of the machine where the parser is located,
+and other system impacts.
+},
+                references:      {
+                    'OWASP' => 'https://www.owasp.org/index.php/XML_External_Entity_%28XXE%29_Processing'
+                },
                 cwe:             611,
                 severity:        Severity::HIGH,
-                remedy_guidance: %q{}
+                remedy_guidance: %q{
+Since the whole XML document is communicated from an untrusted client, it's not
+usually possible to selectively validate or escape tainted data within the system
+identifier in the DTD.
+
+Therefore, the XML processor should be configured to use a local static DTD and
+disallow any declared DTD included in the XML document.
+}
             }
         }
     end
