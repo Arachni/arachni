@@ -55,11 +55,35 @@ Checks `crossdomain.xml` files for `allow-access-from` wildcard policies.
             elements:    [ Element::Server ],
 
             issue:       {
-                name:        %q{Insecure cross-domain policy (allow-access-from)},
-                description: %q{},
-                references:  {},
-                severity:    Severity::LOW,
-                remedy_guidance: %q{}
+                name:           %q{Insecure cross-domain policy (allow-access-from)},
+                description:    %q{
+The browser security model normally prevents web content from one domain from
+accessing data from another domain. This is commonly known as the "same origin policy".
+
+URL policy files grant cross-domain permissions for reading data. They permit
+operations that are not permitted by default. The URL policy file for Silverlight
+is located, by default, in the root directory of the target server, with the name
+`crossdomain.xml` (for example, at `www.example.com/crossdomain.xml`).
+
+When a domain is specified in `crossdomain.xml`, the site declares that it
+is willing to allow the operators of any servers in that domain to obtain any
+document on the server where the policy file resides.
+
+The `crossdomain.xml` file deployed on this website opens the server to all
+domains (use of a single asterisk "*" as a pure wildcard is supported).
+},
+                references:      {
+                    'OWASP' => 'https://www.owasp.org/index.php/Test_Cross_Origin_Resource_Sharing_%28OTG-CLIENT-007%29',
+                    'Adobe' => 'http://blogs.adobe.com/stateofsecurity/2007/07/crossdomain_policy_files_1.html'
+                },
+                cwe:             16,
+                severity:        Severity::LOW,
+                remedy_guidance: %q{
+Carefully evaluate which sites will be allowed to make cross-domain calls.
+
+Consider network topology and any authentication mechanisms that will be affected
+by the configuration or implementation of the cross-domain policy.
+}
             }
         }
     end
