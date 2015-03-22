@@ -553,6 +553,13 @@ describe Arachni::URI do
                 described_class.new( 'http://stuff.com/test' ).resource_extension.should be_nil
             end
         end
+
+        context 'when there are multiple periods' do
+            it 'returns the last one' do
+                described_class.new( 'http://stuff.com/test.1.2' ).resource_extension.should == '2'
+            end
+        end
+
         it 'returns the extension of the resource' do
             uri = "http://test.com/direct.ory/resource.php?param=1&param2=2"
             described_class.new( uri ).resource_extension.should == 'php'
