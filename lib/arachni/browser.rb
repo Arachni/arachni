@@ -70,7 +70,7 @@ class Browser
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
-    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
+    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title']
 
     # @return   [Array<Page::DOM::Transition>]
     attr_reader :transitions
@@ -632,7 +632,7 @@ class Browser
             locator     = ElementLocator.from_html( opening_tag )
         end
 
-        print_debug_level_2 "#{__method__}: #{event} (#{options}) #{locator}"
+        print_debug_level_2 "#{__method__} [start]: #{event} (#{options}) #{locator}"
 
         tag_name = tag_name.to_sym
 
@@ -665,7 +665,13 @@ class Browser
                 end
 
                 element.fire_event( event ) if !had_special_trigger
+
+                print_debug_level_2 "#{__method__} [waiting for requests]: #{event} (#{options}) #{locator}"
                 wait_for_pending_requests
+                print_debug_level_2 "#{__method__} [done waiting for requests]: #{event} (#{options}) #{locator}"
+
+                # puts source_with_line_numbers
+                print_debug_level_2 "#{__method__} [done]: #{event} (#{options}) #{locator}"
             end
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
