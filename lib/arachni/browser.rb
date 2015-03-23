@@ -1313,10 +1313,15 @@ class Browser
             transition.complete
         end
 
+        # No-matter the scope, don't store resources for external domains.
+        return if !response.scope.in_domain?
+
         return if enforce_scope? && response.scope.out?
 
         intercept response
         save_response response
+
+        nil
     end
 
     def intercept( response )
@@ -1339,7 +1344,7 @@ class Browser
 
         # Only allow CSS and JS resources to be loaded from out-of-scope domains.
         !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
-            request.scope.out? || request.scope.redundant?
+            (request.scope.out? || request.scope.redundant?)
     end
 
     def capture( request )
