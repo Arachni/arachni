@@ -11,7 +11,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.1.7
+# @version 0.1.8
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -21,8 +21,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
     TAG_NAME = 'arachni_xss_in_tag'
 
     def self.strings
-        @strings ||= [ " #{TAG_NAME}=" + random_seed, "\" #{TAG_NAME}=\"" + random_seed,
-                       "' #{TAG_NAME}='" + random_seed ]
+        @strings ||= ['', '\'', '"'].map { |q| "#{q} #{TAG_NAME}=#{q}#{random_seed}#{q} blah=#{q}" }
     end
 
     def run
@@ -44,7 +43,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
             next if node[TAG_NAME] != random_seed
 
             proof = (payload = find_included_payload( body )) ? payload : node.to_s
-            log vector: element, proof: proof, response: response
+            log vector: element, proof: proof.to_s, response: response
         end
     end
 
@@ -61,7 +60,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.7',
+            version:     '0.1.8',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},

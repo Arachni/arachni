@@ -146,6 +146,8 @@
             - Only use straight payload injection instead of straight and append.
         - `xss_dom_script_context` -- Only use straight payload injection instead
             of straight and append.
+        - `xss_tag` -- Updated payloads to handle cases when more data are appended
+            to the landed value.
     - Passive
         - Added
             - `insecure_cross_domain_policy_access` -- Checks `crossdomain.xml`
