@@ -192,8 +192,9 @@ module Audit
 
             audit_queues
 
+            next sleep( 0.1 ) if wait_for_browser_cluster?
             break if page_limit_reached?
-            break if !has_audit_workload? && !wait_for_browser_cluster?
+            break if !has_audit_workload?
         end
     end
 
