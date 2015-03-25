@@ -44,6 +44,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
 
             proof = (payload = find_included_payload( body )) ? payload : node.to_s
             log vector: element, proof: proof.to_s, response: response
+            return
         end
     end
 
