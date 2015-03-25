@@ -70,7 +70,7 @@ class Browser
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
-    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title']
+    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
 
     # @return   [Array<Page::DOM::Transition>]
     attr_reader :transitions
@@ -1337,12 +1337,37 @@ class Browser
 
     def intercept?( response )
         return false if response.body.empty?
-        return false if !response.headers.content_type.to_s.start_with?( 'text/html' )
 
+        # We only care about HTML.
+        return false if !response.headers.content_type.to_s.downcase.start_with?( 'text/html' )
+
+        # Let's check that the response at least looks like it contains HTML
+        # code of interest.
         body = response.body.downcase
-        HTML_IDENTIFIERS.each { |tag| return true if body.include? tag.downcase }
+        return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
 
-        false
+        # The last check isn't fool-proof, so don't do it when loading the page
+        # for the first time, but only when the page loads stuff via AJAX and whatnot.
+        #
+        # Well, we can be pretty sure that the root page will be HTML anyways.
+        return true if @last_url == response.url
+
+        # Finally, verify that we're really working with markup (hopefully HTML)
+        # and that the previous checks weren't just flukes matching some other
+        # kind of document.
+        #
+        # For example, it may have been JSON with the wrong content-type that
+        # includes HTML -- it happens.
+        begin
+            return false if Nokogiri::XML( response.body ).children.empty?
+        rescue => e
+            print_debug "Javascript injection failed for: #{response.url}"
+            print_debug "\n#{response.body}"
+            print_debug_exception e
+            return false
+        end
+
+        true
     end
 
     def ignore_request?( request )
