@@ -1300,10 +1300,16 @@ class Browser
         # preloaded or cached response for it.
         return if from_preloads( request, response ) || from_cache( request, response )
 
-        # Capture the request as elements of pages -- let's us grab AJAX and
-        # other browser requests and convert them into elements we can analyze
-        # and audit.
-        capture( request )
+        begin
+            # Capture the request as elements of pages -- let's us grab AJAX and
+            # other browser requests and convert them into elements we can analyze
+            # and audit.
+            capture( request )
+        rescue => e
+            print_debug "Could not capture: #{request.url}"
+            print_debug request.body.to_s
+            print_debug_exception e
+        end
 
         request.headers['user-agent'] = Options.http.user_agent
 
