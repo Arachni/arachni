@@ -351,7 +351,15 @@ class Request < Message
         }
 
         options[:timeout_ms] = timeout if timeout
-        options[:httpauth]   = :auto   if userpwd
+
+        # This will allow GSS-Negotiate to work out of the box but shouldn't
+        # have any adverse effects.
+        if !options[:userpwd] && !parsed_url.user
+            options[:userpwd]  = ':'
+            options[:httpauth] = :gssnegotiate
+        else
+            options[:httpauth] = :auto
+        end
 
         if proxy
             options.merge!(
