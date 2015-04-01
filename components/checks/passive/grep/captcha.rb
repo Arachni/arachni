@@ -48,7 +48,7 @@ include user registration, or submitting emails via "Contact Us" pages etc.
 
 Arachni has flagged this not as a vulnerability, but as a prompt for the
 penetration tester to conduct further manual testing on the CAPTCHA function, as
-Arachni cannon audit CAPTCHA protected forms.
+Arachni cannot audit CAPTCHA protected forms.
 
 Testing for insecurely implemented CAPTCHA is a manual process, and an insecurely
 implemented CAPTCHA could allow a cyber-criminal a means to abuse these sensitive
