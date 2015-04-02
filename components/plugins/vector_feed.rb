@@ -153,7 +153,7 @@ Can be used to perform extremely specialized/narrow audits on a per vector/eleme
 
 **Notes**:
 
-* To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
+* To only audit the vectors in the feed you must set the scope page-limit to `0` to prevent crawling.
 * Can handle multiple YAML documents.
 
 Example YAML file:
