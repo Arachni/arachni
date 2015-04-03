@@ -177,6 +177,9 @@ module Utilities
 
                     print_info "\t#{option[:name]} - #{option[:description]}"
                     print_info "\tType:        #{option[:type]}"
+                    if option[:choices]
+                        print_info "\tChoices:     #{option[:choices].join(', ')}"
+                    end
                     print_info "\tDefault:     #{option[:default]}"
                     print_info "\tRequired?:   #{option[:required]}"
 
