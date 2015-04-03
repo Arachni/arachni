@@ -7,7 +7,6 @@
     - `--authorized-by` -- Fixed expected type (`Integer` => `String`).
     - HTTP
         - `request_timeout` -- Lowered from 50 to 10 seconds.
-        - `request_concurrency` -- Lowered from 20 to 10.
         - `response_max_size` -- Set to 500KB.
     - BrowserCluster
         - `job_timeout` -- Lowered from 120 to 15 seconds.
