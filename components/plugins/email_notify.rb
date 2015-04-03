@@ -41,7 +41,11 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             }
         }
 
-        if options[:report] != 'none'
+        if options[:report] == 'afr'
+            opts[:attachments] = {
+                'report.afr' => framework.report.to_afr
+            }
+        elsif options[:report] != 'none'
             extension = framework.reporters[options[:report]].
                 outfile_option.default.split( '.', 2 ).last
             framework.reporters.delete( options[:report] )
@@ -100,17 +104,17 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 ),
                 Options::String.new( :domain,
                     description: 'Domain.',
-                    default: 'localhost.localdomain'
+                    default:     'localhost.localdomain'
                 ),
                 Options::MultipleChoice.new( :authentication,
-                    description:  'Authentication.',
-                    default:      'plain',
-                    choices: ['plain', 'login', 'cram_md5', '']
+                    description: 'Authentication.',
+                    default:     'plain',
+                    choices:     ['plain', 'login', 'cram_md5', '']
                 ),
                 Options::MultipleChoice.new( :report,
-                    description:  'Report type to send as an attachment.',
-                    default:      'txt',
-                    choices: ['txt', 'xml', 'html', 'json', 'yaml', 'marshal' 'none']
+                    description: 'Report format to send as an attachment.',
+                    default:     'txt',
+                    choices:     ['txt', 'xml', 'html', 'json', 'yaml', 'marshal', 'afr', 'none']
                 )
             ]
 
