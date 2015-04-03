@@ -293,7 +293,7 @@ class OptionParser < UI::CLI::OptionParser
 
         on( '--http-response-max-size LIMIT', Integer,
                'Do not download response bodies larger than the specified LIMIT, in bytes.',
-               '(Default: inf)'
+               "(Default: #{options.http.response_max_size})"
         ) do |size|
             options.http.response_max_size = size
         end

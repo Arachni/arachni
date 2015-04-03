@@ -239,11 +239,12 @@ class HTTP < Arachni::OptionGroup
 
     set_defaults(
         user_agent:             "Arachni/v#{Arachni::VERSION}",
-        request_timeout:        50_000,
+        request_timeout:        10_000,
         request_redirect_limit: 5,
-        request_concurrency:    20,
+        request_concurrency:    10,
         request_queue_size:     500,
         request_headers:        {},
+        response_max_size:      500_000,
         cookies:                {}
     )
 

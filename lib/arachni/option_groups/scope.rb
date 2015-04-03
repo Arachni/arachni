@@ -130,14 +130,14 @@ class Scope < Arachni::OptionGroup
     attr_accessor :url_rewrites
 
     set_defaults(
-        redundant_path_patterns: {},
-        dom_depth_limit:         10,
-        exclude_path_patterns:   [],
-        exclude_content_patterns:   [],
-        include_path_patterns:   [],
-        restrict_paths:          [],
-        extend_paths:            [],
-        url_rewrites:            {}
+        redundant_path_patterns:  {},
+        dom_depth_limit:          5,
+        exclude_path_patterns:    [],
+        exclude_content_patterns: [],
+        include_path_patterns:    [],
+        restrict_paths:           [],
+        extend_paths:             [],
+        url_rewrites:             {}
     )
 
     def url_rewrites=( rules )
