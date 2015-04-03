@@ -248,8 +248,6 @@ class Worker < Arachni::Browser
     def browser_respawn
         @time_to_live = @max_time_to_live
 
-        @window_responses.clear
-
         begin
             # If PhantomJS is already dead this will block for quite some time so
             # beware.

@@ -191,12 +191,14 @@ class Browser
     end
 
     def clear_buffers
-        @preloads.clear
-        @cache.clear
-        @captured_pages.clear
-        @page_snapshots.clear
-        @page_snapshots_with_sinks.clear
-        @window_responses.clear
+        synchronize do
+            @preloads.clear
+            @cache.clear
+            @captured_pages.clear
+            @page_snapshots.clear
+            @page_snapshots_with_sinks.clear
+            @window_responses.clear
+        end
     end
 
     # @return   [String]
@@ -1481,10 +1483,12 @@ class Browser
     end
 
     def save_response( response )
-        notify_on_response response
-        return response if !response.text?
+        synchronize do
+            notify_on_response response
+            return response if !response.text?
 
-        @window_responses[response.url] = response
+            @window_responses[response.url] = response
+        end
     end
 
     def get_response( url )
