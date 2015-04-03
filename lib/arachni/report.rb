@@ -160,7 +160,7 @@ class Report
     end
 
     # @return   [String]
-    #   Report serialized in the Arachni Framework Report format..
+    #   Report serialized in the Arachni Framework Report format.
     def to_afr
         afr = RPC::Serializer.dump( self )
 
