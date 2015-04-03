@@ -175,6 +175,7 @@
     - `email_notify`
         - Added `domain` option.
         - Fixed extension for `html` reporter.
+        - Added support for `afr` report type.
     - Added:
         - `vector_collector` -- Collects information about all seen input vectors
             which are within the scan scope.
