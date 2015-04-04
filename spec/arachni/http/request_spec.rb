@@ -528,6 +528,46 @@ describe Arachni::HTTP::Request do
             end
         end
 
+        context "#{Arachni::OptionGroups::HTTP}#response_max_size" do
+            before :each do
+                Arachni::Options.http.response_max_size = 10
+            end
+
+            context 'when #response_max_size' do
+                context 'has not been set' do
+                    it 'sets it as maxfilesize' do
+                        subject.options[:maxfilesize].should == 10
+                    end
+                end
+
+                context 'has been set' do
+                    let(:request) do
+                        described_class.new(
+                            url:               url,
+                            response_max_size: 1
+                        )
+                    end
+
+                    it 'overrides it' do
+                        subject.options[:maxfilesize].should == 1
+                    end
+
+                    context 'ands is < 0' do
+                        let(:request) do
+                            described_class.new(
+                                url:               url,
+                                response_max_size: -1
+                            )
+                        end
+
+                        it 'removes it' do
+                            subject.options[:maxfilesize].should be_nil
+                        end
+                    end
+                end
+            end
+        end
+
         context "#{Arachni::OptionGroups::HTTP}#ssl_verify_peer" do
             context 'true' do
                 it "sets #{Typhoeus::Request}#options[:ssl_verifypeer]" do

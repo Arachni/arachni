@@ -625,10 +625,12 @@ describe Arachni::HTTP::Client do
                 end
             end
 
-            context 'by default' do
+            context 'when < 0' do
                 it 'does not enforce a limit' do
+                    @opts.http.response_max_size = 0
                     subject.request( @url + '/http_response_max_size',
-                                   mode: :sync
+                                   mode: :sync,
+                                   response_max_size: -1
                     ).body.should_not be_empty
                 end
             end

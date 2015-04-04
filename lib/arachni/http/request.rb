@@ -318,7 +318,8 @@ class Request < Message
 
         max_size = @response_max_size || Options.http.response_max_size
         # Weird I know, for some reason 0 gets ignored.
-        max_size = 1 if max_size == 0
+        max_size = 1   if max_size == 0
+        max_size = nil if max_size < 0
 
         options = {
             method:          method,
