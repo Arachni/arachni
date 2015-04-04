@@ -41,6 +41,14 @@ describe Arachni::HTTP::ProxyServer do
         via_proxy( proxy, url ).body.should == 'HTTPS GET'
     end
 
+    it 'removes any size limits on the HTTP responses' do
+        Arachni::Options.http.response_max_size = 1
+
+        proxy = described_class.new
+        proxy.start_async
+        test_proxy( proxy )
+    end
+
     describe '#initialize' do
         describe :address do
             it 'sets the bind address' do
