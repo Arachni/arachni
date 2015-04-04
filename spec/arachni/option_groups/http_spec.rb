@@ -19,15 +19,21 @@ describe Arachni::OptionGroups::HTTP do
         end
     end
 
+    describe '#request_concurrency' do
+        it 'defaults to 20' do
+            subject.request_concurrency.should == 20
+        end
+    end
+
     describe '#request_timeout' do
-        it 'defaults to 50000' do
-            subject.request_timeout.should == 50000
+        it 'defaults to 10000' do
+            subject.request_timeout.should == 10000
         end
     end
 
     describe '#response_max_size' do
-        it 'defaults to nil' do
-            subject.response_max_size.should be_nil
+        it 'defaults to 500000' do
+            subject.response_max_size.should == 500_000
         end
     end
 
