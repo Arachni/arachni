@@ -267,6 +267,7 @@ class Worker < Arachni::Browser
             Browser::Error::Spawn => e
             print_error 'Could not respawn the browser, will try again at the ' <<
                             "next job. (#{e})"
+            print_error 'Please try increasing the maximum open files limit of your OS.'
             nil
         end
     end
