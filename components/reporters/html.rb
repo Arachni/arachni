@@ -49,7 +49,8 @@ data without proper authorization.
                 :sql_injection,
                 :sql_injection_differential,
                 :sql_injection_timing,
-                :xpath_injection
+                :xpath_injection,
+                :xxe
             ]
         },
         'A2-Broken Authentication and Session Management' => {
