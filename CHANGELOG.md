@@ -182,6 +182,7 @@
         - `exec` -- Calls external executables at different scan stages.
 - Report -- Renamed `#html` to `#source` for all elements.
     - `html`
+        - Updated chart rendering to only take place when visiting the chart page.
         - Summary
             - Added OWASP Top 10 tab.
     - `xml`

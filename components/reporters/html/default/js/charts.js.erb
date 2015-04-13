@@ -6,7 +6,10 @@ function index_to_severity( index ){
     return <%= graph_data[:severity_for_issue].to_json %>[index_to_shortname(index)];
 }
 
-jQuery(function ($) {
+function renderCharts() {
+    if( window.renderedCharts ) return;
+    window.renderedCharts = true;
+
     c3.generate({
         bindto: '#chart-issues',
         data: {
@@ -114,4 +117,4 @@ jQuery(function ($) {
         }
     });
 
-});
+}
