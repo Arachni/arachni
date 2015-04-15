@@ -184,6 +184,7 @@
     - `html`
         - Updated chart rendering to only take place when visiting the chart page.
         - Fixed broken links.
+        - Cleaned up chart severity handling.
         - Summary
             - Added OWASP Top 10 tab.
     - `xml`
