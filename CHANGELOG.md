@@ -183,6 +183,7 @@
 - Report -- Renamed `#html` to `#source` for all elements.
     - `html`
         - Updated chart rendering to only take place when visiting the chart page.
+        - Fixed broken links.
         - Summary
             - Added OWASP Top 10 tab.
     - `xml`
