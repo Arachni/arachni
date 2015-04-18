@@ -168,6 +168,7 @@
                 - `rails/info/routes`
                 - `rails/info/properties`
         - `http_put` -- Try to `DELETE` the `PUT` file.
+        - `html_objects` -- Updated regexp to use non-capturing groups.
 - Plugins
     - All
         - Updated `#prepare` methods to not block, in accordance with the new
