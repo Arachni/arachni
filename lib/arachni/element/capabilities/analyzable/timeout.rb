@@ -441,7 +441,7 @@ module Timeout
         e = super
         return e if !@timing_attack_remark_data
 
-        e.timing_attack_remark_data = @timing_attack_remark_data.dup
+        e.timing_attack_remark_data = @timing_attack_remark_data.deep_clone
         e
     end
 
