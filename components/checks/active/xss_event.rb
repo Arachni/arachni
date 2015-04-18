@@ -76,10 +76,10 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
                     # xss_script_context check. However VBScript doesn't have
                     # full support so we settle.
                     if value =~ /^(vb|)script:/ && value.include?( seed )
-                        return log vector: element, response: response
+                        return log vector: element, response: response, proof: value
                     end
                 elsif value.include?( seed )
-                    return log vector: element, response: response
+                    return log vector: element, response: response, proof: value
                 end
             end
         end
