@@ -51,7 +51,7 @@ end
 
 before do
     begin
-        @xml = Nokogiri::XML( URI.decode_www_form_component( request.body.read ) )
+        @xml = Nokogiri::XML( request.body.read )
     rescue JSON::ParserError
     end
     request.body.rewind

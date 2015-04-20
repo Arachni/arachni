@@ -126,9 +126,15 @@ class JSON < Base
     private
 
     def http_request( opts, &block )
+        opts = opts.dup
         opts.delete :parameters
+        opts.merge!(
+            headers: {
+                'Content-Type' => 'application/json'
+            }
+        )
 
-        opts[:body]   = ::URI.encode_www_form_component( self.to_json )
+        opts[:body]   = self.to_json
         opts[:method] = self.http_method
         http.request( self.action, opts, &block )
     end

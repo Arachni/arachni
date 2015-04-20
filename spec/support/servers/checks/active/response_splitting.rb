@@ -16,13 +16,13 @@ end
 before do
     request.body.rewind
     begin
-        @json = JSON.parse( URI.decode_www_form_component( request.body.read ) )
+        @json = JSON.parse( request.body.read )
     rescue JSON::ParserError
     end
     request.body.rewind
 
     begin
-        @xml = Nokogiri::XML( URI.decode_www_form_component( request.body.read ) )
+        @xml = Nokogiri::XML( request.body.read )
     rescue JSON::ParserError
     end
     request.body.rewind
