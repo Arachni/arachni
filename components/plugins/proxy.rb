@@ -16,7 +16,7 @@ require 'ostruct'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.3.1
+# @version 0.3.2
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     BASEDIR  = "#{File.dirname( __FILE__ )}/proxy/"
@@ -345,6 +345,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info " *  #{page.forms.size} forms"
         print_info " *  #{page.links.size} links"
         print_info " *  #{page.cookies.size} cookies"
+        print_info " *  #{page.jsons.size} JSON"
+        print_info " *  #{page.xmls.size} XML"
 
         @pages << page.dup
 
@@ -355,6 +357,17 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def update_forms( page, request, response )
+
+        if (json = Arachni::Element::JSON.from_request( response.url, request ))
+            page.jsons |= [json]
+            return page
+        end
+
+        if (xml = Arachni::Element::XML.from_request( response.url, request ))
+            page.xmls |= [xml]
+            return page
+        end
+
         page.forms |= [Form.new(
             url:    response.url,
             action: response.url,
@@ -463,7 +476,7 @@ a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.1',
+            version:     '0.3.2',
             options:     [
                 Options::Port.new( :port,
                     description: 'Port to bind to.',

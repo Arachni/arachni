@@ -177,6 +177,7 @@
         - Added `domain` option.
         - Fixed extension for `html` reporter.
         - Added support for `afr` report type.
+    - `proxy` -- Added XML and JSON input vector extraction.
     - Added:
         - `vector_collector` -- Collects information about all seen input vectors
             which are within the scan scope.
