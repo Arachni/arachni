@@ -57,8 +57,6 @@ class Framework
         get_user_command
 
         begin
-            timeout_supervisor = nil
-
             # We may need to kill the audit so put it in a thread.
             @scan = Thread.new do
                 @framework.run do
@@ -67,11 +65,11 @@ class Framework
                     clear_screen
                 end
 
-                timeout_supervisor.kill if timeout_supervisor
+                @timeout_supervisor.kill if @timeout_supervisor
             end
 
             if @timeout
-                timeout_supervisor = Thread.new do
+                @timeout_supervisor = Thread.new do
                     sleep @timeout
 
                     if @timeout_suspend
@@ -84,7 +82,7 @@ class Framework
                 end
             end
 
-            timeout_supervisor.join if timeout_supervisor
+            @timeout_supervisor.join if @timeout_supervisor
             @scan.join
 
             # If the user requested to abort the scan, wait for the thread
@@ -335,6 +333,7 @@ class Framework
     end
 
     def shutdown
+        @timeout_supervisor.kill if @timeout_supervisor
         capture_output_options
 
         print_status 'Aborting...'
