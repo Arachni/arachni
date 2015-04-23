@@ -37,8 +37,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         session.configure( url: @url, inputs: @parameters )
 
         response = begin
-            session.login
-        rescue Session::Error::FormNotFound
+            session.login( true )
+        rescue Arachni::Session::Error::FormNotFound
             register_results(
                 'status'  => 'form_not_found',
                 'message' => STATUSES[:form_not_found]
