@@ -136,7 +136,6 @@
     - Active
         - Added
             - `unvalidated_redirect_dom` -- Logs DOM-based unvalidated redirects.
-            - `x_frame_options` -- Logs missing `X-Frame-Options` headers per host.
             - `xxe` -- Logs XML External Entity vulnerabilities.
         - `trainer` -- Disabled parameter flip for the payload to avoid parameter
             pollution.
@@ -164,6 +163,7 @@
                 files for wildcard domain policies.
             - `insecure_cors_policy` -- Logs wildcard `Access-Control-Allow-Origin`
                 headers per host.
+            - `x_frame_options` -- Logs missing `X-Frame-Options` headers per host.
             - `common_directories` -- Added:
                 - `rails/info/routes`
                 - `rails/info/properties`
