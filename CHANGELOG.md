@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.1 _(April 23, 2015)_
 
 - `gemspec` -- Require Ruby >= 2.0.0.
 - Options
