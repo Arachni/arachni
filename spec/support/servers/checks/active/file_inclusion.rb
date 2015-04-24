@@ -21,8 +21,8 @@ OUT = {
 daemon:x:1:1:daemon:/usr/sbin:/bin/sh
 mail:x:8:8:mail:/var/mail:/bin/sh
 
-DOCUMENT_ROOT=/home/www/web424/htmlGATEWAY_INTERFACE=CGI/1.1HTTP_ACCEPT=text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8HTTP_ACCEPT_ENCODING=gzip, deflateHTTP_ACCEPT_LANGUAGE=en-US,en;q=0.5HTTP_CONNECTION=keep-aliveHTTP_DNT=1HTTP_HOST=www.kaffeehausleclub.deHTTP_USER_AGENT=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:22.0) Gecko/20100101 Firefox/22.0PATH=/bin:/usr/binPHPRC=/etc/apache2/confixx_php/web424/1QUERY_STRING=inhalt=/proc/self/environREDIRECT_STATUS=200REMOTE_ADDR=79.107.71.228REMOTE_PORT=48720REQUEST_METHOD=GETREQUEST_URI=/inhalt/start.php?inhalt=/proc/self/environSCRIPT_FILENAME=/home/www/web424/html/inhalt/start.phpSCRIPT_NAME=/inhalt/start.phpSERVER_ADDR=87.119.215.14SERVER_ADMIN=[no address given]SERVER_NAME=www.kaffeehausleclub.deSERVER_PORT=80SERVER_PROTOCOL=HTTP/1.1SERVER_SIGNATURE=
-Apache/2.2.16 (Debian) Server at www.kaffeehausleclub.de Port 80
+DOCUMENT_ROOT=/home/www/web424/htmlGATEWAY_INTERFACE=CGI/1.1HTTP_ACCEPT=text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8HTTP_ACCEPT_ENCODING=gzip, deflateHTTP_ACCEPT_LANGUAGE=en-US,en;q=0.5HTTP_CONNECTION=keep-aliveHTTP_DNT=1HTTP_HOST=stuffHTTP_USER_AGENT=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:22.0) Gecko/20100101 Firefox/22.0PATH=/bin:/usr/binPHPRC=/etc/apache2/confixx_php/web424/1QUERY_STRING=inhalt=/proc/self/environREDIRECT_STATUS=200REMOTE_ADDR=79.107.71.228REMOTE_PORT=48720REQUEST_METHOD=GETREQUEST_URI=/inhalt/start.php?inhalt=/proc/self/environSCRIPT_FILENAME=/home/www/web424/html/inhalt/start.phpSCRIPT_NAME=/inhalt/start.phpSERVER_ADDR=87.119.215.14SERVER_ADMIN=[no address given]SERVER_NAME=stuffSERVER_PORT=80SERVER_PROTOCOL=HTTP/1.1SERVER_SIGNATURE=
+Apache/2.2.16 (Debian) Server at stuff Port 80
 SERVER_SOFTWARE=Apache/2.2.16 (Debian)UNIQUE_ID=Uf6y2Fd31w4AAHYyW8AAAAAk
 ',
     windows: '[boot loader]
