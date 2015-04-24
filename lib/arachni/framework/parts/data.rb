@@ -125,9 +125,9 @@ module Data
                 @failures << page.url
 
                 print_error "Giving up trying to audit: #{page.url}"
-                print_error "Couldn't get a response after #{AUDIT_PAGE_MAX_TRIES} tries."
+                print_error "Couldn't get a response after #{AUDIT_PAGE_MAX_TRIES} tries: #{page.response.return_message}."
             else
-                print_bad "Retrying for: #{page.url}"
+                print_bad "Retrying for: #{page.url} [#{page.response.return_message}]"
                 @retries[page.url.hash] += 1
                 url_queue << page.url
             end
