@@ -2,6 +2,13 @@
 
 ## _Under development_
 
+- `Check::Auditor`
+    - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
+- `Issue`
+    - `#signature` -- Store `Regexp` source instead of converting it to String.
+
+## _Under development_
+
 - `gemspec` -- Require Ruby >= 2.0.0.
 - Options
     - `--authorized-by` -- Fixed expected type (`Integer` => `String`).
