@@ -286,10 +286,21 @@ class Issue
         end
     end
 
-    [:name, :description, :remedy_guidance, :remedy_code, :proof, :signature].each do |m|
+    [:name, :description, :remedy_guidance, :remedy_code, :proof].each do |m|
         define_method "#{m}=" do |s|
             instance_variable_set( "@#{m}".to_sym, s ? s.to_s.freeze : nil )
         end
+    end
+
+    def signature=( sig )
+        @signature = case sig
+                         when Regexp
+                             sig.source
+                         when String, nil
+                             sig
+                         else
+                             sig.to_s
+                     end
     end
 
     # @return   [Hash]

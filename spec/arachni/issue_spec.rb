@@ -242,11 +242,22 @@ describe Arachni::Issue do
     end
 
     describe '#signature=' do
-        it 'assigns a signature as a String' do
-            signature = /test.*/
+        context 'when it is a Regexp' do
+            it 'stores the source' do
+                signature = /test.*/
 
-            empty_issue.signature = signature
-            empty_issue.signature.should == signature.to_s
+                empty_issue.signature = signature
+                empty_issue.signature.should == signature.source
+            end
+        end
+
+        context 'when it is a String' do
+            it 'stores it' do
+                signature = 'stuff'
+
+                empty_issue.signature = signature
+                empty_issue.signature.should == signature
+            end
         end
 
         context 'when no signature has been given' do
@@ -396,7 +407,7 @@ describe Arachni::Issue do
                 remedy_code:     'Sample code on how to fix the issue',
                 tags:            %w(these are a few tags),
                 remarks:         { the_dude: %w(Hey!) },
-                signature:       '(?-mix:some regexp)',
+                signature:       'some regexp',
                 proof:           "string matched by '/some regexp/'",
                 check:           {
                     name:        'Test check',
@@ -523,7 +534,7 @@ describe Arachni::Issue do
                         },
                         response:  issue.response.to_h,
                         remarks:   { the_dude: %w(Hey!) },
-                        signature: '(?-mix:some regexp)',
+                        signature: 'some regexp',
                         proof:     "string matched by '/some regexp/'",
                         trusted:   true,
                         request:   issue.request.to_h,
