@@ -98,7 +98,6 @@ application is structured.
 Arachni discovered that the affected page permits directory listing.
 },
                 references: {
-                    'CWE'  => 'http://cwe.mitre.org/data/definitions/548.html',
                     'WASC' => 'http://projects.webappsec.org/w/page/13246922/Directory%20Indexing'
                 },
                 tags:        %w(path directory listing index),

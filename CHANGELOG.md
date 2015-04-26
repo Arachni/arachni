@@ -6,9 +6,7 @@
     - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
 - `Issue`
     - `#signature` -- Store `Regexp` source instead of converting it to String.
-- Checks
-    - Active
-        - `csrf` -- Assign form source as proof.
+- Checks -- Added proofs to as many issues as possible.
 
 ## _Under development_
 

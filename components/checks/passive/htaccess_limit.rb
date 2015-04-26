@@ -20,7 +20,11 @@ class Arachni::Checks::HtaccessLimit < Arachni::Check::Base
     def check_and_log( response )
         return if response.code != 200
 
-        log vector: Element::Server.new( response.url ), response: response
+        log(
+            vector:   Element::Server.new( response.url ),
+            response: response,
+            proof:    response.status_line
+        )
         print_ok "Request was accepted: #{response.url}"
     end
 
@@ -31,7 +35,7 @@ class Arachni::Checks::HtaccessLimit < Arachni::Check::Base
                 GET requests but allows POST.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
 
             issue:       {
                 name:        %q{Misconfiguration in LIMIT directive of .htaccess file},

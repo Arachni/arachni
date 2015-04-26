@@ -33,7 +33,11 @@ class Arachni::Checks::Xst < Arachni::Check::Base
         http.trace( page.url ) do |response|
             next if response.code != 200 || response.body.to_s.empty?
 
-            log vector: Element::Server.new( response.url ), response: response
+            log(
+                vector:   Element::Server.new( response.url ),
+                response: response,
+                proof:    response.status_line
+            )
             print_ok 'TRACE is enabled.'
         end
     end
@@ -48,7 +52,7 @@ class Arachni::Checks::Xst < Arachni::Check::Base
             description: %q{Sends an HTTP TRACE request and checks if it succeeded.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
 
             issue:       {
                 name:            %q{HTTP TRACE},
