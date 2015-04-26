@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
+# @version 0.1.2
 class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
     INPUTS = Set.new([:input, :textarea])
@@ -35,7 +35,7 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
                     # Instead of working with the same browser we do it this way
                     # in order to distribute the workload via the browser cluster.
                     with_browser do |b|
-                        b.javascript.taint = self.tag
+                        b.javascript.taint = self.tag_name
                         b.load page
 
                         transition = b.fire_event( locator, event, value: self.tag )
@@ -79,7 +79,7 @@ Injects an HTML element into page text fields, triggers their associated events
 and inspects the DOM for proof of vulnerability.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
             elements:    [Element::GenericDOM],
 
             issue:       {
