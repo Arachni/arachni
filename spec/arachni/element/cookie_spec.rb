@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Element::Cookie do
     it_should_behave_like 'element'
+    it_should_behave_like 'with_source'
     it_should_behave_like 'with_dom'
     it_should_behave_like 'auditable', single_input: true
 
@@ -452,6 +453,7 @@ describe Arachni::Element::Cookie do
             cookie.name.should == 'coo@ki e2'
             cookie.value.should == 'blah val2@'
             cookie.path.should == '/stuff'
+            cookie.source.should == sc3
         end
 
         context 'when there is no path' do
