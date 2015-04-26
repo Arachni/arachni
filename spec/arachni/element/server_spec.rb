@@ -75,6 +75,7 @@ describe Arachni::Element::Server do
                     name:      'Auditor',
                     shortname: 'auditor_test'
                 }
+                logged_issue.variations.first.proof.should == logged_issue.variations.first.page.response.status_line
                 logged_issue.name.should == @auditor.class.info[:issue][:name]
                 logged_issue.trusted.should be_true
             end

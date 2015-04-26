@@ -355,6 +355,7 @@ module Auditor
 
         log_issue(
             vector: Element::Server.new( page.url ),
+            proof:  page.response.status_line,
             page:   page
         )
 
