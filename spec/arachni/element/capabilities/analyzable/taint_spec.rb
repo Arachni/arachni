@@ -109,7 +109,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                         issues.size.should == 1
                         issues[0].platform_name.should == :windows
-                        issues[0].signature.should == regexps[:windows].to_s
+                        issues[0].signature.should == regexps[:windows].source
                     end
 
                     context 'when the payloads are per platform' do
@@ -148,7 +148,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                                 issue.vector.seed.should == payloads[platform]
                                 issue.platform_name.should == platform
-                                issue.signature.should == regexps[platform].to_s
+                                issue.signature.should == regexps[platform].source
                             end
                         end
 
@@ -177,7 +177,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                 issue = issues.first
 
                                 issue.platform_name.should == :asp
-                                issue.signature.should == regexps[:asp].to_s
+                                issue.signature.should == regexps[:asp].source
                             end
                         end
                     end
