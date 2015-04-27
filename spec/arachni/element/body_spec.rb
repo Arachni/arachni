@@ -42,7 +42,7 @@ describe Arachni::Element::Body do
 
                     logged_issue.vector.url.should == Arachni::Utilities.normalize_url( @url )
                     logged_issue.vector.class.should == Arachni::Element::Body
-                    logged_issue.signature.should == valid_pattern.to_s
+                    logged_issue.signature.should == valid_pattern.source
                     logged_issue.proof.should == 'Match'
                     logged_issue.trusted.should be_true
                 end
