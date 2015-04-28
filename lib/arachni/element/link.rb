@@ -138,7 +138,7 @@ class Link < Base
         end
 
         def encode_query_params( param )
-            encode( encode( param ), '=' )
+            encode( encode( param.recode ), '=' )
         end
 
         def encode( *args )
