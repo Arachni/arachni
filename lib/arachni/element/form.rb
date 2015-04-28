@@ -376,20 +376,20 @@ class Form < Base
         # Encodes a {String}'s reserved characters in order to prepare it
         # to be included in a request body.
         #
-        # @param    [String]    str
+        # @param    [String]    string
         #
         # @return   [String]
-        def encode( str )
-            ::URI.encode_www_form_component str.to_s
+        def encode( string )
+            Arachni::HTTP::Request.encode string
         end
 
         # Decodes a {String} encoded for an HTTP request's body.
         #
-        # @param    [String]    str
+        # @param    [String]    string
         #
         # @return   [String]
-        def decode( str )
-            ::URI.decode_www_form_component str.to_s
+        def decode( string )
+            ::URI.decode_www_form_component string.to_s
         end
 
     end

@@ -12,7 +12,7 @@ describe name_from_filename do
         {
             Element::Form::DOM         => 2,
             Element::Link::DOM         => 2,
-            Element::Cookie::DOM       => 1,
+            Element::Cookie::DOM       => 2,
             Element::LinkTemplate::DOM => 2
         }
     end

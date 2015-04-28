@@ -55,17 +55,9 @@ class Link < Base
     def to_s
         uri = uri_parse( self.action ).dup
         uri.query = self.inputs.
-            map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.
+            map { |k, v| "#{encode(k)}=#{encode(v)}" }.
             join( '&' )
         uri.to_s
-    end
-
-    # @param   (see .encode_query_params)
-    # @return  (see .encode_query_params)
-    #
-    # @see .encode_query_params
-    def encode_query_params( *args )
-        self.class.encode_query_params( *args )
     end
 
     # @param   (see .encode)
@@ -137,12 +129,8 @@ class Link < Base
             end.compact
         end
 
-        def encode_query_params( param )
-            encode( encode( param ), '=' )
-        end
-
-        def encode( *args )
-            ::URI.encode( *args )
+        def encode( string )
+            Arachni::HTTP::Request.encode string
         end
 
         def decode( *args )

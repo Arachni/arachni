@@ -256,24 +256,10 @@ describe Arachni::Element::Link do
         end
     end
 
-    describe '.encode_query_params' do
-        it "encodes '='" do
-            v = 'stuff='
-            described_class.encode_query_params( v ).should == 'stuff%3D'
-        end
-    end
-    describe '#encode_query_params' do
-        it "encodes '='" do
-            v = 'stuff='
-            subject.encode_query_params( v ).should ==
-                described_class.encode_query_params( v )
-        end
-    end
-
     describe '.encode' do
         it 'URL-encodes the passed string' do
             v = '% value\ +=&;'
-            described_class.encode( v ).should == URI.encode( v )
+            described_class.encode( v ).should == '%25%20value%5C%20%2B%3D%26%3B'
         end
     end
     describe '#encode' do
@@ -285,13 +271,13 @@ describe Arachni::Element::Link do
 
     describe '.decode' do
         it 'URL-decodes the passed string' do
-            v = '%25+value%5C+%2B%3D%26%3B'
+            v = '%25%20value%5C%20%2B%3D%26%3B'
             described_class.decode( v ).should == URI.decode( v )
         end
     end
     describe '#decode' do
         it 'URL-decodes the passed string' do
-            v = '%25+value%5C+%2B%3D%26%3B'
+            v = '%25%20value%5C%20%2B%3D%26%3B'
             subject.decode( v ).should == described_class.decode( v )
         end
     end

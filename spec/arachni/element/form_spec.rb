@@ -1081,7 +1081,7 @@ EOHTML
 
     describe '.encode' do
         it 'form-encodes the passed string' do
-            described_class.encode( '% value\ +=&;' ).should == '%25+value%5C+%2B%3D%26%3B'
+            described_class.encode( '% value\ +=&;' ).should == '%25%20value%5C%20%2B%3D%26%3B'
         end
     end
     describe '#encode' do
@@ -1093,12 +1093,12 @@ EOHTML
 
     describe '.decode' do
         it 'form-decodes the passed string' do
-            described_class.decode( '%25+value%5C+%2B%3D%26%3B' ).should == '% value\ +=&;'
+            described_class.decode( '%25%20value%5C%20%2B%3D%26%3B' ).should == '% value\ +=&;'
         end
     end
     describe '#decode' do
         it 'form-decodes the passed string' do
-            v = '%25+value%5C+%2B%3D%26%3B'
+            v = '%25%20value%5C%20%2B%3D%26%3B'
             subject.decode( v ).should == described_class.decode( v )
         end
     end

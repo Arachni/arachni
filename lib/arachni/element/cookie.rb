@@ -50,9 +50,6 @@ class Cookie < Base
         httponly:    false
     }
 
-    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", "'", '&', '=', ' ', '"']
-    ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
-
     attr_reader :data
 
     # @param    [Hash]  options
@@ -79,7 +76,7 @@ class Cookie < Base
         end
 
         @data.merge!( DEFAULT.merge( @data ) )
-        @data[:value] = decode( @data[:value].to_s )
+        @data[:value] = decode( @data[:value].to_s ) rescue @data[:value].to_s
 
         parsed_uri = uri_parse( action )
         if !@data[:path]
@@ -361,7 +358,7 @@ class Cookie < Base
                 cookie_hash['name']  = decode( cookie.name )
                 cookie_hash['value'] = decode( cookie.value )
 
-                new( { url: url, source: str  }.merge( cookie_hash.my_symbolize_keys ) )
+                new( { url: url, source: str }.merge( cookie_hash.my_symbolize_keys ) )
             end.flatten.compact
         end
         alias :parse_set_cookie :from_set_cookie
@@ -377,9 +374,17 @@ class Cookie < Base
         # @return   [Array<Cookie>]
         def from_string( url, string )
             return [] if string.empty?
+
             string.split( ';' ).map do |cookie_pair|
+                cookie_pair.strip!
+
                 k, v = *cookie_pair.split( '=', 2 )
-                new( url: url, inputs: { decode( k.strip ) => decode( v.strip ) } )
+
+                new(
+                    url:    url,
+                    source: cookie_pair,
+                    inputs: { decode( k ) => decode( v ) }
+                )
             end.flatten.compact
         end
 
@@ -388,16 +393,13 @@ class Cookie < Base
         #
         # @example
         #    p Cookie.encode "+;%=\0 "
-        #    #=> "%2B%3B%25%3D%00+"
+        #    #=> "%2B%3B%25%3D%00%20"
         #
         # @param    [String]    str
         #
         # @return   [String]
         def encode( str )
-            str = str.to_s
-            return str if !ENCODE_CHARACTERS.find { |c| str.include? c }
-
-            ::URI.encode( str, ENCODE_CHARACTERS_LIST )
+            Arachni::HTTP::Request.encode( str )
         end
 
         # Decodes a {String} encoded for the `Cookie` header field.
@@ -410,7 +412,7 @@ class Cookie < Base
         #
         # @return   [String]
         def decode( str )
-            ::URI.decode( str.to_s.gsub('+', ' ' ) )
+            ::URI.decode_www_form_component str.to_s
         end
 
         def keep_for_set_cookie

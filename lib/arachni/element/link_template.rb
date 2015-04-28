@@ -212,11 +212,11 @@ class LinkTemplate < Base
         end
 
         def encode( string )
-            URI.encode( URI.encode( URI.encode( string.to_s, ';' ) ), '/' )
+            Link.encode string
         end
 
         def decode( *args )
-            URI.decode( *args )
+            Link.decode( *args )
         end
 
         def type

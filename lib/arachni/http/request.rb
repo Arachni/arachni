@@ -101,9 +101,6 @@ class Request < Message
     #   Maximum HTTP response size to accept, in bytes.
     attr_accessor :response_max_size
 
-    # @private
-    attr_accessor :root_redirect_id
-
     # @param  [Hash]  options
     #   Request options.
     # @option options [String] :url
@@ -479,6 +476,11 @@ class Request < Message
                 h[Form.decode( name.to_s )] = Form.decode( value )
                 h
             end
+        end
+
+        def encode( string )
+            @easy ||= Ethon::Easy.new( url: 'www.example.com' )
+            @easy.escape string
         end
     end
 

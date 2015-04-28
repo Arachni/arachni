@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Element`
+    - Cleaned up per-element input value encoding.
 - `Check::Auditor`
     - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
 - `Issue`

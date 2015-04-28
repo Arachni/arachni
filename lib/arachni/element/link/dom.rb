@@ -57,7 +57,7 @@ class DOM < Base
     #   URL including the DOM {#inputs}.
     def to_s
         "#{@action}##{fragment_path}?" << inputs.
-            map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.
+            map { |k, v| "#{encode(k)}=#{encode(v)}" }.
             join( '&' )
     end
 
@@ -65,22 +65,9 @@ class DOM < Base
         "#{@action}##{fragment}"
     end
 
-    def encode_query_params( *args )
-        Link.encode_query_params( *args )
-    end
-
-    def encode( *args )
-        Link.encode( *args )
-    end
-
-    def decode( *args )
-        Link.decode( *args )
-    end
-
     def type
         self.class.type
     end
-
     def self.type
         :link_dom
     end

@@ -76,14 +76,14 @@ class URI
         # URL encodes a string.
         #
         # @param [String] string
-        # @param [String, Regexp] bad_characters
-        #   Class of characters to encode -- if {String} is passed, it should
+        # @param [String, Regexp] good_characters
+        #   Class of characters to allow -- if {String} is passed, it should
         #   formatted as a regexp (for `Regexp.new`).
         #
         # @return   [String]
         #   Encoded string.
-        def encode( string, bad_characters = nil )
-            Addressable::URI.encode_component( *[string, bad_characters].compact )
+        def encode( string, good_characters = nil )
+            Addressable::URI.encode_component( *[string, good_characters].compact )
         end
 
         # URL decodes a string.

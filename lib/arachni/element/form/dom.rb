@@ -36,14 +36,6 @@ class DOM < Base
         @valid_input_names.include? name.to_s
     end
 
-    def encode( *args )
-        Form.encode( *args )
-    end
-
-    def decode( *args )
-        Form.decode( *args )
-    end
-
     def type
         self.class.type
     end

@@ -460,7 +460,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                     submitted = nil
 
-                    modified_seed = 'houa!'
+                    modified_seed = 'houa'
                     each_mutation = proc do |mutation|
                         mutation.affected_input_value = modified_seed
                     end
@@ -484,10 +484,10 @@ shared_examples_for 'auditable' do |options = {}|
 
                         each_mutation = proc do |mutation|
                             m = mutation.dup
-                            m.affected_input_value = 'houa!'
+                            m.affected_input_value = 'houa'
 
                             c = mutation.dup
-                            c.affected_input_value = 'houa2!'
+                            c.affected_input_value = 'houa2'
 
                             [m, c]
                         end
@@ -501,7 +501,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                         run
                         cnt.should == 3
-                        injected.sort.should == [ seed, 'houa!', 'houa2!'].sort
+                        injected.sort.should == [ seed, 'houa', 'houa2'].sort
                     end
                 end
             end

@@ -35,6 +35,20 @@ module DOM
     # @!method with_browser( &block )
     def_delegator :auditor, :with_browser
 
+    def self.included( parent )
+        parent.extend ClassMethods
+    end
+
+    module ClassMethods
+        def encode( string )
+            string
+        end
+
+        def decode( string )
+            string
+        end
+    end
+
     def initialize( options )
         options = options.dup
         @parent = options.delete(:parent)
@@ -137,6 +151,14 @@ module DOM
         options[:page]   = page        if page
         options[:source] = @source.dup if @source
         options
+    end
+
+    def encode( string )
+        self.class.encode( string )
+    end
+
+    def decode( string )
+        self.class.decode( string )
     end
 
     private
