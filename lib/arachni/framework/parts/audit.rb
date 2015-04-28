@@ -215,14 +215,14 @@ module Audit
         while !suspended? && !page_limit_reached? &&
             (page = next_page || pop_page_from_url_queue)
 
-            # Helps us schedule the next page to be grabbed along with the audit
-            # requests for the current page to avoid blocking.
+            # Schedule the next page to be grabbed along with the audit requests
+            # for the current page in order to avoid blocking.
             next_page = nil
             next_page_call = proc do
                 pop_page_from_url_queue { |p| next_page = p }
             end
 
-            # If we can login capabilities make sure that our session is valid
+            # If we have login capabilities make sure that our session is valid
             # before grabbing and auditing the next page.
             if session.can_login?
                 # Schedule the login check to happen along with the audit requests
