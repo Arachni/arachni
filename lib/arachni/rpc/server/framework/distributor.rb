@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -275,12 +275,8 @@ module Distributor
         pages.map { |page| build_element_list( page ) }.flatten
     end
 
-    # TODO: Replace this with Page#elements_within_scope to also take
-    #   into account all scope restrictions.
     def build_element_list( page )
-        [:links, :forms, :cookies, :headers].map do |type|
-            filter_elements( page.send(type) ) if options.audit.element? type
-        end.flatten.compact
+        filter_elements( page.elements_within_scope )
     end
 
     def filter_elements( elements )

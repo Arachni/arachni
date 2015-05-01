@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -131,6 +131,13 @@ class Trainer
 
             notify_on_new_page incoming_page
             @framework.push_to_page_queue( incoming_page )
+
+        # If the page is pushed, paths will be extracted eventually, if not, we
+        # need to do it now.
+        else
+            incoming_page.paths.each do |path|
+                @framework.push_to_url_queue( path )
+            end
         end
 
         print_debug 'Training complete.'

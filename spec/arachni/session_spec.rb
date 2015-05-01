@@ -82,7 +82,7 @@ describe Arachni::Session do
 
             browser = configured.browser
             configured.clean_up
-            browser.pid.should be_nil
+            browser.should be_nil
         end
 
         it 'clears the #configuration' do
@@ -100,9 +100,9 @@ describe Arachni::Session do
         end
 
         context 'after #login' do
-            it "returns an #{Arachni::Browser}" do
+            it 'kills the browser' do
                 configured.login
-                configured.browser.should be_kind_of Arachni::Browser
+                configured.browser.should be_nil
             end
         end
     end
@@ -207,17 +207,6 @@ describe Arachni::Session do
         context 'when no configuration has been provided' do
             it "raises #{described_class::Error::NotConfigured}" do
                 expect { subject.login }.to raise_error described_class::Error::NotConfigured
-            end
-        end
-
-        context 'each time' do
-            it 'uses a fresh #browser' do
-                configured.login
-                browser = configured.browser
-
-                configured.login
-                configured.browser.object_id.should_not == browser.object_id
-                configured.browser.should be_kind_of Arachni::Browser
             end
         end
     end

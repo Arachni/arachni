@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,7 +12,7 @@ require 'pony'
 # of the scan over SMTP.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.3
+# @version 0.1.5
 class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
 
     def run
@@ -37,13 +37,21 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 user_name:            options[:username],
                 password:             options[:password],
                 authentication:       !options[:authentication].empty? ? options[:authentication].to_sym : nil,
-                domain:               'localhost.localdomain'
+                domain:               options[:domain]
             }
         }
 
-        if options[:report] != 'none'
+        if options[:report] == 'afr'
             opts[:attachments] = {
-                "report.#{options[:report]}" => framework.report_as( options[:report] )
+                'report.afr' => framework.report.to_afr
+            }
+        elsif options[:report] != 'none'
+            extension = framework.reporters[options[:report]].
+                outfile_option.default.split( '.', 2 ).last
+            framework.reporters.delete( options[:report] )
+
+            opts[:attachments] = {
+                "report.#{extension}" => framework.report_as( options[:report] )
             }
         end
 
@@ -59,7 +67,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             name:        'E-mail notify',
             description: %q{Sends a notification (and optionally a report) over SMTP at the end of the scan.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.3',
+            version:     '0.1.5',
             options:     [
                 Options::String.new( :to,
                     required:    true,
@@ -94,15 +102,19 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                     required:    true,
                     description: 'SMTP password.'
                 ),
+                Options::String.new( :domain,
+                    description: 'Domain.',
+                    default:     'localhost.localdomain'
+                ),
                 Options::MultipleChoice.new( :authentication,
-                    description:  'Authentication.',
-                    default:      'plain',
-                    choices: ['plain', 'login', 'cram_md5', '']
+                    description: 'Authentication.',
+                    default:     'plain',
+                    choices:     ['plain', 'login', 'cram_md5', '']
                 ),
                 Options::MultipleChoice.new( :report,
-                    description:  'Report type to send as an attachment.',
-                    default:      'txt',
-                    choices: ['txt', 'xml', 'html', 'json', 'yaml', 'marshal' 'none']
+                    description: 'Report format to send as an attachment.',
+                    default:     'txt',
+                    choices:     ['txt', 'xml', 'html', 'json', 'yaml', 'marshal', 'afr', 'none']
                 )
             ]
 

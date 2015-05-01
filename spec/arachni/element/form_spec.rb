@@ -21,6 +21,7 @@ describe Arachni::Element::Form do
     end
 
     subject { described_class.new( options ) }
+    let(:inputs) { options[:inputs] }
     let(:url) { utilities.normalize_url( web_server_url_for( :form ) ) }
     let(:http) { Arachni::HTTP::Client }
     let(:utilities) { Arachni::Utilities }
@@ -33,7 +34,7 @@ describe Arachni::Element::Form do
                 'hidden_field' => 'hidden-value',
                 'password'     => 's3cr3t'
             },
-            html: html
+            source: html
         }
     end
 
@@ -167,7 +168,7 @@ describe Arachni::Element::Form do
 
         context 'when there is no #node' do
             it 'returns nil' do
-                subject.html = nil
+                subject.source = nil
                 subject.dom.should be_nil
             end
         end
@@ -643,7 +644,7 @@ describe Arachni::Element::Form do
                     'hidden_field' => 'hidden-value',
                     'password'     => 's3cr3t'
                 },
-                html: html
+                source: html
             }
         end
     end
@@ -802,6 +803,39 @@ EOHTML
                 end
             end
 
+            context 'with multiple submit inputs' do
+                it 'returns forms for each value' do
+                    html = '
+                    <html>
+                        <body>
+                            <form method="get" action="form_action" name="my_form">
+                                <input type=submit name="choice" value="value 1" />
+                                <input type=submit name="choice" value="value 2" />
+                            </form>
+                        </body>
+                    </html>'
+
+                    forms = described_class.from_document( url, html )
+                    forms.size.should == 2
+
+                    form = forms.first
+                    form.action.should == utilities.normalize_url( url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == url
+                    form.method.should == :get
+                    form.field_type_for( 'choice' ).should == :submit
+                    form.inputs['choice'].should == 'value 1'
+
+                    form = forms[1]
+                    form.action.should == utilities.normalize_url( url + '/form_action' )
+                    form.name.should == 'my_form'
+                    form.url.should == url
+                    form.method.should == :get
+                    form.field_type_for( 'choice' ).should == :submit
+                    form.inputs['choice'].should == 'value 2'
+                end
+            end
+
             context 'with selects' do
                 context 'with values' do
                     it 'returns an array of forms' do
@@ -932,13 +966,11 @@ EOHTML
                         end
                     end
                 end
-
-
             end
 
             context 'with a base attribute' do
                 it 'respects it and adjust the action accordingly' do
-                    base_url = "#{url}/this_is_the_base/"
+                    base_url = "/this_is_the_base/"
                     html = '
                     <html>
                         <head>
@@ -959,7 +991,7 @@ EOHTML
                     forms.size.should == 2
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( base_url + 'form_action/is/here')
+                    form.action.should == utilities.normalize_url( url + base_url + 'form_action/is/here')
                     form.name.should == 'my_form!'
                     form.url.should == url
                     form.method.should == :get

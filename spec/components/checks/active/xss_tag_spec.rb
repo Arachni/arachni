@@ -8,7 +8,7 @@ describe name_from_filename do
     end
 
     def issue_count
-        3
+        5
     end
 
     easy_test

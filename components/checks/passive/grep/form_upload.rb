@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,7 +17,7 @@ class Arachni::Checks::FormUpload < Arachni::Check::Base
         page.forms.each do |form|
             form.inputs.keys.each do |name|
                 next if form.details_for( name )[:type] != :file
-                log( proof: form.html, vector: form )
+                log( proof: form.source, vector: form )
             end
         end
     end

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -122,8 +122,10 @@ class BrowserCluster
         @mutex       = Monitor.new
         @done_signal = Queue.new
 
-        # Javascript token to share across all workers.
-        @javascript_token = Utilities.generate_token
+        # Javascript token to share across all workers, this needs to be static
+        # because of the browsers' disk-cache which leads to cached responses
+        # being used between runs.
+        @javascript_token = 'arachni_js_namespace'
 
         @consumed_pids = []
         initialize_workers

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -85,6 +85,16 @@ class Report
         self.issues
     end
 
+    # @param    [String]  check
+    #   Check shortname.
+    #
+    # @return    [Array<Issue>]
+    def issues_by_check( check )
+        @issues.map do |_, issue|
+            issue if issue.check[:shortname] == check.to_s
+        end.compact
+    end
+
     # @return    [Array<Issue>]
     #   Logged issues.
     def issues
@@ -150,7 +160,7 @@ class Report
     end
 
     # @return   [String]
-    #   Report serialized in the Arachni Framework Report format..
+    #   Report serialized in the Arachni Framework Report format.
     def to_afr
         afr = RPC::Serializer.dump( self )
 

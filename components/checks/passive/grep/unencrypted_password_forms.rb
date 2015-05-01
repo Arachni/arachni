@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -27,7 +27,7 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
 
             cform = form.dup
             cform.affected_input_name = name
-            log( vector: cform, proof: form.html )
+            log( vector: cform, proof: form.source )
 
             print_ok( "Found unprotected password field '#{name}' at #{page.url}" )
             audited form.id

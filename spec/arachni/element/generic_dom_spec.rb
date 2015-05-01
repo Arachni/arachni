@@ -2,20 +2,21 @@ require 'spec_helper'
 
 describe Arachni::Element::GenericDOM do
     it_should_behave_like 'element'
+    it_should_behave_like 'with_source'
     it_should_behave_like 'with_auditor'
 
     let(:url) { 'http://test.com/' }
-    let(:element_attributes) do
-        {
-            'id'    => 'my-id',
-            'class' => 'my-class'
-        }
-    end
     let(:element) do
         Arachni::Browser::ElementLocator.new(
             tag_name:   :input,
             attributes: element_attributes
         )
+    end
+    let(:element_attributes) do
+        {
+            'id'    => 'my-id',
+            'class' => 'my-class'
+        }
     end
     let(:transition_options) {{}}
     let(:transition) do
@@ -23,6 +24,12 @@ describe Arachni::Element::GenericDOM do
     end
     subject do
         described_class.new( url: url, transition: transition )
+    end
+
+    describe '#initialize' do
+        it "sets #source form the #{Arachni::Browser::ElementLocator}" do
+            subject.source.should == element.to_s
+        end
     end
 
     describe '#transition' do

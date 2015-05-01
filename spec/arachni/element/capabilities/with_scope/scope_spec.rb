@@ -21,5 +21,14 @@ describe Arachni::Element::Capabilities::WithScope::Scope do
                 end
             end
         end
+
+        context "when #{Arachni::OptionGroups::Audit}#element?" do
+            context 'is false' do
+                it 'returns true' do
+                    Arachni::Options.audit.stub(:element?) { false }
+                    subject.should be_out
+                end
+            end
+        end
     end
 end

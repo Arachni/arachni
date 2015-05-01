@@ -1,6 +1,6 @@
 # coding: utf-8
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -10,7 +10,7 @@
 Gem::Specification.new do |s|
     require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
-    s.required_ruby_version = '>= 1.9.3'
+    s.required_ruby_version = '>= 2.0.0'
 
     s.name              = 'arachni'
     s.version           = Arachni::VERSION
@@ -24,6 +24,7 @@ Gem::Specification.new do |s|
     s.authors           = [ 'Tasos Laskos' ]
     s.licenses          = ['Apache-2.0', 'Proprietary']
 
+    s.files            += Dir.glob( 'config/**/**' )
     s.files            += Dir.glob( 'gfx/**/**' )
     s.files            += Dir.glob( 'lib/**/**' )
     s.files            += Dir.glob( 'ui/**/**' )
@@ -43,6 +44,8 @@ Gem::Specification.new do |s|
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
+    s.add_dependency 'rack'
+
     s.add_dependency 'bundler'
 
     # For compressing/decompressing system state archives.
@@ -61,7 +64,7 @@ Gem::Specification.new do |s|
     end
 
     # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc',       '0.2.1.1'
+    s.add_dependency 'arachni-rpc',       '0.2.1.2'
 
     # HTTP client.
     s.add_dependency 'typhoeus',          '0.6.9'
@@ -73,16 +76,16 @@ Gem::Specification.new do |s|
     s.add_dependency 'pony',              '1.8'
 
     # Printing complex objects.
-    s.add_dependency 'awesome_print',     '1.2.0'
+    s.add_dependency 'awesome_print',     '~> 1.2.0'
 
     # JSON reporter.
-    s.add_dependency 'json',              '1.8.1'
+    s.add_dependency 'json',              '~> 1.8.1'
 
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '1.6.2.1'
+    s.add_dependency 'nokogiri',          '~> 1.6.5'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'
@@ -95,7 +98,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'kramdown',          '1.4.1'
 
     # Used to scrub Markdown for XSS etc.
-    s.add_dependency 'loofah',            '2.0.0'
+    s.add_dependency 'loofah',            '~> 2.0.0'
 
     s.post_install_message = <<MSG
 
@@ -112,7 +115,7 @@ License            - Apache License v2.0/Proprietary
                         (https://github.com/Arachni/arachni/blob/master/LICENSE.md)
 Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
 Twitter            - http://twitter.com/ArachniScanner
-Copyright          - 2010-2014 Tasos Laskos
+Copyright          - 2010-2015 Tasos Laskos
 
 Please do not hesitate to ask for assistance (via the support portal)
 or report a bug (via GitHub Issues) if you come across any problem.

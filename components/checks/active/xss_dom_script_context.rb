@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
 
     prefer :xss_script_context
@@ -27,7 +27,7 @@ class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
     end
 
     def self.options
-        @options ||= { format: [ Format::STRAIGHT, Format::APPEND ] }
+        @options ||= { format: [ Format::STRAIGHT ] }
     end
 
     def taints
@@ -43,7 +43,7 @@ class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
         return if !browser_cluster
 
         each_candidate_dom_element do |element|
-            element.dom.audit(
+            element.audit(
                 taints,
                 self.class.options.merge( submit: { taint: seed } ),
                 &method(:check_and_log)
@@ -62,10 +62,9 @@ class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
             description: %q{
 Injects JS taint code and checks to see if it gets executed as proof of vulnerability.
 },
-            elements:    [Element::Form::DOM, Element::Link::DOM,
-                          Element::Cookie::DOM, Element::LinkTemplate::DOM ],
+            elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS) in script context},

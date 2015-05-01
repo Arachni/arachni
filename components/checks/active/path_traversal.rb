@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,10 +9,10 @@
 # Path Traversal check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.3
+# @version 0.4.4
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
-# @see http://www.owasp.org/index.php/Path_Traversal
+# @see https://www.owasp.org/index.php/Path_Traversal
 # @see http://projects.webappsec.org/Path-Traversal
 class Arachni::Checks::PathTraversal < Arachni::Check::Base
 
@@ -109,10 +109,9 @@ It injects paths of common files ( like `/etc/passwd` and `boot.ini`) and
 evaluates the existence of a path traversal vulnerability based on the presence
 of relevant content in the HTML responses.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.3',
+            version:     '0.4.4',
             platforms:   payloads.keys,
 
             issue:       {
@@ -144,7 +143,7 @@ relative path to a common operating system file and have the contents of the fil
 included in the response.
 },
                 references:  {
-                    'OWASP' => 'http://www.owasp.org/index.php/Path_Traversal',
+                    'OWASP' => 'https://www.owasp.org/index.php/Path_Traversal',
                     'WASC'  => 'http://projects.webappsec.org/Path-Traversal'
                 },
                 tags:            %w(path traversal injection regexp),

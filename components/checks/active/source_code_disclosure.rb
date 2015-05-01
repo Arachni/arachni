@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -11,8 +11,7 @@
 # source code.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.2.1
+# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/540.html
 class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
@@ -91,8 +90,12 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
     end
 
     def prepare
+        candidate_paths  = page.paths
+        candidate_paths |= page.jsons.map(&:action)
+        candidate_paths |= page.xmls.map(&:action)
+
         # Let's look for fresh a payload -- i.e. an identifiable server-side resource.
-        page.paths.each do |path|
+        candidate_paths.each do |path|
             parsed_path = uri_parse( path )
             next if !self.class.supported_extensions.include?( parsed_path.resource_extension )
 
@@ -116,10 +119,9 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
 It tries to identify whether or not the web application can be forced to reveal
 source code.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.1',
+            version:     '0.2.2',
             platforms:   options[:regexp].keys,
 
             issue:       {

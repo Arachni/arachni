@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -147,6 +147,25 @@ class Framework
             audited_pages: state.audited_page_count,
             current_page:  @current_url
         }
+    end
+
+    def inspect
+        stats = statistics
+
+        s = "#<#{self.class} (#{status}) "
+
+        s << "runtime=#{stats[:runtime]} "
+        s << "found-pages=#{stats[:found_pages]} "
+        s << "audited-pages=#{stats[:audited_pages]} "
+        s << "issues=#{Data.issues.size} "
+
+        if @current_url
+            s << "current_url=#{@current_url.inspect} "
+        end
+
+        s << "checks=#{@checks.keys.join(',')} "
+        s << "plugins=#{@plugins.keys.join(',')}"
+        s << '>'
     end
 
     # @return    [String]

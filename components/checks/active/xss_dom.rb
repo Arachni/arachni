@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -40,7 +40,7 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
         return if !browser_cluster
 
         each_candidate_dom_element do |element|
-            element.dom.audit( self.class.strings, self.class.options, &method(:check_and_log) )
+            element.audit( self.class.strings, self.class.options, &method(:check_and_log) )
         end
     end
 
@@ -62,8 +62,7 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
 Injects an HTML element into page DOM inputs and then parses the HTML markup of
 tainted responses to look for proof of vulnerability.
 },
-            elements:    [Element::Form::DOM, Element::Link::DOM,
-                          Element::Cookie::DOM, Element::LinkTemplate::DOM ],
+            elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
 

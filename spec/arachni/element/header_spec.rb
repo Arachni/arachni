@@ -33,9 +33,9 @@ describe Arachni::Element::Header do
     end
 
     describe '#mutations' do
-        describe :param_flip do
+        describe :parameter_names do
             it 'creates a new header' do
-                subject.mutations( 'seed', param_flip: true ).last.
+                subject.mutations( 'seed', parameter_names: true ).last.
                     inputs.keys.should == %w(seed)
             end
         end

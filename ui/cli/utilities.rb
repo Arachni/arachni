@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -177,6 +177,9 @@ module Utilities
 
                     print_info "\t#{option[:name]} - #{option[:description]}"
                     print_info "\tType:        #{option[:type]}"
+                    if option[:choices]
+                        print_info "\tChoices:     #{option[:choices].join(', ')}"
+                    end
                     print_info "\tDefault:     #{option[:default]}"
                     print_info "\tRequired?:   #{option[:required]}"
 

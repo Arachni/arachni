@@ -21,70 +21,54 @@ end
 
 get "/link" do
     <<-EOHTML
-        <a href="/link/append?input=default">Link</a>
+        <a href="/link/straight?input=default">Link</a>
     EOHTML
 end
 
-get "/link/append" do
-    default = 'default'
-    return if !params['input'].start_with?( default )
-
-    get_variations( params['input'].split( default ).last )
+get "/link/straight" do
+    get_variations( params['input'] )
 end
 
 get '/link-template' do
     <<-EOHTML
-        <a href="/link-template/append/input/default/stuff">Link</a>
+        <a href="/link-template/straight/input/default/stuff">Link</a>
     EOHTML
 end
 
-get '/link-template/append/input/*/stuff' do
-    val = params[:splat].first
-    default = 'default'
-    return if !val.start_with?( default )
-
-    get_variations( val.split( default ).last )
+get '/link-template/straight/input/*/stuff' do
+    get_variations( params[:splat].first )
 end
 
 get "/form" do
     <<-EOHTML
-        <form action="/form/append">
+        <form action="/form/straight">
             <input name='input' value='default' />
         </form>
     EOHTML
 end
 
-get "/form/append" do
-    default = 'default'
-    return if !params['input'] || !params['input'].start_with?( default )
-
-    get_variations( params['input'].split( default ).last )
+get "/form/straight" do
+    get_variations( params['input'] )
 end
 
 
 get "/cookie" do
     <<-EOHTML
-        <a href="/cookie/append">Cookie</a>
+        <a href="/cookie/straight">Cookie</a>
     EOHTML
 end
 
-get "/cookie/append" do
-    default = 'cookie value'
-    cookies['cookie2'] ||= default
-    return if !cookies['cookie2'].start_with?( default )
-
-    get_variations( cookies['cookie2'].split( default ).last )
+get "/cookie/straight" do
+    cookies['cookie2'] ||= 'default'
+    get_variations( cookies['cookie2'] )
 end
 
 get "/header" do
     <<-EOHTML
-        <a href="/header/append">Header</a>
+        <a href="/header/straight">Header</a>
     EOHTML
 end
 
-get "/header/append" do
-    default = 'arachni_user'
-    return if !env['HTTP_USER_AGENT'] || !env['HTTP_USER_AGENT'].start_with?( default )
-
-    get_variations( env['HTTP_USER_AGENT'].split( default ).last )
+get "/header/straight" do
+    get_variations( env['HTTP_USER_AGENT'] )
 end

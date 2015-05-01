@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -28,14 +28,14 @@ module Mutable
     module Format
 
       # Leaves the injection string as is.
-      STRAIGHT = 1 << 0
+      STRAIGHT  = 1 << 0
 
       # Appends the injection string to the default value of the input vector.<br/>
       # (If no default value exists Arachni will choose one.)
-      APPEND   = 1 << 1
+      APPEND    = 1 << 1
 
       # Terminates the injection string with a null character.
-      NULL     = 1 << 2
+      NULL      = 1 << 2
 
       # Prefix the string with a ';', useful for command injection checks
       SEMICOLON = 1 << 3
@@ -44,27 +44,50 @@ module Mutable
 
     # Default formatting and mutation options.
     MUTATION_OPTIONS = {
-        #
+
         # Formatting of the injection strings.
         #
         # A new set of audit inputs will be generated for each value in the array.
         #
         # Values can be OR'ed bitfields of all available constants of {Format}.
+        format:                 [
+                                    Format::STRAIGHT, Format::APPEND,
+                                    Format::NULL, Format::APPEND | Format::NULL
+                                ],
+
+        # Inject the payload into parameter values.
         #
-        format:         [ Format::STRAIGHT, Format::APPEND,
-                            Format::NULL, Format::APPEND | Format::NULL ],
+        # * `nil`: Use system settings (`!Options.audit.parameter_values`).
+        # * `true`
+        # * `false`
+        parameter_values:       nil,
 
-        # Flip injection value and input name.
-        param_flip:     false,
+        # Place the payload as an input name.
+        #
+        # * `nil`: Use system settings (`!Options.audit.parameter_names`).
+        # * `true`
+        # * `false`
+        parameter_names:        nil,
 
-        # Array of parameter names remain untouched.
-        skip:           [],
+        # Add the payload to an extra parameter.
+        #
+        # * `nil`: Use system settings (`!Options.audit.with_extra_parameter`).
+        # * `true`
+        # * `false`
+        with_extra_parameter:   nil,
 
-        # `nil`:   Use system settings (!Options.audit.with_both_http_methods).
+        # `nil`:   Use system settings (`!Options.audit.with_both_http_methods`).
         # `true`:  Don't create mutations with other methods (GET/POST).
         # `false`: Create mutations with other methods (GET/POST).
-        respect_method: nil
+        with_both_http_methods: nil,
+
+        # Array of parameter names remain untouched.
+        skip:                   []
     }
+
+    EXTRA_NAME      = 'extra_arachni_input'
+    FUZZ_NAME       = 'Parameter name fuzzing'
+    FUZZ_NAME_VALUE = 'arachni_name_fuzz'
 
     # Resets the inputs to their original format/values.
     def reset
@@ -74,7 +97,7 @@ module Mutable
         self
     end
 
-    # @return   [ni, String]
+    # @return   [nil, String]
     #   `nil` if no input has been fuzzed, the `String` value of the fuzzed
     #   input.
     def affected_input_value
@@ -88,10 +111,10 @@ module Mutable
         self[affected_input_name] = value
     end
 
-    # @param    [String]    value
+    # @param    [String]    name
     #   Sets the name of the fuzzed input.
-    def affected_input_name=( value )
-        @affected_input_name = value.to_s
+    def affected_input_name=( name )
+        @affected_input_name = name.to_s
     end
 
     # @param    [String]    value
@@ -119,7 +142,7 @@ module Mutable
     #
     # @param    [String]  payload
     #   String to inject.
-    # @param    [Hash]    opts
+    # @param    [Hash]    options
     #   {MUTATION_OPTIONS}
     #
     # @yield       [mutation]
@@ -127,7 +150,7 @@ module Mutable
     # @yieldparam [Mutable]
     #
     # @see #immutables
-    def each_mutation( payload, opts = {} )
+    def each_mutation( payload, options = {}, &block )
         return if self.inputs.empty?
 
         if !valid_input_data?( payload )
@@ -135,70 +158,65 @@ module Mutable
             return
         end
 
-        print_debug_trainer( opts )
-        print_debug_formatting( opts )
+        print_debug_trainer( options )
+        print_debug_formatting( options )
 
-        opts = MUTATION_OPTIONS.merge( opts )
-        opts[:respect_method] = !Options.audit.with_both_http_methods? if opts[:respect_method].nil?
+        options          = prepare_mutation_options( options )
+        generated        = Support::LookUp::HashSet.new( hasher: :mutable_id )
+        filled_in_inputs = Options.input.fill( @inputs )
 
-        dinputs = inputs.dup
-        cinputs = Options.input.fill( inputs )
+        if options[:parameter_values]
+            @inputs.keys.each do |name|
+                # Don't let parameter name pollution from an old audit of an
+                # input name trick us into doing the same for elements without
+                # that option.
+                next if name == EXTRA_NAME
+                next if immutables.include?( name )
 
-        generated = Support::LookUp::HashSet.new( hasher: :mutable_id )
+                each_formatted_payload(
+                    payload, options[:format], filled_in_inputs[name]
+                ) do |format, formatted_payload|
 
-        dinputs.keys.each do |k|
-            # Don't audit parameter flips.
-            next if dinputs[k] == seed || immutables.include?( k )
+                    elem = create_and_yield_if_unique(
+                        generated, filled_in_inputs, payload, name,
+                        formatted_payload, format, &block
+                    )
 
-            opts[:format].each do |format|
-                str = format_str( payload, cinputs[k], format )
-
-                if !valid_input_value_data?( str )
-                    print_debug_level_2 'Payload not supported as input value by' <<
-                                            " #{audit_id}: #{str.inspect}"
-                    next
+                    next if !elem || !options[:with_both_http_methods]
+                    yield_if_unique( elem.switch_method, generated, &block )
                 end
-
-                elem                     = self.dup
-                elem.seed                = payload
-                elem.affected_input_name = k.dup
-                elem.inputs              = cinputs.merge( k => str )
-                elem.format              = format
-
-                if !generated.include?( elem )
-                    print_debug_mutation elem
-                    yield elem
-                end
-
-                generated << elem
-
-                next if opts[:respect_method]
-
-                celem = elem.switch_method
-                if !generated.include?( celem )
-                    print_debug_mutation elem
-                    yield celem
-                end
-                generated << celem
             end
         end
 
-        if opts[:param_flip]
+        if options[:with_extra_parameter]
+            if valid_input_name?( EXTRA_NAME )
+                each_formatted_payload( payload, options[:format] ) do |format, formatted_payload|
+
+                    elem = create_and_yield_if_unique(
+                        generated, filled_in_inputs.merge( EXTRA_NAME => '' ), payload, EXTRA_NAME,
+                        formatted_payload, format, &block
+                    )
+
+                    next if !elem || !options[:with_both_http_methods]
+                    yield_if_unique( elem.switch_method, generated, &block )
+                end
+            else
+                print_debug_level_2 'Extra name not supported as input name by' <<
+                                        " #{audit_id}: #{payload.inspect}"
+            end
+        end
+
+        if options[:parameter_names]
             if valid_input_name_data?( payload )
-                elem                     = self.dup
-                elem.affected_input_name = 'Parameter flip'
-                elem[payload]            = seed
+                elem                     = self.dup.update( filled_in_inputs )
+                elem.affected_input_name = FUZZ_NAME
+                elem[payload]            = FUZZ_NAME_VALUE
                 elem.seed                = payload
 
-                if !generated.include?( elem )
-                    print_debug_mutation elem
-                    yield elem
-                end
-                generated << elem
+                yield_if_unique( elem, generated, &block )
             else
                 print_debug_level_2 'Payload not supported as input name by' <<
                                         " #{audit_id}: #{payload.inspect}"
-                return
             end
         end
 
@@ -240,6 +258,34 @@ module Mutable
         h
     end
 
+    def inspect
+        s = "#<#{self.class} (#{http_method}) "
+
+        if !orphan?
+            s << "auditor=#{auditor.class} "
+        end
+
+        s << "url=#{url.inspect} "
+        s << "action=#{action.inspect} "
+
+        s << "default-inputs=#{default_inputs.inspect} "
+        s << "inputs=#{inputs.inspect} "
+
+        if mutation?
+            s << "seed=#{seed.inspect} "
+            s << "affected-input-name=#{affected_input_name.inspect} "
+            s << "affected-input-value=#{affected_input_value.inspect}"
+        end
+
+        s << '>'
+    end
+
+    def to_rpc_data
+        d = super
+        d.delete 'immutables'
+        d
+    end
+
     def dup
         copy_mutable( super )
     end
@@ -252,14 +298,83 @@ module Mutable
 
     private
 
+    def prepare_mutation_options( options )
+        options = MUTATION_OPTIONS.merge( options )
+
+        if options[:parameter_values].nil?
+            options[:parameter_values] = Options.audit.parameter_values?
+        end
+
+        if options[:parameter_names].nil?
+            options[:parameter_names] = Options.audit.parameter_names?
+        end
+
+        if options[:with_extra_parameter].nil?
+            options[:with_extra_parameter] = Options.audit.with_extra_parameter?
+        end
+
+        if options[:with_both_http_methods].nil?
+            options[:with_both_http_methods] = Options.audit.with_both_http_methods?
+        end
+
+        options
+    end
+
     def copy_mutable( other )
         if self.affected_input_name
             other.affected_input_name = self.affected_input_name.dup
         end
 
-        other.seed   = self.seed.dup if self.seed
-        other.format = self.format
+        other.seed       = self.seed.dup if self.seed
+        other.format     = self.format
+
+        # Carry over the immutables.
+        other.immutables.merge self.immutables
         other
+    end
+
+    def create_mutation( inputs, seed, input_name, input_value, format )
+        if !valid_input_value_data?( input_value )
+            print_debug_level_2 "Value not supported by #{audit_id}: #{input_value.inspect}"
+            return
+        end
+
+        if !valid_input_name_data?( input_name )
+            print_debug_level_2 "Name not supported by #{audit_id}: #{input_name.inspect}"
+            return
+        end
+
+        elem                      = self.dup.update( inputs )
+        elem.seed                 = seed
+        elem.affected_input_name  = input_name
+        elem.affected_input_value = input_value
+        elem.format               = format
+
+        elem
+    end
+
+    def create_and_yield_if_unique( list, inputs, seed, input_name, input_value,
+                                      format, &block )
+        element = create_mutation( inputs, seed, input_name, input_value, format )
+        return if !element
+
+        yield_if_unique( element, list, &block )
+        element
+    end
+
+    def yield_if_unique( element, list )
+        return if list.include?( element )
+
+        print_debug_mutation element
+        list << element
+
+        yield element
+    end
+
+    def each_formatted_payload( payload, formats, default_value = '' )
+        formats.each do |format|
+            yield format, format_str( payload, format, default_value )
+        end
     end
 
     # Prepares an injection string following the specified formatting options
@@ -275,7 +390,7 @@ module Mutable
     # @return  [String]
     #
     # @see Format
-    def format_str( payload, default_str, format  )
+    def format_str( payload, format, default_str = '' )
         semicolon = null = append = nil
 
         null      = "\0"               if (format & Format::NULL)      != 0

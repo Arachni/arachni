@@ -12,7 +12,7 @@ get '/digest' do
     <<HTML
     <html>
         <body onload='void();'>
-            <div id="my-id-div">
+            <div id="my-id-div" data-arachni-id="18181">
                 <div class="my-class-div">
                     <p>Hey <strong>Joe</strong>!</p>
                     <em>blah em</em>
@@ -25,6 +25,29 @@ get '/digest' do
                 </script>
 
                 <a href='#stuff'>Click me!</a>
+            </div>
+        </body>
+    </html>
+HTML
+end
+
+get '/digest/p' do
+    <<HTML
+    <html>
+        <body>
+            <p>Hey <strong>Joe</strong>!</p>
+        </body>
+    </html>
+HTML
+end
+
+get '/digest/data-arachni-id' do
+    <<HTML
+    <html>
+        <body>
+            <div id="my-id-div" data-arachni-id="18181">
+                <div class="my-class-div">
+                </div>
             </div>
         </body>
     </html>

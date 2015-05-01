@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -181,14 +181,17 @@ class ProxyServer < WEBrick::HTTPProxyServer
             follow_location: false,
 
             # Set the HTTP request timeout.
-            timeout:         @options[:timeout],
+            timeout:           @options[:timeout],
 
             # Update the framework-wide cookie-jar with the transmitted cookies.
-            update_cookies:  true,
+            update_cookies:    true,
 
             # We perform the request in blocking mode, parallelism is up to the
             # proxy client.
-            mode:            :sync
+            mode:              :sync,
+
+            # Don't limit the response size when using the proxy.
+            response_max_size: -1
         )
     end
 

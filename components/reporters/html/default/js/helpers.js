@@ -88,6 +88,8 @@ function goTo( location ){
     if( !target.hasClass('tab-pane') ) {
         $('html,body').scrollTop( target.offset().top );
     }
+
+    if( location == 'summary/charts' ) renderCharts();
 }
 
 function goToLocation( location ){

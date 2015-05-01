@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -106,7 +106,7 @@ class Javascript
     attr_accessor :token
 
     # @return   [String]
-    #   Taint to look for and trace in the JS data flow.
+    #   Taints to look for and trace in the JS data flow.
     attr_accessor :taint
 
     # @return   [String]
@@ -124,6 +124,17 @@ class Javascript
 
     def self.events
         GLOBAL_EVENTS | EVENTS_PER_ELEMENT.values.flatten.uniq
+    end
+
+    # @param    [Hash]  attributes
+    #   Element attributes.
+    #
+    # @return   [Hash]
+    #   `attributes` that include {.events}.
+    def self.select_event_attributes( attributes = {} )
+        attributes = attributes.my_stringify
+        Hash[(self.events.flatten.map(&:to_s) & attributes.keys).
+            map { |event| [event.to_sym, attributes[event]] }]
     end
 
     # @param    [Browser]   browser
@@ -228,7 +239,7 @@ class Javascript
     # @return   (see TaintTracer#data_flow_sinks)
     def data_flow_sinks
         return [] if !supported?
-        taint_tracer.data_flow_sinks
+        taint_tracer.data_flow_sinks[@taint] || []
     end
 
     # @return   (see TaintTracer#flush_execution_flow_sinks)
@@ -240,7 +251,7 @@ class Javascript
     # @return   (see TaintTracer#flush_data_flow_sinks)
     def flush_data_flow_sinks
         return [] if !supported?
-        taint_tracer.flush_data_flow_sinks
+        taint_tracer.flush_data_flow_sinks[@taint] || []
     end
 
     # Sets a custom ID attribute to elements with events but without a proper ID.
@@ -327,30 +338,35 @@ class Javascript
 
         body = response.body.dup
 
-        # If we've got no taint to trace don't bother...
-        if @taint
-            # Schedule a tracer update at the beginning of each script block in order
-            # to put our hooks into any newly introduced functions.
-            #
-            # The fact that our update call seems to be taking place before any
-            # functions get the chance to be defined doesn't seem to matter.
-            body.gsub!(
-                /<script(.*?)>/i,
-                "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
-            )
+        # Schedule a tracer update at the beginning of each script block in order
+        # to put our hooks into any newly introduced functions.
+        #
+        # The fact that our update call seems to be taking place before any
+        # functions get the chance to be defined doesn't seem to matter.
+        body.gsub!(
+            /<script(.*?)>/i,
+            "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
+        )
 
-            # Also perform an update after each script block, this is for external
-            # scripts.
-            body.gsub!(
-                /<\/script>/i,
-                "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
-                    "</script> <!-- Script injected by #{self.class} -->\n"
-            )
+        # Also perform an update after each script block, this is for external
+        # scripts.
+        body.gsub!(
+            /<\/script>/i,
+            "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
+                "</script> <!-- Script injected by #{self.class} -->\n"
+        )
+
+        taints = [@taint]
+        # Include cookie names and values in the trace so that the browser will
+        # be able to infer if they're being used, to avoid unnecessary audits.
+        if Options.audit.cookie_doms?
+            taints |= HTTP::Client.cookies.map { |c| c.inputs.to_a }.flatten
         end
+        taints = taints.flatten.reject { |v| v.to_s.empty? }
 
         response.body = <<-EOHTML
             <script src="#{script_url_for( :taint_tracer )}"></script> <!-- Script injected by #{self.class} -->
-            <script> #{@taint_tracer.stub.function( :initialize, @taint )} </script> <!-- Script injected by #{self.class} -->
+            <script> #{@taint_tracer.stub.function( :initialize, taints )} </script> <!-- Script injected by #{self.class} -->
 
             <script src="#{script_url_for( :dom_monitor )}"></script> <!-- Script injected by #{self.class} -->
             <script>

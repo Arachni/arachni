@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,22 +9,31 @@
 module Arachni::Element
 class Form
 
-# Provides access to DOM operations for {Form forms}.
+# Extends {Arachni::Element::Capabilities::Auditable::DOM} with {Form}-specific
+# functionality.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < Base
-    include Capabilities::Auditable::DOM
+    include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::Capabilities::Auditable::DOM
 
     def initialize( options )
         super
 
-        self.inputs     = (options[:inputs] || self.parent.inputs).dup
+        inputs = (options[:inputs] || self.parent.inputs).dup
+        @valid_input_names = inputs.keys.map(&:to_s)
+
+        self.inputs     = inputs
         @default_inputs = self.inputs.dup.freeze
     end
 
     # Submits the form using the configured {#inputs}.
     def trigger
         browser.fire_event element, :submit, inputs: inputs.dup
+    end
+
+    def valid_input_name?( name )
+        @valid_input_names.include? name.to_s
     end
 
     def encode( *args )

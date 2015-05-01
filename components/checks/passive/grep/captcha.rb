@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -48,7 +48,7 @@ include user registration, or submitting emails via "Contact Us" pages etc.
 
 Arachni has flagged this not as a vulnerability, but as a prompt for the
 penetration tester to conduct further manual testing on the CAPTCHA function, as
-Arachni cannon audit CAPTCHA protected forms.
+Arachni cannot audit CAPTCHA protected forms.
 
 Testing for insecurely implemented CAPTCHA is a manual process, and an insecurely
 implemented CAPTCHA could allow a cyber-criminal a means to abuse these sensitive

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -8,15 +8,11 @@
 
 # HTTP Response Splitting check.
 #
-# It audits links, forms and cookies.
-#
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.2
+# @version 0.2.1
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
-# @see http://www.owasp.org/index.php/HTTP_Response_Splitting
+# @see https://www.owasp.org/index.php/HTTP_Response_Splitting
 # @see http://www.securiteam.com/securityreviews/5WP0E2KFGK.html
 class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
 
@@ -32,10 +28,7 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( header,
-               param_flip: true,
-               submit: { follow_location: false }
-        ) do |response, element|
+        audit( header, submit: { follow_location: false } ) do |response, element|
             next if response.headers[header_name].to_s.downcase != 'no'
             log vector: element, response: response
         end
@@ -47,10 +40,9 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
             description: %q{
 Injects arbitrary and checks if any of them end up in the response header.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.8',
+            version:     '0.2.1',
 
             issue:       {
                 name:            %q{Response Splitting},
@@ -72,7 +64,7 @@ other attacks.
 },
                 references:  {
                     'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5WP0E2KFGK.html',
-                    'OWASP'      => 'http://www.owasp.org/index.php/HTTP_Response_Splitting'
+                    'OWASP'      => 'https://www.owasp.org/index.php/HTTP_Response_Splitting'
                 },
                 tags:            %w(response splitting injection header),
                 cwe:             20,

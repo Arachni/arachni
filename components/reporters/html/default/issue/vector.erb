@@ -1,6 +1,6 @@
 <%=
-    if vector.respond_to?( :html ) && !vector.html.to_s.empty?
-        code_highlight( vector.html, :html, anchor_id: "#{id}-vector-source" )
+    if vector.respond_to?( :source ) && !vector.source.to_s.empty?
+        code_highlight( vector.source, :html, anchor_id: "#{id}-vector-source" )
     end
 %>
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -639,6 +639,10 @@ class Instance
                 t << Thread.new { browser_cluster.shutdown false }
             end
 
+            if browser
+                t << Thread.new { browser.shutdown }
+            end
+
             @framework.instance_eval do
                 next if !has_slaves?
 
@@ -699,6 +703,10 @@ class Instance
     end
 
     private
+
+    def browser
+        @framework.instance_eval { @browser }
+    end
 
     def browser_cluster
         @framework.instance_eval { @browser_cluster }

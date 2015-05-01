@@ -274,7 +274,7 @@ describe Arachni::Framework::Parts::State do
 
             Arachni::Framework.restore( @snapshot ) do |f|
                 f.options.to_h.should == options_hash.merge( checks: ['taint'] )
-                f.browser_job_skip_states.should be_any
+                f.browser_cluster_job_skip_states.should be_any
             end
         end
 
@@ -294,7 +294,7 @@ describe Arachni::Framework::Parts::State do
             end
 
             Arachni::Framework.restore( @snapshot ) do |f|
-                f.browser_job_skip_states.should be_any
+                f.browser_cluster_job_skip_states.should be_any
             end
         end
 
@@ -474,6 +474,24 @@ describe Arachni::Framework::Parts::State do
     end
 
     describe '#clean_up' do
+        it 'shuts down the #browser_cluster' do
+            Arachni::Framework.new do |f|
+                f.options.url = @url + '/elem_combo'
+
+                f.browser_cluster.should receive(:shutdown)
+                f.clean_up
+            end
+        end
+
+        it 'shuts down the #browser' do
+            Arachni::Framework.new do |f|
+                f.options.url = @url + '/elem_combo'
+
+                f.browser.should receive(:shutdown)
+                f.clean_up
+            end
+        end
+
         it 'stops the #plugins' do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'

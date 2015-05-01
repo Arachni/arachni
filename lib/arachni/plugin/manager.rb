@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -60,11 +60,18 @@ class Manager < Arachni::Component::Manager
     # @raise [Error::UnsatisfiedDependency]
     #   If the environment is {#sane_env? not sane}.
     def run
+        prepared_signals = Queue.new
+
         schedule.each do |name, options|
             @jobs[name] = Thread.new do
                 exception_jail( false ) do
-                    Thread.current[:instance] = create( name, options )
-                    Thread.current[:instance].prepare
+                    begin
+                        Thread.current[:instance] = create( name, options )
+                        Thread.current[:instance].prepare
+                    ensure
+                        prepared_signals << nil
+                    end
+
                     Thread.current[:instance].run
                     Thread.current[:instance].clean_up
 
@@ -77,8 +84,9 @@ class Manager < Arachni::Component::Manager
 
         return if @jobs.empty?
 
-        print_status 'Waiting for plugins to settle...'
-        sleep 1
+        print_status 'Preparing plugins...'
+        self.size.times { prepared_signals.pop }
+        print_status '... done.'
     end
 
     # @return   [Hash]

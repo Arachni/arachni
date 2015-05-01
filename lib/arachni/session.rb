@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -222,18 +222,23 @@ class Session
     #   If not {#configured?}.
     # @raise    [Error::FormNotFound]
     #   If the form could not be found.
-    def login
+    def login( raise = false )
         fail Error::NotConfigured, 'Please configure the session first.' if !configured?
 
         refresh_browser
 
-        page = @login_sequence ? login_from_sequence : login_from_configuration
+        page = nil
+        exception_jail raise do
+            page = @login_sequence ? login_from_sequence : login_from_configuration
+        end
 
         if has_browser?
             http.update_cookies browser.cookies
         end
 
         page
+    ensure
+        shutdown_browser
     end
 
     # @param    [Block] block

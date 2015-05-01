@@ -15,6 +15,11 @@ get '/jquery.js' do
     IO.read "#{JS_LIB}/jquery-2.0.3.js"
 end
 
+get '/jquery.cookie.js' do
+    content_type 'text/javascript'
+    IO.read "#{JS_LIB}/jquery.cookie.js"
+end
+
 get '/angular.js' do
     content_type 'text/javascript'
     IO.read "#{JS_LIB}/angular-1.2.8.js"
@@ -68,6 +73,25 @@ get '/data_trace/XMLHttpRequest.setRequestHeader' do
 HTML
 end
 
+get '/data_trace/multiple-taints' do
+    <<-EOHTML
+    <html>
+
+        <body>
+        </body>
+
+        <script type="text/javascript">
+            function process( data ) {}
+            process({ my_data11: 'blah11', input11: '#{params[:taint1]}' });
+            process({ my_data12: 'blah12', input12: '#{params[:taint1]}' });
+
+            process({ my_data21: 'blah21', input21: '#{params[:taint2]}' });
+            process({ my_data22: 'blah22', input22: '#{params[:taint2]}' });
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/user-defined-global-functions' do
     <<-EOHTML
     <html>
@@ -83,7 +107,7 @@ get '/data_trace/user-defined-global-functions' do
     EOHTML
 end
 
-%w(eval encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
+%w(escape unescape encodeURIComponent decodeURIComponent encodeURI decodeURI).each do |function|
     get "/data_trace/window.#{function}" do
         <<-EOHTML
     <html>
@@ -357,6 +381,19 @@ get '/data_trace/AngularJS/jqLite.replaceWith' do
     EOHTML
 end
 
+get '/data_trace/jQuery.cookie' do
+    <<-EOHTML
+    <html>
+        <script src="/jquery.js" type="text/javascript"></script>
+        <script src="/jquery.cookie.js" type="text/javascript"></script>
+
+        <script type="text/javascript">
+            $.cookie( 'cname', 'mystuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
 get '/data_trace/jQuery.ajax' do
     <<-EOHTML
     <html>
@@ -583,6 +620,26 @@ get '/data_trace/String.concat' do
     <html>
         <script type="text/javascript">
             'my string'.concat( 'stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/String.lastIndexOf' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            'my string'.lastIndexOf( 'stuff ' + #{params[:taint].inspect} );
+        </script>
+    </html>
+    EOHTML
+end
+
+get '/data_trace/String.indexOf' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            'my string'.indexOf( 'stuff ' + #{params[:taint].inspect} );
         </script>
     </html>
     EOHTML

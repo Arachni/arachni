@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -148,15 +148,22 @@ class Issue
     # @return   [Issue,nil]
     #   Fresh {Issue} if the issue still exists, `nil` otherwise.
     def recheck( framework = nil )
+        original_options = Options.to_h
+
         new_issue = nil
         checker = proc do |f|
-            referring_page.update_element_audit_whitelist vector
+            if active?
+                referring_page.update_element_audit_whitelist vector
+                f.options.audit.elements vector.class.type
+                f.options.audit.include_vector_patterns = [affected_input_name]
+            end
 
             f.options.url = referring_page.url
-            f.options.audit.elements vector.class.type
 
             f.checks.load( parent ? parent.check[:shortname] : check[:shortname] )
             f.push_to_page_queue referring_page
+
+            f.options.scope.do_not_crawl
 
             f.run
 
@@ -166,10 +173,13 @@ class Issue
         if framework
             checker.call framework
         else
-            Arachni::Framework.new( &checker )
+            Framework.new( &checker )
         end
 
         new_issue
+    ensure
+        Options.reset
+        Options.set original_options
     end
 
     # @return   [HTTP::Response]
@@ -297,7 +307,7 @@ class Issue
             h.delete( :variation )
         else
             if variation?
-                h[:vector].delete :html
+                h[:vector].delete :source
                 h[:vector].delete :type
                 h[:vector].delete :url
                 h[:vector].delete :action
@@ -470,11 +480,11 @@ class Issue
     def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
+            next if ivar == :@parent
+
             data[ivar.to_s.gsub('@','')] =
                 instance_variable_get( ivar ).to_rpc_data_or_self
         end
-
-        data.delete 'parent'
 
         if data['check'] && data['check'][:elements]
             data['check'] = data['check'].dup

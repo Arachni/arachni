@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -32,11 +32,9 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         'for other resources of similar type. This is a strong indication that ' +
         'the logged issue is a false positive.'
 
-    def prepare
-        wait_while_framework_running
-    end
-
     def run
+        wait_while_framework_running
+
         # URL path => Issue hashes.
         issue_digests_per_path = {}
 

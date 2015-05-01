@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -16,12 +16,10 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
-    def prepare
+    def run
         framework_pause
         print_status 'System paused.'
-    end
 
-    def run
         # if the 'vectors' option is an array at this point then someone fed
         # them to us programmatically
         if !options[:vectors].is_a? Array
@@ -155,7 +153,7 @@ Can be used to perform extremely specialized/narrow audits on a per vector/eleme
 
 **Notes**:
 
-* To only audit the vectors in the feed you must set the 'link-count' limit to 0 to prevent crawling.
+* To only audit the vectors in the feed you must set the scope page-limit to `0` to prevent crawling.
 * Can handle multiple YAML documents.
 
 Example YAML file:

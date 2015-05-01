@@ -26,4 +26,3 @@ group :prof do
 end
 
 gemspec
-

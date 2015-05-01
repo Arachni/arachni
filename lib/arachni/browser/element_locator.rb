@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -65,7 +65,11 @@ class ElementLocator
     # @return   [Watir::HTMLElement]
     #   Locates and returns the element based on {#tag_name} and {#attributes}.
     def locate( browser )
-        browser.watir.send( tag_name, locatable_attributes )
+        browser.watir.element( css: css )
+    end
+
+    def css
+        "#{tag_name}#{attributes.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
     end
 
     # @return   [String]
@@ -74,6 +78,7 @@ class ElementLocator
         "<#{tag_name}#{' ' if attributes.any?}" <<
             attributes.map { |k, v| "#{k}=#{v.inspect}" }.join( ' ' ) << '>'
     end
+    alias :inspect :to_s
 
     def dup
         self.class.new to_h

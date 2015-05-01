@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -190,6 +190,17 @@ class Browser
         ensure_open_window
     end
 
+    def clear_buffers
+        synchronize do
+            @preloads.clear
+            @cache.clear
+            @captured_pages.clear
+            @page_snapshots.clear
+            @page_snapshots_with_sinks.clear
+            @window_responses.clear
+        end
+    end
+
     # @return   [String]
     #   Prefixes each source line with a number.
     def source_with_line_numbers
@@ -337,7 +348,12 @@ class Browser
     end
 
     def shutdown
-        watir.close if browser_alive?
+        begin
+            watir.close if browser_alive?
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error
+        end
+
         kill_process
         @proxy.shutdown
     end
@@ -397,7 +413,7 @@ class Browser
                     href = attributes['href'].to_s
 
                     if !href.empty?
-                        if href.start_with?( 'javascript:' )
+                        if href.downcase.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
                             next if skip_path?( to_absolute( href, current_url ) )
@@ -413,7 +429,7 @@ class Browser
                     action = attributes['action'].to_s
 
                     if !action.empty?
-                        if action.start_with?( 'javascript:' )
+                        if action.downcase.start_with?( 'javascript:' )
                             events << [ :submit, action ]
                         else
                             next if skip_path?( to_absolute( action, current_url ) )
@@ -421,9 +437,13 @@ class Browser
                     end
             end
 
-            state = "#{tag_name}#{attributes}#{events}"
-            next if events.empty? || (mark_state && skip_state?( state ))
-            skip_state state if mark_state
+            next if events.empty?
+
+            if mark_state
+                state = "#{tag_name}#{attributes}#{events}"
+                next if skip_state?( state )
+                skip_state state
+            end
 
             yield ElementLocator.new( tag_name: tag_name, attributes: attributes ),
                     events
@@ -445,33 +465,38 @@ class Browser
         javascript.dom_elements_with_events.each do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
-            events     = element['events']
+            events     = element['events'] +
+                Javascript.select_event_attributes( attributes ).to_a
+            element_id = attributes['id'].to_s
 
             case tag_name
                 when 'a'
-                    href = attributes['href'].to_s
+                    href        = attributes['href'].to_s
+                    element_id << href
 
                     if !href.empty?
-                        if href.start_with?( 'javascript:' )
+                        if href.downcase.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
                             absolute = to_absolute( href, current_url )
-                            if !skip_path?( absolute )
-                                events << [ :click, absolute ]
-                            end
+                            next if skip_path?( absolute )
+
+                            events << [ :click, href ]
                         end
                     else
                         events << [ :click, current_url ]
                     end
 
                 when 'input', 'textarea', 'select'
-                    events << [ tag_name.to_sym ]
+                    events     << [ tag_name.to_sym ]
+                    element_id << attributes['name'].to_s
 
                 when 'form'
-                    action = attributes['action'].to_s
+                    action      = attributes['action'].to_s
+                    element_id << "#{action}#{attributes['name']}"
 
                     if !action.empty?
-                        if action.start_with?( 'javascript:' )
+                        if action.downcase.start_with?( 'javascript:' )
                             events << [ :submit, action ]
                         else
                             absolute = to_absolute( action, current_url )
@@ -485,10 +510,11 @@ class Browser
             end
 
             next if events.empty?
-            id << "#{tag_name}#{attributes}#{events}".hash
+
+            id << "#{tag_name}:#{element_id}:#{events}"
         end
 
-        id.sort.to_s
+        id.uniq.sort.to_s
     end
 
     # Triggers all events on all elements (**once**) and captures
@@ -571,10 +597,11 @@ class Browser
 
             begin
                 element = element.locate( self )
-            rescue Selenium::WebDriver::Error::UnknownError,
-                Watir::Exception::UnknownObjectException => e
+            rescue Selenium::WebDriver::Error::WebDriverError,
+                Watir::Exception::Error => e
 
-                print_debug "Element '#{locator}' could not be located for triggering '#{event}'."
+                print_debug "Element '#{element.inspect}' could not be " <<
+                                "located for triggering '#{event}'."
                 print_debug
                 print_debug_exception e
                 return
@@ -588,12 +615,13 @@ class Browser
                 sleep 0.1 while !element.exists?
             end
         rescue Timeout::Error
-            print_debug_level_2 "#{locator} did not appear in #{ELEMENT_APPEARANCE_TIMEOUT}."
+            print_debug_level_2 "#{element.inspect} did not appear in " <<
+                                    "#{ELEMENT_APPEARANCE_TIMEOUT}."
             return
         end
 
         if !element.visible?
-            print_debug_level_2 "#{locator} is not visible, skipping..."
+            print_debug_level_2 "#{element.inspect} is not visible, skipping..."
             return
         end
 
@@ -606,7 +634,7 @@ class Browser
             locator     = ElementLocator.from_html( opening_tag )
         end
 
-        print_debug_level_2 "#{__method__}: #{event} (#{options}) #{locator}"
+        print_debug_level_2 "#{__method__} [start]: #{event} (#{options}) #{locator}"
 
         tag_name = tag_name.to_sym
 
@@ -621,15 +649,14 @@ class Browser
                     fill_in_form_inputs( element, options[:inputs] )
 
                     if event == :submit
+                        element.to_subtype.submit
                         had_special_trigger = true
-                        element.submit
                     end
-
                 elsif tag_name == :input && event == :click &&
                         element.attribute_value(:type) == 'image'
 
+                    element.to_subtype.click
                     had_special_trigger = true
-                    watir.button( type: 'image' ).click
 
                 elsif [:keyup, :keypress, :keydown, :change, :input, :focus, :blur, :select].include? event
 
@@ -640,11 +667,16 @@ class Browser
                 end
 
                 element.fire_event( event ) if !had_special_trigger
+
+                print_debug_level_2 "#{__method__} [waiting for requests]: #{event} (#{options}) #{locator}"
                 wait_for_pending_requests
+                print_debug_level_2 "#{__method__} [done waiting for requests]: #{event} (#{options}) #{locator}"
+
+                # puts source_with_line_numbers
+                print_debug_level_2 "#{__method__} [done]: #{event} (#{options}) #{locator}"
             end
-        rescue Selenium::WebDriver::Error::InvalidElementStateError,
-            Selenium::WebDriver::Error::UnknownError,
-            Watir::Exception::UnknownObjectException => e
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error => e
 
             sleep 0.1
 
@@ -714,17 +746,58 @@ class Browser
     # @return   [Page]
     #   Converts the current browser window to a {Page page}.
     def to_page
-        return if !(r = response)
+        if !(r = response)
+            return Page.from_data(
+                dom: {
+                    url: watir.url
+                },
+                response: {
+                    code: 0,
+                    url:  url
+                }
+            )
+        end
 
-        page         = r.to_page
-        page.body    = source
-
+        page                          = r.to_page
+        page.body                     = source
         page.dom.url                  = watir.url
         page.dom.digest               = @javascript.dom_digest
         page.dom.execution_flow_sinks = @javascript.execution_flow_sinks
         page.dom.data_flow_sinks      = @javascript.data_flow_sinks
         page.dom.transitions          = @transitions.dup
         page.dom.skip_states          = skip_states.dup
+
+        # Go through auditable DOM forms and cookies and remove the DOM from
+        # them if no events are associated with it.
+        #
+        # This can save **A LOT** of time during the audit.
+        if Options.audit.form_doms? && @javascript.supported?
+            page.forms.each do |form|
+                next if !form.node || !form.dom
+
+                action = form.node['action'].to_s
+                form.dom.browser = self
+
+                next if action.downcase.start_with?( 'javascript:' ) ||
+                    form.dom.locate.events.any?
+
+                form.skip_dom = true
+            end
+
+            page.update_metadata
+        end
+
+        if Options.audit.cookie_doms? && @javascript.supported?
+            sinks = @javascript.taint_tracer.data_flow_sinks
+            page.cookies.each do |cookie|
+                next if sinks.include?( cookie.name ) ||
+                    sinks.include?( cookie.value )
+
+                cookie.skip_dom = true
+            end
+
+            page.update_metadata
+        end
 
         page
     end
@@ -750,7 +823,7 @@ class Browser
 
                     capture_snapshot_with_sink( page )
 
-                    unique_id = self.snapshot_id
+                    unique_id  = self.snapshot_id
                     next if skip_state? unique_id
                     skip_state unique_id
 
@@ -808,7 +881,7 @@ class Browser
             # this out ourselves, by checking for JS visibility.
             javascript.run( 'return document.cookie' )
         # We may not have a page.
-        rescue Selenium::WebDriver::Error::UnknownError
+        rescue Selenium::WebDriver::Error::WebDriverError
             ''
         end
 
@@ -887,6 +960,14 @@ class Browser
         )
     end
 
+    def inspect
+        s = "#<#{self.class} "
+        s << "pid=#{@pid} "
+        s << "last-url=#{@last_url.inspect} "
+        s << "transitions=#{@transitions.size}"
+        s << '>'
+    end
+
     private
 
     def fill_in_form_inputs( form, inputs = nil )
@@ -895,11 +976,10 @@ class Browser
             value      = inputs ? inputs[name_or_id] : value_for( input )
 
             begin
-                input.set( value.to_s )
+                input.set( value.to_s.recode )
             # Disabled inputs and such...
-            rescue Watir::Exception::ObjectDisabledException,
-                Watir::Exception::ObjectReadOnlyException,
-                Selenium::WebDriver::Error::InvalidElementStateError => e
+            rescue Selenium::WebDriver::Error::WebDriverError,
+                Watir::Exception::Error => e
                 print_debug_level_2 "Could not fill in form input '#{name_or_id}'" <<
                                         " because: #{e} [#{e.class}"
             end
@@ -910,12 +990,10 @@ class Browser
             value      = inputs ? inputs[name_or_id] : value_for( input )
 
             begin
-                input.select_value( value.to_s )
+                input.select_value( value.to_s.recode )
             # Disabled inputs and such...
-            rescue Watir::Exception::ObjectDisabledException,
-                Watir::Exception::ObjectReadOnlyException,
-                Watir::Exception::NoValueFoundException,
-                Selenium::WebDriver::Error::InvalidElementStateError => e
+            rescue Selenium::WebDriver::Error::WebDriverError,
+                Watir::Exception::Error => e
                 print_debug_level_2 "Could not fill in form select '#{name_or_id}'" <<
                                         " because: #{e} [#{e.class}"
             end
@@ -995,8 +1073,10 @@ class Browser
                         "--webdriver=#{port}",
                         "--proxy=http://#{@proxy.address}/",
                         '--ignore-ssl-errors=true',
+                        '--disk-cache=true',
                         "--debug=#{!!debug?}"
                     )
+                    # @process.leader = true
                     @process.detach = true
 
                     @process.io.stdout = Tempfile.new( 'phantomjs-out' )
@@ -1058,13 +1138,18 @@ class Browser
     end
 
     def kill_process
-        if browser_alive?
-            @process.stop
-            @process.io.close rescue nil
+        begin
+            if @process && @process.alive?
+                @process.stop
+                @process.io.close rescue nil
+            end
+        rescue Errno::ECHILD
+            false
         end
 
         @process     = nil
         @watir       = nil
+        @selenium    = nil
         @pid         = nil
         @browser_url = nil
     end
@@ -1198,6 +1283,8 @@ class Browser
     end
 
     def request_handler( request, response )
+        request.performer = self
+
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete( 'X-Arachni-Browser-Auth' )
 
@@ -1215,10 +1302,16 @@ class Browser
         # preloaded or cached response for it.
         return if from_preloads( request, response ) || from_cache( request, response )
 
-        # Capture the request as elements of pages -- let's us grab AJAX and
-        # other browser requests and convert them into elements we can analyze
-        # and audit.
-        capture( request )
+        begin
+            # Capture the request as elements of pages -- let's us grab AJAX and
+            # other browser requests and convert them into elements we can analyze
+            # and audit.
+            capture( request )
+        rescue => e
+            print_debug "Could not capture: #{request.url}"
+            print_debug request.body.to_s
+            print_debug_exception e
+        end
 
         request.headers['user-agent'] = Options.http.user_agent
 
@@ -1234,10 +1327,15 @@ class Browser
             transition.complete
         end
 
+        # No-matter the scope, don't store resources for external domains.
+        return if !response.scope.in_domain?
+
         return if enforce_scope? && response.scope.out?
 
         intercept response
         save_response response
+
+        nil
     end
 
     def intercept( response )
@@ -1247,12 +1345,37 @@ class Browser
 
     def intercept?( response )
         return false if response.body.empty?
-        return false if !response.headers.content_type.to_s.start_with?( 'text/html' )
 
+        # We only care about HTML.
+        return false if !response.headers.content_type.to_s.downcase.start_with?( 'text/html' )
+
+        # Let's check that the response at least looks like it contains HTML
+        # code of interest.
         body = response.body.downcase
-        HTML_IDENTIFIERS.each { |tag| return true if body.include? tag.downcase }
+        return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
 
-        false
+        # The last check isn't fool-proof, so don't do it when loading the page
+        # for the first time, but only when the page loads stuff via AJAX and whatnot.
+        #
+        # Well, we can be pretty sure that the root page will be HTML anyways.
+        return true if @last_url == response.url
+
+        # Finally, verify that we're really working with markup (hopefully HTML)
+        # and that the previous checks weren't just flukes matching some other
+        # kind of document.
+        #
+        # For example, it may have been JSON with the wrong content-type that
+        # includes HTML -- it happens.
+        begin
+            return false if Nokogiri::XML( response.body ).children.empty?
+        rescue => e
+            print_debug "Javascript injection failed for: #{response.url}"
+            print_debug "\n#{response.body}"
+            print_debug_exception e
+            return false
+        end
+
+        true
     end
 
     def ignore_request?( request )
@@ -1260,19 +1383,36 @@ class Browser
 
         # Only allow CSS and JS resources to be loaded from out-of-scope domains.
         !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
-            request.scope.out? || request.scope.redundant?
+            (request.scope.out? || request.scope.redundant?)
     end
 
     def capture( request )
         return if !@last_url || !capture?
 
+        elements = {
+            forms: [],
+            jsons: [],
+            xmls:  []
+        }
+
+        found_element = false
+
+        if (json = JSON.from_request( @last_url, request ))
+            elements[:jsons] << json
+            found_element = true
+        end
+
+        if !found_element && (xml = XML.from_request( @last_url, request ))
+            elements[:xmls] << xml
+            found_element = true
+        end
+
         case request.method
             when :get
-                inputs =  request.parsed_url.query_parameters
+                inputs = request.parsed_url.query_parameters
                 return if inputs.empty?
 
-                # Make this a Link.
-                 form = Form.new(
+                elements[:forms] << Form.new(
                     url:    @last_url,
                     action: request.url,
                     method: request.method,
@@ -1280,32 +1420,33 @@ class Browser
                 )
 
             when :post
-                inputs = request.body_parameters
-                return if inputs.empty?
-
-                form = Form.new(
-                    url:    @last_url,
-                    action: request.url,
-                    method: request.method,
-                    inputs: inputs
-                )
+                if !found_element && (inputs = request.body_parameters).any?
+                    elements[:forms] << Form.new(
+                        url:    @last_url,
+                        action: request.url,
+                        method: request.method,
+                        inputs: inputs
+                    )
+                end
 
             else
                 return
         end
 
-        # Don't bother if the system in general has already seen the vector.
-        return if ElementFilter.include?( form )
+        el = elements.values.flatten
+
+        # Don't bother if the system in general has already seen the vectors.
+        return if el.empty? || !el.find { |e| !ElementFilter.include?( e ) }
 
         begin
-            return if skip_state?( form.id )
-            skip_state form.id
+            return if !el.find { |e| !skip_state?( e ) }
+            el.each { |e| skip_state e.id }
         # This could be an orphaned HTTP request, without a job, if running in
         # BrowserCluster::Worker.
         rescue NoMethodError
         end
 
-        page = Page.from_data( url: request.url, forms: [form] )
+        page = Page.from_data( elements.merge( url: request.url ) )
         page.response.request = request
         page.dom.push_transition Page::DOM::Transition.new( request.url, :request )
 
@@ -1342,10 +1483,12 @@ class Browser
     end
 
     def save_response( response )
-        notify_on_response response
-        return response if !response.text?
+        synchronize do
+            notify_on_response response
+            return response if !response.text?
 
-        @window_responses[response.url] = response
+            @window_responses[response.url] = response
+        end
     end
 
     def get_response( url )
@@ -1354,7 +1497,8 @@ class Browser
             # everything after ';' by treating it as a path parameter.
             # Rightly so...but we need to bypass it when auditing LinkTemplate
             # elements.
-            @window_responses[normalize_watir_url( url )] ||
+            @window_responses[url] ||
+                @window_responses[normalize_watir_url( url )] ||
                 @window_responses[normalize_url( url )]
         end
     end

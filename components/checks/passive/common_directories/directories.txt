@@ -510,3 +510,5 @@ ZM
 ZW
 intern
 extern
+/rails/info/properties
+/rails/info/routes

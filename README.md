@@ -1,17 +1,9 @@
-**NOTICE**:
-
-* Arachni's license has changed, please see the _LICENSE_ file before working
-    with the project.
-* v1.0 is not backwards compatible with v0.4.
-
-<hr/>
-
 # Arachni - Web Application Security Scanner Framework
 
 <table>
     <tr>
         <th>Version</th>
-        <td>1.0.6</td>
+        <td>1.1</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -46,7 +38,7 @@
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2014 Tasos Laskos</td>
+        <td>2010-2015 Tasos Laskos</td>
     </tr>
     <tr>
         <th>License</th>
@@ -123,11 +115,11 @@ you with its findings.
 
  - Cookie-jar/cookie-string support.
  - Custom header support.
- - SSL support.
+ - SSL support with fine-grained options.
  - User Agent spoofing.
  - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
  - Proxy authentication.
- - Site authentication (Automated form-based, Cookie-Jar, Basic-Digest, NTLMv1 and others).
+ - Site authentication (SSL-based, form-based, Cookie-Jar, Basic-Digest, NTLMv1, Kerberos and others).
  - Automatic log-out detection and re-login during the scan (when the initial
     login was performed via the `autologin`, `login_script` or `proxy` plugins).
  - Custom 404 page detection.
@@ -233,6 +225,8 @@ Arachni is able to extract and audit the following elements and their inputs:
  - Headers
  - Generic client-side elements like `input`s which have associated DOM events.
  - AJAX-request parameters.
+ - JSON request data.
+ - XML request data.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
@@ -293,6 +287,8 @@ Arachni is able to extract and audit the following elements and their inputs:
         - Can load them via the integrated browser environment.
     - Headers
     - Generic client-side DOM elements like `input`s.
+    - JSON request data.
+    - XML request data.
  - Can ignore binary/non-text pages.
  - Can optionally audit elements using both `GET` and `POST` HTTP methods.
  - Can optionally submit all links and forms of the page along with the cookie
@@ -416,6 +412,7 @@ Active checks engage the web application via its inputs.
     - Windows
 - Remote file inclusion (`rfi`).
 - Unvalidated redirects (`unvalidated_redirect`).
+- Unvalidated DOM redirects (`unvalidated_redirect_dom`).
 - XPath injection (`xpath_injection`).
     - Generic
     - PHP
@@ -431,6 +428,11 @@ Active checks engage the web application via its inputs.
 - DOM XSS inputs (`xss_dom_inputs`).
 - DOM XSS script context (`xss_dom_script_context`).
 - Source code disclosure (`source_code_disclosure`)
+- XML External Entity (`xxe`).
+    - Linux
+    - *BSD
+    - Solaris
+    - Windows
 
 ##### Passive
 
@@ -464,6 +466,11 @@ Passive checks look for the existence of files, folders and signatures.
 - localstart.asp (`localstart_asp`)
 - Cookie set for parent domain (`cookie_set_for_parent_domain`)
 - Missing `Strict-Transport-Security` headers for HTTPS sites (`hsts`).
+- Missing `X-Frame-Options` headers (`x_frame_options`).
+- Insecure CORS policy (`insecure_cors_policy`).
+- Insecure cross-domain policy (allow-access-from) (`insecure_cross_domain_policy_access`)
+- Insecure cross-domain policy (allow-http-request-headers-from) (`insecure_cross_domain_policy_headers`)
+- Insecure client-access policy (`insecure_client_access_policy`)
 
 #### Reporters
 
@@ -503,6 +510,10 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 - Content-types (`content_types`) -- Logs content-types of server responses aiding in the
     identification of interesting (possibly leaked) files.
+- Vector collector (`vector_collector`) -- Collects information about all seen input vectors
+    which are within the scan scope.
+- Headers collector (`headers_collector`) -- Collects response headers based on specified criteria.
+- Exec (`exec`) -- Calls external executables at different scan stages.
 
 ##### Defaults
 
@@ -585,9 +596,3 @@ need to follow in order to contribute code:
 
 Dual-licensed (Apache License v2.0/Commercial) -- please see the _LICENSE_ file
 for more information.
-
-## Disclaimer
-
-This is free software and you are allowed to use it as you see fit.
-However, neither the development team nor any of our contributors can be held
-responsible for your actions nor for any damage caused by the use of this software.

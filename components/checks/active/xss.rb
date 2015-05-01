@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,7 +13,7 @@
 # {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4
+# @version 0.4.1
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -43,8 +43,7 @@ class Arachni::Checks::Xss < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format:     [Format::APPEND],
-            flip_param: true
+            format: [Format::APPEND],
         }
     end
 
@@ -55,10 +54,12 @@ class Arachni::Checks::Xss < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
-        # if the body doesn't include the tag at all bail out early
-        return if !response.body.downcase.include?( self.class.tag )
-
-        print_info 'Response is tainted, looking for proof of vulnerability.'
+        # Bail out if the response is not tainted unless we're dealing with a Link.
+        # The other cases either don't matter or are covered by the xss_dom check.
+        if (self.class.elements - [Arachni::Link]).include?( element.class ) &&
+            !response.body.downcase.include?( self.class.tag )
+            return
+        end
 
         # See if we managed to successfully inject our element in the doc tree.
         if find_proof( response )
@@ -96,7 +97,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4',
+            version:     '0.4.1',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},
@@ -121,7 +122,7 @@ HTML element content.
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
                     'Secunia'  => 'http://secunia.com/advisories/9716/',
                     'WASC' => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
-                    'OWASP' => 'www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
+                    'OWASP' => 'https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
                 },
                 tags:            %w(xss regexp injection script),
                 cwe:             79,

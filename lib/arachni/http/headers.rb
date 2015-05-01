@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -115,10 +115,19 @@ class Headers < Hash
     private
 
     def format_field_name( field )
+        self.class.format_field_name( field )
+    end
+
+    def self.format_field_name( field )
+        # return field
+
         # If there's a '--' somewhere in there then skip it, it probably is an
         # audit payload.
         return field if field.include?( '--' )
-        field.to_s.split( '-' ).map( &:capitalize ).join( '-' )
+
+        @formatted ||= Hash.new
+        @formatted[field.downcase.hash] ||=
+            field.to_s.split( '-' ).map( &:capitalize ).join( '-' )
     end
 
 end

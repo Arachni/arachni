@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -34,7 +34,7 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @see http://en.wikipedia.org/wiki/Cross-site_request_forgery
-# @see http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
+# @see https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)
 # @see http://www.cgisecurity.com/csrf-faq.html
 # @see http://cwe.mitre.org/data/definitions/352.html
 class Arachni::Checks::CSRF < Arachni::Check::Base
@@ -66,8 +66,12 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
     # @return   [Bool]
     #   `true` if the form has no anti-CSRF token, `false` otherwise
     def unsafe?( form )
-        # if a form has a nonce then we're cool, bail out early
-        return false if form.has_nonce? || !form.html
+        # If a form has a nonce then we're cool, bail out early
+        return false if form.has_nonce?
+
+        # If the form has no source then it was dynamically provided by some
+        # component, so skip them.
+        return false if !form.source
 
         #
         # Nobody says that tokens must be in a +value+ attribute, they can
@@ -191,7 +195,7 @@ content on a forum, etc._
 },
                 references:  {
                     'Wikipedia'    => 'http://en.wikipedia.org/wiki/Cross-site_request_forgery',
-                    'OWASP'        => 'http://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
+                    'OWASP'        => 'https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)',
                     'CGI Security' => 'http://www.cgisecurity.com/csrf-faq.html'
                 },
                 tags:            %w(csrf rdiff form token),

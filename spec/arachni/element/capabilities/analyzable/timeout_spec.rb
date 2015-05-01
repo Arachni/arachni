@@ -9,6 +9,8 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
 
     before :all do
         Arachni::Options.url = @url = web_server_url_for( :timeout )
+        Arachni::Options.audit.elements :links
+
         @framework = Arachni::Framework.new
     end
 
@@ -39,6 +41,29 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
             format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
             elements: [ Arachni::Element::Link ]
         }
+    end
+
+    describe '#dup' do
+        context 'when #timing_attack_remark_data is' do
+            context 'not nil' do
+                it 'duplicates it' do
+                    h = { stuff: 1 }
+
+                    subject.timing_attack_remark_data = h
+
+                    dupped = subject.dup
+                    dupped.should == dupped
+                    dupped.timing_attack_remark_data.should == h
+                    dupped.timing_attack_remark_data.object_id.should_not == h.object_id
+                end
+            end
+        end
+    end
+
+    describe '#to_rpc_data' do
+        it "does not include 'timing_attack_remark_data'" do
+            subject.to_rpc_data.should_not include 'timing_attack_remark_data'
+        end
     end
 
     describe '#timeout_id' do
@@ -256,31 +281,61 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
             end
         end
 
-        context 'when the request times out by default' do
-            subject do
-                e = Arachni::Element::Link.new(
-                    url:    @url + '/sleep',
-                    inputs: inputs
-                )
-                e.auditor = auditor
-                e
+        context 'when the request times out' do
+            context 'by default' do
+                subject do
+                    e = Arachni::Element::Link.new(
+                        url:    @url + '/sleep',
+                        inputs: inputs
+                    )
+                    e.auditor = auditor
+                    e
+                end
+
+                it 'does not call the given block' do
+                    candidate = nil
+                    subject.timing_attack_probe( '__TIME__', options ) do |element|
+                        candidate ||= element
+                    end
+                    run
+
+                    candidate.should be_true
+
+                    verified = nil
+                    candidate.timing_attack_verify( 1000 ) do
+                        verified = true
+                    end
+
+                    verified.should be_nil
+                end
             end
 
-            it 'does not call the given block' do
-                candidate = nil
-                subject.timing_attack_probe( '__TIME__', options ) do |element|
-                    candidate ||= element
-                end
-                run
-
-                candidate.should be_true
-
-                verified = nil
-                candidate.timing_attack_verify( 1000 ) do
-                    verified = true
+            context 'due to filtering' do
+                subject do
+                    e = Arachni::Element::Link.new(
+                        url:    @url + '/waf',
+                        inputs: inputs
+                    )
+                    e.auditor = auditor
+                    e
                 end
 
-                verified.should be_nil
+                it 'does not call the given block' do
+                    candidate = nil
+                    subject.timing_attack_probe( 'payload-__TIME__', options ) do |element|
+                        candidate ||= element
+                    end
+                    run
+
+                    candidate.should be_true
+
+                    verified = nil
+                    candidate.timing_attack_verify( 1000 ) do
+                        verified = true
+                    end
+
+                    verified.should be_nil
+                end
             end
         end
 
@@ -292,6 +347,19 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
     end
 
     describe '#timeout_analysis' do
+        it 'assigns assigns :timing_attack remarks' do
+            subject.timeout_analysis(
+                '__TIME__',
+                options.merge(
+                    timeout_divider: 1000,
+                    timeout:         2000
+                )
+            )
+            run
+
+            issues.first.remarks[:timing_attack].size.should == 3
+        end
+
         context 'when the element action matches a skip rule' do
             subject do
                 Arachni::Element::Link.new(

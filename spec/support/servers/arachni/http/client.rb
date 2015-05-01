@@ -152,25 +152,3 @@ end
 get '/redir_2' do
     'Welcome to redir_2!'
 end
-
-get '/custom_404/not' do
-    'This is not a custom 404, watch out.'
-end
-
-get '/custom_404/static/*' do
-    'This is a custom 404, try to catch it. ;)'
-end
-
-get '/custom_404/dynamic/*' do
-    'This is a custom 404 which includes the requested resource, try to catch it. ;)' +
-        '<br/>You asked for "' + params[:splat].first.to_s + '", which could not be found.'
-end
-
-get '/custom_404/random/*' do
-    'This is a custom 404, try to catch it. ;)<br/> Random bit: ' + rand( 999 ).to_s
-end
-
-get '/custom_404/combo/*' do
-    'This is a custom 404, try to catch it. ;)<br/> Random bit: ' + rand( 999 ).to_s +
-        '<br/>You asked for "' + params[:splat].first.to_s + '", which could not be found.'
-end

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,7 +7,6 @@
 =end
 
 require_relative 'base'
-require_relative 'capabilities/with_node'
 
 module Arachni::Element
 
@@ -17,10 +16,19 @@ module Arachni::Element
 class Form < Base
     require_relative 'form/dom'
 
-    include Capabilities::WithNode
+    # Load and include all form-specific capability overrides.
+    lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
+    Dir.glob( lib ).each { |f| require f }
+
+    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Analyzable
+    include Arachni::Element::Capabilities::Refreshable
+
+    # Form-specific overrides.
     include Capabilities::WithDOM
-    include Capabilities::Analyzable
-    include Capabilities::Refreshable
+    include Capabilities::Auditable
+    include Capabilities::Submittable
+    include Capabilities::Mutable
 
     # {Form} error namespace.
     #
@@ -93,28 +101,8 @@ class Form < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # @return   [DOM]
-    def dom
-        return @dom if @dom
-        return if !node || inputs.empty?
-        super
-    end
-
     def force_train?
         mutation_with_original_values? || mutation_with_sample_values?
-    end
-
-    # @param    (see Capabilities::Submittable#action=)
-    # @@return  (see Capabilities::Submittable#action=)
-    def action=( url )
-        if self.method == :get
-            rewritten   = uri_parse( url ).rewrite
-            self.inputs = rewritten.query_parameters.merge( self.inputs || {} )
-
-            super rewritten.without_query
-        else
-            super url
-        end
     end
 
     # @param    [String]    input
@@ -136,123 +124,6 @@ class Form < Base
     #   A simple representation of self including attributes and inputs.
     def simple
         @initialization_options.merge( url: url, action: action, inputs: inputs )
-    end
-
-    # @return   [Bool]
-    #   `true` if the element has not been mutated, `false` otherwise.
-    def mutation_with_original_values?
-        !!@mutation_with_original_values
-    end
-
-    def mutation_with_original_values
-        @mutation_with_original_values = true
-    end
-
-    # @return   [Bool]
-    #   `true` if the element has been populated with sample
-    #   ({Arachni::OptionGroups::Input.fill}) values, `false` otherwise.
-    #
-    # @see Arachni::OptionGroups::Input
-    def mutation_with_sample_values?
-        !!@mutation_with_sample_values
-    end
-
-    def mutation_with_sample_values
-        @mutation_with_sample_values = true
-    end
-
-    def audit_status_message
-        override = nil
-        if mutation_with_original_values?
-            override = 'original'
-        elsif mutation_with_sample_values?
-            override = 'sample'
-        end
-
-        if override
-            "Submitting form with #{override} values for #{inputs.keys.join(', ')}" <<
-                " at '#{@action}'."
-        else
-            super
-        end
-    end
-
-    # @param   (see Capabilities::Auditable#audit_id)
-    # @return  (see Capabilities::Auditable#audit_id)
-    def audit_id( payload = nil )
-        force_train? ? id : super( payload )
-    end
-
-    # Overrides {Arachni::Element::Mutable#each_mutation} adding support
-    # for mutations with:
-    #
-    # * Sample values (filled by {Arachni::OptionGroups::Input.fill}).
-    # * Original values.
-    # * Password fields requiring identical values (in order to pass
-    #   server-side validation)
-    #
-    # @param    [String]    payload
-    #   Payload to inject.
-    # @param    [Hash]      opts
-    #   Mutation options.
-    # @option   opts    [Bool]  :skip_original
-    #   Whether or not to skip adding a mutation holding original values and
-    #   sample values.
-    #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
-    #
-    # @see Capabilities::Mutable#each_mutation
-    # @see Arachni::OptionGroups::Input.fill
-    def each_mutation( payload, opts = {} )
-        opts = MUTATION_OPTIONS.merge( opts )
-
-        generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutable_id )
-
-        super( payload, opts ) do |elem|
-            elem.mirror_password_fields
-            yield elem if !generated.include?( elem )
-            generated << elem
-        end
-
-        return if opts[:skip_original]
-
-        elem = self.dup
-        elem.mutation_with_original_values
-        elem.affected_input_name = ORIGINAL_VALUES
-        yield elem if !generated.include?( elem )
-        generated << elem
-
-        # Default values, in case they reveal new resources.
-        if node
-            inputs.keys.each do |input|
-                next if field_type_for( input ) != :select
-
-                node.xpath( "select[@name=\"#{input}\"]" ).css('option').each do |option|
-                    try_input do
-                        elem = self.dup
-                        elem.mutation_with_original_values
-                        elem.affected_input_name  = input
-                        elem.affected_input_value = option['value'] || option.text
-                        yield elem if !generated.include?( elem )
-                        generated << elem
-                    end
-                end
-
-            end
-        end
-
-        try_input do
-            # Sample values, in case they reveal new resources.
-            elem = self.dup
-            elem.inputs = Arachni::Options.input.fill( inputs.dup )
-            elem.affected_input_name = SAMPLE_VALUES
-            elem.mutation_with_sample_values
-            yield elem if !generated.include?( elem )
-            generated << elem
-        end
     end
 
     def mirror_password_fields
@@ -341,6 +212,10 @@ class Form < Base
         details_for( name )[:type] || :text
     end
 
+    def fake_field?( name )
+        field_type_for( name ) == :fake
+    end
+
     # @param   (see .encode)
     # @return  (see .encode)
     #
@@ -389,12 +264,17 @@ class Form < Base
         def from_document( url, document, ignore_scope = false )
             document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
+            base_url = to_absolute( base_url, url )
 
             document.search( '//form' ).map do |node|
-                next if !(form = from_node( base_url, node, ignore_scope ))
-                form.url = url.freeze
-                form
-            end.compact
+                next if !(forms = from_node( base_url, node, ignore_scope ))
+                next if forms.empty?
+
+                forms.each do |form|
+                    form.url = url.freeze
+                    form
+                end
+            end.flatten.compact
         end
 
         def from_node( url, node, ignore_scope = false )
@@ -402,11 +282,17 @@ class Form < Base
             options[:url]    = url.freeze
             options[:action] = to_absolute( options[:action], url ).freeze
             options[:inputs] = {}
-            options[:html]   = node.to_html.freeze
+            options[:source] = node.to_html.freeze
 
             if (parsed_url = Arachni::URI( options[:action] ))
                 return if !ignore_scope && parsed_url.scope.out?
             end
+
+            # Forms can have many submit inputs with identical names but different
+            # values, to act as a sort of multiple choice.
+            # However, each Arachni Form can have only unique input names, so
+            # we keep track of this here and create a new form for each choice.
+            multiple_choice_submits = {}
 
             %w(textarea input select button).each do |attr|
                 options[attr] ||= []
@@ -420,6 +306,13 @@ class Form < Base
                     # Handle the easy stuff first...
                     if elem.name != 'select'
                         options[:inputs][name]           = elem_attrs
+
+                        if elem_attrs[:type] == :submit
+                            multiple_choice_submits[name] ||= Set.new
+                            multiple_choice_submits[name] <<
+                                elem_attrs[:value]
+                        end
+
                         options[:inputs][name][:type]  ||= :text
                         options[:inputs][name][:value] ||= ''
                         next
@@ -451,7 +344,29 @@ class Form < Base
                 end
             end
 
-            new options
+            return [new( options )] if multiple_choice_submits.empty?
+
+            # If there are multiple submit with the same name but different values,
+            # create forms for each value.
+            multiple_choice_submits.map do |name, values|
+                values.map.with_index do |value, i|
+
+                    o = options
+                    if values.size > 1
+                        o = options.deep_clone
+                        o[:inputs][name][:value] = value
+
+                        # We need to add this here because if the forms have the
+                        # same input names only the first one will be audited.
+                        o[:inputs]["_#{name}_#{i}"] = {
+                            type: :fake,
+                            value: value
+                        }
+                    end
+
+                    new( o )
+                end
+            end.flatten.compact
         end
 
         def attributes_to_hash( attributes )
@@ -465,10 +380,7 @@ class Form < Base
         #
         # @return   [String]
         def encode( str )
-            ::URI.encode(
-                ::URI.encode( str.to_s, '+%' ).recode.gsub( ' ', '+' ),
-                ";&\\=\0"
-            )
+            ::URI.encode_www_form_component str.to_s
         end
 
         # Decodes a {String} encoded for an HTTP request's body.
@@ -477,7 +389,7 @@ class Form < Base
         #
         # @return   [String]
         def decode( str )
-            URI.decode( str.to_s.recode.gsub( '+', ' ' ) )
+            ::URI.decode_www_form_component str.to_s
         end
 
     end

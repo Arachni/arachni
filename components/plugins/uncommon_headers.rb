@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -87,7 +87,14 @@ class Arachni::Plugins::UncommonHeaders < Arachni::Plugin::Base
     def self.info
         {
             name:        'Uncommon headers',
-            description: %q{Intercepts HTTP responses and logs uncommon headers.},
+            description: %q{
+Intercepts HTTP responses and logs uncommon headers.
+
+Common headers are:
+
+%s
+
+} % COMMON.to_a.map { |h| "* #{h}" }.join("\n"),
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.3'
         }
