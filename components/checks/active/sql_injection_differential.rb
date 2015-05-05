@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -18,7 +18,7 @@
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
-# @see http://www.owasp.org/index.php/Blind_SQL_Injection
+# @see https://www.owasp.org/index.php/Blind_SQL_Injection
 class Arachni::Checks::SqlInjectionDifferential < Arachni::Check::Base
 
     prefer :sql_injection
@@ -88,7 +88,7 @@ that if vulnerable, result in the responses for each injection being different.
 This is known as a blind SQL injection vulnerability.
 },
                 references:  {
-                    'OWASP'         => 'http://www.owasp.org/index.php/Blind_SQL_Injection',
+                    'OWASP'         => 'https://www.owasp.org/index.php/Blind_SQL_Injection',
                     'MITRE - CAPEC' => 'http://capec.mitre.org/data/definitions/7.html',
                     'WASC'          => 'http://projects.webappsec.org/w/page/13246963/SQL%20Injection',
                     'W3 Schools'    => 'http://www.w3schools.com/sql/sql_injection.asp'

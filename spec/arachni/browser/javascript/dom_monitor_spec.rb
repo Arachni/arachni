@@ -68,12 +68,27 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     describe '#digest' do
         it 'returns a string digest of the current DOM tree' do
             load '/digest'
-            subject.digest.should ==
-                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/tai' +
-                    'nt_tracer.js><SCRIPT><SCRIPT src=http://javascript.browser.' +
-                    'arachni/dom_monitor.js><SCRIPT><BODY onload=void();><DIV ' +
-                    'id=my-id-div><DIV class=my-class-div><STRONG><EM><I><B>' +
-                    '<STRONG><SCRIPT><A href=#stuff>'
+            subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascri' <<
+                'pt.browser.arachni/' <<'taint_tracer.js><SCRIPT><SCRIPT src' <<
+                '=http://javascript.browser.arachni/dom_monitor.js><SCRIPT>' <<
+                '<BODY onload=void();><DIV id=my-id-div><DIV class=my-class' <<
+                '-div><STRONG><EM><I><B><STRONG><SCRIPT><SCRIPT type=text/' <<
+                'javascript><A href=#stuff>'
+        end
+
+        it 'does not include <p> elements' do
+            load '/digest/p'
+            subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascript' <<
+                '.browser.arachni/taint_tracer.js><SCRIPT><SCRIPT src=http://' <<
+                'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><STRONG>'
+        end
+
+        it "does not include 'data-arachni-id' attributes" do
+            load '/digest/data-arachni-id'
+            subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascript' <<
+                '.browser.arachni/taint_tracer.js><SCRIPT><SCRIPT src=http://' <<
+                'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><DIV ' <<
+                'id=my-id-div><DIV class=my-class-div>'
         end
     end
 

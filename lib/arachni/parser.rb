@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -212,6 +212,16 @@ class Parser
 
         @link_templates =
             [link_template].compact | LinkTemplate.from_document( @url, document )
+    end
+
+    # @return [Array<Element::JSON>]
+    def jsons
+        @jsons ||= [JSON.from_request( @url, response.request )].compact
+    end
+
+    # @return [Array<Element::XML>]
+    def xmls
+        @xmls ||= [XML.from_request( @url, response.request )].compact
     end
 
     # @return   [Hash]

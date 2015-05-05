@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,12 +9,11 @@
 # LDAP injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.1.2
+# @version 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
-# @see http://www.owasp.org/index.php/LDAP_injection
+# @see https://www.owasp.org/index.php/LDAP_injection
 class Arachni::Checks::LdapInjection < Arachni::Check::Base
 
     def self.error_strings
@@ -36,10 +35,9 @@ class Arachni::Checks::LdapInjection < Arachni::Check::Base
 It tries to force the web application to return LDAP error messages, in order to
 discover failures in user input validation.
 },
-            elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
 
             issue:       {
                 name:            %q{LDAP Injection},
@@ -64,7 +62,7 @@ known error messages.
                 tags:            %w(ldap injection regexp),
                 references:  {
                     'WASC'  => 'http://projects.webappsec.org/w/page/13246947/LDAP-Injection',
-                    'OWASP' => 'http://www.owasp.org/index.php/LDAP_injection'
+                    'OWASP' => 'https://www.owasp.org/index.php/LDAP_injection'
                 },
                 cwe:             90,
                 severity:        Severity::HIGH,

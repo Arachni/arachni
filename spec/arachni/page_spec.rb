@@ -628,6 +628,18 @@ describe Arachni::Page do
         end
     end
 
+    describe '#elements_within_scope' do
+        it 'returns all elements that are within scope' do
+            Arachni::Options.audit.elements :links, :forms, :cookies, :headers
+
+            elements = page.elements
+            element = elements.pop
+            element.scope.stub(:in?) { false }
+
+            page.elements_within_scope.should == (elements - [element])
+        end
+    end
+
     describe '#clear_cache' do
         it 'returns self' do
             subject.clear_cache.should == subject
@@ -637,7 +649,7 @@ describe Arachni::Page do
             cachable = [:query_vars, :links, :forms, :cookies, :headers, :paths,
                         :document, :parser]
 
-            subject.cache.keys.should == [:parser]
+            subject.cache.keys.should be_empty
 
             cachable.each do |attribute|
                 subject.send attribute
@@ -708,6 +720,82 @@ describe Arachni::Page do
                 page.response.body.should_not be_empty
                 page.prepare_for_report
                 page.response.body.should be_empty
+            end
+        end
+    end
+
+    describe '#update_metadata' do
+        it 'updates #metadata from #cache elements' do
+            subject.metadata.clear
+
+            form            = subject.forms.first
+            form.nonce_name = form.inputs.keys.first
+            form.skip_dom   = true
+
+            subject.update_metadata
+
+            subject.metadata['form']['nonce_name'][form.coverage_hash].should == form.inputs.keys.first
+            subject.metadata['form']['skip_dom'][form.coverage_hash].should == true
+        end
+    end
+
+    describe '#reload_metadata' do
+        it 'updates #cache elements from #metadata' do
+            subject.metadata.clear
+
+            form            = subject.forms.first
+            form.nonce_name = form.inputs.keys.first
+            form.skip_dom   = true
+
+            subject.update_metadata
+            subject.clear_cache
+
+            form            = subject.forms.first
+            form.nonce_name = nil
+            form.skip_dom   = nil
+
+            subject.reload_metadata
+
+            form.nonce_name.should == form.inputs.keys.first
+            form.skip_dom.should == true
+        end
+    end
+
+    describe '#import_metadata' do
+        it 'imports #metadata from the given page' do
+            subject.metadata.clear
+
+            dpage = subject.dup
+            dpage.metadata.clear
+
+            form            = dpage.forms.first
+            form.nonce_name = form.inputs.keys.first
+            form.skip_dom   = true
+
+            dpage.update_metadata
+
+            subject.import_metadata( dpage )
+
+            subject.metadata.should == dpage.metadata
+        end
+
+        context 'when a type is given' do
+            it 'only imports that type of data' do
+                subject.metadata.clear
+
+                dpage = subject.dup
+                dpage.metadata.clear
+
+                form            = dpage.forms.first
+                form.nonce_name = form.inputs.keys.first
+                form.skip_dom   = true
+
+                dpage.update_metadata
+
+                subject.import_metadata( dpage, :skip_dom )
+
+                subject.metadata['form']['nonce_name'].should be_nil
+                subject.metadata['form']['skip_dom'][form.coverage_hash].should == true
             end
         end
     end

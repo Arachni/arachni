@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -25,7 +25,14 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
         audited( path )
 
         http.request( path, method: :put, body: self.class.body ) do |res|
-            http.get( path ) { |c_res| check_and_log( c_res ) } if res.code == 201
+            next if res.code != 201
+
+            http.get( path ) do |c_res|
+                check_and_log( c_res )
+
+                # Try to DELETE the PUT file.
+                http.request( path, method: :delete ){}
+            end
         end
     end
 
@@ -42,7 +49,7 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
             description: %q{Checks if uploading files is possible using the HTTP PUT method.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
 
             issue:       {
                 name:            %q{Publicly writable directory},

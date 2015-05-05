@@ -131,6 +131,23 @@ describe Arachni::Report do
         end
     end
 
+    describe '#issue_by_check' do
+        it 'returns issue logged by the given check' do
+            report.issues.should be_any
+
+            report.issues.first.check[:shortname] << 'stuff'
+
+            check = report.issues.first.check[:shortname]
+
+            filtered_issues = report.issues_by_check( check )
+            filtered_issues.each do |issue|
+                issue.check[:shortname].should == check
+            end
+
+            report.issues.size.should > filtered_issues.size
+        end
+    end
+
     describe '#issue_by_digest' do
         it 'returns an issue based on its digest' do
             report.issues.should be_any

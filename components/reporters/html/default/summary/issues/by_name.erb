@@ -1,0 +1,90 @@
+<% issues.each do |group| %>
+    <div class="col-md-6">
+        <div class="issue-summary">
+
+            <div class="panel panel-info">
+                <div class="panel-heading">
+                    <strong>
+                        <a
+                        id="summary-issues-<%= trust %>-severity-<%= group.first.severity %>-<%= group.first.check[:shortname] %>"
+                        href="#!/summary/issues/<%= trust %>/severity/<%= group.first.severity %>/<%= group.first.check[:shortname] %>"
+                        >
+                            <%= group.first.name %>
+
+                            <span class="badge">
+                                <%= group.size %>
+                            </span>
+                        </a>
+                    </strong>
+                </div>
+
+                <div class="panel-body">
+                    <% if !group.first.description.to_s.empty? %>
+                        <div class="markdown">
+                            <%= md group.first.description %>
+                        </div>
+                    <% end %>
+
+                    <table class="table table-condensed">
+                        <tr>
+                            <th></th>
+                            <th>
+                                Vector type
+                            </th>
+
+                            <% if group.first.active? %>
+                                <th>
+                                    Input name
+                                </th>
+                            <% end %>
+
+                            <% if group.first.variations.first.request %>
+                                <th>
+                                    HTTP method
+                                </th>
+                            <% end %>
+
+                            <th>
+                                Action
+                            </th>
+                        </tr>
+
+                        <% group.each do |issue| %>
+                            <tr>
+                                <td>
+                                    <a class="btn btn-xs btn-info"
+                                       href="<%= issue_location(issue) %>"
+                                       title="Inspect issue"
+                                    >
+                                        <i class="fa fa-eye"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <code><%= issue.vector.type %></code>
+                                </td>
+
+                                <% if issue.active? %>
+                                    <td>
+                                        <code><%= issue.affected_input_name %></code>
+                                    </td>
+                                <% end %>
+
+                                <% if issue.variations.first.request %>
+                                    <td>
+                                        <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                                    </td>
+                                <% end %>
+
+                                <td>
+                                    <a href="<%= escapeHTML issue.vector.action %>">
+                                        <%= escapeHTML issue.vector.action %>
+                                    </a>
+                                </td>
+                            </tr>
+                        <% end %>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+<% end %>

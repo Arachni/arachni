@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -24,9 +24,6 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     }
 
     def prepare
-        framework_pause
-        print_info 'System paused.'
-
         @parameters = request_parse_body( options[:parameters] )
         @verifier   = Regexp.new( options[:check] )
         @url        = options[:url].to_s
@@ -34,11 +31,14 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     end
 
     def run
+        framework_pause
+        print_info 'System paused.'
+
         session.configure( url: @url, inputs: @parameters )
 
         response = begin
-            session.login
-        rescue Session::Error::FormNotFound
+            session.login( true )
+        rescue Arachni::Session::Error::FormNotFound
             register_results(
                 'status'  => 'form_not_found',
                 'message' => STATUSES[:form_not_found]

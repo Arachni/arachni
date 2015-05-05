@@ -292,6 +292,26 @@ describe Arachni::URI do
         end
     end
 
+    describe '.full_and_absolute?' do
+        context 'when given a nil URL' do
+            it 'returns false' do
+                described_class.full_and_absolute?( nil ).should be_false
+            end
+        end
+
+        context 'when given an non absolute URL' do
+            it 'returns false' do
+                described_class.full_and_absolute?( '433' ).should be_false
+            end
+        end
+
+        context 'when given an absolute URL' do
+            it 'returns true' do
+                described_class.full_and_absolute?( 'http://stuff/' ).should be_true
+            end
+        end
+    end
+
     describe '#initialize' do
         context String do
             it 'normalizes and parse the string' do
@@ -513,12 +533,33 @@ describe Arachni::URI do
         end
     end
 
+    describe '#resource_name' do
+        context 'when there is no file name' do
+            it 'returns nil' do
+                described_class.new( 'http://stuff.com/' ).resource_name.should be_nil
+            end
+        end
+
+        it 'returns the file name of the resource' do
+            uri = 'http://test.com/direct.ory/resource.php?param=1&param2=2'
+            described_class.new( uri ).resource_name.should == 'resource.php'
+            described_class.new( 'http://stuff.com/test/' ).resource_name.should == 'test'
+        end
+    end
+
     describe '#resource_extension' do
         context 'when there is no extension' do
             it 'returns nil' do
                 described_class.new( 'http://stuff.com/test' ).resource_extension.should be_nil
             end
         end
+
+        context 'when there are multiple periods' do
+            it 'returns the last one' do
+                described_class.new( 'http://stuff.com/test.1.2' ).resource_extension.should == '2'
+            end
+        end
+
         it 'returns the extension of the resource' do
             uri = "http://test.com/direct.ory/resource.php?param=1&param2=2"
             described_class.new( uri ).resource_extension.should == 'php'

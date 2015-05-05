@@ -35,3 +35,9 @@ get '/verification_fail' do
 
     'Stuff'
 end
+
+get '/waf' do
+    next if !params[:sleep]
+
+    sleep 10 if params[:sleep].include?( 'payload' )
+end

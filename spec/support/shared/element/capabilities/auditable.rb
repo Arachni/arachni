@@ -12,6 +12,11 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     before :each do
+        begin
+            Arachni::Options.audit.elements described_class.type
+        rescue Arachni::OptionGroups::Audit::Error
+        end
+
         @framework ||= Arachni::Framework.new
         @page      = Arachni::Page.from_url( url )
         @auditor   = Auditor.new( @page, @framework )
@@ -24,15 +29,19 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     let(:auditor) { @auditor }
-    let(:default_input_value) { 'val' }
     let(:seed) { 'my_seed' }
 
     let(:auditable) do
-        s = subject.dup
-        s.auditor = auditor
-        s.inputs = { 'param' => default_input_value }
-        s
+        if defined? super
+            super().tap { |s| s.auditor = auditor }
+        else
+            s = subject.dup
+            s.auditor = auditor
+            s.inputs = { subject.inputs.keys.first => '1' }
+            s
+        end
     end
+
     let(:other) do
         new = auditable.dup
         new.inputs = { stuff: 'blah' }
@@ -228,7 +237,7 @@ shared_examples_for 'auditable' do |options = {}|
 
     describe '#coverage_hash' do
         it 'returns the String#persistent_hash of #coverage_id' do
-            subject.coverage_hash.should == subject.coverage_id.persistent_hash
+            auditable.coverage_hash.should == auditable.coverage_id.persistent_hash
         end
     end
 
@@ -261,12 +270,12 @@ shared_examples_for 'auditable' do |options = {}|
                         payload = 'stuff-here'
                         called  = 0
 
-                        described_class.any_instance.stub(:valid_input_data?) { |i| i != payload }
+                        auditable.class.any_instance.stub(:valid_input_data?) { |i| i != payload }
 
                         auditable.audit( payload,
                                          format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                                          skip_original: true
-                        ) { |_, element| ap element.inputs; called += 1 }
+                        ) { |_, element| called += 1 }
                         run
 
                         called.should == 0
@@ -501,7 +510,7 @@ shared_examples_for 'auditable' do |options = {}|
                 describe Proc do
                     it 'skips mutations based on the block\'s return value' do
                         audited   = []
-                        skip_like = proc { |m| m.affected_input_name != 'param' }
+                        skip_like = proc { |m| m.affected_input_name != auditable.inputs.keys.first }
 
                         auditable.audit( seed, skip_original: true, skip_like: skip_like ) do |_, m|
                             audited << m.affected_input_name
@@ -511,7 +520,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                         audited.uniq!
                         audited.size.should == 1
-                        audited.should == ['param']
+                        audited.should == [auditable.inputs.keys.first]
                     end
                 end
 
@@ -519,8 +528,7 @@ shared_examples_for 'auditable' do |options = {}|
                     it 'skips mutations based on the blocks\' return value' do
                         audited   = []
                         skip_like = []
-                        skip_like << proc { |m| m.affected_input_name == 'param2' }
-                        skip_like << proc { |m| m.affected_input_name == 'param3' }
+                        skip_like << proc { |m| m.affected_input_name != auditable.inputs.keys.first }
 
                         auditable.audit( seed, skip_original: true, skip_like: skip_like ) do |_, m|
                             audited << m.affected_input_name
@@ -530,7 +538,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                         audited.uniq!
                         audited.size.should == 1
-                        audited.should      == ['param']
+                        audited.should      == [auditable.inputs.keys.first]
                     end
                 end
             end
@@ -572,7 +580,7 @@ shared_examples_for 'auditable' do |options = {}|
 
                         run
                         cnt.should == 1
-                        injected.should == default_input_value + seed
+                        injected.should == auditable.inputs.values.first + seed
                     end
                 end
 
@@ -730,7 +738,6 @@ shared_examples_for 'auditable' do |options = {}|
 
         context 'when the auditor\'s #skip? method returns true for a mutation' do
             it 'is skipped' do
-
                 ran = false
                 auditable.audit( seed ) { ran = true }.should be_true
                 run

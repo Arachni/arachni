@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -161,7 +161,11 @@ module Taint
             return if !opts[:downcased_body].include?( longest_word_for_regexp( regexp ) )
         end
 
-        match_data = response.body.scan( regexp ).flatten.first.to_s
+        match_data = response.body.match( regexp )
+        return if !match_data
+
+        match_data = match_data[0].to_s
+
         return if match_data.to_s.empty? || ignore?( response, opts )
 
         @candidate_issues << {
@@ -194,6 +198,10 @@ module Taint
 
             # Grab an untainted response.
             submit do |response|
+                # Something has gone wrong, timed-out request or closed connection.
+                # If we can't verify the issue bail out...
+                next if response.code == 0
+
                 while (issue = @candidate_issues.pop)
                     # If the body of the control response matches the proof
                     # of the current issue don't bother, it'll be a coincidence

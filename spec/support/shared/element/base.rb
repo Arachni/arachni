@@ -30,18 +30,19 @@ shared_examples_for 'element' do
                 init = subject.initialization_options.dup
 
                 if init.is_a?( Hash )
-                    if init[:transition]
-                        init[:transition] = init[:transition].to_rpc_data
+                    init = init.my_stringify_keys(false)
+
+                    if init['transition']
+                        init['transition'] = init['transition'].to_rpc_data
                     end
 
-                    if init[:template]
-                        init[:template] = init[:template].source
+                    if init['template']
+                        init['template'] = init['template'].source
                     end
 
-                    if init[:expires]
-                        init[:expires] = init[:expires].to_s
+                    if init['expires']
+                        init['expires'] = init['expires'].to_s
                     end
-
                 end
 
                 data['initialization_options'].should == init
@@ -66,8 +67,14 @@ shared_examples_for 'element' do
                 v1 = restored.send( attribute )
                 v2 = subject.send( attribute )
 
-                if attribute == 'initialization_options' && v1.is_a?( Hash ) && v1.include?( :expires )
-                    v1.delete(:expires).to_s.should == v2.delete(:expires).to_s
+                if attribute == 'initialization_options' && v1.is_a?( Hash )
+                    if v1.include? :expires
+                        v1.delete(:expires).to_s.should == v2.delete(:expires).to_s
+                    end
+
+                    if v1.include? :template
+                        v1.delete(:template).source.should == v2.delete(:template).source
+                    end
                 end
 
                 v1.should == v2

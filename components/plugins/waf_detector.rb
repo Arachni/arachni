@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -28,8 +28,6 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     }
 
     def prepare
-        framework_pause
-
         @precision = options[:precision]
 
         bad = [
@@ -60,6 +58,8 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
     end
 
     def run
+        framework_pause
+
         print_status "Starting detection with a precision of #{@precision}."
 
         print_status 'Stage #1: Requesting original page.'

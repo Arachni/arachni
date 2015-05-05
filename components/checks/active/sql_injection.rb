@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,14 +9,13 @@
 # SQL Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.2.1
+# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://unixwiz.net/techtips/sql-injection.html
 # @see http://en.wikipedia.org/wiki/SQL_injection
 # @see http://www.securiteam.com/securityreviews/5DP0N1P76E.html
-# @see http://www.owasp.org/index.php/SQL_Injection
+# @see https://www.owasp.org/index.php/SQL_Injection
 class Arachni::Checks::SqlInjection < Arachni::Check::Base
 
     def self.error_patterns
@@ -48,7 +47,6 @@ class Arachni::Checks::SqlInjection < Arachni::Check::Base
             format:                    [Format::APPEND],
             regexp:                    error_patterns,
             ignore:                    ignore_patterns,
-            param_flip:                true,
             longest_word_optimization: true
         }
     end
@@ -63,10 +61,9 @@ class Arachni::Checks::SqlInjection < Arachni::Check::Base
             description: %q{
 SQL injection check, uses known SQL DB errors to identify vulnerabilities.
 },
-            elements:    [Element::Link, Element::Form, Element::Cookie,
-                          Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.1',
+            version:     '0.2.2',
             platforms:   options[:regexp].keys,
 
             issue:       {
@@ -97,7 +94,7 @@ the request with a database related error.
                     'UnixWiz'    => 'http://unixwiz.net/techtips/sql-injection.html',
                     'Wikipedia'  => 'http://en.wikipedia.org/wiki/SQL_injection',
                     'SecuriTeam' => 'http://www.securiteam.com/securityreviews/5DP0N1P76E.html',
-                    'OWASP'      => 'http://www.owasp.org/index.php/SQL_Injection',
+                    'OWASP'      => 'https://www.owasp.org/index.php/SQL_Injection',
                     'WASC'       => 'http://projects.webappsec.org/w/page/13246963/SQL%20Injection',
                     'W3 Schools' => 'http://www.w3schools.com/sql/sql_injection.asp'
                 },

@@ -108,7 +108,7 @@ describe Arachni::Browser do
                     Arachni::Options.scope.exclude_path_patterns << /sleep/
 
                     subject.load @url + '/ajax_sleep'
-                    subject.to_page.should be_nil
+                    subject.to_page.code.should == 0
                 end
             end
 
@@ -121,7 +121,7 @@ describe Arachni::Browser do
                     Arachni::Options.scope.exclude_path_patterns << /sleep/
 
                     subject.load @url + '/ajax_sleep'
-                    subject.to_page.should be_nil
+                    subject.to_page.code.should == 0
                 end
             end
         end
@@ -464,7 +464,8 @@ describe Arachni::Browser do
         end
 
         it 'assigns blocks to handle each page with data-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: { name: 'blah' } )}"
+            @browser.javascript.taint = 'taint'
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( @browser.javascript.taint, function: { name: 'blah' } )}"
 
             sinks = []
             @browser.on_new_page_with_sink do |page|
@@ -839,7 +840,8 @@ describe Arachni::Browser do
         end
 
         it 'returns data-flow sink data' do
-            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( function: 'blah' )}"
+            @browser.javascript.taint = 'taint'
+            @browser.load "#{@url}/lots_of_sinks?input=#{@browser.javascript.log_data_flow_sink_stub( @browser.javascript.taint, function: 'blah' )}"
             @browser.explore_and_flush
 
             pages = @browser.page_snapshots_with_sinks
@@ -973,13 +975,6 @@ describe Arachni::Browser do
 
             browser_response.url.should == raw_response.url
 
-            browser_sanitized_body =
-                Nokogiri::HTML(browser_response.body).css('body').to_s.gsub("\n", '')
-            raw_response_sanitized_body =
-                Nokogiri::HTML(raw_response.body).css('body').to_s.gsub("\n", '')
-
-            browser_sanitized_body.should == raw_response_sanitized_body
-
             [:url, :method].each do |attribute|
                 browser_request.send(attribute).should == raw_request.send(attribute)
             end
@@ -1015,10 +1010,10 @@ describe Arachni::Browser do
         it "assigns the proper #{Arachni::Page::DOM}#digest" do
             @browser.load( @url )
             @browser.to_page.dom.instance_variable_get(:@digest).should ==
-                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' +
-                    'taint_tracer.js><SCRIPT><SCRIPT src=http://javascript.' +
-                    'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><DIV' +
-                    '><SCRIPT type=text/javascript>'
+                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' <<
+                    'taint_tracer.js><SCRIPT><SCRIPT src=http://javascript.' <<
+                    'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
+                    'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
         end
 
         it "assigns the proper #{Arachni::Page::DOM}#transitions" do
@@ -1072,11 +1067,129 @@ describe Arachni::Browser do
             event['type'].should == 'submit'
         end
 
+        context "when the page has #{Arachni::Element::Form::DOM} elements" do
+            context "and #{Arachni::OptionGroups::Audit}#forms is" do
+                context true do
+                    before do
+                        Arachni::Options.audit.elements :forms
+                    end
+
+                    context 'a JavaScript action' do
+                        it 'does not set #skip_dom' do
+                            @browser.load "#{@url}/each_element_with_events/form/action/javascript"
+                            @browser.to_page.forms.first.skip_dom.should be_nil
+                        end
+                    end
+
+                    context 'with DOM events' do
+                        it 'does not set #skip_dom' do
+                            @browser.load "#{@url}/fire_event/form/onsubmit"
+                            @browser.to_page.forms.first.skip_dom.should be_nil
+                        end
+                    end
+
+                    context 'without DOM events' do
+                        it 'sets #skip_dom to true' do
+                            @browser.load "#{@url}/each_element_with_events/form/action/regular"
+                            @browser.to_page.forms.first.skip_dom.should be_true
+                        end
+                    end
+                end
+
+                context false do
+                    before do
+                        Arachni::Options.audit.skip_elements :forms
+                    end
+
+                    it 'does not set #skip_dom' do
+                        @browser.load "#{@url}/each_element_with_events/form/action/regular"
+                        @browser.to_page.forms.first.skip_dom.should be_nil
+                    end
+                end
+            end
+        end
+
+        context "when the page has #{Arachni::Element::Cookie::DOM} elements" do
+            let(:cookies) { @browser.to_page.cookies }
+
+            context "and #{Arachni::OptionGroups::Audit}#cookies is" do
+                context true do
+                    before do
+                        Arachni::Options.audit.elements :cookies
+
+                        @browser.load "#{@url}/#{page}"
+                        @browser.load "#{@url}/#{page}"
+                    end
+
+                    context 'with DOM processing of cookie' do
+                        context 'names' do
+                            let(:page) { 'dom-cookies-names' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie' }.skip_dom.should be_nil
+                                cookies.find { |c| c.name == 'my-cookie2' }.skip_dom.should be_nil
+                            end
+                        end
+
+                        context 'values' do
+                            let(:page) { 'dom-cookies-values' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie' }.skip_dom.should be_nil
+                                cookies.find { |c| c.name == 'my-cookie2' }.skip_dom.should be_nil
+                            end
+                        end
+                    end
+
+                    context 'without DOM processing of cookie' do
+                        context 'names' do
+                            let(:page) { 'dom-cookies-names' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie3' }.skip_dom.should be_true
+                            end
+                        end
+
+                        context 'values' do
+                            let(:page) { 'dom-cookies-values' }
+
+                            it 'does not set #skip_dom' do
+                                cookies.find { |c| c.name == 'my-cookie3' }.skip_dom.should be_true
+                            end
+                        end
+                    end
+                end
+
+                context false do
+                    before do
+                        Arachni::Options.audit.skip_elements :cookies
+
+                        @browser.load "#{@url}/#{page}"
+                        @browser.load "#{@url}/#{page}"
+                    end
+
+                    let(:page) { 'dom-cookies-names' }
+
+                    it 'does not set #skip_dom' do
+                        cookies.should be_any
+                        cookies.each do |cookie|
+                            cookie.skip_dom.should be_nil
+                        end
+                    end
+                end
+            end
+        end
+
         context 'when the resource is out-of-scope' do
-            it 'returns nil' do
+            it 'returns an empty page' do
                 Arachni::Options.url = @url
-                @browser.load 'http://google.com/'
-                @browser.to_page.should be_nil
+                subject.load 'http://google.com/'
+                page = subject.to_page
+
+                page.code.should == 0
+                page.url.should  == subject.url
+                page.body.should be_empty
+                page.dom.url.should == subject.watir.url
             end
         end
     end
@@ -1131,10 +1244,10 @@ describe Arachni::Browser do
                         attributes: { 'id' => 'blahblah' }
                     )
 
-                    element.stub(:locate){ raise Selenium::WebDriver::Error::UnknownError }
+                    element.stub(:locate){ raise Selenium::WebDriver::Error::WebDriverError }
                     @browser.fire_event( element, :click ).should be_nil
 
-                    element.stub(:locate){ raise Watir::Exception::UnknownObjectException }
+                    element.stub(:locate){ raise Watir::Exception::Error }
                     @browser.fire_event( element, :click ).should be_nil
                 end
             end
@@ -1153,16 +1266,16 @@ describe Arachni::Browser do
         context 'when the trigger fails with' do
             let(:element) { @browser.watir.div( id: 'my-div' ) }
 
-            context Selenium::WebDriver::Error::UnknownError do
+            context Selenium::WebDriver::Error::WebDriverError do
                 it 'returns nil' do
-                    element.stub(:fire_event){ raise Selenium::WebDriver::Error::UnknownError }
+                    element.stub(:fire_event){ raise Selenium::WebDriver::Error::WebDriverError }
                     @browser.fire_event( element, :click ).should be_nil
                 end
             end
 
-            context Watir::Exception::UnknownObjectException do
+            context Watir::Exception::Error do
                 it 'returns nil' do
-                    element.stub(:fire_event){ raise Watir::Exception::UnknownObjectException }
+                    element.stub(:fire_event){ raise Watir::Exception::Error }
                     @browser.fire_event( element, :click ).should be_nil
                 end
             end
@@ -1177,7 +1290,7 @@ describe Arachni::Browser do
                         context 'is given' do
                             let(:inputs) do
                                 {
-                                    name:  'The Dude',
+                                    name:  "The Dude",
                                     email: 'the.dude@abides.com'
                                 }
                             end
@@ -1209,6 +1322,24 @@ describe Arachni::Browser do
                                     inputs[:name]
                                 @browser.watir.div( id: 'container-email' ).text.should ==
                                     inputs[:email]
+                            end
+
+                            context 'when the inputs contains non-UTF8 data' do
+                                context 'is given' do
+                                    let(:inputs) do
+                                        {
+                                            name:  "The Dude \xC7",
+                                            email: "the.dude@abides.com \xC7"
+                                        }
+                                    end
+                                end
+
+                                it 'recodes them' do
+                                    @browser.watir.div( id: 'container-name' ).text.should ==
+                                        inputs[:name].recode
+                                    @browser.watir.div( id: 'container-email' ).text.should ==
+                                        inputs[:email].recode
+                                end
                             end
 
                             context 'when one of those inputs is a' do
@@ -1828,28 +1959,14 @@ describe Arachni::Browser do
 
         context "with #{Arachni::OptionGroups::Scope}#redundant_path_patterns" do
             it 'respects scope restrictions' do
-                Arachni::Options.scope.redundant_path_patterns = { 'explore' => 3 }
-
-                @browser.load( @url + '/explore' ).response.code.should == 200
-
-                2.times do
-                    @browser.load( @url + '/explore' ).response.code.should == 200
-                end
-
+                Arachni::Options.scope.redundant_path_patterns = { 'explore' => 0 }
                 @browser.load( @url + '/explore' ).response.code.should == 0
             end
         end
 
         context "with #{Arachni::OptionGroups::Scope}#auto_redundant_paths has bee configured" do
             it 'respects scope restrictions' do
-                Arachni::Options.scope.auto_redundant_paths = 3
-
-                @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 200
-
-                2.times do
-                    @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 200
-                end
-
+                Arachni::Options.scope.auto_redundant_paths = 0
                 @browser.load( @url + '/explore?test=1&test2=2' ).response.code.should == 0
             end
         end
@@ -1941,7 +2058,6 @@ describe Arachni::Browser do
                 end
             end
         end
-
     end
 
     describe '#load' do
@@ -2287,19 +2403,55 @@ describe Arachni::Browser do
         end
 
         context 'when a POST request is performed' do
-            it "is added as an #{Arachni::Element::Form} to the page" do
-                @browser.load @url + '/with-ajax'
+            context 'with form data' do
+                it "is added as an #{Arachni::Element::Form} to the page" do
+                    @browser.load @url + '/with-ajax'
 
-                pages = @browser.captured_pages
-                pages.size.should == 2
+                    pages = @browser.captured_pages
+                    pages.size.should == 2
 
-                form = find_page_with_form_with_input( pages, 'post-name' ).
-                    forms.find { |form| form.inputs.include? 'post-name' }
+                    form = find_page_with_form_with_input( pages, 'post-name' ).
+                        forms.find { |form| form.inputs.include? 'post-name' }
 
-                form.url.should == @url + 'with-ajax'
-                form.action.should == @url + 'post-ajax'
-                form.inputs.should == { 'post-name' => 'post-value' }
-                form.method.should == :post
+                    form.url.should == @url + 'with-ajax'
+                    form.action.should == @url + 'post-ajax'
+                    form.inputs.should == { 'post-name' => 'post-value' }
+                    form.method.should == :post
+                end
+            end
+
+            context 'with JSON data' do
+                it "is added as an #{Arachni::Element::JSON} to the page" do
+                    @browser.load @url + '/with-ajax-json'
+
+                    pages = @browser.captured_pages
+                    pages.size.should == 1
+
+                    form = find_page_with_json_with_input( pages, 'post-name' ).
+                        jsons.find { |json| json.inputs.include? 'post-name' }
+
+                    form.url.should == @url + 'with-ajax-json'
+                    form.action.should == @url + 'post-ajax'
+                    form.inputs.should == { 'post-name' => 'post-value' }
+                    form.method.should == :post
+                end
+            end
+
+            context 'with XML data' do
+                it "is added as an #{Arachni::Element::XML} to the page" do
+                    @browser.load @url + '/with-ajax-xml'
+
+                    pages = @browser.captured_pages
+                    pages.size.should == 1
+
+                    form = find_page_with_xml_with_input( pages, 'input > text()' ).
+                        xmls.find { |xml| xml.inputs.include? 'input > text()' }
+
+                    form.url.should == @url + 'with-ajax-xml'
+                    form.action.should == @url + 'post-ajax'
+                    form.inputs.should == { 'input > text()' => 'stuff' }
+                    form.method.should == :post
+                end
             end
         end
     end
@@ -2453,7 +2605,7 @@ describe Arachni::Browser do
                 context 'and is out of scope' do
                     let(:url) { @url + '/each_element_with_events/form/action/out-of-scope' }
 
-                    it 'is ignored'do
+                    it 'is ignored' do
                         snapshot_id.should == empty_snapshot_id
                     end
                 end

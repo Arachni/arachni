@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -145,7 +145,6 @@ begin
                 begin
                     $spec_issues = []
 
-                    # Rake::Task['spec:checks'].execute rescue nil
                     RSpec::Core::Runner.run(FileList[ 'spec/components/checks/**/*_spec.rb' ])
 
                     ($spec_issues.size / 3).times do |i|
@@ -153,6 +152,9 @@ begin
                         issue = $spec_issues.sample
                         issue.add_remark( :stuff, 'Blah' )
                         issue.add_remark( :stuff, 'Blah2' )
+
+                        issue.add_remark( :stuff2, '2 Blah' )
+                        issue.add_remark( :stuff2, '2 Blah2' )
 
                         # Flag some issues as untrusted.
                         $spec_issues.sample.trusted = false
@@ -162,7 +164,7 @@ begin
                     $spec_issues.each { |i| Arachni::Data.issues << i }
 
                     Arachni::Options.url = 'http://test.com'
-                    Arachni::Options.audit.elements :forms, :links, :cookies, :headers
+                    Arachni::Options.audit.elements Arachni::Page::ELEMENTS - [:link_templates]
                     Arachni::Options.audit.link_templates = [
                         /\/input\/(?<input>.+)\//,
                         /input\|(?<input>.+)/

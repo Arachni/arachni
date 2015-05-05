@@ -6,7 +6,10 @@ function index_to_severity( index ){
     return <%= graph_data[:severity_for_issue].to_json %>[index_to_shortname(index)];
 }
 
-jQuery(function ($) {
+function renderCharts() {
+    if( window.renderedCharts )
+    window.renderedCharts = true;
+
     c3.generate({
         bindto: '#chart-issues',
         data: {
@@ -60,10 +63,10 @@ jQuery(function ($) {
                 },
                 show: true,
                 type: 'category',
-                categories: <%= (1...(graph_data[:severities].size+1)).to_a.map { |i| i * graph_data[:severity_multiplier] }.to_json %>,
+                categories: [1, 2, 3, 4],
                 tick: {
                     format: function (d) {
-                        return <%= graph_data[:severities].keys.reverse.to_json %>[(d - <%= graph_data[:severity_multiplier] %>) / <%= graph_data[:severity_multiplier] %>]
+                        return ["Informational","Low","Medium","High"][d - 1]
                     }
                 }
             }
@@ -114,4 +117,4 @@ jQuery(function ($) {
         }
     });
 
-});
+}

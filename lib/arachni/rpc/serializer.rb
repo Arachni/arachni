@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -77,6 +77,8 @@ module Serializer
     # @return   [String]
     #   Decompressed string.
     def decompress( string )
+        return '' if string.to_s.empty?
+
         # Just an ID representing a serialized, empty data structure.
         return string if string.size == 1
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -90,10 +90,7 @@ class Page
         data[:response][:request]       ||= {}
         data[:response][:request][:url] ||= data[:response][:url]
 
-        data[:links]   ||= []
-        data[:forms]   ||= []
-        data[:cookies] ||= []
-        data[:headers] ||= []
+        ELEMENTS.each { |e| data[e] ||= [] }
 
         data[:cookie_jar] ||= []
 
@@ -104,34 +101,36 @@ class Page
     end
 
     ELEMENTS = [
-        :links, :forms, :cookies, :headers, :link_templates
+        :links, :forms, :cookies, :headers, :link_templates, :jsons, :xmls
     ]
 
-    # @return   [DOM]
+    METADATA = [ :nonce_name, :skip_dom ]
+
+    # @return       [DOM]
     #   DOM snapshot.
-    attr_accessor :dom
+    attr_accessor   :dom
 
-    # @return    [HTTP::Response]
+    # @return       [HTTP::Response]
     #   HTTP response.
-    attr_reader :response
+    attr_reader     :response
 
-    # @return    [Hash]
+    # @return       [Hash]
     #
     # @private
-    attr_reader :cache
+    attr_reader     :cache
 
-    # @return    [Hash]
+    # @return       [Hash]
     #   Holds page data that will need to persist between {#clear_cache} calls
     #   and other utility data.
-    attr_reader :metadata
+    attr_reader     :metadata
 
-    # @return   [Set<Integer>]
+    # @return       [Set<Integer>]
     #   Audit whitelist based on {Element::Capabilities::Auditable#coverage_hash}.
     #
     # @see  #update_element_audit_whitelist
     # @see  #audit_element?
     # @see  Check::Auditor#skip?
-    attr_reader :element_audit_whitelist
+    attr_reader     :element_audit_whitelist
 
     # Needs either a `:parser` or a `:response` or user provided data.
     #
@@ -313,10 +312,19 @@ class Page
         Platform::Manager[url]
     end
 
-    # @return   [Array]
+    # @return   [Array<Element::Base>]
     #   All page elements.
     def elements
         ELEMENTS.map { |type| send( type ) }.flatten
+    end
+
+    # @return   [Array<Element::Base>]
+    #   All page elements that are within the scope of the scan.
+    def elements_within_scope
+        ELEMENTS.map do |type|
+            next if !Options.audit.element? type
+            send( type ).select { |e| e.scope.in? }
+        end.flatten.compact
     end
 
     # @return    [String]
@@ -428,6 +436,7 @@ class Page
     def to_s
         "#<#{self.class}:#{object_id} @url=#{@url.inspect} @dom=#{@dom}>"
     end
+    alias :inspect :to_s
 
     def persistent_hash
         digest.persistent_hash
@@ -447,6 +456,36 @@ class Page
 
     def dup
         self.class.new to_initialization_options
+    end
+
+    def update_metadata
+        ELEMENTS.each do |type|
+            next if !@cache[type]
+
+            @cache[type].each { |e| store_to_metadata e }
+        end
+    end
+
+    def reload_metadata
+        ELEMENTS.each do |type|
+            next if !@cache[type]
+
+            @cache[type].each { |e| restore_from_metadata e }
+        end
+    end
+
+    def import_metadata( other, metas = METADATA )
+        [metas].flatten.each do |meta|
+            other.metadata.each do |element_type, data|
+                @metadata[element_type] ||= {}
+                @metadata[element_type][meta.to_s] ||= {}
+                @metadata[element_type][meta.to_s].merge!( data[meta.to_s] )
+            end
+        end
+
+        reload_metadata
+
+        self
     end
 
     def to_initialization_options
@@ -487,7 +526,7 @@ class Page
         data['element_audit_whitelist'] = element_audit_whitelist.to_a
         data['response'] = data['response'].to_rpc_data
 
-        %w(links forms cookies).each do |e|
+        (ELEMENTS - [:headers]).map(&:to_s).each do |e|
             next if !data[e]
             data[e] = send(e).map(&:to_rpc_data)
         end
@@ -510,17 +549,7 @@ class Page
                         when 'response'
                             HTTP::Response.from_rpc_data( value )
 
-                        when 'metadata'
-                            sanitized = {}
-                            %w(link form cookie header).each do |e|
-                                next if !value[e] || !value[e]['nonces']
-
-                                sanitized[e.to_sym] = {}
-                                sanitized[e.to_sym][:nonces] = value[e]['nonces']
-                            end
-                            sanitized
-
-                        when 'links', 'forms', 'cookies'
+                        when *ELEMENTS.map(&:to_s)
                             value.map do |e|
                                 Element.const_get(name[0...-1].capitalize.to_sym).from_rpc_data( e )
                             end.to_a
@@ -570,32 +599,39 @@ class Page
     def assign_page_to_elements( list )
         list.map do |e|
             e.page = self
-            store_nonce_to_metadata e
-            restore_nonce_from_metadata e
+
+            store_to_metadata e
+            restore_from_metadata e
+
             e
         end.freeze
     end
 
-    def store_nonce_to_metadata( element )
-        ensure_metadata_nonces( element )
+    def store_to_metadata( element )
+        METADATA.each do |meta|
+            next if !element.respond_to?(meta)
 
-        return if !element.respond_to?(:has_nonce?) || !element.has_nonce?
-
-        @metadata[element.type][:nonces][element.coverage_hash] =
-            element.nonce_name
+            ensure_metadata( element, meta )
+            @metadata[element.type.to_s][meta.to_s][element.coverage_hash] ||=
+                element.send(meta)
+        end
     end
 
-    def restore_nonce_from_metadata( element )
-        ensure_metadata_nonces( element )
+    def restore_from_metadata( element )
+        METADATA.each do |meta|
+            next if !element.respond_to?( "#{meta}=" )
 
-        return if !element.respond_to?(:nonce_name=) || element.has_nonce?
-
-        element.nonce_name = @metadata[element.type][:nonces][element.coverage_hash]
+            ensure_metadata( element, meta )
+            element.send(
+                "#{meta}=",
+                @metadata[element.type.to_s][meta.to_s][element.coverage_hash]
+            )
+        end
     end
 
-    def ensure_metadata_nonces( element )
-        @metadata[element.type] ||= {}
-        @metadata[element.type][:nonces] ||= {}
+    def ensure_metadata( element, meta )
+        @metadata[element.type.to_s] ||= {}
+        @metadata[element.type.to_s][meta.to_s] ||= {}
     end
 
     def try_dup( v )

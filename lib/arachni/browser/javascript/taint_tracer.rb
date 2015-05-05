@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -71,13 +71,17 @@ class TaintTracer < Proxy
     private
 
     def prepare_data_flow_sink_data( data )
-        return [] if !data
+        return {} if !data
 
-        data.map do |entry|
-            Sink::DataFlow.new( (entry['data'] || {}).my_symbolize_keys( false ).merge(
-                trace: [entry['trace']].flatten.compact.
-                          map { |h| Frame.new h.my_symbolize_keys( false ) }
-                )
+        data.inject({}) do |h, (taint, entries)|
+            h.merge!(
+                taint => (entries.map do |entry|
+                    Sink::DataFlow.new( (entry['data'] || {}).my_symbolize_keys( false ).merge(
+                            trace: [entry['trace']].flatten.compact.
+                                       map { |dh| Frame.new dh.my_symbolize_keys( false ) }
+                        )
+                    )
+                end)
             )
         end
     end

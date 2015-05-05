@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -8,12 +8,8 @@
 
 # Simple Remote File Inclusion (and tutorial) check.
 #
-# It audits links, forms and cookies and will give you a good idea
-# of how to write checks for Arachni.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.3
+# @version 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -108,9 +104,9 @@ the HTTP response body.
             #
             # If you want the check to run no-matter what, leave the array
             # empty or don't define it at all.
-            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
+            elements:    ELEMENTS_WITH_INPUTS - [Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3',
+            version:     '0.3.1',
 
             issue:       {
                 name:        %q{Remote File Inclusion},

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,7 +7,6 @@
 =end
 
 require_relative 'base'
-require_relative 'capabilities/with_node'
 
 module Arachni::Element
 
@@ -17,10 +16,18 @@ module Arachni::Element
 class Link < Base
     require_relative 'link/dom'
 
-    include Capabilities::WithNode
+    # Load and include all link-specific capability overrides.
+    lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
+    Dir.glob( lib ).each { |f| require f }
+
+    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Analyzable
+    include Arachni::Element::Capabilities::Refreshable
+
+    # Link-specific overrides.
     include Capabilities::WithDOM
-    include Capabilities::Analyzable
-    include Capabilities::Refreshable
+    include Capabilities::Submittable
+    include Capabilities::Auditable
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -37,31 +44,10 @@ class Link < Base
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # @return   [DOM]
-    def dom
-        return @dom if @dom
-        return if !dom_data
-
-        super
-    end
-
     # @return   [Hash]
     #   Simple representation of self in the form of `{ {#action} => {#inputs} }`.
     def simple
         { self.action => self.inputs }
-    end
-
-    # @note Will {Arachni::Options.rewrite} the `url`.
-    # @note Will update the {#inputs} from the URL query.
-    #
-    # @param   (see Capabilities::Submittable#action=)
-    #
-    # @return  (see Capabilities::Submittable#action=)
-    def action=( url )
-        rewritten   = uri_parse( url ).rewrite
-        self.inputs = rewritten.query_parameters.merge( self.inputs || {} )
-
-        super rewritten.without_query
     end
 
     # @return   [String]
@@ -96,10 +82,6 @@ class Link < Base
     # @see .decode
     def decode( *args )
         self.class.decode( *args )
-    end
-
-    def coverage_id
-        dom_data ? "#{super}:#{dom_data[:inputs].keys.sort}" : super
     end
 
     def id
@@ -150,13 +132,13 @@ class Link < Base
                 new(
                     url:    url.freeze,
                     action: href.freeze,
-                    html:   link.to_html.freeze
+                    source: link.to_html.freeze
                 )
             end.compact
         end
 
         def encode_query_params( param )
-            encode( encode( param ), '=' )
+            encode( encode( param.recode ), '=' )
         end
 
         def encode( *args )
@@ -170,14 +152,6 @@ class Link < Base
 
 
     private
-
-    def dom_data
-        return @dom_data if @dom_data
-        return if @dom_data == false
-        return if !node
-
-        @dom_data ||= (DOM.data_from_node( node ) || false)
-    end
 
     def http_request( opts, &block )
         self.method != :get ?

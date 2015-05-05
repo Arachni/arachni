@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
+# @version 0.1.2
 class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
 
     def self.error_patterns
@@ -39,7 +39,6 @@ class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
             format:                    [Format::APPEND],
             regexp:                    error_patterns,
             ignore:                    ignore_patterns,
-            param_flip:                true,
             longest_word_optimization: true
         }
     end
@@ -54,10 +53,9 @@ class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
             description: %q{
 NoSQL injection check, uses known DB errors to identify vulnerabilities.
 },
-            elements:    [Element::Link, Element::Form, Element::Cookie,
-                          Element::Header, Element::LinkTemplate ],
+            elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
             platforms:   payloads.keys,
 
             issue:       {

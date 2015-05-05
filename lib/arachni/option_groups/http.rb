@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,8 +13,41 @@ module Arachni::OptionGroups
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class HTTP < Arachni::OptionGroup
 
-    # @return   [Array<String>]   Supported proxy types.
+    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+    class Error < Error
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class InvalidProxyType < Error
+        end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class InvalidSSLCertificateType < Error
+        end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class InvalidSSLKeyType < Error
+        end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class InvalidSSLVersion < Error
+        end
+    end
+
+    # @return   [Array<String>]
+    #   Supported proxy types.
     PROXY_TYPES = %w(http http_1_0 socks4 socks5 socks4a)
+
+    # @return   [Array<String>]
+    #   Supported SSL certificate types.
+    SSL_CERTIFICATE_TYPES = %w(pem der)
+
+    # @return   [Array<String>]
+    #   Supported SSL private key types.
+    SSL_KEY_TYPES = SSL_CERTIFICATE_TYPES
+
+    # @return   [Array<String>]
+    #   Supported SSL versions.
+    SSL_VERSIONS = %w(TLSv1 TLSv1_0 TLSv1_1 TLSv1_2 SSLv2 SSLv3)
 
     # @note Default is '5'.
     #
@@ -104,11 +137,9 @@ class HTTP < Arachni::OptionGroup
     # @note Default is `auto`.
     #
     # @return    [String]
-    #   HTTP proxy type, available options are:
+    #   HTTP proxy type.
     #
-    #   * `http`
-    #   * `socks`
-    #
+    # @see PROXY_TYPES
     # @see HTTP::Client
     attr_accessor :proxy_type
 
@@ -154,15 +185,120 @@ class HTTP < Arachni::OptionGroup
     # @see HTTP::Client#headers
     attr_accessor :request_headers
 
+    # @note Default is 'false'.
+    #
+    # @return    [Bool]
+    #   SSL peer verification.
+    attr_accessor :ssl_verify_peer
+
+    # @note Default is 'false'.
+    #
+    # @return    [Bool]
+    #   SSL host verification.
+    attr_accessor :ssl_verify_host
+
+    # @return    [String]
+    #   Path to an SSL certificate.
+    attr_accessor :ssl_certificate_filepath
+
+    # @return    [String]
+    #   Type of the certificate at {#ssl_certificate_filepath}.
+    #
+    # @see SSL_CERTIFICATE_TYPES
+    attr_accessor :ssl_certificate_type
+
+    # @return    [String]
+    #   Path to an SSL private key.
+    attr_accessor :ssl_key_filepath
+
+    # @return    [String]
+    #   Type of the key at {#ssl_key_filepath}.
+    #
+    # @see SSL_KEY_TYPES
+    attr_accessor :ssl_key_type
+
+    # @return    [String]
+    #   Password for the key at {#ssl_key_filepath}.
+    attr_accessor :ssl_key_password
+
+    # @return    [String]
+    #   File holding one or more certificates with which to
+    #   {#ssl_verify_peer verify the peer}.
+    attr_accessor :ssl_ca_filepath
+
+    # @return    [String]
+    #   Directory holding multiple certificate files with which to
+    #   {#ssl_verify_peer verify the peer}.
+    attr_accessor :ssl_ca_directory
+
+    # @return    [String]
+    #   SSL version to use.
+    #
+    # @see SSL_VERSIONS
+    attr_accessor :ssl_version
+
     set_defaults(
         user_agent:             "Arachni/v#{Arachni::VERSION}",
-        request_timeout:        50_000,
+        request_timeout:        10_000,
         request_redirect_limit: 5,
         request_concurrency:    20,
         request_queue_size:     500,
         request_headers:        {},
+        response_max_size:      500_000,
         cookies:                {}
     )
+
+    # @param    [String]    type
+    #   One of {PROXY_TYPES}.
+    #
+    # @raise    Error::InvalidProxyType
+    def proxy_type=( type )
+        if !PROXY_TYPES.include?( type.to_s )
+            fail Error::InvalidProxyType,
+                 "Invalid proxy type: #{type} (supported: #{PROXY_TYPES.join(', ')})"
+        end
+
+        @proxy_type = type
+    end
+
+    # @param    [String]    type
+    #   One of {SSL_CERTIFICATE_TYPES}.
+    #
+    # @raise    Error::InvalidSSLCertificateType
+    def ssl_certificate_type=( type )
+        if !SSL_CERTIFICATE_TYPES.include?( type.to_s )
+            fail Error::InvalidSSLCertificateType,
+                 "Invalid SSL certificate type: #{type} (supported: #{SSL_CERTIFICATE_TYPES.join(', ')})"
+        end
+
+        @ssl_certificate_type = type
+    end
+
+    # @param    [String]    type
+    #   One of {SSL_KEY_TYPES}.
+    #
+    # @raise    Error::InvalidSSLKeyType
+    def ssl_key_type=( type )
+        if !SSL_KEY_TYPES.include?( type.to_s )
+            fail Error::InvalidSSLKeyType,
+                 "Invalid SSL key type: #{type} (supported: #{SSL_KEY_TYPES.join(', ')})"
+        end
+
+        @ssl_key_type = type
+    end
+
+    # @param    [String]    version
+    #   One of {SSL_VERSIONS}.
+    #
+    # @raise    Error::InvalidSSLVersion
+    def ssl_version=( version )
+        if !SSL_VERSIONS.include?( version.to_s )
+            fail Error::InvalidSSLVersion,
+                 "Invalid SSL version: #{version} (supported: #{SSL_VERSIONS.join(', ')})"
+        end
+
+        @ssl_version = version
+    end
 
     def to_rpc_data
         d = super

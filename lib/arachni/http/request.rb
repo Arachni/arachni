@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2014 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -232,6 +232,18 @@ class Request < Message
         "#{headers_string}#{effective_body}"
     end
 
+    def inspect
+        s = "#<#{self.class} "
+        s << "@id=#{id} "
+        s << "@mode=#{mode} "
+        s << "@method=#{method} "
+        s << "@url=#{url.inspect} "
+        s << "@parameters=#{parameters.inspect} "
+        s << "@high_priority=#{high_priority} "
+        s << "@performer=#{performer.inspect}"
+        s << '>'
+    end
+
     # @note Can be invoked multiple times.
     #
     # @param    [Block] block
@@ -306,7 +318,8 @@ class Request < Message
 
         max_size = @response_max_size || Options.http.response_max_size
         # Weird I know, for some reason 0 gets ignored.
-        max_size = 1 if max_size == 0
+        max_size = 1   if max_size == 0
+        max_size = nil if max_size < 0
 
         options = {
             method:          method,
@@ -316,8 +329,18 @@ class Request < Message
             userpwd:         userpwd,
             followlocation:  follow_location?,
             maxredirs:       @max_redirects,
-            ssl_verifypeer:  false,
-            ssl_verifyhost:  0,
+
+            ssl_verifypeer:  !!Options.http.ssl_verify_peer,
+            ssl_verifyhost:  Options.http.ssl_verify_host ? 2 : 0,
+            sslcert:         Options.http.ssl_certificate_filepath,
+            sslcerttype:     Options.http.ssl_certificate_type,
+            sslkey:          Options.http.ssl_key_filepath,
+            sslkeytype:      Options.http.ssl_key_type,
+            sslkeypasswd:    Options.http.ssl_key_password,
+            cainfo:          Options.http.ssl_ca_filepath,
+            capath:          Options.http.ssl_ca_directory,
+            sslversion:      Options.http.ssl_version,
+
             accept_encoding: 'gzip, deflate',
             nosignal:        true,
             maxfilesize:     max_size,
@@ -329,7 +352,15 @@ class Request < Message
         }
 
         options[:timeout_ms] = timeout if timeout
-        options[:httpauth]   = :auto   if userpwd
+
+        # This will allow GSS-Negotiate to work out of the box but shouldn't
+        # have any adverse effects.
+        if !options[:userpwd] && !parsed_url.user
+            options[:userpwd]  = ':'
+            options[:httpauth] = :gssnegotiate
+        else
+            options[:httpauth] = :auto
+        end
 
         if proxy
             options.merge!(
@@ -388,7 +419,7 @@ class Request < Message
 
     def marshal_dump
         callbacks = @on_complete.dup
-        performer = @performer ? @performer.dup : nil
+        performer = @performer
 
         @performer   = nil
         @on_complete = []
@@ -400,7 +431,7 @@ class Request < Message
         end
     ensure
         @on_complete = callbacks
-        @performer   = performer.dup if performer
+        @performer   = performer
     end
 
     def marshal_load( h )
@@ -455,12 +486,12 @@ class Request < Message
         headers['Cookie'] = effective_cookies.
             map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
             join( ';' )
+        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
 
         headers['User-Agent'] ||= Options.http.user_agent
         headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
         headers['From']       ||= Options.authorized_by if Options.authorized_by
 
-        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
     end
 

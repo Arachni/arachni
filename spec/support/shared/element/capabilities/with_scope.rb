@@ -1,4 +1,4 @@
-shared_examples_for 'with_scope' do |html|
+shared_examples_for 'with_scope' do
 
     let(:with_scope) do
         # Make sure the scope has been loaded.

@@ -1,0 +1,43 @@
+<p>
+    (<a href="<%= escapeHTML OWASP_TOP_10_URL %>">About the OWASP Top 10 list</a>)
+</p>
+
+<%
+   OWASP_TOP_10_DATA.each do |name, category|
+
+   grouped_issues = []
+   category[:checks].each do |check|
+       issues = report.issues_by_check( check )
+       next if issues.empty?
+       grouped_issues << issues
+   end
+   next if grouped_issues.empty?
+%>
+
+    <div class="row">
+        <div class="col-md-12">
+            <h3>
+                <a id="summary-owasp_top_10-<%= category[:code] %>"
+                    href="#!/summary/owasp_top_10/<%= category[:code] %>">
+                    <%= name %>
+
+                    <span class="badge">
+                        <%= grouped_issues.flatten.size %>
+                    </span>
+                </a>
+            </h3>
+
+            <blockquote>
+                <%= escapeHTML category[:description] %>
+
+                <small><a href="<%= escapeHTML category[:url] %>">OWASP</a></small>
+            </blockquote>
+        </div>
+
+        <%
+           grouped_issues.each do |issues|
+        %>
+            <%= erb 'summary/issues/by_name.erb', issues: [issues] %>
+        <% end %>
+    </div>
+<% end %>
