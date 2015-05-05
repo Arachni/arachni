@@ -14,7 +14,7 @@
 class Arachni::Checks::CommonAdminInterfaces < Arachni::Check::Base
 
     def self.filenames
-        @filenames ||= read_file( 'admin-panels.txt' ) # wfuzz - wordlist/general/admin-panels.txt
+        @filenames ||= read_file( 'admin-panels.txt' )
     end
 
     def run
