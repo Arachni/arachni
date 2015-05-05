@@ -506,14 +506,14 @@ Passive checks look for the existence of files, folders and signatures.
 #### Reporters
 
 - Standard output
-- [HTML](http://downloads.arachni-scanner.com/dev/reports/report.html/)
-    ([zip](http://downloads.arachni-scanner.com/dev/reports/report.html.zip)) (`html`).
-- [XML](http://downloads.arachni-scanner.com/dev/reports/report.xml) (`xml`).
-- [Text](http://downloads.arachni-scanner.com/dev/reports/report.txt) (`text`).
-- [JSON](http://downloads.arachni-scanner.com/dev/reports/report.json) (`json`)
-- [Marshal](http://downloads.arachni-scanner.com/dev/reports/report.marshal) (`marshal`)
-- [YAML](http://downloads.arachni-scanner.com/dev/reports/report.yml) (`yaml`)
-- [AFR](http://downloads.arachni-scanner.com/dev/reports/report.afr) (`afr`)
+- [HTML](http://www.arachni-scanner.com/reports/report.html/)
+    ([zip](http://www.arachni-scanner.com/reports/report.html.zip)) (`html`).
+- [XML](http://www.arachni-scanner.com/reports/report.xml) (`xml`).
+- [Text](http://www.arachni-scanner.com/reports/report.txt) (`text`).
+- [JSON](http://www.arachni-scanner.com/reports/report.json) (`json`)
+- [Marshal](http://www.arachni-scanner.com/reports/report.marshal) (`marshal`)
+- [YAML](http://www.arachni-scanner.com/reports/report.yml) (`yaml`)
+- [AFR](http://www.arachni-scanner.com/reports/report.afr) (`afr`)
     - The default Arachni Framework Report format.
 
 #### Plugins
