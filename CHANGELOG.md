@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 1.1 _(April 23, 2015)_
+## 1.1 _(May 1, 2015)_
 
 - `Element`
     - Cleaned up per-element input value encoding.
