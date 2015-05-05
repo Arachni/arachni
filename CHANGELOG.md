@@ -9,6 +9,9 @@
 - `Issue`
     - `#signature` -- Store `Regexp` source instead of converting it to String.
 - Checks -- Added proofs to as many issues as possible.
+- Reporters
+    - `xml`
+        - Fixed bug causing vector `affected_input_name` to be blank.
 
 ## 1.1 _(May 1, 2015)_
 
