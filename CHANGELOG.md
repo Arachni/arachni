@@ -1,6 +1,6 @@
 # ChangeLog
 
-## 1.1 _(May 1, 2015)_
+## _Under development_
 
 - `Element`
     - Cleaned up per-element input value encoding.
@@ -10,7 +10,7 @@
     - `#signature` -- Store `Regexp` source instead of converting it to String.
 - Checks -- Added proofs to as many issues as possible.
 
-## _Under development_
+## 1.1 _(May 1, 2015)_
 
 - `gemspec` -- Require Ruby >= 2.0.0.
 - Options
