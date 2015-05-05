@@ -32,7 +32,7 @@ class Arachni::Checks::CommonAdminInterfaces < Arachni::Check::Base
         {
             name:        'Common Administration Interfaces',
             description: %q{Tries to find common admin interfaces on the server.},
-            elements:    [ Element::Path ],
+            elements:    [ Element::Server ],
             author:      'Brendan Coles <bcoles@gmail.com>',
             version:     '0.1',
             targets:     %w(Generic),
