@@ -46,7 +46,7 @@
     </tr>
 </table>
 
-![Arachni logo](http://arachni.github.com/arachni/logo.png)
+![Arachni logo](http://www.arachni-scanner.com/large-logo.png)
 
 ## Synopsis
 
