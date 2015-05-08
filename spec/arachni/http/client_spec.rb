@@ -345,13 +345,20 @@ describe Arachni::HTTP::Client do
 
         context 'when the cookies option is set' do
             it 'adds those cookies to the CookieJar' do
-                cookie_jar_file = fixtures_path + 'cookies.txt'
-                @opts.http.cookies = Arachni::Utilities.cookies_from_file( '', cookie_jar_file )
+                @opts.http.cookies = {
+                    'cookie1' => 'val1',
+                    'cookie2' => 'val2',
+                }
+
                 subject.cookie_jar.cookies.should be_empty
+
                 subject.reset
+
                 cookies = subject.cookie_jar.cookies
-                cookies.size.should == 4
-                cookies.should == @opts.http.cookies
+                cookies.size.should == 2
+
+                cookies[0].inputs.should == { 'cookie1' => 'val1' }
+                cookies[1].inputs.should == { 'cookie2' => 'val2' }
             end
         end
 
