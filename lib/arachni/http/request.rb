@@ -500,8 +500,11 @@ class Request < Message
     private
 
     def fill_in_data_from_typhoeus_response( response )
-        @headers_string = response.debug_info.header_out.first
-        @effective_body = response.debug_info.data_out.first
+        # Only grab the last data.
+        # In case of CONNECT calls for HTTPS via proxy the first data will be
+        # the proxy-related stuff.
+        @headers_string = response.debug_info.header_out.last
+        @effective_body = response.debug_info.data_out.last
     end
 
     def client_run

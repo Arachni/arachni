@@ -3,7 +3,10 @@
 ## _Under development_
 
 - `HTTP`
-    - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
+    - `Client`
+        - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
+    - `Request`
+        - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
 - `Element`
     - Cleaned up per-element input value encoding.
 - `Check::Auditor`
