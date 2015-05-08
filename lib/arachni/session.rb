@@ -43,6 +43,10 @@ class Session
         # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class FormNotFound < Error
         end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class FormNotVisible < Error
+        end
     end
 
     LOGIN_TRIES      = 5
@@ -335,8 +339,15 @@ class Session
 
         form.page = page
 
-        # Use the form DOM to submit if a browser is available.
-        form = form.dom if has_browser?
+        if has_browser?
+            # Use the form DOM to submit if a browser is available.
+            form = form.dom
+            form.browser = browser
+
+            if !form.element.visible?
+                fail Error::FormNotVisible, 'Login form is not visible in the DOM.'
+            end
+        end
 
         form.update configuration[:inputs]
         form.auditor = self

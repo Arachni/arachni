@@ -76,6 +76,29 @@ describe name_from_filename do
         end
     end
 
+    context 'when the form is not visible' do
+        before do
+            options.plugins[component_name] = {
+                'url'        => url + '/hidden_login',
+                'parameters' => 'username=john&password=doe',
+                'check'      => 'Hi there logged-in user'
+            }
+        end
+
+        it 'complains about not the form being invisible' do
+            run
+
+            actual_results['status'].should  == 'form_not_visible'
+            actual_results['message'].should == plugin::STATUSES[:form_not_visible]
+        end
+
+        it 'aborts the scan' do
+            run
+
+            framework.status.should == :aborted
+        end
+    end
+
     context 'when the verifier does not match' do
         before do
             options.plugins[component_name] = {

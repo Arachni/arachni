@@ -11,6 +11,8 @@
 - `Issue`
     - `#signature` -- Store `Regexp` source instead of converting it to String.
 - Checks -- Added proofs to as many issues as possible.
+- Plugins
+    - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
 - Reporters
     - `xml`
         - Fixed bug causing vector `affected_input_name` to be blank.
