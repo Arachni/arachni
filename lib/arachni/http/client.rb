@@ -140,7 +140,11 @@ class Client
         headers.merge!( Options.http.request_headers )
 
         cookie_jar.load( Options.http.cookie_jar_filepath ) if Options.http.cookie_jar_filepath
-        update_cookies( Options.http.cookies )
+
+        Options.http.cookies.each do |name, value|
+            update_cookies( name => value )
+        end
+
         update_cookies( Options.http.cookie_string ) if Options.http.cookie_string
 
         reset_burst_info
