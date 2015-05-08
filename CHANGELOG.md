@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `HTTP`
+    - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
 - `Element`
     - Cleaned up per-element input value encoding.
 - `Check::Auditor`
