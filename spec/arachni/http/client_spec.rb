@@ -1151,7 +1151,7 @@ describe Arachni::HTTP::Client do
         end
     end
 
-    describe '#headers' do
+    describe '#header' do
         it 'queues a GET request' do
             body = nil
             headers = { 'name' => 'val' }
