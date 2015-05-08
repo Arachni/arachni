@@ -270,13 +270,13 @@ class Transition
 
                         when 'element'
                             if value.is_a? String
-                                value.to_sym
+                                data['event'].to_s == 'request' ? value : value.to_sym
                             else
                                 Browser::ElementLocator.from_rpc_data( value )
                             end
 
                         when 'options'
-                            value.my_symbolize_keys
+                            value.my_symbolize_keys(false)
 
                         else
                             value

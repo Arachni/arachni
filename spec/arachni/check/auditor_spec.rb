@@ -587,13 +587,13 @@ describe Arachni::Check::Auditor do
             logged_issue = Arachni::Data.issues.flatten.first
 
             logged_issue.to_h.tap do |h|
-                h[:page][:dom][:transitions].first.delete :time
+                h[:page][:dom][:transitions].each { |t| t.delete :time }
             end.should eq issue.to_h.merge( referring_page: {
                 body: auditor.page.body,
                 dom:  auditor.page.dom.to_h.tap do |h|
                     h.delete :skip_states
                 end
-            }).tap { |h| h[:page][:dom][:transitions].first.delete :time }
+            }).tap { |h| h[:page][:dom][:transitions].each { |t| t.delete :time } }
         end
 
         it 'assigns a #referring_page' do
