@@ -13,7 +13,7 @@
 # {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.1
+# @version 0.4.2
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -36,8 +36,8 @@ class Arachni::Checks::Xss < Arachni::Check::Base
             # Go for an error.
             "()\"&%1'-;#{tag}'",
 
-            # Break out of HTML comments.
-            "-->#{tag}<!--"
+            # Break out of HTML comments and text areas.
+            "</textarea>-->#{tag}<!--<textarea>"
         ]
     end
 
@@ -82,9 +82,19 @@ class Arachni::Checks::Xss < Arachni::Check::Base
     end
 
     def find_proof( resource )
-        proof = Nokogiri::HTML( resource.body ).css( self.class.tag_name )
-        return if proof.empty?
-        proof.to_s
+        proof_nodes = Nokogiri::HTML( resource.body ).css( self.class.tag_name )
+        return if proof_nodes.empty?
+
+        proof = nil
+        proof_nodes.each do |e|
+            # Text-areas have TEXT not nodes Nokogiri!
+            next if e.parent.name =='textarea'
+            proof = e.to_s
+        end
+
+        return if !proof
+
+        proof
     end
 
     def self.info
@@ -97,7 +107,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.1',
+            version:     '0.4.2',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},
@@ -121,8 +131,8 @@ HTML element content.
                 references:  {
                     'ha.ckers' => 'http://ha.ckers.org/xss.html',
                     'Secunia'  => 'http://secunia.com/advisories/9716/',
-                    'WASC' => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
-                    'OWASP' => 'https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
+                    'WASC'     => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
+                    'OWASP'    => 'https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
                 },
                 tags:            %w(xss regexp injection script),
                 cwe:             79,
