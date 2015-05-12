@@ -17,6 +17,7 @@
     - `xss`
         - When the case involves payloads landing in `textarea`s, break out of
             them to prevent possible FPs.
+        - Added double-encoded payloads.
     - `unvalidated_redirect`
         - Escalated severity to 'High'.
 - Plugins

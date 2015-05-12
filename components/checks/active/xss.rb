@@ -13,7 +13,7 @@
 # {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.2
+# @version 0.4.3
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -38,7 +38,7 @@ class Arachni::Checks::Xss < Arachni::Check::Base
 
             # Break out of HTML comments and text areas.
             "</textarea>-->#{tag}<!--<textarea>"
-        ]
+        ].map{ |p| [p, Form.encode( p ) ]}.flatten.uniq
     end
 
     def self.options
@@ -107,7 +107,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.2',
+            version:     '0.4.3',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},
