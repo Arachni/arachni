@@ -17,6 +17,8 @@
     - `xss`
         - When the case involves payloads landing in `textarea`s, break out of
             them to prevent possible FPs.
+    - `unvalidated_redirect`
+        - Escalated severity to 'High'.
 - Plugins
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
 - Reporters
