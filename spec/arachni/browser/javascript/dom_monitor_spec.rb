@@ -143,37 +143,68 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     end
 
     describe '#elements_with_events' do
-        it 'returns information about all DOM elements along with their events' do
-            load '/elements_with_events'
+        context 'when using event attributes' do
+            it 'returns information about all DOM elements along with their events' do
+                load '/elements_with_events/attributes'
 
-            subject.elements_with_events.should == [
-                { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
-                },
-                {
-                    'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                },
-                {
-                    'tag_name'   => 'button',
-                    'events'     => [
-                        ['click', 'function (my_button_click) {}'],
-                        ['click', 'function (my_button_click2) {}'],
-                        ['onmouseover', 'function (my_button_onmouseover) {}']
-                    ],
-                    'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
-                },
-                {
-                    'tag_name'   => 'button',
-                    'events'     => [
-                        ['click', 'function (my_button2_click) {}']
-                    ],
-                    'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
-                 },
-                 {
-                     'tag_name' => 'button',
-                     'events' => [],
-                     'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
-                 }
-            ]
+                subject.elements_with_events.should == [
+                    { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
+                    },
+                    {
+                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [],
+                        'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [],
+                        'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
+                     },
+                     {
+                         'tag_name' => 'button',
+                         'events' => [],
+                         'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
+                     }
+                ]
+            end
+        end
+
+        context 'when using event listeners' do
+            it 'returns information about all DOM elements along with their events' do
+                load '/elements_with_events/listeners'
+
+                subject.elements_with_events.should == [
+                    { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
+                    },
+                    {
+                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [
+                            ['click', 'function (my_button_click) {}'],
+                            ['click', 'function (my_button_click2) {}'],
+                            ['onmouseover', 'function (my_button_onmouseover) {}']
+                        ],
+                        'attributes' => { 'id' => 'my-button' }
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [
+                            ['click', 'function (my_button2_click) {}']
+                        ],
+                        'attributes' => { 'id' => 'my-button2' }
+                    },
+                    {
+                        'tag_name' => 'button',
+                        'events' => [],
+                        'attributes' => { 'id' => 'my-button3' }
+                    }
+                ]
+            end
         end
 
         it 'skips non visible elements' do

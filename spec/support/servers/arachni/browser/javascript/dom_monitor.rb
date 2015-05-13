@@ -85,11 +85,21 @@ get '/intervals' do
 HTML
 end
 
-get '/elements_with_events' do
+get '/elements_with_events/attributes' do
     <<HTML
-    <button onclick="handler_1()" id="my-button">Click me</button>
-    <button onclick="handler_2()" id="my-button2">Click me too</button>
-    <button onclick="handler_3()" id="my-button3">Don't bother clicking me</button>
+    <body>
+        <button onclick="handler_1()" id="my-button">Click me</button>
+        <button onclick="handler_2()" id="my-button2">Click me too</button>
+        <button onclick="handler_3()" id="my-button3">Don't bother clicking me</button>
+    </body>
+HTML
+end
+
+get '/elements_with_events/listeners' do
+    <<HTML
+    <button id="my-button">Click me</button>
+    <button id="my-button2">Click me too</button>
+    <button id="my-button3">Don't bother clicking me</button>
 
     <script>
         document.getElementById( "my-button" ).addEventListener( "click", function( my_button_click ){}, false );
@@ -100,6 +110,7 @@ get '/elements_with_events' do
     </script>
 HTML
 end
+
 
 get '/elements_with_events/with-hidden' do
     <<HTML
