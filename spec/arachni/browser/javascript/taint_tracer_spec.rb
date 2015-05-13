@@ -1342,6 +1342,21 @@ describe Arachni::Browser::Javascript::TaintTracer do
             event['srcElement'].should == form
             event['type'].should == 'submit'
         end
+
+        it 'is limited to 50' do
+            load 'debug'
+
+            100.times do |i|
+                @browser.javascript.run( subject.stub.function( :log_execution_flow_sink, i ) )
+            end
+
+            sinks = subject.execution_flow_sinks
+            sinks.size.should == 50
+
+            50.times do |i|
+                sinks[i].data.should == [50 + i]
+            end
+        end
     end
 
     describe '#log_data_flow_sink' do
@@ -1373,6 +1388,32 @@ describe Arachni::Browser::Javascript::TaintTracer do
             event['srcElement'].should == form
             event['type'].should == 'submit'
         end
+
+        it 'is limited to 50 per taint' do
+            load 'debug'
+
+            100.times do |i|
+                @browser.javascript.run(
+                    subject.stub.function(
+                        :log_data_flow_sink,
+                        'taint',
+                        {
+                            function: {
+                                name: "f_#{i}"
+                            }
+                        }
+                    )
+                )
+            end
+
+            sinks = subject.data_flow_sinks['taint']
+            sinks.size.should == 50
+
+            50.times do |i|
+                sinks[i].function.name.should == "f_#{i+50}"
+            end
+        end
+
     end
 
     describe '#debugging_data' do

@@ -13,6 +13,10 @@
     - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
 - `Issue`
     - `#signature` -- Store `Regexp` source instead of converting it to String.
+- `Browser`
+    - `Javascript`
+        - `TaintTracer`
+            - Limited data and execution flow sinks to a max size of 50 entries.
 - Checks -- Added proofs to as many issues as possible.
     - `xss`
         - When the case involves payloads landing in `textarea`s, break out of
