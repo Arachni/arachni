@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.2
+# @version 0.1.3
 class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
     INPUTS = Set.new([:input, :textarea])
@@ -29,8 +29,13 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
         with_browser do |browser|
             browser.load( page ).each_element_with_events do |locator, events|
-                next if !INPUTS.include? locator.tag_name
-                events.each do |event, _|
+
+                locator_id = "#{page.url}:#{locator.css}"
+
+                next if !INPUTS.include?( locator.tag_name ) || audited?( locator_id )
+                audited locator_id
+
+                filter_events( locator.tag_name, events ).each do |event, _|
 
                     # Instead of working with the same browser we do it this way
                     # in order to distribute the workload via the browser cluster.
@@ -51,6 +56,11 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
                 end
             end
         end
+    end
+
+    def filter_events( element, events )
+        supported = Set.new( Arachni::Browser::Javascript.events_for( element ) )
+        events.reject { |name, _| !supported.include? ('on' + name.to_s.gsub( /^on/, '' )).to_sym }
     end
 
     def check_and_log( page )
@@ -79,7 +89,7 @@ Injects an HTML element into page text fields, triggers their associated events
 and inspects the DOM for proof of vulnerability.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             elements:    [Element::GenericDOM],
 
             issue:       {

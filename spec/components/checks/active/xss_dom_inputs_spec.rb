@@ -9,7 +9,7 @@ describe name_from_filename do
 
     def issue_count_per_element
         {
-            Element::GenericDOM => 16
+            Element::GenericDOM => 8
         }
     end
 

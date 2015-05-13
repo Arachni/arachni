@@ -18,6 +18,9 @@
         - When the case involves payloads landing in `textarea`s, break out of
             them to prevent possible FPs.
         - Added double-encoded payloads.
+    - `xss_dom_inputs`
+        - Don't perform redundant audits.
+        - Don't process custom events.
     - `unvalidated_redirect`
         - Escalated severity to 'High'.
 - Plugins
