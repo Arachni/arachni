@@ -18,6 +18,14 @@ describe Arachni::Browser::Javascript do
 
     subject { @browser.javascript }
 
+    describe '.events_for' do
+        it 'returns events for the given element' do
+            described_class::EVENTS_PER_ELEMENT.each do |element, events|
+                described_class.events_for( element ).should == described_class::GLOBAL_EVENTS | events
+            end
+        end
+    end
+
     describe '.select_event_attributes' do
         it 'selects only attributes that are events' do
             attributes = {

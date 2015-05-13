@@ -126,6 +126,14 @@ class Javascript
         GLOBAL_EVENTS | EVENTS_PER_ELEMENT.values.flatten.uniq
     end
 
+    # @param    [Symbol]    element
+    #
+    # @return   [Array<Symbol>]
+    #   Events for `element`.
+    def self.events_for( element )
+        GLOBAL_EVENTS | EVENTS_PER_ELEMENT[element.to_sym]
+    end
+
     # @param    [Hash]  attributes
     #   Element attributes.
     #
