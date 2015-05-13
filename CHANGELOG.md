@@ -18,15 +18,19 @@
         - `TaintTracer`
             - Limited data and execution flow sinks to a max size of 50 entries.
 - Checks -- Added proofs to as many issues as possible.
-    - `xss`
-        - When the case involves payloads landing in `textarea`s, break out of
-            them to prevent possible FPs.
-        - Added double-encoded payloads.
-    - `xss_dom_inputs`
-        - Don't perform redundant audits.
-        - Don't process custom events.
-    - `unvalidated_redirect`
-        - Escalated severity to 'High'.
+    - Active
+        - `xss`
+            - When the case involves payloads landing in `textarea`s, break out of
+                them to prevent possible FPs.
+            - Added double-encoded payloads.
+        - `xss_dom_inputs`
+            - Don't perform redundant audits.
+            - Don't process custom events.
+        - `unvalidated_redirect`
+            - Escalated severity to 'High'.
+    - Passive
+        - Added
+            - `common_admin_intefaces` -- By Brendan Coles.
 - Plugins
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
 - Reporters

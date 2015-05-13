@@ -4,7 +4,6 @@ cgi-bin
 cgi-sys
 mailman
 iishelp
-iisadmin
 uploader
 uploads
 tsweb
@@ -28,14 +27,9 @@ feedback
 global
 globals
 guestbook
-admin_
-admin_login
-admin_logon
-adminlogon
 client
 clients
 cmd
-INSTALL_admin
 incomming
 upload
 backend
@@ -57,9 +51,6 @@ pics
 _logs
 _errors
 _tests
-.adm
-.admin
-~admin
 secret
 owa
 db2
@@ -121,7 +112,6 @@ bug
 bugs
 buy
 auth
-authadmin
 import
 apps
 application
@@ -184,11 +174,8 @@ install
 installer
 shop
 private
-fpadmin
-administrator
 intranet
 inventory
-webadmin
 employees
 accounting
 tree
@@ -212,7 +199,6 @@ jrun
 job
 zipfiles
 pw
-admin
 new
 adm
 oracle
@@ -241,7 +227,6 @@ stats
 sitestats
 www
 errors
-siteadmin
 backups
 testing
 internal
@@ -258,7 +243,6 @@ network
 xamp
 xampp
 lamp
-phpmyadmin
 AD
 AE
 AF

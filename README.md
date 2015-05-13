@@ -472,6 +472,7 @@ Passive checks look for the existence of files, folders and signatures.
 - Allowed HTTP methods (`allowed_methods`).
 - Back-up files (`backup_files`).
 - Backup directories (`backup_directories`)
+- Common administration interfaces (`common_admin_interfaces`).
 - Common directories (`common_directories`).
 - Common files (`common_files`).
 - HTTP PUT (`http_put`).
