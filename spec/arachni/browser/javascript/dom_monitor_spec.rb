@@ -38,7 +38,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     end
 
     it 'adds .events property to elements holding the tracked events' do
-        load '/elements_with_events'
+        load '/elements_with_events/listeners'
 
         javascript.run( "return document.getElementById('my-button').events").should == [
             [
