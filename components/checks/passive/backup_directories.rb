@@ -7,7 +7,6 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
 class Arachni::Checks::BackupDirectories < Arachni::Check::Base
 
     def self.formats
@@ -35,11 +34,12 @@ class Arachni::Checks::BackupDirectories < Arachni::Check::Base
 
     def self.info
         {
-            name:        'Backup directories',
-            description: %q{Tries to find backed-up directories.},
-            elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1',
+            name:             'Backup directories',
+            description:      %q{Tries to find backed-up directories.},
+            elements:         [ Element::Server ],
+            author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
+            version:          '0.1.1',
+            exempt_platforms: [ :ruby ],
 
             issue:       {
                 name:            %q{Backup directory},

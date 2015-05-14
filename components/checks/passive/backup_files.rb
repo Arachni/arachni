@@ -9,7 +9,6 @@
 # Backup file discovery check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.3
 class Arachni::Checks::BackupFiles < Arachni::Check::Base
 
     def self.formats
@@ -47,11 +46,12 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
 
     def self.info
         {
-            name:        'Backup files',
-            description: %q{Tries to identify backup files.},
-            elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3',
+            name:             'Backup files',
+            description:      %q{Tries to identify backup files.},
+            elements:         [ Element::Server ],
+            author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
+            version:          '0.3.1',
+            exempt_platforms: [ :ruby ],
 
             issue:       {
                 name:            %q{Backup file},

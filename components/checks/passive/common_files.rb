@@ -25,11 +25,12 @@ class Arachni::Checks::CommonFiles < Arachni::Check::Base
 
     def self.info
         {
-            name:        'Common files',
-            description: %q{Tries to find common sensitive files on the server.},
-            elements:    [ Element::Server ],
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.3',
+            name:             'Common files',
+            description:      %q{Tries to find common sensitive files on the server.},
+            elements:         [ Element::Server ],
+            author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
+            version:          '0.2.4',
+            exempt_platforms: [ :ruby ],
 
             issue:       {
                 name:            %q{Common sensitive file},

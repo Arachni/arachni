@@ -31,6 +31,8 @@
     - Passive
         - Added
             - `common_admin_intefaces` -- By Brendan Coles.
+        - `backdoors`, `backup_directories`, `backup_files`, `common_files`, `directory_listing`
+            - Added Ruby as an exempt platform since Ruby webapps do their own routing.
 - Plugins
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
 - Reporters
