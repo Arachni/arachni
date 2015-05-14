@@ -148,25 +148,68 @@ describe Arachni::Browser::Javascript do
     end
 
     describe '#dom_elements_with_events' do
-        it 'returns information about all DOM elements along with their events' do
-            @browser.load @dom_monitor_url + 'elements_with_events'
-            subject.dom_elements_with_events.should == [
-                { 'tag_name' => 'body', 'events' => [], 'attributes' => {} },
-                { 'tag_name'   => 'button',
-                  'events'     =>
-                      [[:click, 'function (my_button_click) {}'],
-                       [:click, 'function (my_button_click2) {}'],
-                       [:onmouseover, 'function (my_button_onmouseover) {}'],
-                       [:onclick, 'handler_1()']],
-                  'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' } },
-                { 'tag_name'   => 'button',
-                  'events'     =>
-                      [[:click, 'function (my_button2_click) {}'], [:onclick, 'handler_2()']],
-                  'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' } },
-                { 'tag_name'   => 'button',
-                  'events'     => [[:onclick, 'handler_3()']],
-                  'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' } }
-            ]
+        context 'when using event attributes' do
+            it 'returns information about all DOM elements along with their events' do
+                @browser.load @dom_monitor_url + 'elements_with_events/attributes'
+
+                subject.dom_elements_with_events.should == [
+                    {
+                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [
+                            [:onclick, 'handler_1()']
+                        ],
+                        'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [
+                            [:onclick, 'handler_2()']
+                        ],
+                        'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [
+                            [:onclick, 'handler_3()']
+                        ],
+                        'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
+                    }
+                ]
+            end
+        end
+
+        context 'when using event listeners' do
+            it 'returns information about all DOM elements along with their events' do
+                @browser.load @dom_monitor_url + 'elements_with_events/listeners'
+
+                subject.dom_elements_with_events.should == [
+                    {
+                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [
+                            [:click, 'function (my_button_click) {}'],
+                            [:click, 'function (my_button_click2) {}'],
+                            [:onmouseover, 'function (my_button_onmouseover) {}']
+                        ],
+                        'attributes' => { 'id' => 'my-button' } },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [
+                            [:click, 'function (my_button2_click) {}']
+                        ],
+                        'attributes' => { 'id' => 'my-button2' } },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [],
+                        'attributes' => { 'id' => 'my-button3' }
+                    }
+                ]
+            end
         end
     end
 
