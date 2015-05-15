@@ -430,7 +430,7 @@ Active checks engage the web application via its inputs.
 - Path traversal (`path_traversal`).
     - *nix
     - Windows
-    - Tomcat
+    - Java
 - File inclusion (`file_inclusion`).
     - *nix
     - Windows

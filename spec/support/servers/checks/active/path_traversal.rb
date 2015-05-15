@@ -13,7 +13,7 @@ FILE_TO_PLATFORM = {
     '/winnt/win.ini'     => :windows,
     '/etc/passwd'        => :unix,
     '/proc/self/environ' => :unix,
-    '/WEB-INF/web.xml'   => :tomcat
+    '/WEB-INF/web.xml'   => :java
 }
 
 OUT = {
@@ -43,7 +43,7 @@ CMCDLLNAME32=mapi32.dll
 CMCDLLNAME=mapi.dll
 MAPIX=1
 ',
-    tomcat: '<?xml version="1.0" encoding="UTF-8"?>
+    java: '<?xml version="1.0" encoding="UTF-8"?>
 <web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" id="WebApp_ID" version="2.5">
   <display-name>VulnerabilityDetectionChallenge</display-name>
   <welcome-file-list>
