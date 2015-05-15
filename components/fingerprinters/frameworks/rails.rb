@@ -9,20 +9,29 @@
 module Arachni
 module Platform::Fingerprinters
 
-# Identifies Ruby resources.
+# Identifies Rails resources.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
 # @version 0.1
-class Ruby < Platform::Fingerprinter
+class Rails < Platform::Fingerprinter
 
-    IDs = %w(mod_rack phusion passenger)
+    IDs = %w(rails)
 
     def run
+        headers.keys.each do |header|
+            return update_platforms if header.start_with?( 'x-rails' )
+        end
+
         IDs.each do |id|
             next if !server_or_powered_by_include? id
-            return platforms << :ruby << :rack
+
+            return update_platforms
         end
+    end
+
+    def update_platforms
+        platforms << :ruby << :rack << :rails
     end
 
 end

@@ -366,6 +366,7 @@ Currently, the following platforms can be identified:
     - Ruby
 - Frameworks
     - Rack
+    - Rails
     - Django
     - ASP.NET MVC
 

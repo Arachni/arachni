@@ -43,6 +43,7 @@
     - Added
         - Frameworks
             - Django
+            - Rails
             - ASP.NET MVC
         - Servers
             - Gunicorn
