@@ -8,7 +8,7 @@ REGEXP = {
     perl:   'sleep\s?\((\d+)\/(\d+)\s?\);',
     python: 'import time;time.sleep\s?\((\d+)\/(\d+)\s?\);',
     asp:    'Thread\.Sleep\s?\((\d+)\s?\);',
-    jsp:    'Thread\.sleep\s?\((\d+)\s?\);',
+    java:   'Thread\.sleep\s?\((\d+)\s?\);',
     ruby:   'sleep\s?\((\d+)\/(\d+)\s?\)'
 }
 
