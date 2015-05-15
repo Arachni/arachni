@@ -15,7 +15,7 @@ describe Arachni::Platform::Fingerprinters::Java do
 
     context 'when there is a JSESSIONID query parameter' do
         it 'identifies it as Java' do
-            check_platforms check_platforms Arachni::Page.from_data(
+            check_platforms Arachni::Page.from_data(
                 url: 'http://stuff.com/blah?JSESSIONID=stuff'
             )
         end
