@@ -46,6 +46,8 @@
         - JSP renamed to Java and expanded signatures.
         - PHP -- Expanded signatures.
         - Python -- Expanded signatures.
+    - Servers
+        - Tomcat -- Expanded signatures.
     - Added
         - Frameworks
             - Django

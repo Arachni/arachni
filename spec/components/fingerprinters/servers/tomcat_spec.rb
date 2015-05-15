@@ -25,4 +25,13 @@ describe Arachni::Platform::Fingerprinters::Tomcat do
         end
     end
 
+    context 'when there is an Server header' do
+        it 'identifies it as Tomcat' do
+            check_platforms Arachni::Page.from_data(
+                url:     'http://stuff.com/blah',
+                response: { headers:  { 'Server' => 'Apache-Coyote/1.1' } }
+            )
+        end
+    end
+
 end

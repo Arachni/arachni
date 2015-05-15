@@ -13,6 +13,8 @@ shared_examples_for 'fingerprinter' do
 
     def platforms_for( page )
         Arachni::Platform::Manager.reset
+        page.platforms.should be_empty
+
         described_class.new( page ).run
         page.platforms
     end

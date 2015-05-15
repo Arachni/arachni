@@ -15,8 +15,18 @@ module Platform::Fingerprinters
 # @version 0.1
 class Tomcat < Platform::Fingerprinter
 
+    IDS = %w(coyote tomcat)
+
     def run
-        platforms << :tomcat << :java if server_or_powered_by_include? 'tomcat'
+        IDS.each do |id|
+            next if !server_or_powered_by_include? id
+
+            return update_platforms
+        end
+    end
+
+    def update_platforms
+        platforms << :java << :tomcat
     end
 
 end

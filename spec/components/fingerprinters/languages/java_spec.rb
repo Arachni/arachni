@@ -32,15 +32,6 @@ describe Arachni::Platform::Fingerprinters::Java do
         end
     end
 
-    context 'when there is an Server header' do
-        it 'identifies it as Java' do
-            check_platforms Arachni::Page.from_data(
-                url:     'http://stuff.com/blah',
-                response: { headers:  { 'Server' => 'Apache-Coyote/1.1' } }
-            )
-        end
-    end
-
     context 'when there is an X-Powered-By header with Servlet' do
         it 'identifies it as Java' do
             check_platforms Arachni::Page.from_data(
