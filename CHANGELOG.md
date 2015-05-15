@@ -53,6 +53,7 @@
             - ASP.NET MVC
             - CakePHP
             - JSF
+            - CherryPy
         - Servers
             - Gunicorn
 - Path extractors

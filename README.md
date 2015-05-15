@@ -371,6 +371,7 @@ Currently, the following platforms can be identified:
     - Django
     - ASP.NET MVC
     - JSF
+    - CherryPy
 
 The user also has the option of specifying extra platforms (like a DB server)
 in order to help the system be as efficient as possible. Alternatively, fingerprinting

@@ -110,7 +110,8 @@ class Manager
         :cakephp,
         :django,
         :aspx_mvc,
-        :jsf
+        :jsf,
+        :cherrypy
     ]
 
     PLATFORM_NAMES = {
@@ -166,7 +167,8 @@ class Manager
         cakephp:  'CakePHP',
         rails:    'Ruby on Rails',
         aspx_mvc: 'ASP.NET MVC',
-        jsf:      'JavaServer Faces'
+        jsf:      'JavaServer Faces',
+        cherrypy: 'CherryPy'
     }
 
     # Amount of
