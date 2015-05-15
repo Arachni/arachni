@@ -56,7 +56,10 @@ describe Arachni::Framework::Parts::Platform do
                     rack:     'Rack',
                     django:   'Django',
                     rails:    'Ruby on Rails',
-                    aspx_mvc: 'ASP.NET MVC'
+                    aspx_mvc: 'ASP.NET MVC',
+                    jsf:      'JavaServer Faces',
+                    cherrypy: 'CherryPy',
+                    cakephp:  'CakePHP'
                 }
             }
         end

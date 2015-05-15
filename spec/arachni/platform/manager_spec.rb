@@ -400,7 +400,8 @@ describe Arachni::Platform::Manager do
                  :oracle, :firebird, :maxdb, :pgsql, :sqlite, :apache, :iis, :nginx,
                  :tomcat, :asp, :aspx, :java, :perl, :php, :python, :ruby, :rack,
                  :sybase, :frontbase, :ingres, :hsqldb, :access, :jetty, :mongodb,
-                 :aix, :sql, :nosql, :aspx_mvc, :rails, :django, :gunicorn].sort
+                 :aix, :sql, :nosql, :aspx_mvc, :rails, :django, :gunicorn, :cakephp,
+                 :cherrypy, :jsf].sort
         end
     end
 
