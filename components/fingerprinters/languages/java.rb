@@ -22,6 +22,7 @@ class Java < Platform::Fingerprinter
     def run
         if extension == EXTENSION || parameters.include?( SESSIONID ) ||
             cookies.include?( SESSIONID ) ||
+            server_or_powered_by_include?( 'coyote' ) ||
             server_or_powered_by_include?( 'java' ) ||
             server_or_powered_by_include?( 'servlet' ) ||
             server_or_powered_by_include?( 'jsp' ) ||
