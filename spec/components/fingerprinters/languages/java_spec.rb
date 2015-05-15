@@ -59,15 +59,6 @@ describe Arachni::Platform::Fingerprinters::Java do
         end
     end
 
-    context 'when there is an X-Powered-By header with JSF' do
-        it 'identifies it as Java' do
-            check_platforms Arachni::Page.from_data(
-                url:     'http://stuff.com/blah',
-                response: { headers:  { 'X-Powered-By' => 'JSF/2.1' } }
-            )
-        end
-    end
-
     context 'when there is an X-Powered-By header with JBoss' do
         it 'identifies it as Java' do
             check_platforms Arachni::Page.from_data(

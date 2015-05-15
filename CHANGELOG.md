@@ -49,6 +49,7 @@
             - Rails
             - ASP.NET MVC
             - CakePHP
+            - JSF
         - Servers
             - Gunicorn
 - Path extractors

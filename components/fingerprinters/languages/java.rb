@@ -26,7 +26,6 @@ class Java < Platform::Fingerprinter
             server_or_powered_by_include?( 'java' ) ||
             server_or_powered_by_include?( 'servlet' ) ||
             server_or_powered_by_include?( 'jsp' ) ||
-            server_or_powered_by_include?( 'jsf' ) ||
             server_or_powered_by_include?( 'jboss' ) ||
             server_or_powered_by_include?( 'glassfish' ) ||
             server_or_powered_by_include?( 'oracle' )

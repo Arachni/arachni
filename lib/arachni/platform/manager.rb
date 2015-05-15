@@ -109,7 +109,8 @@ class Manager
         :rails,
         :cakephp,
         :django,
-        :aspx_mvc
+        :aspx_mvc,
+        :jsf
     ]
 
     PLATFORM_NAMES = {
@@ -164,7 +165,8 @@ class Manager
         django:   'Django',
         cakephp:  'CakePHP',
         rails:    'Ruby on Rails',
-        aspx_mvc: 'ASP.NET MVC'
+        aspx_mvc: 'ASP.NET MVC',
+        jsf:      'JavaServer Faces'
     }
 
     # Amount of
