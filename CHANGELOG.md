@@ -40,6 +40,8 @@
     - `xml`
         - Fixed bug causing vector `affected_input_name` to be blank.
 - Fingerprinters
+    - Frameworks
+        - Rack -- Expanded signatures.
     - Languages
         - JSP renamed to Java and expanded signatures.
         - PHP -- Expanded signatures.

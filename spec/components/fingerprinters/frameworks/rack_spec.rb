@@ -37,4 +37,12 @@ describe Arachni::Platform::Fingerprinters::Rack do
         end
     end
 
+    context 'when there is an X-Rack-* header' do
+        it 'identifies it as Rack' do
+            check_platforms Arachni::Page.from_data(
+                url: 'http://stuff.com/blah',
+                response: { headers: { 'X-Rack-Stuff' => 'Blah' } }
+            )
+        end
+    end
 end

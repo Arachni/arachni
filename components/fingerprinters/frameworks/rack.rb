@@ -9,13 +9,11 @@
 module Arachni
 module Platform::Fingerprinters
 
-#
 # Identifies Rack applications.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.1
-#
+# @version 0.1.1
 class Rack < Platform::Fingerprinter
 
     SESSIONID = 'rack.session'
@@ -23,7 +21,9 @@ class Rack < Platform::Fingerprinter
 
     def run
         return if !cookies.include?( SESSIONID ) &&
-            !server_or_powered_by_include?( ID )
+            !server_or_powered_by_include?( ID ) &&
+            !headers.keys.find { |h| h.include? 'x-rack' }
+
         platforms << :ruby << :rack
     end
 
