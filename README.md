@@ -365,6 +365,7 @@ Currently, the following platforms can be identified:
     - Ruby
 - Frameworks
     - Rack
+    - Django
     - ASP.NET MVC
 
 The user also has the option of specifying extra platforms (like a DB server)

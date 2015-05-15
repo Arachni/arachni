@@ -32,7 +32,8 @@
         - Added
             - `common_admin_intefaces` -- By Brendan Coles.
         - `backdoors`, `backup_directories`, `backup_files`, `common_files`, `directory_listing`
-            - Added Ruby as an exempt platform since Ruby webapps do their own routing.
+            - Added Ruby, ASP.NET MVC and Django as exempt platforms since they
+                do their own routing.
 - Plugins
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
 - Reporters
@@ -40,7 +41,9 @@
         - Fixed bug causing vector `affected_input_name` to be blank.
 - Fingerprinters
     - Added
-        - ASP.NET MVC
+        - Frameworks
+            - Django
+            - ASP.NET MVC
 - Path extractors
     - Added
         - `data_url` -- Extracts paths from `data-url` attributes of `a` tags.

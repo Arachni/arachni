@@ -105,6 +105,7 @@ class Manager
     # WebApp frameworks.
     FRAMEWORKS = [
         :rack,
+        :django,
         :aspx_mvc
     ]
 
@@ -156,6 +157,7 @@ class Manager
 
         # Web frameworks
         rack:     'Rack',
+        django:   'Django',
         aspx_mvc: 'ASP.NET MVC'
     }
 
