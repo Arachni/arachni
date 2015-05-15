@@ -30,7 +30,7 @@ class Arachni::Checks::CommonFiles < Arachni::Check::Base
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:          '0.2.4',
-            exempt_platforms: [ :ruby, :aspx_mvc, :django, :cakephp ],
+            exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {
                 name:            %q{Common sensitive file},
