@@ -44,6 +44,8 @@
         - Frameworks
             - Django
             - ASP.NET MVC
+        - Servers
+            - Gunicorn
 - Path extractors
     - Added
         - `data_url` -- Extracts paths from `data-url` attributes of `a` tags.

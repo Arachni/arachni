@@ -89,7 +89,8 @@ class Manager
         :nginx,
         :tomcat,
         :iis,
-        :jetty
+        :jetty,
+        :gunicorn
     ]
 
     LANGUAGES = [
@@ -145,6 +146,7 @@ class Manager
         tomcat:     'TomCat',
         iis:        'IIS',
         jetty:      'Jetty',
+        gunicorn:   'Gunicorn',
 
         # Programming languages
         php:    'PHP',

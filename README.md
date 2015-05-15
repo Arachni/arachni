@@ -356,6 +356,7 @@ Currently, the following platforms can be identified:
     - Nginx
     - Tomcat
     - Jetty
+    - Gunicorn
 - Programming languages
     - PHP
     - ASP
