@@ -24,7 +24,8 @@ class PHP < Platform::Fingerprinter
     def run
         if uri.path =~ /.php\d*\/*/ || extension =~ EXTENSION ||
             parameters.include?( SESSIONID ) || cookies.include?( SESSIONID ) ||
-            server_or_powered_by_include?( 'php' )
+            server_or_powered_by_include?( 'php' ) || headers.include?( 'x-php-pid' )
+
             platforms << :php
         end
     end

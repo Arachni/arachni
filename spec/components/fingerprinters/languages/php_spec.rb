@@ -54,4 +54,13 @@ describe Arachni::Platform::Fingerprinters::PHP do
         end
     end
 
+    context 'when there is an X-PHP-PID header' do
+        it 'identifies it as PHP' do
+            check_platforms Arachni::Page.from_data(
+                url: 'http://stuff.com/blah',
+                response: { headers: { 'X-PHP-PID' => '2212' } }
+            )
+        end
+    end
+
 end
