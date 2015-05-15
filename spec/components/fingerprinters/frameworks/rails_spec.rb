@@ -38,4 +38,16 @@ describe Arachni::Platform::Fingerprinters::Rails do
         end
     end
 
+    context 'when there is a _rails_admin_session cookie' do
+        it 'identifies it as Rails' do
+            check_platforms Arachni::Page.from_data(
+                url:     'http://stuff.com/blah',
+                cookies: [Arachni::Cookie.new(
+                              url:    'http://stuff.com/blah',
+                              inputs: { '_rails_admin_session' => 'stuff' } )]
+
+            )
+        end
+    end
+
 end

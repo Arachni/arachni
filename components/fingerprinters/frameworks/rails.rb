@@ -23,6 +23,10 @@ class Rails < Platform::Fingerprinter
             return update_platforms if header.start_with?( 'x-rails' )
         end
 
+        if cookies.include?( '_rails_admin_session' )
+            return update_platforms
+        end
+
         IDs.each do |id|
             next if !server_or_powered_by_include? id
 
