@@ -434,7 +434,7 @@ Active checks engage the web application via its inputs.
 - File inclusion (`file_inclusion`).
     - *nix
     - Windows
-    - Tomcat
+    - Java
     - PHP
     - Perl
 - Response splitting (`response_splitting`).
