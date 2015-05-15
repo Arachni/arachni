@@ -13,12 +13,23 @@ describe Arachni::Platform::Fingerprinters::Python do
         end
     end
 
-    context 'when there is an X-Powered-By header' do
-        it 'identifies it as Python' do
-            check_platforms Arachni::Page.from_data(
-                url:     'http://stuff.com/blah',
-                response: { headers: { 'X-Powered-By' => 'Python/stuff' } }
-            )
+    described_class::IDS.each do |id|
+        context "when there is an X-Powered-By header with #{id}" do
+            it 'identifies it as Python' do
+                check_platforms Arachni::Page.from_data(
+                    url:     'http://stuff.com/blah',
+                    response: { headers: { 'X-Powered-By' => "#{id}/stuff" } }
+                )
+            end
+        end
+
+        context "when there is a Server header with #{id}" do
+            it 'identifies it as Python' do
+                check_platforms Arachni::Page.from_data(
+                    url:     'http://stuff.com/blah',
+                    response: { headers: { 'Server' => "#{id}/stuff" } }
+                )
+            end
         end
     end
 
