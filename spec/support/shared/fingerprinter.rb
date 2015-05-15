@@ -5,6 +5,12 @@ shared_examples_for 'fingerprinter' do
         Arachni::Platform::Manager.reset
     end
 
+    def check_platforms( page )
+        platforms.each do |p|
+            platforms_for( page ).should include p
+        end
+    end
+
     def platforms_for( page )
         Arachni::Platform::Manager.reset
         described_class.new( page ).run

@@ -3,10 +3,8 @@ require 'spec_helper'
 describe Arachni::Platform::Fingerprinters::ASPXMVC do
     include_examples 'fingerprinter'
 
-    def check_platforms( page )
-        [:asp, :aspx, :windows, :aspx_mvc].each do |p|
-            platforms_for( page ).should include p
-        end
+    def platforms
+        [:asp, :aspx, :windows, :aspx_mvc]
     end
 
     context 'when there is a __requestverificationtoken cookie' do
