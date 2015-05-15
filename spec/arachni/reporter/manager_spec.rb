@@ -26,6 +26,32 @@ describe Arachni::Reporter::Manager do
                 reporter.options.should == options.my_symbolize_keys(false)
             end
         end
+
+        context 'when the raise argument is'do
+            context 'not given' do
+                context 'and the report raises an exception' do
+                    it 'does not raise it' do
+                        expect { @reporters.run( :error, report ) }.to_not raise_error
+                    end
+                end
+            end
+
+            context false do
+                context 'and the report raises an exception' do
+                    it 'does not raise it' do
+                        expect { @reporters.run( :error, report, {}, false ) }.to_not raise_error
+                    end
+                end
+            end
+
+            context true do
+                context 'and the report raises an exception' do
+                    it 'does not raise it' do
+                        expect { @reporters.run( :error, report, {}, true ) }.to raise_error
+                    end
+                end
+            end
+        end
     end
 
     describe '#reset' do

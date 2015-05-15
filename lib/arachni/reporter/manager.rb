@@ -29,8 +29,8 @@ class Manager < Arachni::Component::Manager
     # @param  [Hash]            options
     #
     # @see Report
-    def run( name, report, options = {} )
-        exception_jail false do
+    def run( name, report, options = {}, raise = false )
+        exception_jail raise do
             self[name].new( report, prepare_options( name, self[name], options ) ).tap(&:run)
         end
     end
