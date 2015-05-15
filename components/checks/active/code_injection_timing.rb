@@ -14,7 +14,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.3.1
+# @version 0.3.2
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -32,7 +32,7 @@ class Arachni::Checks::CodeInjectionTiming < Arachni::Check::Base
             php:    'sleep(__TIME__/1000);',
             perl:   'sleep(__TIME__/1000);',
             python: 'import time;time.sleep(__TIME__/1000);',
-            jsp:    'Thread.sleep(__TIME__);',
+            java:   'Thread.sleep(__TIME__);',
             asp:    'Thread.Sleep(__TIME__);',
         }.inject({}) do |h, (platform, payload)|
             h[platform] = [ ' %s', ';%s', "\";%s#", "';%s#" ].map { |s| s % payload }
@@ -53,7 +53,7 @@ a time delay.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.1',
+            version:     '0.3.2',
             platforms:   payloads.keys,
 
             issue:       {

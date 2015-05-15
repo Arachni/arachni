@@ -19,7 +19,7 @@ module Platform::Fingerprinters
 class Jetty < Platform::Fingerprinter
 
     def run
-        platforms << :jsp << :jetty if server_or_powered_by_include? 'jetty'
+        platforms << :java << :jetty if server_or_powered_by_include? 'jetty'
     end
 
 end

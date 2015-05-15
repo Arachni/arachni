@@ -361,7 +361,7 @@ Currently, the following platforms can be identified:
     - PHP
     - ASP
     - ASPX
-    - JSP
+    - Java
     - Python
     - Ruby
 - Frameworks
@@ -415,14 +415,14 @@ Active checks engage the web application via its inputs.
     - PHP
     - Ruby
     - Python
-    - JSP
-    - ASP.NET
+    - Java
+    - ASP
 - Blind code injection using timing attacks (`code_injection_timing`).
     - PHP
     - Ruby
     - Python
-    - JSP
-    - ASP.NET
+    - Java
+    - ASP
 - LDAP injection (`ldap_injection`).
 - Path traversal (`path_traversal`).
     - *nix

@@ -4,7 +4,7 @@ describe Arachni::Platform::Fingerprinters::Jetty do
     include_examples 'fingerprinter'
 
     def platforms
-        [:jetty, :jsp]
+        [:jetty, :java]
     end
 
     context 'when there is an Server header' do

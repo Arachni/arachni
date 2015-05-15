@@ -95,7 +95,7 @@ class Manager
 
     LANGUAGES = [
         :php,
-        :jsp,
+        :java,
         :python,
         :ruby,
         :asp,
@@ -151,7 +151,7 @@ class Manager
 
         # Programming languages
         php:    'PHP',
-        jsp:    'JSP',
+        java:   'Java',
         python: 'Python',
         ruby:   'Ruby',
         asp:    'ASP',

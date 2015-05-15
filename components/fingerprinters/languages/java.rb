@@ -9,12 +9,12 @@
 module Arachni
 module Platform::Fingerprinters
 
-# Identifies JSP resources.
+# Identifies Java resources.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.1.1
-class JSP < Platform::Fingerprinter
+# @version 0.1.2
+class Java < Platform::Fingerprinter
 
     EXTENSION = 'jsp'
     SESSIONID = 'jsessionid'
@@ -22,9 +22,15 @@ class JSP < Platform::Fingerprinter
     def run
         if extension == EXTENSION || parameters.include?( SESSIONID ) ||
             cookies.include?( SESSIONID ) ||
+            server_or_powered_by_include?( 'java' ) ||
             server_or_powered_by_include?( 'servlet' ) ||
-            server_or_powered_by_include?( 'jsp' )
-            platforms << :jsp << :tomcat
+            server_or_powered_by_include?( 'jsp' ) ||
+            server_or_powered_by_include?( 'jsf' ) ||
+            server_or_powered_by_include?( 'jboss' ) ||
+            server_or_powered_by_include?( 'glassfish' ) ||
+            server_or_powered_by_include?( 'oracle' )
+
+            platforms << :java
         end
     end
 

@@ -4,7 +4,7 @@ describe Arachni::Platform::Fingerprinters::Tomcat do
     include_examples 'fingerprinter'
 
     def platforms
-        [:tomcat, :jsp]
+        [:tomcat, :java]
     end
 
     context 'when there is an Server header' do

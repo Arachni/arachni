@@ -31,7 +31,8 @@
     - Passive
         - Added
             - `common_admin_intefaces` -- By Brendan Coles.
-        - `backdoors`, `backup_directories`, `backup_files`, `common_files`, `directory_listing`
+        - `backdoors`, `backup_directories`, `backup_files`, `common_files`,
+            `directory_listing`
             - Added Ruby, ASP.NET MVC and Django as exempt platforms since they
                 do their own routing.
 - Plugins
@@ -40,6 +41,8 @@
     - `xml`
         - Fixed bug causing vector `affected_input_name` to be blank.
 - Fingerprinters
+    - Languages
+        - JSP renamed to Java and expanded signatures.
     - Added
         - Frameworks
             - Django
