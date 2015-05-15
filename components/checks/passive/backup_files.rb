@@ -51,7 +51,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:          '0.3.1',
-            exempt_platforms: [ :ruby, :aspx_mvc, :django ],
+            exempt_platforms: [ :ruby, :aspx_mvc, :django, :cakephp ],
 
             issue:       {
                 name:            %q{Backup file},

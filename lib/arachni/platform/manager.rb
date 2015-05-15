@@ -107,6 +107,7 @@ class Manager
     FRAMEWORKS = [
         :rack,
         :rails,
+        :cakephp,
         :django,
         :aspx_mvc
     ]
@@ -161,6 +162,7 @@ class Manager
         # Web frameworks
         rack:     'Rack',
         django:   'Django',
+        cakephp:  'CakePHP',
         rails:    'Ruby on Rails',
         aspx_mvc: 'ASP.NET MVC'
     }
