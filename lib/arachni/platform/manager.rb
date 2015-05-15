@@ -104,7 +104,8 @@ class Manager
 
     # WebApp frameworks.
     FRAMEWORKS = [
-        :rack
+        :rack,
+        :aspx_mvc
     ]
 
     PLATFORM_NAMES = {
@@ -154,7 +155,8 @@ class Manager
         perl:   'Perl',
 
         # Web frameworks
-        rack:   'Rack'
+        rack:     'Rack',
+        aspx_mvc: 'ASP.NET MVC'
     }
 
     # Amount of
@@ -250,6 +252,22 @@ class Manager
         page
     end
 
+    # @param    [String, URI]   uri
+    #
+    # @return   [Manager]
+    #   Platform for the given `uri`
+    def self.[]( uri )
+        # If fingerprinting is disabled there's no point in filling the cache
+        # with the same object over and over, create an identical one for all
+        # URLs and return that always.
+        if !Options.fingerprint?
+            return @default ||= new_from_options
+        end
+
+        return new_from_options if !(key = make_key( uri ))
+        synchronize { @platforms[key] ||= new_from_options }
+    end
+
     # Sets platform manager for the given `uri`.
     #
     # @param    [String, URI]   uri
@@ -260,11 +278,16 @@ class Manager
     # @raise    [Error::Invalid]
     #   On {#invalid?} platforms.
     def self.[]=( uri, platforms )
-        return new( platforms ) if !(key = make_key( uri ))
+        # For some reason we failed to make a key, try to salvage the situation.
+        if !(key = make_key( uri ))
+            return new_from_options( platforms )
+        end
 
         synchronize do
             @platforms[key] =
-                platforms.is_a?( self ) ? platforms : new( platforms )
+                platforms.is_a?( self ) ?
+                    platforms :
+                    new_from_options( platforms )
         end
     end
 
@@ -293,22 +316,6 @@ class Manager
         end
     end
 
-    # @param    [String, URI]   uri
-    #
-    # @return   [Manager]
-    #   Platform for the given `uri`
-    def self.[]( uri )
-        # If fingerprinting is disabled there's no point in filling the cache
-        # with the same object over and over, create an identical one for all
-        # URLs and return that always.
-        if !Options.fingerprint?
-            return @default ||= new( Options.platforms )
-        end
-
-        return new if !(key = make_key( uri ))
-        synchronize { @platforms[key] ||= new }
-    end
-
     # @return   [Boolean]
     #   `true` if there are no platforms fingerprints, `false` otherwise.
     def self.empty?
@@ -326,6 +333,10 @@ class Manager
         parsed.without_query
     end
 
+    def self.new_from_options( platforms = [] )
+        new( platforms | Options.platforms )
+    end
+
     # @param    [Array<String, Symbol>] platforms
     #   Platforms with which to initialize the lists.
     def initialize( platforms = [] )
@@ -335,7 +346,7 @@ class Manager
                 List.new( self.class.const_get( type.to_s.upcase.to_sym ) )
         end
 
-        update [platforms | Options.platforms].flatten.compact
+        update platforms
     end
 
     # @!method os

@@ -168,36 +168,34 @@ class Base < Component::Base
             @exempt_platforms ||= [info[:exempt_platforms]].flatten.compact
         end
 
-        # @param    [Array<Symbol, String>]     platforms
+        # @param    [Array<Symbol, String>]     resource_platforms
         #   List of platforms to check for support.
         #
         # @return   [Boolean]
         #   `true` if any of the given platforms are supported, `false` otherwise.
-        def supports_platforms?( platforms )
-            if platforms.any? && has_exempt_platforms?
-                foo_data = self.exempt_platforms.
-                    inject({}) { |h, platform| h.merge!( platform => true ) }
+        def supports_platforms?( resource_platforms )
+            if resource_platforms.any? && has_exempt_platforms?
+                manager = Platform::Manager.new( exempt_platforms )
 
-                manager = Platform::Manager.new( platforms )
-                exempt_platforms.each do |p|
+                resource_platforms.each do |p|
 
                     # When we check for exempt platforms we're looking for info
                     # from the same type.
                     ptype = Platform::Manager.find_type( p )
-                    next if manager.send( ptype ).pick( foo_data ).empty?
+                    type_manager = manager.send( ptype )
 
-                    return false
+                    return false if type_manager.pick( p => true ).any?
                 end
             end
 
-            return true if platforms.empty? || !has_platforms?
+            return true if resource_platforms.empty? || !has_platforms?
 
             # Determine if we've got anything for the given platforms, the same
             # way payloads are picked.
             foo_data = self.platforms.
                 inject({}) { |h, platform| h.merge!( platform => true ) }
 
-            Platform::Manager.new( platforms ).pick( foo_data ).any?
+            Platform::Manager.new( resource_platforms ).pick( foo_data ).any?
         end
 
         # @return   [Array<Symbol>]

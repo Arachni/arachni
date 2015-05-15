@@ -52,7 +52,8 @@ describe Arachni::Framework::Parts::Platform do
                     ruby:   'Ruby'
                 },
                 'Frameworks' => {
-                    rack: 'Rack'
+                    rack:     'Rack',
+                    aspx_mvc: 'ASP.NET MVC'
                 }
             }
 

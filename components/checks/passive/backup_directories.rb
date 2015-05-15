@@ -39,7 +39,7 @@ class Arachni::Checks::BackupDirectories < Arachni::Check::Base
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:          '0.1.1',
-            exempt_platforms: [ :ruby ],
+            exempt_platforms: [ :ruby, :aspx_mvc ],
 
             issue:       {
                 name:            %q{Backup directory},

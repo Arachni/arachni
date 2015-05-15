@@ -199,6 +199,16 @@ describe Arachni::Platform::Manager do
             end
         end
 
+        it 'includes Options.platforms' do
+            Arachni::Options.platforms = [:ruby, :windows]
+            platforms = [:unix, :jsp]
+
+            described_class['http://stuff.com'] = platforms
+
+            described_class['http://stuff.com'].sort.should ==
+                (Arachni::Options.platforms | platforms).sort
+        end
+
         context 'when invalid platforms are given' do
             it 'raises Arachni::Platform::Error::Invalid' do
                 expect {
@@ -252,18 +262,20 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '#new_from_options' do
+        it 'includes Options.platforms' do
+            Arachni::Options.platforms = [:ruby, :windows]
+            platforms = [:unix, :jsp]
+
+            described_class.new_from_options( platforms ).sort.should ==
+                (platforms | Arachni::Options.platforms).sort
+        end
+    end
+
     describe '#initialize' do
         it 'initializes the manager with the given platforms' do
             platforms = [:unix, :jsp, :mysql].sort
             described_class.new( platforms ).sort.should == platforms
-        end
-
-        context 'when there are Options.platforms' do
-            it 'takes them into account' do
-                platforms = [:unix]
-                Arachni::Options.platforms = [:php, :mysql]
-                described_class.new( platforms ).sort.should == (Arachni::Options.platforms | platforms).sort
-            end
         end
     end
 
@@ -388,7 +400,7 @@ describe Arachni::Platform::Manager do
                  :oracle, :firebird, :maxdb, :pgsql, :sqlite, :apache, :iis, :nginx,
                  :tomcat, :asp, :aspx, :jsp, :perl, :php, :python, :ruby, :rack,
                  :sybase, :frontbase, :ingres, :hsqldb, :access, :jetty, :mongodb,
-                 :aix, :sql, :nosql].sort
+                 :aix, :sql, :nosql, :aspx_mvc].sort
         end
     end
 

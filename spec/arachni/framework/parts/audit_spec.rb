@@ -316,6 +316,11 @@ describe Arachni::Framework::Parts::Audit do
         end
 
         context "when #{Arachni::Options}#platforms" do
+            before do
+                Arachni::Platform::Manager.reset
+                subject.options.paths.fingerprinters = fixtures_path + '/empty/'
+            end
+
             context 'have been provided' do
                 context 'and are supported by the check' do
                     it 'audits it' do
@@ -333,6 +338,7 @@ describe Arachni::Framework::Parts::Audit do
                 context 'and are not supported by the check' do
                     it 'does not audit it' do
                         subject.options.platforms = [:windows]
+
                         subject.options.audit.elements :links, :forms, :cookies
 
                         subject.checks.load :taint

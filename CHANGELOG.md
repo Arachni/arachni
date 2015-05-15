@@ -38,6 +38,9 @@
 - Reporters
     - `xml`
         - Fixed bug causing vector `affected_input_name` to be blank.
+- Fingerprinters
+    - Added
+        - ASP.NET MVC
 - Path extractors
     - Added
         - `data_url` -- Extracts paths from `data-url` attributes of `a` tags.
