@@ -9,7 +9,7 @@
 module Arachni
 module Platform::Fingerprinters
 
-# Identifies ASP.NET MVC resources.
+# Identifies Django resources.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
