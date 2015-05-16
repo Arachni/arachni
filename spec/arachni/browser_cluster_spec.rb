@@ -98,6 +98,38 @@ describe Arachni::BrowserCluster do
         end
     end
 
+    describe '#on_queue' do
+        it 'assigns blocks to be passed each queued job' do
+            @cluster = described_class.new
+
+            cj = nil
+            @cluster.on_queue do |j|
+                cj = j
+            end
+
+            @cluster.queue( job ){}
+
+            cj.id.should == job.id
+            @cluster.wait
+        end
+    end
+
+    describe '#on_job_done' do
+        it 'assigns blocks to be passed each finished job' do
+            @cluster = described_class.new
+
+            cj = nil
+            @cluster.on_job_done do |j|
+                cj = j
+            end
+
+            @cluster.queue( job ){}
+            @cluster.wait
+
+            cj.id.should == job.id
+        end
+    end
+
     describe '#queue' do
         it 'processes the job' do
             pages = []

@@ -17,6 +17,13 @@ class BrowserCluster
     include UI::Output
     include Utilities
 
+    include Support::Mixins::Observable
+
+    # @!method on_page_audit( &block )
+    advertise :on_queue
+
+    advertise :on_job_done
+
     personalize_output
 
     # {BrowserCluster} error namespace.
@@ -87,6 +94,8 @@ class BrowserCluster
     #
     # @raise    ArgumentError   On missing `:handler` option.
     def initialize( options = {} )
+        super()
+
         {
             pool_size: Options.browser_cluster.pool_size
         }.merge( options ).each do |k, v|
@@ -154,6 +163,8 @@ class BrowserCluster
         synchronize do
             print_debug "Queueing: #{job}"
 
+            notify_on_queue job
+
             @pending_job_counter  += 1
             @pending_jobs[job.id] += 1
             @job_callbacks[job.id] = block if block
@@ -205,6 +216,8 @@ class BrowserCluster
     def job_done( job )
         synchronize do
             print_debug "Job done: #{job}"
+
+            notify_on_job_done job
 
             if !job.never_ending?
                 @skip_states_per_job.delete job.id
