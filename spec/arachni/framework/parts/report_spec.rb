@@ -6,7 +6,7 @@ describe Arachni::Framework::Parts::Report do
     describe '#reporters' do
         it 'provides access to the reporter manager' do
             subject.reporters.is_a?( Arachni::Reporter::Manager ).should be_true
-            subject.reporters.available.sort.should == %w(afr foo).sort
+            subject.reporters.available.sort.should == %w(afr foo error).sort
         end
     end
 
