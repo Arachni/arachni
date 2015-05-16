@@ -19,15 +19,6 @@ describe Arachni::Platform::Fingerprinters::Rack do
         end
     end
 
-    context 'when there is a Server header' do
-        it 'identifies it as Rack' do
-            check_platforms Arachni::Page.from_data(
-                url: 'http://stuff.com/blah',
-                response: { headers: { 'Server' => 'mod_rack' } }
-            )
-        end
-    end
-
     context 'when there is an X-Powered-By header' do
         it 'identifies it as Rack' do
             check_platforms Arachni::Page.from_data(

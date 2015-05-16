@@ -20,7 +20,7 @@ class Ruby < Platform::Fingerprinter
 
     def run
         IDs.each do |id|
-            next if !server_or_powered_by_include? id
+            next if !powered_by.include? id
             return platforms << :ruby << :rack
         end
     end
