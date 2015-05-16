@@ -99,7 +99,6 @@ class Framework
     #   All possible {#status_messages} by type.
     def available_status_messages
         {
-            pausing:                          'Will pause as soon as the current page is audited.',
             suspending:                       'Will suspend as soon as the current page is audited.',
             waiting_for_browser_cluster_jobs: 'Waiting for %i browser cluster jobs to finish.',
             suspending_plugins:               'Suspending plugins.',
@@ -345,7 +344,6 @@ class Framework
 
         if !paused?
             @status = :pausing
-            set_status_message :pausing
         end
 
         @pause_signals << caller
@@ -400,6 +398,12 @@ class Framework
         end
 
         false
+    end
+
+    def force_resume
+        @pause_signals.to_a.each do |ref|
+            resume ref
+        end
     end
 
     def dump( directory )

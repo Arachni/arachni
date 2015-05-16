@@ -65,6 +65,8 @@ module State
     def initialize
         super
 
+        reset_http_hooks
+
         state.status = :ready
     end
 
@@ -96,6 +98,8 @@ module State
         return if @cleaned_up
         @cleaned_up = true
 
+        state.force_resume
+
         state.status = :cleanup
 
         sitemap.merge!( browser_sitemap )
@@ -126,6 +130,22 @@ module State
         @session = nil
 
         true
+    end
+
+    # @private
+    def reset_http_hooks
+        http.on_complete do
+            if pause?
+                print_debug 'Blocking HTTP client on complete.'
+            end
+
+            wait_if_paused
+        end
+    end
+
+    # @private
+    def reset_trainer
+        @trainer = Trainer.new( self )
     end
 
     # @note Prefer this from {.reset} if you already have an instance.
@@ -317,11 +337,6 @@ module State
     #   `true` if the system has been suspended, `false` otherwise.
     def suspended?
         state.suspended?
-    end
-
-    # @private
-    def reset_trainer
-        @trainer = Trainer.new( self )
     end
 
     private

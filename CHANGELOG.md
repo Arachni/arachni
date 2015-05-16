@@ -2,6 +2,8 @@
 
 ## _Under development_
 
+- `Framework`
+    - Pause is now instant.
 - `HTTP`
     - `Client`
         - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.

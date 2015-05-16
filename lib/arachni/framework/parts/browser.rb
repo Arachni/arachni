@@ -32,6 +32,23 @@ module Browser
 
             @browser_cluster ||= BrowserCluster.new
             state.clear_status_messages
+
+            @browser_cluster.on_queue do
+                if pause?
+                    print_debug 'Blocking browser cluster on queue.'
+                end
+
+                wait_if_paused
+            end
+
+            @browser_cluster.on_job_done do
+                if pause?
+                    print_debug 'Blocking browser cluster on job done.'
+                end
+
+                wait_if_paused
+            end
+
             @browser_cluster
         end
     end

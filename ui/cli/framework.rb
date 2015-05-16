@@ -33,7 +33,8 @@ class Framework
 
         # Reset the framework's HTTP interface so that options will take effect.
         @framework.http.reset
-        # The Trainer needs to setup its hooks again.
+
+        @framework.reset_http_hooks
         @framework.reset_trainer
 
         @show_command_screen = nil
