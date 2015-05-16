@@ -36,6 +36,7 @@
             - Added MVC frameworks as exempt platforms since they do their own routing.
 - Plugins
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
+    - `login_script` -- Added support for Javascript login scripts.
 - Reporters
     - `xml`
         - Fixed bug causing vector `affected_input_name` to be blank.

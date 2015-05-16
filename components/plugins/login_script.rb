@@ -12,18 +12,31 @@
 class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
 
     STATUSES  = {
-        success:       'Login was successful.',
-        failure:       'The script was executed successfully, but the login check failed.',
-        error:         'A runtime error was encountered while executing the login script.',
-        missing_check: 'No session check was provided, either via interface options or the script.'
+        success:         'Login was successful.',
+        failure:         'The script was executed successfully, but the login check failed.',
+        error:           'A runtime error was encountered while executing the login script.',
+        missing_browser: 'A browser is required for this operation but is not available.',
+        missing_check:   'No session check was provided, either via interface options or the script.'
     }
 
     def prepare
-        script = IO.read( @options[:script] )
-        @script = proc { |browser| eval script }
+        script    = IO.read( @options[:script] )
+        @script   = proc do |browser|
+            if javascript?
+                browser.goto @framework.options.url
+                browser.execute_script script
+            else
+                eval script
+            end
+        end
     end
 
     def run
+        if javascript? && !session.has_browser?
+            set_status :missing_browser, :error
+            return
+        end
+
         framework_pause
         print_info 'System paused.'
 
@@ -71,6 +84,10 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
         framework_resume
     end
 
+    def javascript?
+        @options[:script].split( '.' ).last == 'js'
+    end
+
     def set_status( status, type = nil, extra = {} )
         type ||= status
 
@@ -96,7 +113,9 @@ The script needn't necessarily perform an actual login operation. If another
 process is used to manage sessions, the script can be used to communicate with
 that process and, for example, load and set cookies from a shared cookie-jar.
 
-**With browser (slow):**
+# Ruby
+
+## With browser (slow)
 
 If a [browser](http://watirwebdriver.com/) is available, it will be exposed to
 the script via the `browser` variable. Otherwise, that variable will have a
@@ -115,7 +134,7 @@ value of `nil`.
     framework.options.session.check_url     = browser.url
     framework.options.session.check_pattern = /Sign Off|MY ACCOUNT/
 
-**Without browser (fast):**
+## Without browser (fast)
 
 If a real browser environment is not required for the login operation, then
 using the system-wide HTTP interface is preferable, as it will be much faster
@@ -133,15 +152,26 @@ and consume much less resources.
     framework.options.session.check_url     = to_absolute( response.headers.location, response.url )
     framework.options.session.check_pattern = /Sign Off|MY ACCOUNT/
 
-**From cookie-jar:**
+## From cookie-jar
 
 If an external process is used to manage sessions, you can keep Arachni in sync
 by loading cookies from a shared Netscape-style cookie-jar file.
 
     http.cookie_jar.load 'cookies.txt'
+
+# Javascript
+
+When the given script has a `.js` file extension, it will be loaded and executed
+in the browser, within the page of the target URL.
+
+    document.getElementById( 'uid' ).value   = 'jsmith';
+    document.getElementById( 'passw' ).value = 'Demo1234';
+
+    document.getElementById( 'login' ).submit();
+
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.2',
             options:     [
                 Options::Path.new( :script,
                     required:    true,
