@@ -79,15 +79,16 @@ class Profiler
 
     def object_space( options = {} )
         klass       = options[:class]
-        namespaces  = options[:namespaces] || [Arachni]
-        # namespace = [
-        #     Arachni,
-        #     Typhoeus,
-        #     Watir,
-        #     Selenium,
-        #     Addressable,
-        #     Nokogiri
-        # ]
+        namespaces  = options[:namespaces] || [
+            Arachni,
+            Ethon,
+            Typhoeus,
+            Watir,
+            Selenium,
+            Addressable,
+            Nokogiri
+        ]
+
         max_entries = options[:max_entries] || 50
 
         object_space    = Hash.new(0)
