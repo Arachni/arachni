@@ -137,6 +137,13 @@ module Audit
         run_http = run_checks( @checks.without_platforms, page )
         run_http = true if run_checks( @checks.with_platforms, page )
 
+        notify_after_page_audit( page )
+
+        # Makes it easier on the GC but it is important that it be called **after**
+        # all the callbacks have been executed because they may need access to
+        # the cached data and there's no sense in re-parsing.
+        page.clear_cache
+
         if Arachni::Check::Auditor.has_timeout_candidates?
             print_line
             print_status "Processing timeout-analysis candidates for: #{page.dom.url}"
@@ -145,10 +152,6 @@ module Audit
             run_http = true
         end
 
-        # Makes it easier on the GC.
-        page.clear_cache
-
-        notify_after_page_audit( page )
         run_http
     end
 
