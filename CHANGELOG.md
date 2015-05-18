@@ -9,6 +9,9 @@
         - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
         - Trigger garbage collections before and after performing the queued
             requests to prevent large RAM spikes.
+        - `Dynamic404Handler`
+            - Account for cases where the server returns intermittent errors
+                that can lead to signature corruption and possibly false positives.
     - `Request`
         - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
         - `#response_max_size` -- In addition to setting the `maxfilesize` for

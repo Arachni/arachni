@@ -169,8 +169,8 @@ class Dynamic404Handler
                     next if corrupted
 
                     # Well, bad luck, bail out to avoid FPs.
-                    if c_res.code == 0
-                        print_debug "#{__method__} [corrupted]: #{url} #{block}"
+                    if corrupted_response?( c_res )
+                        print_debug "#{__method__} [corrupted]: #{url} #{c_res.code} #{block}"
                         corrupted = true
                         next clear_data_for( url )
                     end
@@ -225,7 +225,7 @@ class Dynamic404Handler
                     next if corrupted
 
                     # Well, bad luck, bail out to avoid FPs.
-                    if c_res.code == 0
+                    if corrupted_response?( c_res )
                         print_debug "#{__method__} [corrupted]: #{url} #{block}"
                         corrupted = true
                         next clear_data_for( url )
@@ -306,6 +306,15 @@ class Dynamic404Handler
         uri = uri_parse( url )
         resource_name = uri.resource_name.to_s.split('.').tap(&:pop).join('.')
         !!(!resource_name.empty? || uri.resource_extension)
+    end
+
+    # If this is neither a regular 404 nor a 202 the server probably freaked out
+    # -- 500 errors under stress and the like.
+    #
+    # In that case we should bail out to avoid corrupted signatures which can
+    # lead to FPs.
+    def corrupted_response?( response )
+        response.code != 404 && response.code != 200
     end
 
     def url_for( url )
