@@ -38,6 +38,19 @@ class Base
 
     include Capabilities::WithScope
 
+    # Maximum element size in bytes.
+    # Anything larger than this should be exempt from parse and storage or have
+    # its value ignored.
+    #
+    # During the audit, thousands of copies will be generated and the same
+    # amount of HTP requests will be stored in the HTTP::Client queue.
+    # Thus, elements with inputs of excessive size will lead to excessive RAM
+    # consumption.
+    #
+    # This will almost never be necessary, but there have been cases of
+    # buggy `_VIEWSTATE` inputs that grow infinitely.
+    MAX_SIZE = 10_000
+
     # @return     [Page]
     #   Page this element belongs to.
     attr_accessor :page
@@ -187,6 +200,10 @@ class Base
 
         instance.instance_variable_set( :@audit_options, {} )
         instance
+    end
+
+    def self.too_big?( element )
+        (element.is_a?( Numeric ) ? element : element.to_s.size) >= MAX_SIZE
     end
 
 end

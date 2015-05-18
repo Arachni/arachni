@@ -254,6 +254,45 @@ describe Arachni::Element::Link do
                 end
             end
         end
+
+        context 'when its value is' do
+            let(:link) { described_class.from_document( url, link_html ).first }
+            let(:value) { 'a' * size }
+            let(:href) { "test?param=#{value}" }
+            let(:link_html) do
+                tpl = '<html>
+                           <body>
+                               <a href="%s"></a>
+                           </body>
+                      </html>'
+
+                tpl % href[0...size]
+            end
+
+            context "equal to #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE }
+
+                it 'returns empty array' do
+                    link.should be_nil
+                end
+            end
+
+            context "larger than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE + 1 }
+
+                it 'sets empty value' do
+                    link.should be_nil
+                end
+            end
+
+            context "smaller than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE - 1 }
+
+                it 'leaves the values alone' do
+                    link.inputs['param'].should_not be_empty
+                end
+            end
+        end
     end
 
     describe '.encode' do

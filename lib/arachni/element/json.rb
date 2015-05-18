@@ -104,6 +104,7 @@ class JSON < Base
         # @return   [JSON, nil]
         def from_request( url, request )
             return if !request.body.is_a?( String ) || request.body.empty?
+            return if too_big?( request.body )
 
             data =  begin
                 ::JSON.load( request.body )

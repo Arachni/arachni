@@ -1076,6 +1076,49 @@ EOHTML
                     }
                 end
             end
+
+            context 'when its value is' do
+                let(:form) { described_class.from_document( url, form_html ).first }
+                let(:value) { 'a' * size }
+                let(:form_html) do
+                    '<html>
+                        <body>
+                            <form method="post" action="/form" name="my_form">
+                                <input type="text" name="input_1" value="' + value + '">
+                                <input type="text" name="input_2" value="val_2">
+                                <input type="submit">
+                            </form>
+                        </body>
+                    </html>'
+                end
+
+                context "equal to #{described_class::MAX_SIZE}" do
+                    let(:size) { described_class::MAX_SIZE }
+
+                    it 'returns empty array' do
+                        form.inputs['input_1'].should be_empty
+                        form.inputs['input_2'].should == 'val_2'
+                    end
+                end
+
+                context "larger than #{described_class::MAX_SIZE}" do
+                    let(:size) { described_class::MAX_SIZE + 1 }
+
+                    it 'sets empty value' do
+                        form.inputs['input_1'].should be_empty
+                        form.inputs['input_2'].should == 'val_2'
+                    end
+                end
+
+                context "smaller than #{described_class::MAX_SIZE}" do
+                    let(:size) { described_class::MAX_SIZE - 1 }
+
+                    it 'leaves the values alone' do
+                        form.inputs['input_1'].should == value
+                        form.inputs['input_2'].should == 'val_2'
+                    end
+                end
+            end
         end
     end
 

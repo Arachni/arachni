@@ -170,6 +170,7 @@ class LinkTemplate < Base
             end
 
             document.search( '//a' ).map do |link|
+                next if too_big?( link['href'] )
                 next if !(href = to_absolute( link['href'], base_url ))
 
                 template, inputs = extract_inputs( href, templates )

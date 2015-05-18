@@ -15,6 +15,7 @@
             is set.
 - `Element`
     - Cleaned up per-element input value encoding.
+    - Enforce a `MAX_SIZE` on acceptable values during parsing.
 - `Check::Auditor`
     - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
 - `Issue`

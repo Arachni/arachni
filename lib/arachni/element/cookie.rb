@@ -356,7 +356,12 @@ class Cookie < Base
 
                 cookie_hash['path'] ||= '/'
                 cookie_hash['name']  = decode( cookie.name )
-                cookie_hash['value'] = decode( cookie.value )
+
+                if too_big?( cookie.value )
+                    cookie_hash['value'] = ''
+                else
+                    cookie_hash['value'] = decode( cookie.value )
+                end
 
                 new( { url: url, source: str }.merge( cookie_hash.my_symbolize_keys ) )
             end.flatten.compact
@@ -379,6 +384,8 @@ class Cookie < Base
                 cookie_pair.strip!
 
                 k, v = *cookie_pair.split( '=', 2 )
+
+                v = '' if too_big?( v )
 
                 new(
                     url:    url,

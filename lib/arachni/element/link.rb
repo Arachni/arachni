@@ -114,6 +114,8 @@ class Link < Base
             end
 
             document.search( '//a' ).map do |link|
+                next if too_big?( link['href'] )
+
                 href = to_absolute( link['href'], base_url )
                 next if !href
 

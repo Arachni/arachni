@@ -1315,6 +1315,13 @@ class Browser
 
         request.headers['user-agent'] = Options.http.user_agent
 
+        # The proxy has an unlimited response_max_size so if we're not requesting
+        # an asset remove the response_max_size option so that it'll end up using
+        # the system settings.
+        if !request_for_asset?( request )
+            request.response_max_size = nil
+        end
+
         # Signal the proxy to continue with its request to the origin server.
         true
     end
@@ -1382,8 +1389,11 @@ class Browser
         return if !enforce_scope?
 
         # Only allow CSS and JS resources to be loaded from out-of-scope domains.
-        !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
-            (request.scope.out? || request.scope.redundant?)
+        !request_for_asset?( request ) && (request.scope.out? || request.scope.redundant?)
+    end
+
+    def request_for_asset?( request )
+        ['css', 'js'].include?( request.parsed_url.resource_extension )
     end
 
     def capture( request )

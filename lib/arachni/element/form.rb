@@ -305,16 +305,20 @@ class Form < Base
 
                     # Handle the easy stuff first...
                     if elem.name != 'select'
-                        options[:inputs][name]           = elem_attrs
+                        options[:inputs][name] = elem_attrs
 
                         if elem_attrs[:type] == :submit
                             multiple_choice_submits[name] ||= Set.new
-                            multiple_choice_submits[name] <<
-                                elem_attrs[:value]
+                            multiple_choice_submits[name] << elem_attrs[:value]
                         end
 
                         options[:inputs][name][:type]  ||= :text
                         options[:inputs][name][:value] ||= ''
+
+                        if too_big?( options[:inputs][name][:value] )
+                            options[:inputs][name][:value] = ''
+                        end
+
                         next
                     end
 
@@ -322,19 +326,22 @@ class Form < Base
                     if elem.children.css('option').any?
                         elem.children.css('option').each do |child|
                             h = attributes_to_hash( child.attributes )
-                            h[:type] = :select
+                            h[:type]    = :select
+                            h[:value] ||= child.text
+
+                            if too_big?( h[:value] )
+                                h[:value] = ''
+                            end
 
                             # Prefer the selected or first option.
                             if h[:selected]
-                                h[:value] ||= child.text
                                 options[:inputs][name] = h
                             else
-                                h[:value] ||= child.text
                                 options[:inputs][name] ||= h
                             end
                         end
 
-                        # The select has no options, use an empty string.
+                    # The select has no options, use an empty string.
                     else
                         options[:inputs][name] = {
                             type:  :select,

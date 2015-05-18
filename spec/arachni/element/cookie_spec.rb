@@ -467,6 +467,44 @@ describe Arachni::Element::Cookie do
                 cookie.path.should == '/'
             end
         end
+
+        context 'when its value is' do
+            let(:value) { 'a' * size }
+            let(:cookie) { "cookie=#{value}; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.foo.com; HttpOnly" }
+
+            context "equal to #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE }
+
+                it 'returns empty array' do
+                    described_class.from_set_cookie(
+                        'http://test.com/stuff',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "larger than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE + 1 }
+
+                it 'sets empty value' do
+                    described_class.from_set_cookie(
+                        'http://test.com/stuff',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "smaller than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE - 1 }
+
+                it 'leaves the values alone' do
+                    described_class.from_set_cookie(
+                        'http://test.com/stuff',
+                        cookie
+                    ).first.value.should == value
+                end
+            end
+        end
     end
 
     describe '.from_string' do
@@ -486,6 +524,44 @@ describe Arachni::Element::Cookie do
              c = cookies.shift
              c.name.should == 'name2'
              c.value.should == 'value2'
+        end
+
+        context 'when its value is' do
+            let(:value) { 'a' * size }
+            let(:cookie) { "cookie=#{value}" }
+
+            context "equal to #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE }
+
+                it 'sets empty value' do
+                    described_class.from_string(
+                        'http://owner-url.com',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "larger than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE + 1 }
+
+                it 'sets empty value' do
+                    described_class.from_string(
+                        'http://owner-url.com',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "smaller than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE - 1 }
+
+                it 'leaves the values alone' do
+                    described_class.from_string(
+                        'http://owner-url.com',
+                        cookie
+                    ).first.value.should == value
+                end
+            end
         end
     end
 
