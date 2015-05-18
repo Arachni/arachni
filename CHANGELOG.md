@@ -9,6 +9,10 @@
         - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
     - `Request`
         - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
+        - `#response_max_size` -- In addition to setting the `maxfilesize` for
+            the `Typhoeus::Request`, stream bodies and manually abort if the
+            buffer exceeds the limit -- covers cases where no `Content-Type`
+            is set.
 - `Element`
     - Cleaned up per-element input value encoding.
 - `Check::Auditor`

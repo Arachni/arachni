@@ -584,51 +584,99 @@ describe Arachni::HTTP::Client do
         end
 
         describe :response_max_size do
-            context "when #{Arachni::OptionGroups::HTTP}#response_max_size is specified" do
-                it 'ignores bodies of responses which are larger than specified' do
-                    @opts.http.response_max_size = 0
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync
-                    ).body.should be_empty
+            context 'when not specified' do
+                context "and #{Arachni::OptionGroups::HTTP}#response_max_size is specified" do
+                    context 'when response bodies are larger that its value' do
+                        it 'ignores them' do
+                            @opts.http.response_max_size = 0
+                            subject.request( @url + '/http_response_max_size',
+                                             mode: :sync
+                            ).body.should be_empty
 
-                    @opts.http.response_max_size = 1
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync
-                    ).body.should be_empty
+                            @opts.http.response_max_size = 1
+                            subject.request( @url + '/http_response_max_size',
+                                             mode: :sync
+                            ).body.should be_empty
 
-                    @opts.http.response_max_size = 999999
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync
-                    ).body.should be_empty
+                            @opts.http.response_max_size = 999999
+                            subject.request( @url + '/http_response_max_size',
+                                             mode: :sync
+                            ).body.should be_empty
+                        end
+                    end
 
-                    @opts.http.response_max_size = 1000000
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync
-                    ).body.should_not be_empty
+                    context 'when response bodies are not larger that its value' do
+                        it 'reads them' do
+                            @opts.http.response_max_size = 1000000
+                            subject.request( @url + '/http_response_max_size',
+                                             mode: :sync
+                            ).body.should_not be_empty
+                        end
+                    end
                 end
             end
 
             context 'when specified' do
-                it 'ignores bodies of responses which are larger than specified' do
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync,
-                                   response_max_size: 0
-                    ).body.should be_empty
+                context 'when response bodies are larger that its value' do
+                    it 'ignores them' do
+                        subject.request( @url + '/http_response_max_size',
+                                         mode: :sync,
+                                         response_max_size: 0
+                        ).body.should be_empty
 
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync,
-                                   response_max_size: 1
-                    ).body.should be_empty
+                        subject.request( @url + '/http_response_max_size',
+                                         mode: :sync,
+                                         response_max_size: 1
+                        ).body.should be_empty
 
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync,
-                                   response_max_size: 999999
-                    ).body.should be_empty
+                        subject.request( @url + '/http_response_max_size',
+                                         mode: :sync,
+                                         response_max_size: 999999
+                        ).body.should be_empty
+                    end
+                end
 
-                    subject.request( @url + '/http_response_max_size',
-                                   mode: :sync,
-                                   response_max_size: 1000000
-                    ).body.should_not be_empty
+                context 'when response bodies are not larger that its value' do
+                    it 'reads them' do
+                        subject.request( @url + '/http_response_max_size',
+                                         mode: :sync,
+                                         response_max_size: 1000000
+                        ).body.should_not be_empty
+                    end
+                end
+
+                context 'when the server returns no Content-Length' do
+                    it 'still works' do
+                        r = subject.request( @url + '/http_response_max_size/without_content_length',
+                                         mode: :sync,
+                                         response_max_size: 0
+                        )
+
+                        r.headers.should_not include 'Content-Type'
+                        r.body.should be_empty
+
+                        r = subject.request( @url + '/http_response_max_size/without_content_length',
+                                         mode: :sync,
+                                         response_max_size: 1
+                        )
+                        r.headers.should_not include 'Content-Type'
+                        r.body.should be_empty
+
+                        r = subject.request( @url + '/http_response_max_size/without_content_length',
+                                         mode: :sync,
+                                         response_max_size: 999999
+                        )
+                        r.headers.should_not include 'Content-Type'
+                        r.body.should be_empty
+
+                        r = subject.request( @url + '/http_response_max_size/without_content_length',
+                                         mode: :sync,
+                                         response_max_size: 1000000
+                        )
+
+                        r.headers.should_not include 'Content-Type'
+                        r.body.should_not be_empty
+                    end
                 end
             end
 
@@ -640,6 +688,42 @@ describe Arachni::HTTP::Client do
                                    response_max_size: -1
                     ).body.should_not be_empty
                 end
+            end
+
+            it 'works for asynchronous requests' do
+                subject.request( @url + '/http_response_max_size/without_content_length',
+                                     mode: :sync,
+                                     response_max_size: 0
+                ) do |r|
+                    r.headers.should_not include 'Content-Type'
+                    r.body.should be_empty
+                end
+
+                subject.request( @url + '/http_response_max_size/without_content_length',
+                                 mode: :sync,
+                                 response_max_size: 1
+                ) do |r|
+                    r.headers.should_not include 'Content-Type'
+                    r.body.should be_empty
+                end
+
+                subject.request( @url + '/http_response_max_size/without_content_length',
+                                 mode: :sync,
+                                 response_max_size: 999999
+                ) do |r|
+                    r.headers.should_not include 'Content-Type'
+                    r.body.should be_empty
+                end
+
+                subject.request( @url + '/http_response_max_size/without_content_length',
+                                 mode: :sync,
+                                 response_max_size: 1000000
+                ) do |r|
+                    r.headers.should_not include 'Content-Type'
+                    r.body.should_not be_empty
+                end
+
+                subject.run
             end
         end
 

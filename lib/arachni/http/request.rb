@@ -340,6 +340,10 @@ class Request < Message
 
             accept_encoding: 'gzip, deflate',
             nosignal:        true,
+
+            # If Content-Length is missing this option will have no effect, so
+            # we'll also stream the body to make sure that we can at least abort
+            # the reading of the response body if it exceeds this limit.
             maxfilesize:     max_size,
 
             # Don't keep the socket alive if this is a blocking request because
@@ -381,17 +385,25 @@ class Request < Message
             end
         end
 
-        curl = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
-        r = Typhoeus::Request.new( curl, options )
+        curl             = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
+        typhoeus_request = Typhoeus::Request.new( curl, options )
 
         if @on_complete.any?
-            r.on_complete do |typhoeus_response|
+            response_body_buffer = ''
+            set_body_reader( typhoeus_request, response_body_buffer )
+
+            typhoeus_request.on_complete do |typhoeus_response|
+                if typhoeus_request.options[:maxfilesize]
+                    typhoeus_response.options[:response_body] =
+                        response_body_buffer
+                end
+
                 fill_in_data_from_typhoeus_response typhoeus_response
                 handle_response Response.from_typhoeus( typhoeus_response )
             end
         end
 
-        r
+        typhoeus_request
     end
 
     def to_h
@@ -499,6 +511,23 @@ class Request < Message
 
     private
 
+    def client_run
+        typhoeus_request = to_typhoeus
+
+        response_body_buffer = ''
+        set_body_reader( typhoeus_request, response_body_buffer )
+
+        typhoeus_response = typhoeus_request.run
+
+        if typhoeus_request.options[:maxfilesize]
+            typhoeus_response.options[:response_body] = response_body_buffer
+        end
+
+        fill_in_data_from_typhoeus_response typhoeus_response
+
+        Response.from_typhoeus( typhoeus_response )
+    end
+
     def fill_in_data_from_typhoeus_response( response )
         # Only grab the last data.
         # In case of CONNECT calls for HTTPS via proxy the first data will be
@@ -507,11 +536,20 @@ class Request < Message
         @effective_body = response.debug_info.data_out.last
     end
 
-    def client_run
-        response = to_typhoeus.run
-        fill_in_data_from_typhoeus_response response
+    def set_body_reader( typhoeus_request, buffer )
+        return if !typhoeus_request.options[:maxfilesize]
 
-        Response.from_typhoeus( response )
+        aborted = nil
+        typhoeus_request.on_body do |chunk|
+            next aborted if aborted
+
+            if buffer.size >= typhoeus_request.options[:maxfilesize]
+                buffer.clear
+                next aborted = :abort
+            end
+
+            buffer << chunk
+        end
     end
 
 end
