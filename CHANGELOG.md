@@ -13,6 +13,8 @@
             the `Typhoeus::Request`, stream bodies and manually abort if the
             buffer exceeds the limit -- covers cases where no `Content-Type`
             is set.
+- `Page`
+    - `#has_script?` -- Detect using the body instead of using the parsed document.
 - `Element`
     - Cleaned up per-element input value encoding.
     - Enforce a `MAX_SIZE` on acceptable values during parsing.
