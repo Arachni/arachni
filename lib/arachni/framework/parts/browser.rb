@@ -77,14 +77,17 @@ module Browser
 
     # @private
     def apply_dom_metadata( page )
-        return false if page.dom.depth > 0 || !page.has_script? ||
-            !browser
+        return false if page.dom.depth > 0 || !page.has_script? || !browser
 
         # This optimization only affects Form::DOM elements, so don't bother
         # if none of the checks are interested in any of them.
-        return false if !checks.values.find do |c|
+        audits_elements = checks.values.find do |c|
             c.check? page, [Element::Form::DOM, Element::Cookie::DOM]
         end
+
+        page.clear_cache
+
+        return false if !audits_elements
 
         begin
             bp = browser.load( page ).to_page
