@@ -7,6 +7,8 @@
 - `HTTP`
     - `Client`
         - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
+        - Trigger garbage collections before and after performing the queued
+            requests to prevent large RAM spikes.
     - `Request`
         - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
         - `#response_max_size` -- In addition to setting the `maxfilesize` for

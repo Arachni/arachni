@@ -469,7 +469,15 @@ class Client
         @running = true
 
         reset_burst_info
+
+        # Lots of new objects are about to be generated, make sure that old ones
+        # have been collected to prevent RAM spikes.
+        GC.start if @queue_size > 0
+
         client_run
+
+        # Collect the new objects as well.
+        GC.start if @queue_size > 0
 
         @queue_size = 0
         @running    = false
