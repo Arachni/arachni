@@ -771,32 +771,35 @@ class Browser
         # them if no events are associated with it.
         #
         # This can save **A LOT** of time during the audit.
-        if Options.audit.form_doms? && @javascript.supported?
-            page.forms.each do |form|
-                next if !form.node || !form.dom
+        if @javascript.supported?
+            if Options.audit.form_doms?
+                page.forms.each do |form|
+                    next if !form.node || !form.dom
 
-                action = form.node['action'].to_s
-                form.dom.browser = self
+                    action = form.node['action'].to_s
+                    form.dom.browser = self
 
-                next if action.downcase.start_with?( 'javascript:' ) ||
-                    form.dom.locate.events.any?
+                    next if action.downcase.start_with?( 'javascript:' ) ||
+                        form.dom.locate.events.any?
 
-                form.skip_dom = true
+                    form.skip_dom = true
+                end
+
+                page.update_metadata
+                page.clear_cache
             end
 
-            page.update_metadata
-        end
+            if Options.audit.cookie_doms?
+                sinks = @javascript.taint_tracer.data_flow_sinks
+                page.cookies.each do |cookie|
+                    next if sinks.include?( cookie.name ) ||
+                        sinks.include?( cookie.value )
 
-        if Options.audit.cookie_doms? && @javascript.supported?
-            sinks = @javascript.taint_tracer.data_flow_sinks
-            page.cookies.each do |cookie|
-                next if sinks.include?( cookie.name ) ||
-                    sinks.include?( cookie.value )
+                    cookie.skip_dom = true
+                end
 
-                cookie.skip_dom = true
+                page.update_metadata
             end
-
-            page.update_metadata
         end
 
         page
@@ -1333,6 +1336,9 @@ class Browser
             next if !transition.running? || transition.element != request.url
             transition.complete
         end
+
+        # Don't store assets, the browsers will cache them accordingly.
+        return if request_for_asset?( request )
 
         # No-matter the scope, don't store resources for external domains.
         return if !response.scope.in_domain?
