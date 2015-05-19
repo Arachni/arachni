@@ -27,8 +27,9 @@ module Data
     #   `true` if push was successful, `false` if the `page` matched any
     #   exclusion criteria or has already been seen.
     def push_to_page_queue( page, force = false )
-        return false if !force && (!accepts_more_pages? || state.page_seen?( page ) ||
-            page.scope.out? || page.scope.redundant?( true ))
+        return false if !force && (!accepts_more_pages? ||
+            state.page_seen?( page ) || page.scope.out? ||
+            page.scope.redundant?( true ))
 
         # We want to update from the already loaded page cache (if there is one)
         # as we have to store the page anyways (needs to go through Browser analysis)
@@ -40,6 +41,7 @@ module Data
         # some other component; however, it wouldn't be the end of the world if
         # that were to happen.
         ElementFilter.update_from_page_cache page
+        page.clear_cache
 
         data.push_to_page_queue page
         state.page_seen page
