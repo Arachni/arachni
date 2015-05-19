@@ -9,18 +9,13 @@
 # Extracts paths from anchor elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.2
 class Arachni::Parser::Extractors::DataURL < Arachni::Parser::Extractors::Base
 
-    # Returns an array of paths as plain strings
-    #
-    # @param    [Nokogiri]  doc
-    #   Nokogiri document.
-    #
-    # @return   [Array<String>]
-    #   Paths.
-    def run( doc )
-        doc.search( '//a[@data-url]' ).map { |a| a['data-url'] }
+    def run
+        return [] if !includes?( 'data-url' )
+
+        document.search( '//a[@data-url]' ).map { |a| a['data-url'] }
     end
 
 end

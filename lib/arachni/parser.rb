@@ -31,14 +31,26 @@ class Parser
         # @abstract
         class Base
 
+            attr_reader :html
+            attr_reader :document
+            attr_reader :downcased_html
+
+            def initialize( options = {} )
+                @html           = options[:html]
+                @downcased_html = @html.downcase
+                @document       = options[:document]
+            end
+
             # This method must be implemented by all checks and must return an
             # array of paths as plain strings
             #
-            # @param    [Nokogiri]  document   Nokogiri document
-            #
             # @return   [Array<String>]  paths
             # @abstract
-            def run( document )
+            def run
+            end
+
+            def includes?( string_or_regexp )
+                !!@downcased_html[string_or_regexp]
             end
 
         end
@@ -309,7 +321,12 @@ class Parser
     def run_extractors
         begin
             self.class.extractors.available.map do |name|
-                exception_jail( false ){ self.class.extractors[name].new.run( document ) }
+                exception_jail false do
+                    self.class.extractors[name].new(
+                        document: document,
+                        html:     body
+                    ).run
+                end
             end.flatten.uniq.compact.
                 map { |path| to_absolute( path ) }.compact.uniq.
                 reject { |path| skip?( path ) }

@@ -29,6 +29,8 @@
     - `#has_script?` -- Detect using the body instead of using the parsed document.
 - `Parser`
     - Optimized to avoid HTML parsing if it contains no indication of elements.
+    - `Extractors` -- Optimized to avoid HTML parsing if it contains no
+        indication of elements.
 - `Element`
     - Cleaned up per-element input value encoding.
     - Enforce a `MAX_SIZE` on acceptable values during parsing.
