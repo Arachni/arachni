@@ -16,13 +16,26 @@ module Arachni::Element
 class Server < Base
     include Capabilities::WithAuditor
 
-    # Used to determine how different a resource should be in order to be sent
-    # to the {Trainer#push}.
+    # Valid responses to discovery checks should vary *wildly*, especially when
+    # considering the types of directories and files that these checks look for.
     #
-    # Ideally, all identified resources should be analyzed by the {Trainer} but
-    # there can be cases where unreliable custom-4o4 signatures lead to FPs and
-    # feeding FPs to the system can create an infinite loop.
+    # On the other hand, custom-404 or such responses will have many things in
+    # common which makes it possible to spot them without much bother.
+    #
+    # Ideally, custom-404s will be identified properly by the
+    # {HTTP::Client::Dynamic404Handler} but this is here to save our ass in case
+    # there's a bug or an unforeseen edge-case or something.
+    #
+    # Also, identified resources should be analyzed by the {Trainer} but there
+    # can be cases where unreliable custom-404 signatures lead to FPs and feeding
+    # FPs to the system can create an infinite loop.
     SIMILARITY_TOLERANCE = 0.25
+
+    # Remark in case of an untrusted issue.
+    REMARK = 'This issue was logged by a discovery check but ' +
+        'the response for the resource it identified is very similar to responses ' +
+        'for other resources of similar type. This is a strong indication that ' +
+        'the logged issue is a false positive.'
 
     def initialize( url )
         super url: url
@@ -118,6 +131,21 @@ class Server < Base
         s << '>'
     end
 
+    def self.flag_issues_as_untrusted( issue_digests )
+        issue_digests.uniq.each do |digest|
+            Arachni::Data.issues[digest].variations.each do |issue|
+                issue.add_remark :meta_analysis, REMARK
+                issue.trusted = false
+            end
+        end
+    end
+
+    def self.flag_issues_if_untrusted( similarity, issue_digests )
+        return if similarity < SIMILARITY_TOLERANCE
+
+        flag_issues_as_untrusted( issue_digests )
+    end
+
     private
 
     def analyze
@@ -153,10 +181,14 @@ class Server < Base
         # framework custom-404s and get into an infinite loop.
         train = similarity < SIMILARITY_TOLERANCE
 
+        issue_digests = []
         @candidates.each do |response, block|
-            log response, train, &block
+            issue_digests << log( response, train, &block ).digest
         end
 
+        return if train
+
+        self.class.flag_issues_as_untrusted( issue_digests )
     ensure
         @candidates.clear
     end
@@ -164,12 +196,14 @@ class Server < Base
     def log( response, train = true, &block )
         block.call( response ) if block_given?
 
-        auditor.log_remote_file( response )
+        issue = auditor.log_remote_file( response )
 
-        return if !train
+        return issue if !train
 
         # Use the newly identified resource to increase the scan scope.
         auditor.framework.trainer.push( response )
+
+        issue
     end
 
 end

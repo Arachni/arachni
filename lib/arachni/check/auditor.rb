@@ -348,18 +348,22 @@ module Auditor
     #       If `false`, a message will be printed to stdout containing the status of
     #       the operation.
     #
+    # @return   [Issue]
+    #
     # @see #log_issue
     def log_remote_file( page_or_response, silent = false )
         page = page_or_response.is_a?( Page ) ?
             page_or_response : page_or_response.to_page
 
-        log_issue(
+        issue = log_issue(
             vector: Element::Server.new( page.url ),
             proof:  page.response.status_line,
             page:   page
         )
 
         print_ok( "Found #{page.url}" ) if !silent
+
+        issue
     end
     alias :log_remote_directory :log_remote_file
 

@@ -75,17 +75,30 @@ describe Arachni::Element::Server do
                     name:      'Auditor',
                     shortname: 'auditor_test'
                 }
-                logged_issue.variations.first.proof.should == logged_issue.variations.first.page.response.status_line
+                logged_issue.variations.first.proof.should ==
+                    logged_issue.variations.first.page.response.status_line
+
                 logged_issue.name.should == @auditor.class.info[:issue][:name]
                 logged_issue.trusted.should be_true
             end
 
-            it "does not push the response to the #{Arachni::Trainer}" do
-                file = @base_url + 'true'
-                auditable.log_remote_file_if_exists( file )
+            context 'when one issue is logged' do
+                it "does not push the response to the #{Arachni::Trainer}" do
+                    auditable.log_remote_file_if_exists( @base_url + 'true' )
 
-                @framework.trainer.should_not receive(:push)
-                @framework.http.run
+                    @framework.trainer.should_not receive(:push)
+                    @framework.http.run
+                end
+            end
+
+            context 'when multiple issues are logged' do
+                it "pushes the responses to the #{Arachni::Trainer}" do
+                    auditable.log_remote_file_if_exists( @base_url + 'true' )
+                    auditable.log_remote_file_if_exists( "#{url}/each_candidate_dom_element" )
+
+                    @framework.trainer.should receive(:push).twice
+                    @framework.http.run
+                end
             end
         end
 
@@ -95,12 +108,41 @@ describe Arachni::Element::Server do
                 @framework.http.run
                 Arachni::Data.issues.should be_empty
             end
+
+            it "does not push the responses to the #{Arachni::Trainer}" do
+                auditable.log_remote_file_if_exists( @base_url + 'false' )
+
+                @framework.trainer.should_not receive(:push)
+                @framework.http.run
+            end
         end
 
         context 'when issues are too similar' do
+            let(:check_url) { @base_url + 'true' }
+
+            it 'flags them as untrusted' do
+                10.times { auditable.log_remote_file_if_exists( check_url ) }
+                @framework.http.run
+
+                issues.should be_any
+                issues.each do |issue|
+                    issue.should be_untrusted
+                end
+            end
+
+            it 'assigns a remark' do
+                10.times { auditable.log_remote_file_if_exists( check_url ) }
+                @framework.http.run
+
+                issues.should be_any
+
+                issues.each do |issue|
+                    issue.remarks[:meta_analysis].should == [described_class::REMARK]
+                end
+            end
+
             it "does not push the responses to the #{Arachni::Trainer}" do
-                file = @base_url + 'true'
-                10.times { auditable.log_remote_file_if_exists( file ) }
+                10.times { auditable.log_remote_file_if_exists( url ) }
 
                 @framework.trainer.should_not receive(:push)
                 @framework.http.run

@@ -30,6 +30,9 @@
 - `Element`
     - Cleaned up per-element input value encoding.
     - Enforce a `MAX_SIZE` on acceptable values during parsing.
+    - `Server`
+        - `#log_remote_file_if_exists?` -- Flag issues as untrusted at that point
+        if possible, instead of at the end of the scan.
 - `Check::Auditor`
     - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
 - `Issue`
