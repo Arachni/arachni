@@ -130,29 +130,32 @@ describe Arachni::Framework::Parts::Browser do
             subject.browser.stub(:to_page) { browser_page }
             Arachni::Check::Auditor.stub(:check?) { true }
             page.stub(:has_script?) { true }
-            page.dom.stub(:depth) { 0 }
+            page.dom.transitions.clear
         end
 
         it 'returns true' do
+            page.dom.transitions.clear
             subject.apply_dom_metadata( page ).should be_true
         end
 
         it 'applies DOM metadata' do
+            page.dom.transitions.clear
             page.should receive(:import_metadata).with( browser_page, :skip_dom )
 
             subject.apply_dom_metadata( page )
         end
 
         it 'clears the #browser buffers' do
+            page.dom.transitions.clear
             subject.browser.should receive(:clear_buffers)
 
             subject.apply_dom_metadata( page )
         end
 
-        context "when #{Arachni::Page::DOM}#depth is" do
-            context 0 do
+        context "when #{Arachni::Page::DOM}#transitions are" do
+            context 'empty' do
                 before do
-                    page.dom.stub(:depth) { 0 }
+                    page.dom.transitions.clear
                 end
 
                 it 'returns true' do
@@ -160,9 +163,9 @@ describe Arachni::Framework::Parts::Browser do
                 end
             end
 
-            context '> 0' do
+            context 'not empty' do
                 before do
-                    page.dom.stub(:depth) { 1 }
+                    page.dom.transitions = Factory[:page].dom.transitions
                 end
 
                 it 'returns false' do
