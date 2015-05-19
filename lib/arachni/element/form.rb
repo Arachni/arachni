@@ -262,7 +262,14 @@ class Form < Base
         #
         # @return   [Array<Form>]
         def from_document( url, document, ignore_scope = false )
-            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            if !document.is_a?( Nokogiri::HTML::Document )
+                document = document.to_s
+
+                return [] if !(document =~ /<\s*form/i)
+
+                document = Nokogiri::HTML( document )
+            end
+
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
             base_url = to_absolute( base_url, url )
 

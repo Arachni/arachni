@@ -27,9 +27,12 @@
             is set.
 - `Page`
     - `#has_script?` -- Detect using the body instead of using the parsed document.
+- `Parser`
+    - Optimized to avoid HTML parsing if it contains no indication of elements.
 - `Element`
     - Cleaned up per-element input value encoding.
     - Enforce a `MAX_SIZE` on acceptable values during parsing.
+    - Optimized to avoid HTML parsing if it contains no indication of elements.
     - `Server`
         - `#log_remote_file_if_exists?` -- Flag issues as untrusted at that point
         if possible, instead of at the end of the scan.

@@ -106,7 +106,14 @@ class Link < Base
         #
         # @return   [Array<Link>]
         def from_document( url, document )
-            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            if !document.is_a?( Nokogiri::HTML::Document )
+                document = document.to_s
+
+                return [] if !(document =~ /\?.*=/)
+
+                document = Nokogiri::HTML( document )
+            end
+
             base_url =  begin
                 document.search( '//base[@href]' )[0]['href']
             rescue

@@ -148,7 +148,7 @@ class Parser
     #   Forms from {#document}.
     def forms
         return @forms.freeze if @forms
-        return [] if !text?
+        return [] if !text? || !(body =~ /<\s*form/i)
 
         f = Form.from_document( @url, document )
         return f if !@secondary_responses
@@ -199,7 +199,7 @@ class Parser
     #   Links in {#document}.
     def links
         return @links.freeze if @links
-        return @links = [link].compact if !text?
+        return @links = [link].compact if !text? || !(body =~ /\?.*=/)
 
         @links = [link].compact | Link.from_document( @url, document )
     end
@@ -227,7 +227,7 @@ class Parser
     # @return   [Hash]
     #   Parameters found in {#url}.
     def link_vars
-        return {} if (!parsed = uri_parse( @url ))
+        return {} if !(parsed = uri_parse( @url ))
 
         @link_vars ||= parsed.rewrite.query_parameters.freeze
     end
