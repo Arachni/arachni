@@ -117,31 +117,35 @@ module Audit
         # resulting pages back to the framework.
         perform_browser_analysis( page )
 
-        # Remove elements which have already passed through here.
-        pre_audit_element_filter( page )
+        run_http = false
 
-        # Filter the page through the browser and apply DOM metadata to itself
-        # and its elements in order to allow for audit optimizations down the
-        # line.
-        #
-        # For example, if a DOM element has no associated events, there's no
-        # point in it getting audited.
-        apply_dom_metadata( page )
+        if checks.any?
+            # Remove elements which have already passed through here.
+            pre_audit_element_filter( page )
 
-        notify_on_effective_page_audit( page )
+            # Filter the page through the browser and apply DOM metadata to
+            # itself and its elements in order to allow for audit optimizations
+            # down the line.
+            #
+            # For example, if a DOM element has no associated events, there's
+            # no point in it getting audited.
+            apply_dom_metadata( page )
 
-        # Run checks which **don't** benefit from fingerprinting first, so that
-        # we can use the responses of their HTTP requests to fingerprint the
-        # webapp platforms, so that the checks which **do** benefit from knowing
-        # the remote platforms can run more efficiently.
-        run_http = run_checks( @checks.without_platforms, page )
-        run_http = true if run_checks( @checks.with_platforms, page )
+            notify_on_effective_page_audit( page )
+
+            # Run checks which **don't** benefit from fingerprinting first, so
+            # that we can use the responses of their HTTP requests to fingerprint
+            # the webapp platforms, so that the checks which **do** benefit from
+            # knowing the remote platforms can run more efficiently.
+            run_http = run_checks( @checks.without_platforms, page )
+            run_http = true if run_checks( @checks.with_platforms, page )
+        end
 
         notify_after_page_audit( page )
 
-        # Makes it easier on the GC but it is important that it be called **after**
-        # all the callbacks have been executed because they may need access to
-        # the cached data and there's no sense in re-parsing.
+        # Makes it easier on the GC but it is important that it be called
+        # **after** all the callbacks have been executed because they may need
+        # access to the cached data and there's no sense in re-parsing.
         page.clear_cache
 
         if Arachni::Check::Auditor.has_timeout_candidates?
