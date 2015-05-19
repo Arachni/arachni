@@ -31,6 +31,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                 res = nil
                 client.get( url + 'static/crap' ) { |c_res| res = c_res }
                 client.run
+
                 bool = false
                 subject._404?( res ) { |c_bool| bool = c_bool }
                 client.run
@@ -39,6 +40,18 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
         end
 
         context 'when dealing with a dynamic handler' do
+            context 'which at any point returns non-200' do
+                it 'aborts the check' do
+                    response = client.get( url + 'dynamic/erratic', mode: :sync )
+
+                    check = nil
+                    subject._404?( response ) { |bool| check = bool }
+                    client.run
+
+                    check.should be_nil
+                end
+            end
+
             context 'which includes the requested resource in the response' do
                 it 'returns true' do
                     res = nil
