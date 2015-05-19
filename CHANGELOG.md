@@ -2,6 +2,10 @@
 
 ## _Under development_
 
+- `UI`
+    - `Output`
+        - `#error_log_fd` -- Catch `Errno` system errors (like `Too many open files`)
+            to avoid crashing.
 - `Framework`
     - Pause is now instant.
 - `HTTP`
