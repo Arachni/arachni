@@ -6,8 +6,6 @@
     web site for more information on licensing and terms of use.
 =end
 
-require 'monitor'
-
 module Arachni
 
 # Real browser driver providing DOM/JS/AJAX support.
@@ -16,13 +14,6 @@ module Arachni
 class BrowserCluster
     include UI::Output
     include Utilities
-
-    include Support::Mixins::Observable
-
-    # @!method on_page_audit( &block )
-    advertise :on_queue
-
-    advertise :on_job_done
 
     personalize_output
 
@@ -179,6 +170,14 @@ class BrowserCluster
         nil
     end
 
+    # def on_queue( &block )
+        # synchronize { @on_queue << block }
+    # end
+
+    # def on_job_done( &block )
+        # synchronize { @on_job_done << block }
+    # end
+
     # @param    [Page, String, HTTP::Response]  resource
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.
@@ -312,6 +311,7 @@ class BrowserCluster
     # @private
     def pop
         {} while job_done?( job = @jobs.pop )
+        notify_on_pop job
         job
     end
 
@@ -377,6 +377,23 @@ class BrowserCluster
     end
 
     private
+
+    def notify_on_queue( job )
+        return if !@on_queue
+        @on_queue.call job
+    end
+
+    def notify_on_job_done( job )
+        return if !@on_job_done
+
+        @on_job_done.call job
+    end
+
+    def notify_on_pop( job )
+        return if !@on_pop
+
+        @on_pop.call job
+    end
 
     def fail_if_shutdown
         fail Error::AlreadyShutdown, 'Cluster has been shut down.' if @shutdown

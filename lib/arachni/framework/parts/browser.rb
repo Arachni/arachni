@@ -30,24 +30,15 @@ module Browser
                 state.set_status_message :browser_cluster_startup
             end
 
-            @browser_cluster ||= BrowserCluster.new
+            @browser_cluster ||= BrowserCluster.new(
+                on_pop: proc do
+                    next if !pause?
+
+                    print_debug 'Blocking browser cluster on pop.'
+                    wait_if_paused
+                end
+            )
             state.clear_status_messages
-
-            @browser_cluster.on_queue do
-                if pause?
-                    print_debug 'Blocking browser cluster on queue.'
-                end
-
-                wait_if_paused
-            end
-
-            @browser_cluster.on_job_done do
-                if pause?
-                    print_debug 'Blocking browser cluster on job done.'
-                end
-
-                wait_if_paused
-            end
 
             @browser_cluster
         end
@@ -77,17 +68,19 @@ module Browser
 
     # @private
     def apply_dom_metadata( page )
-        return false if page.dom.depth > 0 || !page.has_script? || !browser
+        # Avoid pages which have already passed through the browser or don't
+        # have JS.
+        return false if page.dom.transitions.any? || !browser || !page.has_script?
 
-        # This optimization only affects Form::DOM elements, so don't bother
-        # if none of the checks are interested in any of them.
+        # This optimization only affects Form::DOM & Cookie::DOM elements,
+        # so don't bother if none of the checks are interested in them.
         audits_elements = checks.values.find do |c|
             c.check? page, [Element::Form::DOM, Element::Cookie::DOM]
         end
 
-        page.clear_cache
-
         return false if !audits_elements
+
+        page.clear_cache
 
         begin
             bp = browser.load( page ).to_page
@@ -145,21 +138,12 @@ module Browser
         synchronize do
             return if !push_to_page_queue page
 
-            pushed_paths = nil
-            if crawl?
-                pushed_paths = push_paths_from_page( page ).size
-            end
-
             print_status "Got new page from the browser-cluster: #{page.dom.url}"
             print_info "DOM depth: #{page.dom.depth} (Limit: #{options.scope.dom_depth_limit})"
 
             if page.dom.transitions.any?
                 print_info '  Transitions:'
                 page.dom.print_transitions( method(:print_info), '    ' )
-            end
-
-            if pushed_paths
-                print_info "  -- Analysis resulted in #{pushed_paths} usable paths."
             end
         end
     end

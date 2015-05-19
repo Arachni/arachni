@@ -18,19 +18,6 @@ describe Arachni::BrowserCluster do
     end
 
     describe '#initialize' do
-        describe :pool_size do
-            it 'sets the amount of browsers to instantiate' do
-                @cluster = described_class.new( pool_size: 3 )
-                @cluster.workers.size.should == 3
-            end
-
-            it "defaults to #{Arachni::OptionGroups::BrowserCluster}#pool_size" do
-                Arachni::Options.browser_cluster.pool_size = 10
-                @cluster = described_class.new
-                @cluster.workers.size.should == 10
-            end
-        end
-
         it "sets window width to #{Arachni::OptionGroups::BrowserCluster}#screen_width" do
             Arachni::Options.browser_cluster.screen_width = 100
 
@@ -46,6 +33,67 @@ describe Arachni::BrowserCluster do
             @cluster = described_class.new
             @cluster.workers.each do |browser|
                 browser.javascript.run('return window.innerHeight').should == 200
+            end
+        end
+
+        describe :pool_size do
+            it 'sets the amount of browsers to instantiate' do
+                @cluster = described_class.new( pool_size: 3 )
+                @cluster.workers.size.should == 3
+            end
+
+            it "defaults to #{Arachni::OptionGroups::BrowserCluster}#pool_size" do
+                Arachni::Options.browser_cluster.pool_size = 10
+                @cluster = described_class.new
+                @cluster.workers.size.should == 10
+            end
+        end
+
+        describe :on_pop do
+            it 'assigns blocks to be passed each poped job' do
+                cj = nil
+                @cluster = described_class.new(
+                    on_pop: proc do |j|
+                        cj = j
+                    end
+                )
+
+                @cluster.queue( job ){}
+                @cluster.wait
+
+                cj.id.should == job.id
+            end
+        end
+
+        describe :on_queue do
+            it 'assigns blocks to be passed each queued job' do
+                cj = nil
+                @cluster = described_class.new(
+                    on_queue: proc do |j|
+                        cj = j
+                    end
+                )
+
+                @cluster.queue( job ){}
+
+                cj.id.should == job.id
+                @cluster.wait
+            end
+        end
+
+        describe :on_job_done do
+            it 'assigns blocks to be passed each finished job' do
+                cj = nil
+                @cluster = described_class.new(
+                    on_job_done: proc do |j|
+                        cj = j
+                    end
+                )
+
+                @cluster.queue( job ){}
+                @cluster.wait
+
+                cj.id.should == job.id
             end
         end
     end
@@ -95,38 +143,6 @@ describe Arachni::BrowserCluster do
             end
 
             @cluster.pending_job_counter.should == 0
-        end
-    end
-
-    describe '#on_queue' do
-        it 'assigns blocks to be passed each queued job' do
-            @cluster = described_class.new
-
-            cj = nil
-            @cluster.on_queue do |j|
-                cj = j
-            end
-
-            @cluster.queue( job ){}
-
-            cj.id.should == job.id
-            @cluster.wait
-        end
-    end
-
-    describe '#on_job_done' do
-        it 'assigns blocks to be passed each finished job' do
-            @cluster = described_class.new
-
-            cj = nil
-            @cluster.on_job_done do |j|
-                cj = j
-            end
-
-            @cluster.queue( job ){}
-            @cluster.wait
-
-            cj.id.should == job.id
         end
     end
 
