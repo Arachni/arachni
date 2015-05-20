@@ -77,7 +77,7 @@ get '/form/straight' do
 end
 
 get '/cookie' do
-    headers 'Set-Cookie' => 'input=value'
+    headers 'Set-Cookie' => 'input=default'
 
     <<-EOHTML
         <a href="/cookie/straight">Form</a>
@@ -107,8 +107,11 @@ get '/cookie/straight' do
                 }
 
                 url = getCookie('input');
-                if( url.indexOf( 'http' ) != 0 ) url = 'http://' + url;
-                window.location = url;
+
+                if( url != 'default' ) {
+                    if( url.indexOf( 'http' ) != 0 ) url = 'http://' + url;
+                    window.location = url;
+                }
             </script>
         </body>
     EOHTML

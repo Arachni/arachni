@@ -106,7 +106,6 @@ module State
 
         if shutdown_browsers
             state.set_status_message :browser_cluster_shutdown
-            shutdown_browser
             shutdown_browser_cluster
         end
 
@@ -385,7 +384,7 @@ module State
                 new_element = true
             end
 
-            if e.respond_to?( :dom ) && e.dom
+            if page.dom.depth > 0 && e.respond_to?( :dom ) && e.dom
                 if !state.element_checked?( e.dom )
                     state.element_checked e.dom
                     new_element = true

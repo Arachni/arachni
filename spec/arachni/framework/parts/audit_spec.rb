@@ -190,14 +190,6 @@ describe Arachni::Framework::Parts::Audit do
             end
         end
 
-        it 'passes the page to #apply_dom_metadata' do
-            page = Arachni::Page.from_url( @url + '/link' )
-
-            subject.checks.load :taint
-            subject.should receive(:apply_dom_metadata).with(page)
-            subject.audit_page( page )
-        end
-
         context 'when checks were' do
             context 'ran against the page' do
                 it 'returns true' do

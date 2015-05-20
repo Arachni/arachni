@@ -44,12 +44,6 @@ module Browser
         end
     end
 
-    def browser
-        return if !use_browsers?
-
-        @browser ||= Arachni::Browser.new( store_pages: false )
-    end
-
     # @return   [Bool]
     #   `true` if the environment has a browser, `false` otherwise.
     def host_has_browser?
@@ -66,54 +60,12 @@ module Browser
         browser_cluster.skip_states( browser_job.id )
     end
 
-    # @private
-    def apply_dom_metadata( page )
-        # Avoid pages which have already passed through the browser or don't
-        # have JS.
-        return false if page.dom.transitions.any? || !browser || !page.has_script?
-
-        # This optimization only affects Form::DOM & Cookie::DOM elements,
-        # so don't bother if none of the checks are interested in them.
-        audits_elements = checks.values.find do |c|
-            c.check? page, [Element::Form::DOM, Element::Cookie::DOM]
-        end
-
-        return false if !audits_elements
-
-        page.clear_cache
-
-        begin
-            bp = browser.load( page ).to_page
-        rescue Selenium::WebDriver::Error::WebDriverError,
-            Watir::Exception::Error => e
-            print_debug "Could not apply metadata to '#{page.dom.url}'" <<
-                                    " because: #{e} [#{e.class}"
-            return
-        end
-
-        # Request timeout or some other failure...
-        return if bp.code == 0
-
-        page.import_metadata( bp, :skip_dom )
-
-        true
-    ensure
-        browser.clear_buffers if browser
-    end
-
     def use_browsers?
         options.browser_cluster.pool_size > 0 &&
             options.scope.dom_depth_limit > 0 && host_has_browser?
     end
 
     private
-
-    def shutdown_browser
-        return if !@browser
-
-        @browser.shutdown
-        @browser = nil
-    end
 
     def shutdown_browser_cluster
         return if !@browser_cluster
@@ -158,11 +110,50 @@ module Browser
             Options.scope.dom_depth_limit.to_i < page.dom.depth + 1 ||
             !page.has_script?
 
-        browser_cluster.queue( browser_job.forward( resource: page ) ) do |response|
-            handle_browser_page response.page
+        # We need to schedule a separate job for applying metadata because it
+        # needs to have a clean state.
+        schedule_dom_metadata_application( page )
+
+        browser_cluster.queue( browser_job.forward( resource: page ) ) do |result|
+            handle_browser_page result.page
         end
 
         true
+    end
+
+    def schedule_dom_metadata_application( page )
+        return if page.dom.depth > 0
+        return if page.metadata.map { |_, data| data['skip_dom'].values }.
+            flatten.compact.any?
+
+        # This optimization only affects Form & Cookie DOM elements,
+        # so don't bother if none of the checks are interested in them.
+        return if !checks.values.
+            find { |c| c.check? page, [Element::Form::DOM, Element::Cookie::DOM], true }
+
+        page.clear_cache
+
+        browser_cluster.with_browser do |browser|
+            apply_dom_metadata( browser, page )
+        end
+    end
+
+    def apply_dom_metadata( browser, page )
+        bp = nil
+
+        begin
+            bp = browser.load( page ).to_page
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error => e
+            print_debug "Could not apply metadata to '#{page.dom.url}'" <<
+                            " because: #{e} [#{e.class}"
+            return
+        end
+
+        # Request timeout or some other failure...
+        return if bp.code == 0
+
+        handle_browser_page bp
     end
 
     def browser_job

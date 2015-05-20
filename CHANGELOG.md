@@ -10,7 +10,9 @@
         - `#error_log_fd` -- Catch `Errno` system errors (like `Too many open files`)
             to avoid crashing.
 - `Framework`
-    - Pause is now instant.
+    - `#pause` -- Pause is now instant.
+    - `#audit_page` -- Application of DOM metadata now happens asynchronously
+        and uses the `BrowserCluster` instead of an independent `Browser`.
 - `HTTP`
     - `Client`
         - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
@@ -26,7 +28,7 @@
             buffer exceeds the limit -- covers cases where no `Content-Type`
             is set.
 - `Page`
-    - `#has_script?` -- Detect using the body instead of using the parsed document.
+    - `#has_script?` -- Detect using the body instead of the parsed document.
 - `Parser`
     - Optimized to avoid HTML parsing if it contains no indication of elements.
     - `Extractors` -- Optimized to avoid HTML parsing if it contains no

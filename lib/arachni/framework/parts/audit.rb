@@ -123,14 +123,6 @@ module Audit
             # Remove elements which have already passed through here.
             pre_audit_element_filter( page )
 
-            # Filter the page through the browser and apply DOM metadata to
-            # itself and its elements in order to allow for audit optimizations
-            # down the line.
-            #
-            # For example, if a DOM element has no associated events, there's
-            # no point in it getting audited.
-            apply_dom_metadata( page )
-
             notify_on_effective_page_audit( page )
 
             # Run checks which **don't** benefit from fingerprinting first, so

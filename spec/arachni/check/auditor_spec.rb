@@ -202,10 +202,13 @@ describe Arachni::Check::Auditor do
         element_classes.each do |element|
             context "when #{Arachni::OptionGroups::Audit}##{element.type.to_s.gsub( '_dom', '')}? is" do
                 let(:page) do
-                    Arachni::Page.from_data(
+                    p = Arachni::Page.from_data(
                         url: url,
                         "#{element.type}s".gsub( '_dom', '').to_sym => [Factory[element.type]]
                     )
+                    p.dom.stub(:depth) { 1 }
+                    p.stub(:has_script?) { true }
+                    p
                 end
                 before(:each) { auditor.class.info[:elements] = [element] }
 
@@ -225,6 +228,22 @@ describe Arachni::Check::Auditor do
                         context 'and the check supports it' do
                             if element == Arachni::Element::Form::DOM ||
                                 element == Arachni::Element::Cookie::DOM
+
+                                context 'and Page::DOM#depth is' do
+                                    context '0' do
+                                        it 'returns false' do
+                                            page.dom.stub(:depth) { 0 }
+                                            auditor.class.check?( page ).should be_false
+                                        end
+                                    end
+
+                                    context '> 0' do
+                                        it 'returns true' do
+                                            page.dom.stub(:depth) { 1 }
+                                            auditor.class.check?( page ).should be_true
+                                        end
+                                    end
+                                end
 
                                 context 'and Page#has_script? is' do
                                     context true do

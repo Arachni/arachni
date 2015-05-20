@@ -483,15 +483,6 @@ describe Arachni::Framework::Parts::State do
             end
         end
 
-        it 'shuts down the #browser' do
-            Arachni::Framework.new do |f|
-                f.options.url = @url + '/elem_combo'
-
-                f.browser.should receive(:shutdown)
-                f.clean_up
-            end
-        end
-
         it 'stops the #plugins' do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'

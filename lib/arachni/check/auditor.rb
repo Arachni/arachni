@@ -80,16 +80,21 @@ module Auditor
             #   Element types to check for.
             #
             # @return   [Bool]
-            def self.check?( page, restrict_to_elements = nil )
+            def self.check?( page, restrict_to_elements = nil, ignore_dom_depth = false )
                 return false if issue_limit_reached?
                 return true  if elements.empty?
 
                 audit                = Arachni::Options.audit
                 restrict_to_elements = [restrict_to_elements].flatten.compact
 
+                # We use procs to make the decisions to avoid loading the page
+                # element caches unless it's absolutely necessary.
+                #
+                # Also, it's better to audit Form & Cookie DOM elements only
+                # after the page has gone through the browser, because then
+                # we'll have some context in the metadata which can help us
+                # optimize DOM audits.
                 {
-                    # We use procs to make the decision, to avoid loading the page
-                    # element caches unless it's absolutely necessary.
                     Element::Link              =>
                         proc { audit.links?     && !!page.links.find { |e| e.inputs.any? } },
                     Element::Link::DOM         =>
@@ -97,20 +102,22 @@ module Auditor
                     Element::Form              =>
                         proc { audit.forms? && !!page.forms.find { |e| e.inputs.any? } },
                     Element::Form::DOM         =>
-                        proc { audit.form_doms? && page.has_script? && !!page.forms.find(&:dom) },
+                        proc { (ignore_dom_depth || page.dom.depth > 0) &&
+                            audit.form_doms? && page.has_script? && !!page.forms.find(&:dom) },
                     Element::Cookie            =>
                         proc { audit.cookies? && page.cookies.any? },
                     Element::Cookie::DOM       =>
-                        proc { audit.cookie_doms? && page.has_script? && page.cookies.any? },
+                        proc { (ignore_dom_depth || page.dom.depth > 0) &&
+                            audit.cookie_doms? && page.has_script? && page.cookies.any? },
                     Element::Header            =>
                         proc { audit.headers? && page.headers.any? },
                     Element::LinkTemplate      =>
                         proc { audit.link_templates? && page.link_templates.find { |e| e.inputs.any? } },
                     Element::LinkTemplate::DOM =>
                         proc { audit.link_template_doms? && !!page.link_templates.find(&:dom) },
-                    Element::JSON      =>
+                    Element::JSON              =>
                         proc { audit.jsons? && page.jsons.find { |e| e.inputs.any? } },
-                    Element::XML      =>
+                    Element::XML               =>
                         proc { audit.xmls? && page.xmls.find { |e| e.inputs.any? } },
                     Element::Body              => !page.body.empty?,
                     Element::GenericDOM        => page.has_script?,
