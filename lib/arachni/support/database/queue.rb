@@ -100,6 +100,10 @@ class Queue < Base
     end
     alias :length :size
 
+    def free_buffer_size
+        max_buffer_size - buffer_size
+    end
+
     def buffer_size
         @buffer.size
     end

@@ -167,6 +167,13 @@ describe Arachni::Support::Database::Queue do
         end
     end
 
+    describe '#free_buffer_size' do
+        it 'returns the size of the available buffer' do
+            (subject.max_buffer_size - 2).times { |i| subject << i }
+            subject.free_buffer_size.should == 2
+        end
+    end
+
     describe '#buffer_size' do
         it 'returns the size of the in-memory entries' do
             subject.buffer_size.should == 0
