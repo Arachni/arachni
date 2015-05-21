@@ -90,7 +90,13 @@ class Worker < Arachni::Browser
                 exception_jail false do
                     begin
                         @job.configure_and_run( self )
-                    rescue Selenium::WebDriver::Error::WebDriverError
+                    rescue Selenium::WebDriver::Error::WebDriverError,
+                        Watir::Exception::Error => e
+
+                        print_debug "Error while processing job: #{@job}"
+                        print_debug
+                        print_debug_exception e
+
                         browser_respawn
                     end
                 end
