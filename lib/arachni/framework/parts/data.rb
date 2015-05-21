@@ -172,7 +172,7 @@ module Data
         [5, page_queue.free_buffer_size].min.times do
             return if url_queue.empty?
 
-            pop_page_from_url_queue { |p| ap p.dom.url; push_to_page_queue p }
+            pop_page_from_url_queue { |p| push_to_page_queue p }
         end
 
         !url_queue.empty?
