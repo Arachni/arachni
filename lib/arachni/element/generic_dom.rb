@@ -74,7 +74,7 @@ class GenericDOM < Base
     def value
         transition.options[:value]
     end
-    alias :affected_input_value value
+    alias :affected_input_value :value
 
     # @return   [Hash]
     def to_h

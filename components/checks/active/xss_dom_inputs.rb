@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.3
+# @version 0.2
 class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
     INPUTS = Set.new([:input, :textarea])
@@ -23,20 +23,29 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
     end
 
     def run
-        # If the page doesn't contain any supported inputs don't bother.
-        return if !page.document ||
-            !INPUTS.find { |type| page.document.css( type.to_s ).any? }
+        return if !page.document
 
+        # Everything past this point requires inputs to be present.
+        return if !page.has_elements?( INPUTS.to_a )
+
+        # Fill in inputs and trigger their associated events.
+        trigger_inputs
+
+        return if !page.has_elements?( :button )
+
+        # Fill in inputs and hit buttons.
+        trigger_buttons
+    end
+
+    def trigger_inputs
         with_browser do |browser|
             browser.load( page ).each_element_with_events do |locator, events|
 
                 locator_id = "#{page.url}:#{locator.css}"
-
                 next if !INPUTS.include?( locator.tag_name ) || audited?( locator_id )
                 audited locator_id
 
                 filter_events( locator.tag_name, events ).each do |event, _|
-
                     # Instead of working with the same browser we do it this way
                     # in order to distribute the workload via the browser cluster.
                     with_browser do |b|
@@ -51,20 +60,67 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
                         p.dom.transitions << transition
 
-                        check_and_log p
+                        check_and_log( p )
                     end
                 end
             end
         end
     end
 
-    def filter_events( element, events )
-        supported = Set.new( Arachni::Browser::Javascript.events_for( element ) )
-        events.reject { |name, _| !supported.include? ('on' + name.to_s.gsub( /^on/, '' )).to_sym }
+    def trigger_buttons
+        with_browser do |browser|
+            browser.load( page ).each_element_with_events do |locator, events|
+
+                locator_id = "#{page.url}:#{locator.css}"
+                next if locator.tag_name != :button || audited?( locator_id )
+                audited locator_id
+
+                events.each do |event, _|
+                    with_browser do |b|
+                        b.javascript.taint = self.tag_name
+                        b.load page
+
+                        transitions = fill_in_inputs( b )
+                        next if transitions.empty?
+
+                        transition = b.fire_event( locator, event )
+                        next if !transition
+
+                        transitions << transition
+
+                        # Page may be out of scope, some sort of JS redirection.
+                        next if !(p = b.to_page)
+
+                        transitions.each do |t|
+                            p.dom.transitions << t
+                        end
+
+                        check_and_log( p )
+                    end
+                end
+            end
+        end
+    end
+
+    def fill_in_inputs( browser )
+        transitions = []
+
+        INPUTS.each do |tag|
+            browser.watir.send("#{tag}s").each do |locator|
+                transitions << fill_in_input( browser, locator )
+            end
+        end
+
+        transitions.compact
+    end
+
+    def fill_in_input( browser, locator )
+        browser.fire_event( locator, :input, value: self.tag )
     end
 
     def check_and_log( page )
         return if !(proof = find_proof( page ))
+
         log(
             vector: Element::GenericDOM.new(
                 url:        page.url,
@@ -76,9 +132,17 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
     end
 
     def find_proof( page )
+        return if !page.has_elements?( self.tag_name )
+
         proof = page.document.css( self.tag_name )
         return if proof.empty?
+
         proof.to_s
+    end
+
+    def filter_events( element, events )
+        supported = Set.new( Arachni::Browser::Javascript.events_for( element ) )
+        events.reject { |name, _| !supported.include? ('on' + name.to_s.gsub( /^on/, '' )).to_sym }
     end
 
     def self.info
@@ -89,7 +153,7 @@ Injects an HTML element into page text fields, triggers their associated events
 and inspects the DOM for proof of vulnerability.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.3',
+            version:     '0.2',
             elements:    [Element::GenericDOM],
 
             issue:       {

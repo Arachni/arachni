@@ -9,7 +9,7 @@ describe name_from_filename do
 
     def issue_count_per_element
         {
-            Element::GenericDOM => 8
+            Element::GenericDOM => 9
         }
     end
 
@@ -20,13 +20,11 @@ describe name_from_filename do
     end
 
     easy_test do
-        issues.each do |issue|
-            issue.vector.type.should == :input
-        end
+        issues.select { |i| i.vector.type == :input }.size.should == 8
+        issues.select { |i| i.vector.type == :button }.size.should == 1
 
         Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
             find_issue( event ).vector.action.should end_with event.to_s
         end
-
     end
 end

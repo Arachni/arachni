@@ -399,6 +399,26 @@ class Page
         @has_javascript = false
     end
 
+    # @param    [String, Symbol,Array<String, Symbol>]  tags
+    #   Element tag names.
+    #
+    # @return   [Boolean]
+    #   `true` if the page contains any of the given elements, `false` otherwise.
+    def has_elements?( *tags )
+        return if !text?
+
+        tags.flatten.each do |tag|
+            tag = tag.to_s
+
+            next if !(body =~ /<\s*#{tag}/i)
+
+            return false if !document
+            return true  if document.css( tag ).any?
+        end
+
+        false
+    end
+
     # @return   [Boolean]
     #   `true` if the body of the page is text-base, `false` otherwise.
     def text?

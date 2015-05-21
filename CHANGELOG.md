@@ -57,6 +57,8 @@
         - `xss_dom_inputs`
             - Don't perform redundant audits.
             - Don't process custom events.
+            - Updated to handle cases where a button needs to be clicked after
+                filling in the inputs.
         - `unvalidated_redirect`
             - Escalated severity to 'High'.
     - Passive
