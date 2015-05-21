@@ -4,7 +4,7 @@
 
 - `OptionGroups`
     - `HTTP`
-        - `#request_queue_size` -- Lowered from `500` to `180`.
+        - `#request_queue_size` -- Lowered from `500` to `100`.
 - `UI`
     - `Output`
         - `#error_log_fd` -- Catch `Errno` system errors (like `Too many open files`)
