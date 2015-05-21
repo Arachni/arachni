@@ -11,6 +11,8 @@
             to avoid crashing.
 - `Framework`
     - `#pause` -- Pause is now instant.
+    - `#audit` -- Substantially simplified and optimized the consumption of URL
+        and page queues.
     - `#audit_page` -- Application of DOM metadata now happens asynchronously
         and uses the `BrowserCluster` instead of an independent `Browser`.
 - `HTTP`

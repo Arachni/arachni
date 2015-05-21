@@ -206,66 +206,21 @@ module Audit
 
         @audit_queues_done = false
 
-        # If for some reason we've got pages in the page queue this early,
-        # consume them and get it over with.
-        audit_page_queue
+        while !suspended? && !page_limit_reached? && (page = pop_page)
 
-        next_page = nil
-        while !suspended? && !page_limit_reached? &&
-            (page = next_page || pop_page_from_url_queue)
+            session.ensure_logged_in
 
-            # Schedule the next page to be grabbed along with the audit requests
-            # for the current page in order to avoid blocking.
-            next_page = nil
-            next_page_call = proc do
-                pop_page_from_url_queue { |p| next_page = p }
-            end
+            replenish_page_queue_from_url_queue
 
-            # If we have login capabilities make sure that our session is valid
-            # before grabbing and auditing the next page.
-            if session.can_login?
-                # Schedule the login check to happen along with the audit requests
-                # to prevent blocking and grab the next page as well.
-                session.logged_in? do |bool|
-                    next next_page_call.call if bool
-
-                    session.login
-                    next_page_call
-                end
-            else
-                next_page_call.call
-            end
-
-            # We're counting on piggybacking the next page retrieval with the
+            # We're counting on piggybacking the page queue replenishing on the
             # page audit, however if there wasn't an audit we need to force an
             # HTTP run.
             audit_page( page ) or http.run
 
-            if next_page && suspend?
-                data.page_queue << next_page
-            end
-
             handle_signals
-
-            # Consume pages somehow triggered by the audit and pushed by the
-            # trainer or plugins or whatever.
-            audit_page_queue
         end
-
-        audit_page_queue
 
         @audit_queues_done = true
-        true
-    end
-
-    # Audits the page queue.
-    #
-    # @see #pop_page_from_queue
-    def audit_page_queue
-        while !suspended? && !page_limit_reached? && (page = pop_page_from_queue)
-            audit_page( page )
-            handle_signals
-        end
     end
 
     def harvest_http_responses

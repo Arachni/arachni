@@ -101,12 +101,24 @@ module Data
         !url_queue.empty? || !page_queue.empty?
     end
 
+    # @return   [Page, nil]
+    #   A page if the queues aren't empty, `nil` otherwise.
+    def pop_page
+        pop_page_from_queue || pop_page_from_url_queue
+    end
+
+    # @return   [Page, nil]
+    #   A page if the queue wasn't empty, `nil` otherwise.
     def pop_page_from_url_queue( &block )
         return if url_queue.empty?
 
         grabbed_page = nil
-        Page.from_url( url_queue.pop,
-                       http: { update_cookies: true, performer: self }
+        Page.from_url(
+            url_queue.pop,
+           http: {
+               update_cookies: true,
+               performer:      self
+           }
         ) do |page|
             @retries[page.url.hash] ||= 0
 
@@ -127,7 +139,8 @@ module Data
                 @failures << page.url
 
                 print_error "Giving up trying to audit: #{page.url}"
-                print_error "Couldn't get a response after #{AUDIT_PAGE_MAX_TRIES} tries: #{page.response.return_message}."
+                print_error "Couldn't get a response after #{AUDIT_PAGE_MAX_TRIES}" +
+                                " tries: #{page.response.return_message}."
             else
                 print_bad "Retrying for: #{page.url} [#{page.response.return_message}]"
                 @retries[page.url.hash] += 1
@@ -137,14 +150,32 @@ module Data
             grabbed_page = nil
             block.call grabbed_page if block_given?
         end
+
         http.run if !block_given?
         grabbed_page
     end
 
-    # @return   [Page]
+    # @return   [Page, nil]
+    #   A page if the queue wasn't empty, `nil` otherwise.
     def pop_page_from_queue
         return if page_queue.empty?
         page_queue.pop
+    end
+
+    def replenish_page_queue_from_url_queue
+        return if !page_queue.empty?
+
+        # Number pulled out of my ass, low enough to not add any noticeable
+        # stress, hopefully high enough to grab us at least one page that has
+        # some workload which will result in HTTP requests which will mask the
+        # next replenishing operation.
+        [5, page_queue.free_buffer_size].min.times do
+            return if url_queue.empty?
+
+            pop_page_from_url_queue { |p| ap p.dom.url; push_to_page_queue p }
+        end
+
+        !url_queue.empty?
     end
 
     def add_to_sitemap( page )
