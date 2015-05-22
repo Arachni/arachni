@@ -2,7 +2,8 @@ require 'sinatra'
 require 'sinatra/contrib'
 require_relative '../../../../lib/arachni'
 
-@@hit_count ||= 0
+@@hit_count       ||= 0
+@@image_hit_count ||= 0
 
 get '/' do
     @@hit_count += 1
@@ -22,6 +23,56 @@ get '/' do
                 document.write( navigator.userAgent );
             </script>
         </div>
+    </body>
+</html>
+HTML
+end
+
+get '/asset_domains/link' do
+    <<HTML
+<html>
+    <body>
+        <link href="http://blah.link.stuff/link.css" />
+    </body>
+</html>
+HTML
+end
+
+get '/asset_domains/input' do
+    <<HTML
+<html>
+    <body>
+        <input type="image" src="http://blah.input.stuff/input.png" />
+    </body>
+</html>
+HTML
+end
+
+get '/asset_domains/script' do
+    <<HTML
+<html>
+    <body>
+        <script src="http://blah.script.stuff/script.js"></script>
+    </body>
+</html>
+HTML
+end
+
+get '/asset_domains/img' do
+    <<HTML
+<html>
+    <body>
+        <img src="http://blah.img.stuff/img.png" />
+    </body>
+</html>
+HTML
+end
+
+get '/asset_domains/extension/js' do
+    <<HTML
+<html>
+    <body>
+        <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
     </body>
 </html>
 HTML
@@ -286,6 +337,10 @@ get '/fire_event/form/image-input' do
 HTML
 end
 
+get '/test.png' do
+    @@image_hit_count += 1
+end
+
 Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
     get "/fire_event/input/#{event}" do
         <<-EOHTML
@@ -367,7 +422,7 @@ get '/form-with-image-button' do
     <html>
       <form>
         <input type="text" name="stuff" value="blah">
-        <input type="image" name="myImageButton" src="/__sinatra__/404.png">
+        <input type="image" name="myImageButton" src="/test.png">
       </form>
     </html>
 HTML
@@ -697,14 +752,6 @@ get '/dom-cookies-values' do
 HTML
 end
 
-get '/image.png' do
-    @@image_hit = true
-end
-
-get '/image-hit' do
-    @@image_hit.to_s
-end
-
 get '/explore' do
     <<HTML
 <html>
@@ -936,6 +983,10 @@ get '/hit-count' do
     @@hit_count.to_s
 end
 
+get '/image-hit-count' do
+    @@image_hit_count.to_s
+end
+
 get '/clear-hit-count' do
-    @@hit_count = 0
+    @@image_hit_count = @@hit_count = 0
 end

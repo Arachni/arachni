@@ -72,6 +72,17 @@ class Browser
 
     HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
 
+    ASSET_EXTENSIONS = Set.new(
+        ['css', 'js', 'jpg', 'jpeg', 'png', 'gif']
+    )
+
+    ASSET_EXTRACTORS = [
+        /<\s*link.*?href=['"](.*?)['"].*>/im,
+        /<\s*script.*?src=['"](.*?)['"].*>/im,
+        /<\s*img.*?src=['"](.*?)['"].*>/im,
+        /<\s*input.*?src=['"](.*?)['"].*>/im,
+    ]
+
     # @return   [Array<Page::DOM::Transition>]
     attr_reader :transitions
 
@@ -117,6 +128,18 @@ class Browser
     #   Path to the PhantomJS executable.
     def self.executable
         Selenium::WebDriver::PhantomJS.path
+    end
+
+    def self.asset_domains
+        @asset_domains ||= Set.new
+    end
+    asset_domains
+
+    def self.add_asset_domain( url )
+        return if !(url = Arachni::URI( url ))
+        return if !(domain = url.domain)
+
+        asset_domains << domain
     end
 
     # @param    [Hash]  options
@@ -314,6 +337,7 @@ class Browser
         end
 
         @last_url = url
+        self.class.add_asset_domain @last_url
 
         ensure_open_window
 
@@ -879,6 +903,8 @@ class Browser
     # @return   [Array<Cookie>]
     #   Browser cookies.
     def cookies
+        # return [] if Arachni::URI( url ).scope.out?
+
         js_cookies = begin
             # Watir doesn't tell us if cookies are HttpOnly, so we need to figure
             # this out ourselves, by checking for JS visibility.
@@ -889,6 +915,18 @@ class Browser
         end
 
         watir.cookies.to_a.map do |c|
+            # domain = c[:domain]
+            # if domain.start_with?( '.' )
+            #     domain = domain[1..-1]
+            # end
+            #
+            # ap url
+            # ap 1
+            # ap c
+            # next if !Arachni::URI( "http://#{domain}" ).scope.in_domain?
+            # ap 2
+            # ap c
+
             original_name = c[:name].to_s
 
             c[:path]     = '/' if c[:path] == '//'
@@ -1305,22 +1343,19 @@ class Browser
         # preloaded or cached response for it.
         return if from_preloads( request, response ) || from_cache( request, response )
 
-        begin
-            # Capture the request as elements of pages -- let's us grab AJAX and
-            # other browser requests and convert them into elements we can analyze
-            # and audit.
-            capture( request )
-        rescue => e
-            print_debug "Could not capture: #{request.url}"
-            print_debug request.body.to_s
-            print_debug_exception e
-        end
+        # Capture the request as elements of pages -- let's us grab AJAX and
+        # other browser requests and convert them into elements we can analyze
+        # and audit.
+        capture( request )
 
         request.headers['user-agent'] = Options.http.user_agent
 
         # The proxy has an unlimited response_max_size so if we're not requesting
         # an asset remove the response_max_size option so that it'll end up using
         # the system settings.
+        #
+        # However, this is not foolproof, a lot of assets don't have the expected
+        # extension.
         if !request_for_asset?( request )
             request.response_max_size = nil
         end
@@ -1338,12 +1373,14 @@ class Browser
         end
 
         # Don't store assets, the browsers will cache them accordingly.
-        return if request_for_asset?( request )
+        return if request_for_asset?( request ) || !response.text?
 
         # No-matter the scope, don't store resources for external domains.
         return if !response.scope.in_domain?
 
         return if enforce_scope? && response.scope.out?
+
+        whitelist_asset_domains( response )
 
         intercept response
         save_response response
@@ -1394,12 +1431,31 @@ class Browser
     def ignore_request?( request )
         return if !enforce_scope?
 
-        # Only allow CSS and JS resources to be loaded from out-of-scope domains.
-        !request_for_asset?( request ) && (request.scope.out? || request.scope.redundant?)
+        return false if request_for_asset?( request )
+
+        return true if !request.scope.follow_protocol?
+
+        return true if !request.scope.in_domain? &&
+            !self.class.asset_domains.include?( request.parsed_url.domain )
+
+        return true if request.scope.too_deep?
+        return true if !request.scope.include?
+        return true if request.scope.exclude?
+        return true if request.scope.redundant?
+
+        false
     end
 
     def request_for_asset?( request )
-        ['css', 'js'].include?( request.parsed_url.resource_extension )
+        ASSET_EXTENSIONS.include?( request.parsed_url.resource_extension.to_s.downcase )
+    end
+
+    def whitelist_asset_domains( response )
+        ASSET_EXTRACTORS.each do |regexp|
+            response.body.scan( regexp ).flatten.compact.each do |url|
+                self.class.add_asset_domain url
+            end
+        end
     end
 
     def capture( request )
@@ -1468,6 +1524,10 @@ class Browser
 
         @captured_pages << page if store_pages?
         notify_on_new_page( page )
+    rescue => e
+        print_debug "Could not capture: #{request.url}"
+        print_debug request.body.to_s
+        print_debug_exception e
     end
 
     def from_preloads( request, response )

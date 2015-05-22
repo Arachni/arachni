@@ -47,6 +47,7 @@
 - `Issue`
     - `#signature` -- Store `Regexp` source instead of converting it to String.
 - `Browser`
+    - Updated to extract and whitelist CDNs from response bodies.
     - `Javascript`
         - `TaintTracer`
             - Limited data and execution flow sinks to a max size of 50 entries.

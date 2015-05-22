@@ -42,6 +42,10 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/hit-count" ).body.to_i
     end
 
+    def image_hit_count
+        Typhoeus::Request.get( "#{@url}/image-hit-count" ).body.to_i
+    end
+
     def clear_hit_count
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
@@ -1871,6 +1875,48 @@ describe Arachni::Browser do
             @browser.source.should include( ua )
         end
 
+        context 'when the page requires an asset' do
+            before do
+                subject.goto url
+            end
+
+            let(:url) { "#{@url}/asset_domains" }
+
+            it 'whitelists the requested domain' do
+                described_class.asset_domains.should include Arachni::URI( @url ).domain
+            end
+
+            %w(link input script img).each do |type|
+                context 'via link' do
+                    let(:url) { "#{super()}/#{type}" }
+
+                    it 'whitelists it' do
+                        described_class.asset_domains.should include "#{type}.stuff"
+                    end
+                end
+            end
+
+            context 'with an extension of' do
+                described_class::ASSET_EXTENSIONS.each do |extension|
+                    context extension do
+                        it 'loads it'
+                    end
+                end
+            end
+
+            context 'without an extension' do
+                context 'and has been whitelisted' do
+                    it 'loads it'
+                end
+
+                context 'and has not been whitelisted' do
+                    described_class.stub(:asset_domains) { Set.new }
+
+                    it 'does not load it'
+                end
+            end
+        end
+
         context 'when the page has JS timeouts' do
             it 'waits for them to complete' do
                 time = Time.now
@@ -1911,33 +1957,23 @@ describe Arachni::Browser do
                 it 'does not load images' do
                     Arachni::Options.browser_cluster.ignore_images = true
                     @browser.shutdown
-                    @browser = described_class.new
-
-                    loaded_image = false
-                    @browser.on_response do |response|
-                        loaded_image ||= (response.parsed_url.resource_extension == 'png')
-                    end
+                    @browser = described_class.new( disk_cache: false )
 
                     @browser.load( "#{@url}form-with-image-button" )
 
-                    loaded_image.should be_false
+                    image_hit_count.should == 0
                 end
             end
 
             context false do
-                it 'does not load images' do
+                it 'loads images' do
                     Arachni::Options.browser_cluster.ignore_images = false
                     @browser.shutdown
-                    @browser = described_class.new
-
-                    loaded_image = false
-                    @browser.on_response do |response|
-                        loaded_image ||= (response.parsed_url.resource_extension == 'png')
-                    end
+                    @browser = described_class.new( disk_cache: false )
 
                     @browser.load( "#{@url}form-with-image-button" )
 
-                    loaded_image.should be_true
+                    image_hit_count.should == 1
                 end
             end
         end
@@ -1986,18 +2022,18 @@ describe Arachni::Browser do
                 transition.options[:cookies].should == cookie
             end
 
-        context 'when auditing existing cookies' do
-            it 'preserves the HttpOnly attribute' do
-                @browser.goto( @url )
-                @browser.cookies.size.should == 1
+            context 'when auditing existing cookies' do
+                it 'preserves the HttpOnly attribute' do
+                    @browser.goto( @url )
+                    @browser.cookies.size.should == 1
 
-                cookies = { @browser.cookies.first.name => 'updated' }
-                @browser.goto( @url, cookies: cookies )
+                    cookies = { @browser.cookies.first.name => 'updated' }
+                    @browser.goto( @url, cookies: cookies )
 
-                @browser.cookies.first.value == 'updated'
-                @browser.cookies.first.should be_http_only
+                    @browser.cookies.first.value == 'updated'
+                    @browser.cookies.first.should be_http_only
+                end
             end
-        end
 
         end
 
