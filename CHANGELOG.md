@@ -10,7 +10,7 @@
         - `#error_log_fd` -- Catch `Errno` system errors (like `Too many open files`)
             to avoid crashing.
 - `Framework`
-    - `#pause` -- Pause is now instant.
+    - `#pause` -- Pause is now near instant.
     - `#audit` -- Substantially simplified and optimized the consumption of URL
         and page queues.
     - `#audit_page` -- Application of DOM metadata now happens asynchronously

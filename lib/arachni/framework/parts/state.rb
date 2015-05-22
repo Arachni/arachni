@@ -65,7 +65,13 @@ module State
     def initialize
         super
 
-        reset_http_hooks
+        Element::Capabilities::Auditable.skip_like do |element|
+            if pause?
+                print_debug "Blocking on element audit: #{element.audit_id}"
+            end
+
+            wait_if_paused
+        end
 
         state.status = :ready
     end
@@ -129,17 +135,6 @@ module State
         @session = nil
 
         true
-    end
-
-    # @private
-    def reset_http_hooks
-        http.on_complete do
-            if pause?
-                print_debug 'Blocking HTTP client on complete.'
-            end
-
-            wait_if_paused
-        end
     end
 
     # @private
