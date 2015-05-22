@@ -172,7 +172,9 @@ module Data
         [5, page_queue.free_buffer_size].min.times do
             return if url_queue.empty?
 
-            pop_page_from_url_queue { |p| push_to_page_queue p }
+            # We push directly to the queue instead of using #push_to_page_queue
+            # because it's too early to deduplicate.
+            pop_page_from_url_queue { |p| page_queue << p }
         end
 
         !url_queue.empty?
