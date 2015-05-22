@@ -157,7 +157,8 @@ class Session
                 elsif (url = opts[:url])
                     http_opts = {
                         update_cookies:  true,
-                        follow_location: true
+                        follow_location: true,
+                        performer:       self
                     }
 
                     if async
@@ -267,7 +268,8 @@ class Session
 
         http_options = http_options.merge(
             mode:            block_given? ? :async : :sync,
-            follow_location: true
+            follow_location: true,
+            performer:       self
         )
 
         print_debug 'Performing login check.'
@@ -368,14 +370,22 @@ class Session
             page = form.submit(
                 mode:            :sync,
                 follow_location: false,
-                update_cookies:  true
+                update_cookies:  true,
+                performer:       self
             ).to_page
 
             if page.response.redirection?
                 url  = to_absolute( page.response.headers.location, page.url )
                 print_debug "Redirected to: #{url}"
 
-                page = Page.from_url( url, precision: 1, http: { update_cookies: true } )
+                page = Page.from_url(
+                    url,
+                    precision: 1,
+                    http: {
+                        performer:      self,
+                        update_cookies: true
+                    }
+                )
             end
         end
 
