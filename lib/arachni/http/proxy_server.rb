@@ -177,8 +177,10 @@ class ProxyServer < WEBrick::HTTPProxyServer
     #   Merges the given HTTP options with some default ones.
     def http_opts( options = {} )
         options.merge(
+            performer:         self,
+
             # Don't follow redirects, the client should handle this.
-            follow_location: false,
+            follow_location:   false,
 
             # Set the HTTP request timeout.
             timeout:           @options[:timeout],
