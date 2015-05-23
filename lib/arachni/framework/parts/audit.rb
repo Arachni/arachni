@@ -228,10 +228,6 @@ module Audit
         print_info 'Depending on server responsiveness and network' <<
                        ' conditions this may take a while.'
 
-        # Run all the queued HTTP requests and harvest the responses.
-        http.run
-
-        # Needed for some HTTP callbacks.
         http.run
     end
 
@@ -240,4 +236,3 @@ end
 end
 end
 end
-
