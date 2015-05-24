@@ -342,56 +342,89 @@ class Javascript
     # @see SCRIPT_BASE_URL
     # @see SCRIPT_LIBRARY
     def inject( response )
-        return false if has_js_initializer?( response )
-
         body = response.body.dup
 
-        # Schedule a tracer update at the beginning of each script block in order
-        # to put our hooks into any newly introduced functions.
-        #
-        # The fact that our update call seems to be taking place before any
-        # functions get the chance to be defined doesn't seem to matter.
-        body.gsub!(
-            /<script(.*?)>/i,
-            "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
-        )
+        if has_js_initializer?( response )
+            update_taints( body )
+            update_custom_code( body )
+        else
+            # Schedule a tracer update at the beginning of each script block in order
+            # to put our hooks into any newly introduced functions.
+            #
+            # The fact that our update call seems to be taking place before any
+            # functions get the chance to be defined doesn't seem to matter.
+            body.gsub!(
+                /<script(.*?)>/i,
+                "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
+            )
 
-        # Also perform an update after each script block, this is for external
-        # scripts.
-        body.gsub!(
-            /<\/script>/i,
-            "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
-                "</script> <!-- Script injected by #{self.class} -->\n"
-        )
+            # Also perform an update after each script block, this is for external
+            # scripts.
+            body.gsub!(
+                /<\/script>/i,
+                "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
+                    "</script> <!-- Script injected by #{self.class} -->\n"
+            )
 
+            body = <<-EOHTML
+<script src="#{script_url_for( :taint_tracer )}"></script> <!-- Script injected by #{self.class} -->
+<script>#{wrapped_taint_tracer_initializer}</script> <!-- Script injected by #{self.class} -->
+
+<script src="#{script_url_for( :dom_monitor )}"></script> <!-- Script injected by #{self.class} -->
+<script>
+#{@dom_monitor.stub.function( :initialize )};
+#{js_initialization_signal};
+
+#{wrapped_custom_code}
+</script> <!-- Script injected by #{self.class} -->
+
+#{body}
+            EOHTML
+        end
+
+        response.body = body
+        response.headers['content-length'] = response.body.size
+
+        true
+    end
+
+    private
+
+    def taints
         taints = [@taint]
+
         # Include cookie names and values in the trace so that the browser will
         # be able to infer if they're being used, to avoid unnecessary audits.
         if Options.audit.cookie_doms?
             taints |= HTTP::Client.cookies.map { |c| c.inputs.to_a }.flatten
         end
-        taints = taints.flatten.reject { |v| v.to_s.empty? }
 
-        response.body = <<-EOHTML
-            <script src="#{script_url_for( :taint_tracer )}"></script> <!-- Script injected by #{self.class} -->
-            <script> #{@taint_tracer.stub.function( :initialize, taints )} </script> <!-- Script injected by #{self.class} -->
-
-            <script src="#{script_url_for( :dom_monitor )}"></script> <!-- Script injected by #{self.class} -->
-            <script>
-                #{@dom_monitor.stub.function( :initialize )};
-                #{js_initialization_signal};
-
-                #{custom_code}
-            </script> <!-- Script injected by #{self.class} -->
-
-            #{body}
-        EOHTML
-
-        response.headers['content-length'] = response.body.bytesize
-        true
+        taints.flatten.reject { |v| v.to_s.empty? }
     end
 
-    private
+    def update_taints( body )
+        body.gsub!(
+            /\/\* #{token}_initialize_start \*\/(.*)\/\* #{token}_initialize_stop \*\//,
+            wrapped_taint_tracer_initializer
+        )
+    end
+
+    def update_custom_code( body )
+        body.gsub!(
+            /\/\* #{token}_code_start \*\/(.*)\/\* #{token}_code_stop \*\//,
+            wrapped_custom_code
+        )
+    end
+
+    def wrapped_taint_tracer_initializer
+        "/* #{token}_initialize_start */" <<
+            "#{@taint_tracer.stub.function( :initialize, taints )}" <<
+            "/* #{token}_initialize_stop */"
+    end
+
+    def wrapped_custom_code
+        "/* #{token}_code_start */#{custom_code}/* #{token}_code_stop */"
+    end
 
     def js_initialization_signal
         "window._#{token} = true"

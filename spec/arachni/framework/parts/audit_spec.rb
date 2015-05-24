@@ -232,7 +232,7 @@ describe Arachni::Framework::Parts::Audit do
 
                     f.run
 
-                    f.url_queue_total_size.should == 3
+                    f.url_queue_total_size.should == 5
                 end
             end
 
@@ -247,7 +247,7 @@ describe Arachni::Framework::Parts::Audit do
                         f.url_queue_total_size.should == 0
                         f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
                         f.run
-                        f.url_queue_total_size.should == 3
+                        f.url_queue_total_size.should == 5
 
                         f.reset
 

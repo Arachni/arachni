@@ -418,19 +418,30 @@ _#{subject.token}TaintTracer.update_tracers(); // Injected by Arachni::Browser::
         end
 
         context 'when the response already contains the JS code' do
-            it 'skips it' do
-                original_response = response.deep_clone
+            it 'updates the taints' do
                 subject.inject( response )
-                original_response.should_not == response
 
-                updated_response = response.deep_clone
+                presponse = response.deep_clone
+                pintializer = subject.taint_tracer.stub.function( :initialize, [] )
+
+                subject.taint = [ 'taint1', 'taint2' ]
                 subject.inject( response )
-                updated_response.should == response
+                intializer = subject.taint_tracer.stub.function( :initialize, subject.taint )
+
+                response.body.should == presponse.body.gsub( pintializer, intializer )
             end
 
-            it 'returns false' do
-                subject.inject( response ).should be_true
-                subject.inject( response ).should be_false
+            it 'updates the custom code' do
+                subject.custom_code = 'alert(1);'
+                subject.inject( response )
+
+                presponse = response.deep_clone
+                code      = subject.custom_code
+
+                subject.custom_code = 'alert(2);'
+                subject.inject( response )
+
+                response.body.should == presponse.body.gsub( code, subject.custom_code )
             end
         end
     end

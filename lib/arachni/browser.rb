@@ -1341,7 +1341,11 @@ class Browser
 
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
-        return if from_preloads( request, response ) || from_cache( request, response )
+        if from_preloads( request, response ) || from_cache( request, response )
+            # There may be taints or custom JS code that need to be updated.
+            intercept response
+            return
+        end
 
         # Capture the request as elements of pages -- let's us grab AJAX and
         # other browser requests and convert them into elements we can analyze
