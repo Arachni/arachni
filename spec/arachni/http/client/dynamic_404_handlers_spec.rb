@@ -101,6 +101,12 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                     end
                 end
             end
+
+            context 'when checking for a resource with a name that includes ~' do
+                context 'and the handler ignores it' do
+                    it 'returns true'
+                end
+            end
         end
 
         context 'when checking for an already checked URL' do

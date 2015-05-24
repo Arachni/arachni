@@ -168,6 +168,8 @@ class Dynamic404Handler
                 ) do |c_res|
                     next if corrupted
 
+                    print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
+
                     # Well, bad luck, bail out to avoid FPs.
                     if corrupted_response?( c_res )
                         print_debug "#{__method__} [corrupted]: #{url} #{c_res.code} #{block}"
@@ -223,6 +225,8 @@ class Dynamic404Handler
                             performer:       self
                 ) do |c_res|
                     next if corrupted
+
+                    print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
 
                     # Well, bad luck, bail out to avoid FPs.
                     if corrupted_response?( c_res )
@@ -305,7 +309,11 @@ class Dynamic404Handler
     def needs_advanced_analysis?( url )
         uri = uri_parse( url )
         resource_name = uri.resource_name.to_s.split('.').tap(&:pop).join('.')
-        !!(!resource_name.empty? || uri.resource_extension)
+        !!(
+            !resource_name.empty? ||
+            uri.resource_extension ||
+            uri.resource_name.to_s.include?( '~' )
+        )
     end
 
     # If this is neither a regular 404 nor a 202 the server probably freaked out
@@ -394,6 +402,15 @@ class Dynamic404Handler
         if resource_extension
             # Get a random filename with an existing extension.
             probes << proc { up_to_path + random_string + '.' + resource_extension }
+        end
+
+        if uri.resource_name.include?( '~' )
+            probes << proc {
+                up_to_path.sub(
+                    uri.resource_name,
+                    resource_name.gsub( '~', '~~' )
+                )
+            }
         end
 
         probes

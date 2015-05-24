@@ -23,6 +23,7 @@
         - `Dynamic404Handler`
             - Account for cases where the server returns intermittent errors
                 that can lead to signature corruption and possibly false positives.
+            - Updated training scenarios for cases where `~` are ignored.
     - `Request`
         - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
         - `#response_max_size` -- In addition to setting the `maxfilesize` for
