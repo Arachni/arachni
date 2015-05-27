@@ -355,10 +355,6 @@ class Javascript
                 #{dom_monitor.stub.function( :update_trackers )};
 
                 #{response.body};
-
-                #{js_comment}
-                #{taint_tracer.stub.function( :update_tracers )};
-                #{dom_monitor.stub.function( :update_trackers )};
             EOCODE
 
         # Already has the JS initializer, so it's an HTML response; just update

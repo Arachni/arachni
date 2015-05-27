@@ -387,24 +387,20 @@ EOHTML
                     r
                 end
 
+                let(:taint_tracer_update) do
+                    "#{subject.taint_tracer.stub.function( :update_tracers )};"
+                end
+
+                let(:dom_monitor_update) do
+                    "#{subject.dom_monitor.stub.function( :update_trackers )};"
+                end
+
                 it 'inject a TaintTracer.update_tracers() call before the code' do
-                    injected.body.scan( /(.*)foo/m ).flatten.first.should include
-                        "#{subject.taint_tracer.stub.function( :update_tracers )};"
+                    injected.body.scan( /(.*)foo/m ).flatten.first.should include taint_tracer_update
                 end
 
                 it 'inject a DOMMonitor.update_trackers() call before the code' do
-                    injected.body.scan( /(.*)foo/m ).flatten.first.should include
-                        "#{subject.dom_monitor.stub.function( :update_trackers )};"
-                end
-
-                it 'inject a TaintTracer.update_tracers() call after the code' do
-                    injected.body.scan( /foo(.*)/m ).flatten.first.should include
-                        "#{subject.taint_tracer.stub.function( :update_tracers )};"
-                end
-
-                it 'inject a DOMMonitor.update_trackers() call after the code' do
-                    injected.body.scan( /foo(.*)/m ).flatten.first.should include
-                        "#{subject.dom_monitor.stub.function( :update_trackers )};"
+                    injected.body.scan( /(.*)foo/m ).flatten.first.should include dom_monitor_update
                 end
 
                 it 'appends a semicolon and newline to the body' do
