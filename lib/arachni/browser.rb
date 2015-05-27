@@ -70,17 +70,15 @@ class Browser
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
-    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
-
     ASSET_EXTENSIONS = Set.new(
         ['css', 'js', 'jpg', 'jpeg', 'png', 'gif']
     )
 
     ASSET_EXTRACTORS = [
-        /<\s*link.*?href=['"](.*?)['"].*>/im,
-        /<\s*script.*?src=['"](.*?)['"].*>/im,
-        /<\s*img.*?src=['"](.*?)['"].*>/im,
-        /<\s*input.*?src=['"](.*?)['"].*>/im,
+        /<\s*link.*?href=['"](.*?)['"].*?>/im,
+        /<\s*script.*?src=['"](.*?)['"].*?>/im,
+        /<\s*img.*?src=['"](.*?)['"].*?>/im,
+        /<\s*input.*?src=['"](.*?)['"].*?>/im,
     ]
 
     # @return   [Array<Page::DOM::Transition>]
@@ -117,6 +115,10 @@ class Browser
 
     # @return   [Integer]
     attr_reader :pid
+
+    attr_reader :last_url
+
+    attr_reader :last_dom_url
 
     # @return   [Bool]
     #   `true` if a supported browser is in the OS PATH, `false` otherwise.
@@ -336,7 +338,7 @@ class Browser
             @add_request_transitions = false
         end
 
-        @last_url = url
+        @last_url = Arachni::URI( url ).to_s
         self.class.add_asset_domain @last_url
 
         ensure_open_window
@@ -350,9 +352,8 @@ class Browser
             watir.goto url
 
             @javascript.wait_till_ready
-            wait_for_timers
-
             wait_for_pending_requests
+            wait_for_timers
 
             javascript.set_element_ids
         end
@@ -903,8 +904,6 @@ class Browser
     # @return   [Array<Cookie>]
     #   Browser cookies.
     def cookies
-        # return [] if Arachni::URI( url ).scope.out?
-
         js_cookies = begin
             # Watir doesn't tell us if cookies are HttpOnly, so we need to figure
             # this out ourselves, by checking for JS visibility.
@@ -915,18 +914,6 @@ class Browser
         end
 
         watir.cookies.to_a.map do |c|
-            # domain = c[:domain]
-            # if domain.start_with?( '.' )
-            #     domain = domain[1..-1]
-            # end
-            #
-            # ap url
-            # ap 1
-            # ap c
-            # next if !Arachni::URI( "http://#{domain}" ).scope.in_domain?
-            # ap 2
-            # ap c
-
             original_name = c[:name].to_s
 
             c[:path]     = '/' if c[:path] == '//'
@@ -1343,7 +1330,7 @@ class Browser
         # preloaded or cached response for it.
         if from_preloads( request, response ) || from_cache( request, response )
             # There may be taints or custom JS code that need to be updated.
-            intercept response
+            javascript.inject response
             return
         end
 
@@ -1376,6 +1363,8 @@ class Browser
             transition.complete
         end
 
+        javascript.inject response
+
         # Don't store assets, the browsers will cache them accordingly.
         return if request_for_asset?( request ) || !response.text?
 
@@ -1385,51 +1374,9 @@ class Browser
         return if enforce_scope? && response.scope.out?
 
         whitelist_asset_domains( response )
-
-        intercept response
         save_response response
 
         nil
-    end
-
-    def intercept( response )
-        return if !intercept?( response )
-        @javascript.inject( response )
-    end
-
-    def intercept?( response )
-        return false if response.body.empty?
-
-        # We only care about HTML.
-        return false if !response.headers.content_type.to_s.downcase.start_with?( 'text/html' )
-
-        # Let's check that the response at least looks like it contains HTML
-        # code of interest.
-        body = response.body.downcase
-        return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
-
-        # The last check isn't fool-proof, so don't do it when loading the page
-        # for the first time, but only when the page loads stuff via AJAX and whatnot.
-        #
-        # Well, we can be pretty sure that the root page will be HTML anyways.
-        return true if @last_url == response.url
-
-        # Finally, verify that we're really working with markup (hopefully HTML)
-        # and that the previous checks weren't just flukes matching some other
-        # kind of document.
-        #
-        # For example, it may have been JSON with the wrong content-type that
-        # includes HTML -- it happens.
-        begin
-            return false if Nokogiri::XML( response.body ).children.empty?
-        rescue => e
-            print_debug "Javascript injection failed for: #{response.url}"
-            print_debug "\n#{response.body}"
-            print_debug_exception e
-            return false
-        end
-
-        true
     end
 
     def ignore_request?( request )
@@ -1558,7 +1505,7 @@ class Browser
             destination.send "#{m}=", source.send( m )
         end
 
-        intercept destination
+        javascript.inject destination
         nil
     end
 

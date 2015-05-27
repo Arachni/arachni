@@ -37,10 +37,10 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         end
     end
 
-    it 'adds .events property to elements holding the tracked events' do
+    it 'adds _arachni_events property to elements holding the tracked events' do
         load '/elements_with_events/listeners'
 
-        javascript.run( "return document.getElementById('my-button').events").should == [
+        javascript.run( "return document.getElementById('my-button')._arachni_events").should == [
             [
                 'click',
                 'function (my_button_click) {}'
@@ -55,21 +55,21 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ]
         ]
 
-        javascript.run( "return document.getElementById('my-button2').events").should == [
+        javascript.run( "return document.getElementById('my-button2')._arachni_events").should == [
             [
                 'click',
                 'function (my_button2_click) {}'
             ]
         ]
 
-        javascript.run( "return document.getElementById('my-button3').events").should be_nil
+        javascript.run( "return document.getElementById('my-button3')._arachni_events").should be_nil
     end
 
     describe '#digest' do
         it 'returns a string digest of the current DOM tree' do
             load '/digest'
             subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascri' <<
-                'pt.browser.arachni/' <<'taint_tracer.js><SCRIPT><SCRIPT src' <<
+                'pt.browser.arachni/' <<'taint_tracer.js><SCRIPT src' <<
                 '=http://javascript.browser.arachni/dom_monitor.js><SCRIPT>' <<
                 '<BODY onload=void();><DIV id=my-id-div><DIV class=my-class' <<
                 '-div><STRONG><EM><I><B><STRONG><SCRIPT><SCRIPT type=text/' <<
@@ -79,14 +79,14 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         it 'does not include <p> elements' do
             load '/digest/p'
             subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascript' <<
-                '.browser.arachni/taint_tracer.js><SCRIPT><SCRIPT src=http://' <<
+                '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
                 'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><STRONG>'
         end
 
         it "does not include 'data-arachni-id' attributes" do
             load '/digest/data-arachni-id'
             subject.digest.should == '<HTML><HEAD><SCRIPT src=http://javascript' <<
-                '.browser.arachni/taint_tracer.js><SCRIPT><SCRIPT src=http://' <<
+                '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
                 'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><DIV ' <<
                 'id=my-id-div><DIV class=my-class-div>'
         end
@@ -143,98 +143,368 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     end
 
     describe '#elements_with_events' do
-        context 'when using event attributes' do
-            it 'returns information about all DOM elements along with their events' do
-                load '/elements_with_events/attributes'
-
-                subject.elements_with_events.should == [
-                    { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
-                    },
-                    {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [],
-                        'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
-                    },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [],
-                        'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
-                     },
-                     {
-                         'tag_name' => 'button',
-                         'events' => [],
-                         'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
-                     }
-                ]
-            end
-        end
-
-        context 'when using event listeners' do
-            it 'returns information about all DOM elements along with their events' do
-                load '/elements_with_events/listeners'
-
-                subject.elements_with_events.should == [
-                    { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
-                    },
-                    {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [
-                            ['click', 'function (my_button_click) {}'],
-                            ['click', 'function (my_button_click2) {}'],
-                            ['onmouseover', 'function (my_button_onmouseover) {}']
-                        ],
-                        'attributes' => { 'id' => 'my-button' }
-                    },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [
-                            ['click', 'function (my_button2_click) {}']
-                        ],
-                        'attributes' => { 'id' => 'my-button2' }
-                    },
-                    {
-                        'tag_name' => 'button',
-                        'events' => [],
-                        'attributes' => { 'id' => 'my-button3' }
-                    }
-                ]
-            end
-        end
-
         it 'skips non visible elements' do
             load '/elements_with_events/with-hidden'
 
             subject.elements_with_events.should == [
                 {
-                      'tag_name' => 'html',
-                        'events' => [],
+                    'tag_name' => 'html',
+                    'events' => [],
                     'attributes' => {}
                 },
-                 {
-                      'tag_name' => 'body',
-                        'events' => [],
+                {
+                    'tag_name' => 'body',
+                    'events' => [],
                     'attributes' => {}
                 },
-                 {
-                      'tag_name' => 'button',
-                        'events' => [
-                         [
-                             'click',
-                             'function (my_button_click) {}'
+                {
+                    'tag_name' => 'button',
+                    'events' => [
+                        [
+                            'click',
+                            'function (my_button_click) {}'
                         ]
                     ],
                     'attributes' => {
                         'onclick' => 'handler_1()',
-                             'id' => 'my-button'
+                        'id' => 'my-button'
                     }
                 }
             ]
+        end
+
+        context 'when using' do
+            context 'event attributes' do
+                it 'returns information about all DOM elements along with their events' do
+                    load '/elements_with_events/attributes'
+
+                    subject.elements_with_events.should == [
+                        { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
+                        },
+                        {
+                            'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                        },
+                        {
+                            'tag_name'   => 'button',
+                            'events'     => [],
+                            'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
+                        },
+                        {
+                            'tag_name'   => 'button',
+                            'events'     => [],
+                            'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
+                         },
+                         {
+                             'tag_name' => 'button',
+                             'events' => [],
+                             'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
+                         }
+                    ]
+                end
+            end
+
+            context 'event listeners' do
+                it 'returns information about all DOM elements along with their events' do
+                    load '/elements_with_events/listeners'
+
+                    subject.elements_with_events.should == [
+                        { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
+                        },
+                        {
+                            'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                        },
+                        {
+                            'tag_name'   => 'button',
+                            'events'     => [
+                                ['click', 'function (my_button_click) {}'],
+                                ['click', 'function (my_button_click2) {}'],
+                                ['onmouseover', 'function (my_button_onmouseover) {}']
+                            ],
+                            'attributes' => { 'id' => 'my-button' }
+                        },
+                        {
+                            'tag_name'   => 'button',
+                            'events'     => [
+                                ['click', 'function (my_button2_click) {}']
+                            ],
+                            'attributes' => { 'id' => 'my-button2' }
+                        },
+                        {
+                            'tag_name' => 'button',
+                            'events' => [],
+                            'attributes' => { 'id' => 'my-button3' }
+                        }
+                    ]
+                end
+            end
+
+            context 'jQuery' do
+                describe 'on()' do
+                    it 'returns information about all DOM elements along with their events' do
+                        load '/elements_with_events/jQuery.on'
+
+                        subject.elements_with_events.should == [
+                            {
+                                'tag_name'   => 'html',
+                                'events'     => [],
+                                'attributes' => {}
+                            },
+                            {
+                                'tag_name'   => 'body',
+                                'events'     => [],
+                                'attributes' => {
+                                    'style' => ''
+                                }
+                            },
+                            {
+                                'tag_name'   => 'button',
+                                'events'     => [
+                                    [
+                                        'click',
+                                        "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                    ]
+                                ],
+                                'attributes' => {
+                                    'id' => 'my-button'
+                                }
+                            }
+                        ]
+                    end
+
+                    context 'when using a selector' do
+                        it 'assigns the events to elements that match it' do
+                            load '/elements_with_events/jQuery.on-selector'
+
+                            subject.elements_with_events.should == [
+                                {
+                                    "tag_name"   => "html",
+                                    "events"     => [],
+                                    "attributes" => {}
+                                },
+                                {
+                                    "tag_name"   => "body",
+                                    "events"     =>
+                                        [
+                                            [
+                                                "click",
+                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                            ],
+                                            [
+                                                "hover",
+                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                            ]
+                                        ],
+                                    "attributes" => {
+                                        "style" => "",
+                                        "id"    => "body"
+                                    }
+                                },
+                                {
+                                    "tag_name"   => "button",
+                                    "events"     =>
+                                        [
+                                            [
+                                                "click",
+                                                "function () {\n\n            }"
+                                            ],
+                                            [
+                                                "hover",
+                                                "function () {\n\n            }"
+                                            ]
+                                        ],
+                                    "attributes" => {
+                                        "id" => "my-button"
+                                    }
+                                },
+                                {
+                                    "tag_name"   => "button",
+                                    "events"     => [
+                                        [
+                                            "click", "function () {\n\n            }"
+                                        ]
+                                    ],
+                                    "attributes" => {
+                                        "id" => "my-button-2"
+                                    }
+                                }
+                            ]
+
+                        end
+                    end
+
+                    context 'when using object types' do
+                        it 'returns information about all DOM elements along with their events' do
+                            load '/elements_with_events/jQuery.on-object-types'
+
+                            subject.elements_with_events.should == [
+                                {
+                                    "tag_name"   => "html",
+                                    "events"     => [],
+                                    "attributes" => {}
+                                },
+                                {
+                                    "tag_name"   => "body",
+                                    "events"     => [],
+                                    "attributes" => {
+                                        "style" => ""
+                                    }
+                                },
+                                {
+                                    "tag_name"   => "button",
+                                    "events"     =>
+                                        [
+                                            [
+                                                "click",
+                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                            ],
+                                            [
+                                                "hover",
+                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                            ]
+                                        ],
+                                    "attributes" => {
+                                        "id" => "my-button"
+                                    }
+                                }
+                            ]
+
+                        end
+
+                        context 'when using a selector' do
+                            it 'assigns the events to elements that match it' do
+                                load '/elements_with_events/jQuery.on-object-types-selector'
+
+                                pp subject.elements_with_events.should == [
+                                    {
+                                        "tag_name"   => "html",
+                                        "events"     => [],
+                                        "attributes" => {}
+                                    },
+                                    {
+                                        "tag_name"   => "body",
+                                        "events"     => [
+                                            ["click",
+                                             "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                            ],
+                                            [
+                                                "hover",
+                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                            ]
+                                        ],
+                                        "attributes" => {
+                                            "id"    => "body",
+                                            "style" => ""
+                                        }
+                                    },
+                                    {
+                                        "tag_name"   => "button",
+                                        "events"     => [
+                                            [
+                                                "click", "function () {}"
+                                            ],
+                                            [
+                                                "hover", "function () {}"
+                                            ]
+                                        ],
+                                        "attributes" => {
+                                            "id" => "my-button"
+                                        }
+                                    },
+                                    {
+                                        "tag_name"   => "button",
+                                        "events"     => [],
+                                        "attributes" => {
+                                            "id" => "my-button-2"
+                                        }
+                                    }
+                                ]
+
+                            end
+                        end
+                    end
+                end
+
+                describe 'delegate()' do
+                    it 'returns information about all DOM elements along with their events' do
+                        load '/elements_with_events/jQuery.delegate'
+
+                        subject.elements_with_events.should ==  [
+                            {
+                                "tag_name"   => "html",
+                                "events"     => [],
+                                "attributes" => {}
+                            },
+                            {
+                                "tag_name"   => "body",
+                                "events"     =>
+                                    [
+                                        [
+                                            "click",
+                                            "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                        ]
+                                    ],
+                                "attributes" => {
+                                    "style" => "",
+                                    "id"    => "body"
+                                }
+                            },
+                            {
+                                "tag_name"   => "button",
+                                "events"     => [
+                                    [
+                                        "click",
+                                        "function () {}"
+                                    ]
+                                ],
+                                "attributes" => {
+                                    "id" => "my-button"
+                                }
+                            }
+                        ]
+
+                    end
+
+                    context 'when using object types' do
+                        it 'returns information about all DOM elements along with their events' do
+                            load '/elements_with_events/jQuery.delegate'
+
+                            subject.elements_with_events.should == [
+                                {
+                                    "tag_name"   => "html",
+                                    "events"     => [],
+                                    "attributes" => {}
+                                },
+                                {
+                                    "tag_name"   => "body",
+                                    "events"     =>
+                                        [
+                                            [
+                                                "click",
+                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                            ]
+                                        ],
+                                    "attributes" => {
+                                        "id"    => "body",
+                                        "style" => ""
+                                    }
+                                },
+                                {
+                                    "tag_name"   => "button",
+                                    "events"     => [
+                                        [
+                                            "click",
+                                            "function () {}"
+                                        ]
+                                    ],
+                                    "attributes" => {
+                                        "id" => "my-button"
+                                    }
+                                }
+                            ]
+                        end
+                    end
+                end
+            end
         end
     end
 

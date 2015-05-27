@@ -52,6 +52,11 @@
     - `Javascript`
         - `TaintTracer`
             - Limited data and execution flow sinks to a max size of 50 entries.
+            - Don't trace functions known to cause issues:
+                - Anonymous functions.
+                - `lodash()`
+        - `DOMMonitor`
+            - Keep track of `jQuery` delegated events.
 - Checks -- Added proofs to as many issues as possible.
     - Active
         - `xss`

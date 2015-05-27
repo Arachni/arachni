@@ -33,6 +33,8 @@ class Javascript
         h.merge!( path => IO.read(path) )
     end
 
+    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
+
     NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
         :title, :link
@@ -335,60 +337,130 @@ class Javascript
     # @param    [HTTP::Response]    response
     #   Installs our custom JS interfaces in the given `response`.
     #
-    # @return   [Bool]
-    #   `true` if injection was performed, `false` otherwise (in case our code
-    #   is already present).
-    #
     # @see SCRIPT_BASE_URL
     # @see SCRIPT_LIBRARY
     def inject( response )
-        body = response.body.dup
+        # Don't intercept our own stuff!
+        return if response.url.start_with?( SCRIPT_BASE_URL )
 
-        if has_js_initializer?( response )
+        # If it's a JS file, update our JS interfaces in case it has stuff that
+        # can be tracked.
+        #
+        # This is necessary because new files can be required dynamically.
+        if javascript?( response )
+
+            response.body = <<-EOCODE
+                #{js_comment}
+                #{taint_tracer.stub.function( :update_tracers )};
+                #{dom_monitor.stub.function( :update_trackers )};
+
+                #{response.body};
+
+                #{js_comment}
+                #{taint_tracer.stub.function( :update_tracers )};
+                #{dom_monitor.stub.function( :update_trackers )};
+            EOCODE
+
+        # Already has the JS initializer, so it's an HTML response; just update
+        # taints and custom code.
+        elsif has_js_initializer?( response )
+
+            body = response.body.dup
+
             update_taints( body )
             update_custom_code( body )
-        else
-            # Schedule a tracer update at the beginning of each script block in order
-            # to put our hooks into any newly introduced functions.
-            #
-            # The fact that our update call seems to be taking place before any
-            # functions get the chance to be defined doesn't seem to matter.
+
+            response.body = body
+
+        elsif html?( response )
+            body = response.body.dup
+
+            # Perform an update before each script.
             body.gsub!(
-                /<script(.*?)>/i,
-                "\\0\n#{@taint_tracer.stub.function( :update_tracers )}; // Injected by #{self.class}\n"
+                /<script.*?>/i,
+                "\\0\n
+                #{js_comment}
+                #{@taint_tracer.stub.function( :update_tracers )};
+                #{@dom_monitor.stub.function( :update_trackers )};\n\n"
             )
 
-            # Also perform an update after each script block, this is for external
-            # scripts.
+            # Perform an update after each script.
             body.gsub!(
                 /<\/script>/i,
-                "\\0\n<script type=\"text/javascript\">#{@taint_tracer.stub.function( :update_tracers )}" <<
-                    "</script> <!-- Script injected by #{self.class} -->\n"
+                "\\0\n<script type=\"text/javascript\">" <<
+                    "#{@taint_tracer.stub.function( :update_tracers )};" <<
+                    "#{@dom_monitor.stub.function( :update_trackers )};" <<
+                    "</script> #{html_comment}\n"
             )
 
-            body = <<-EOHTML
-<script src="#{script_url_for( :taint_tracer )}"></script> <!-- Script injected by #{self.class} -->
-<script>#{wrapped_taint_tracer_initializer}</script> <!-- Script injected by #{self.class} -->
-
-<script src="#{script_url_for( :dom_monitor )}"></script> <!-- Script injected by #{self.class} -->
+            # Include and initialize our JS interfaces.
+            response.body = <<-EOHTML
+<script src="#{script_url_for( :taint_tracer )}"></script> #{html_comment}
+<script src="#{script_url_for( :dom_monitor )}"></script> #{html_comment}
 <script>
-#{@dom_monitor.stub.function( :initialize )};
+#{wrapped_taint_tracer_initializer}
 #{js_initialization_signal};
 
 #{wrapped_custom_code}
-</script> <!-- Script injected by #{self.class} -->
+</script> #{html_comment}
 
 #{body}
             EOHTML
         end
 
-        response.body = body
         response.headers['content-length'] = response.body.size
 
         true
     end
 
+    def javascript?( response )
+        response.headers.content_type.to_s.downcase.include?( 'javascript' )
+    end
+
+    def html?( response )
+        return false if response.body.empty?
+
+        # We only care about HTML.
+        return false if !response.headers.content_type.to_s.downcase.start_with?( 'text/html' )
+
+        # Let's check that the response at least looks like it contains HTML
+        # code of interest.
+        body = response.body.downcase
+        return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
+
+        # The last check isn't fool-proof, so don't do it when loading the page
+        # for the first time, but only when the page loads stuff via AJAX and whatnot.
+        #
+        # Well, we can be pretty sure that the root page will be HTML anyways.
+        return true if @browser.last_url == response.url
+
+        # Finally, verify that we're really working with markup (hopefully HTML)
+        # and that the previous checks weren't just flukes matching some other
+        # kind of document.
+        #
+        # For example, it may have been JSON with the wrong content-type that
+        # includes HTML -- it happens.
+        begin
+            return false if Nokogiri::XML( response.body ).children.empty?
+        rescue => e
+            print_debug "Does not look like HTML: #{response.url}"
+            print_debug "\n#{response.body}"
+            print_debug_exception e
+            return false
+        end
+
+        true
+    end
+
     private
+
+    def js_comment
+        "// Injected by #{self.class}"
+    end
+
+    def html_comment
+        "<!-- Injected by #{self.class} -->"
+    end
 
     def taints
         taints = [@taint]

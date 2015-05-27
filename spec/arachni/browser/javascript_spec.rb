@@ -367,82 +367,183 @@ describe Arachni::Browser::Javascript do
     end
 
     describe '#inject' do
-        let(:response) { Arachni::HTTP::Response.new( url: @dom_monitor_url ) }
+        context 'when the response is' do
+            context 'JavaScript' do
+                let(:response) do
+                    Arachni::HTTP::Response.new(
+                        url:     "#{@dom_monitor_url}/jquery.js",
+                        headers: {
+                            'Content-Type' => 'text/javascript'
+                        },
+                        body: <<EOHTML
+                    foo()
+EOHTML
+                    )
+                end
 
-        context 'when the response does not already contain the JS code' do
-            it 'injects the system\'s JS interfaces in the response body' do
-                subject.inject( response )
-                @browser.load response
+                let(:injected) do
+                    r = response.deep_clone
+                    subject.inject( r )
+                    r
+                end
 
-                subject.taint_tracer.initialized.should be_true
-                subject.dom_monitor.initialized.should be_true
+                it 'inject a TaintTracer.update_tracers() call before the code' do
+                    injected.body.scan( /(.*)foo/m ).flatten.first.should include
+                        "#{subject.taint_tracer.stub.function( :update_tracers )};"
+                end
+
+                it 'inject a DOMMonitor.update_trackers() call before the code' do
+                    injected.body.scan( /(.*)foo/m ).flatten.first.should include
+                        "#{subject.dom_monitor.stub.function( :update_trackers )};"
+                end
+
+                it 'inject a TaintTracer.update_tracers() call after the code' do
+                    injected.body.scan( /foo(.*)/m ).flatten.first.should include
+                        "#{subject.taint_tracer.stub.function( :update_tracers )};"
+                end
+
+                it 'inject a DOMMonitor.update_trackers() call after the code' do
+                    injected.body.scan( /foo(.*)/m ).flatten.first.should include
+                        "#{subject.dom_monitor.stub.function( :update_trackers )};"
+                end
+
+                it 'appends a semicolon and newline to the body' do
+                    injected.body.should include "#{response.body};\n"
+                end
+
+                it 'updates the Content-Length' do
+                    old_content_length = response.headers['content-length'].to_i
+
+                    subject.inject( response )
+
+                    new_content_length = response.headers['content-length'].to_i
+
+                    new_content_length.should > old_content_length
+                    new_content_length.should == response.body.bytesize
+                end
             end
 
-            it 'updates the Content-Length' do
-                old_content_length = response.headers['content-length'].to_i
+            context 'HTML' do
+                let(:response) do
+                    Arachni::HTTP::Response.new(
+                        url:     @dom_monitor_url,
+                        headers: {
+                            'Content-Type' => 'text/html'
+                        },
+                        body: <<EOHTML
+                    <body>
+                    </body>
+EOHTML
+                    )
+                end
 
-                subject.inject( response )
+                it 'updates the Content-Length' do
+                    old_content_length = response.headers['content-length'].to_i
 
-                new_content_length = response.headers['content-length'].to_i
+                    subject.inject( response )
 
-                new_content_length.should > old_content_length
-                new_content_length.should == response.body.bytesize
-            end
+                    new_content_length = response.headers['content-length'].to_i
 
-            it 'returns true' do
-                subject.inject( response ).should be_true
-            end
+                    new_content_length.should > old_content_length
+                    new_content_length.should == response.body.bytesize
+                end
 
-            context 'when the response body contains script elements' do
-                before { response.body = '<script> // My code and stuff </script>' }
-
-                context 'and a taint has been configured' do
-                    before { subject.taint = 'my_taint' }
-
-                    it 'injects taint tracer update calls at the top of the script' do
+                context 'when the response does not already contain the JS code' do
+                    it 'injects the system\'s JS interfaces in the response body' do
                         subject.inject( response )
-                        Nokogiri::HTML(response.body).css('script')[-2].to_s.should ==
-                            "<script>
-_#{subject.token}TaintTracer.update_tracers(); // Injected by Arachni::Browser::Javascript
- // My code and stuff </script>"
+
+                        %w(taint_tracer dom_monitor).each do |name|
+                            src = "#{described_class::SCRIPT_BASE_URL}#{name}.js"
+                            Nokogiri::HTML( response.body ).xpath( "//script[@src='#{src}']" ).should be_any
+                        end
                     end
 
-                    it 'injects taint tracer update calls after the script' do
+                    context 'when the response body contains script elements' do
+                        before { response.body = '<script>// My code and stuff</script>' }
+
+                        it 'injects taint tracer update calls at the top of the script' do
+                            subject.inject( response )
+                            Nokogiri::HTML(response.body).css('script')[-2].to_s.should ==
+                                "<script>
+
+                // Injected by #{described_class}
+                _#{subject.token}TaintTracer.update_tracers();
+                _#{subject.token}DOMMonitor.update_trackers();
+
+// My code and stuff</script>"
+                        end
+
+                        it 'injects taint tracer update calls after the script' do
+                            subject.inject( response )
+                            Nokogiri::HTML(response.body).css('script')[-1].to_s.should ==
+                                "<script type=\"text/javascript\">" +
+                                "_#{subject.token}TaintTracer.update_tracers();" +
+                                "_#{subject.token}DOMMonitor.update_trackers();" +
+                                '</script>'
+                        end
+                    end
+                end
+
+                context 'when the response already contains the JS code' do
+                    it 'updates the taints' do
                         subject.inject( response )
+
+                        presponse = response.deep_clone
+                        pintializer = subject.taint_tracer.stub.function( :initialize, [] )
+
+                        subject.taint = [ 'taint1', 'taint2' ]
                         subject.inject( response )
-                        Nokogiri::HTML(response.body).css('script')[-1].to_s.should ==
-                            "<script type=\"text/javascript\">_#{subject.token}TaintTracer.update_tracers()</script>"
+                        intializer = subject.taint_tracer.stub.function( :initialize, subject.taint )
+
+                        response.body.should == presponse.body.gsub( pintializer, intializer )
+                    end
+
+                    it 'updates the custom code' do
+                        subject.custom_code = 'alert(1);'
+                        subject.inject( response )
+
+                        presponse = response.deep_clone
+                        code      = subject.custom_code
+
+                        subject.custom_code = 'alert(2);'
+                        subject.inject( response )
+
+                        response.body.should == presponse.body.gsub( code, subject.custom_code )
                     end
                 end
             end
         end
+    end
 
-        context 'when the response already contains the JS code' do
-            it 'updates the taints' do
-                subject.inject( response )
+    describe '#javascript?' do
+        context 'when the Content-Type includes javascript' do
+            it 'returns true'
+        end
 
-                presponse = response.deep_clone
-                pintializer = subject.taint_tracer.stub.function( :initialize, [] )
+        context 'when the Content-Type does not include javascript' do
+            it 'returns false'
+        end
+    end
 
-                subject.taint = [ 'taint1', 'taint2' ]
-                subject.inject( response )
-                intializer = subject.taint_tracer.stub.function( :initialize, subject.taint )
+    describe '#html?' do
+        context 'when the body is empty' do
+            it 'returns false'
+        end
 
-                response.body.should == presponse.body.gsub( pintializer, intializer )
-            end
+        context 'when the Content-Type does not include text/html' do
+            it 'returns false'
+        end
 
-            it 'updates the custom code' do
-                subject.custom_code = 'alert(1);'
-                subject.inject( response )
+        context 'when the body does not include HTML identifiers such as' do
+            it 'returns false'
+        end
 
-                presponse = response.deep_clone
-                code      = subject.custom_code
+        context 'when it matches the last loaded URL' do
+            it 'returns true'
+        end
 
-                subject.custom_code = 'alert(2);'
-                subject.inject( response )
-
-                response.body.should == presponse.body.gsub( code, subject.custom_code )
-            end
+        context 'when it contains markup' do
+            it 'returns true'
         end
     end
 

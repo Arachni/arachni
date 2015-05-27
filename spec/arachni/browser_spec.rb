@@ -1015,7 +1015,7 @@ describe Arachni::Browser do
             @browser.load( @url )
             @browser.to_page.dom.instance_variable_get(:@digest).should ==
                 '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' <<
-                    'taint_tracer.js><SCRIPT><SCRIPT src=http://javascript.' <<
+                    'taint_tracer.js><SCRIPT src=http://javascript.' <<
                     'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
                     'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
         end
@@ -1875,16 +1875,18 @@ describe Arachni::Browser do
             @browser.source.should include( ua )
         end
 
+        it 'puts the domain in the asset domains list' do
+            subject.goto @url
+            described_class.asset_domains.should include Arachni::URI( @url ).domain
+        end
+
         context 'when the page requires an asset' do
             before do
+                described_class.asset_domains.clear
                 subject.goto url
             end
 
             let(:url) { "#{@url}/asset_domains" }
-
-            it 'whitelists the requested domain' do
-                described_class.asset_domains.should include Arachni::URI( @url ).domain
-            end
 
             %w(link input script img).each do |type|
                 context 'via link' do
@@ -1910,8 +1912,6 @@ describe Arachni::Browser do
                 end
 
                 context 'and has not been whitelisted' do
-                    described_class.stub(:asset_domains) { Set.new }
-
                     it 'does not load it'
                 end
             end

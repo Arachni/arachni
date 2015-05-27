@@ -28,6 +28,9 @@ get '/' do
 HTML
 end
 
+get '/asset_domains' do
+end
+
 get '/asset_domains/link' do
     <<HTML
 <html>
@@ -52,7 +55,7 @@ get '/asset_domains/script' do
     <<HTML
 <html>
     <body>
-        <script src="http://blah.script.stuff/script.js"></script>
+        <script src="http://blah.script.stuff/script"></script>
     </body>
 </html>
 HTML

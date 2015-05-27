@@ -14,7 +14,7 @@ class Element
     end
 
     def events
-        (browser.execute_script( 'return arguments[0].events;', self ) || []).
+        (browser.execute_script( 'return arguments[0]._arachni_events;', self ) || []).
             map { |event, fn| [event.to_sym, fn] } |
             (::Arachni::Browser::Javascript.events.flatten.map(&:to_s) & attributes).
                 map { |event| [event.to_sym, attribute_value( event )] }
