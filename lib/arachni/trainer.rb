@@ -41,6 +41,15 @@ class Trainer
 
         framework.http.on_complete do |response|
             next if !response.request.train?
+
+            if response.redirect?
+                reference_url = @page ? @page.url : @framework.options.url
+                redirect_url  = to_absolute( response.headers.location, reference_url )
+
+                framework.http.get( redirect_url ) { |res| push res }
+                next
+            end
+
             push response
         end
     end
