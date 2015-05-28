@@ -138,8 +138,9 @@ class Browser
     asset_domains
 
     def self.add_asset_domain( url )
-        return if !(url = Arachni::URI( url ))
-        return if !(domain = url.domain)
+        return if url.to_s.empty?
+        return if !(curl = Arachni::URI( url ))
+        return if !(domain = curl.domain)
 
         asset_domains << domain
     end
