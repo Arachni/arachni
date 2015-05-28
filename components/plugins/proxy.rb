@@ -77,7 +77,12 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def prepare_pages_for_inspection
-        @pages.select { |p| (p.forms.any? || p.links.any? || p.cookies.any?) && p.text? }
+        (@pages.select do |p|
+            next if !p.text?
+
+            p.forms.any? || p.links.any? || p.cookies.any? || p.jsons.any? ||
+                p.xmls.any?
+        end).to_a
     end
 
     def vectors_yaml
@@ -86,12 +91,18 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             page.elements.each do |element|
                 next if element.inputs.empty?
 
-                vectors << {
+                data = {
                     type:   element.type,
                     method: element.method,
                     action: element.action,
                     inputs: element.inputs
                 }
+
+                if element.respond_to? :source
+                    data[:source] = element.source
+                end
+
+                vectors << data
             end
         end
         vectors.to_yaml
@@ -476,7 +487,7 @@ a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.2',
+            version:     '0.3.3',
             options:     [
                 Options::Port.new( :port,
                     description: 'Port to bind to.',
