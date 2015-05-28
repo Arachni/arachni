@@ -80,6 +80,7 @@
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
     - `login_script` -- Added support for Javascript login scripts.
     - `proxy` -- Updated to show JSON and XML inputs in the inspection page.
+    - `vector_feed` -- Updated to support XML and JSON elements.
 - Reporters
     - `xml`
         - Fixed bug causing vector `affected_input_name` to be blank.
