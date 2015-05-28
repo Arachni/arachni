@@ -44,7 +44,7 @@ class JSON < Base
         self.inputs = (self.inputs || {}).merge( options[:inputs] || {} )
 
         if @source && self.inputs.empty?
-            self.inputs = JSON.load( self.source )
+            self.inputs = ::JSON.load( self.source )
         end
 
         @default_inputs = self.inputs.dup.freeze
