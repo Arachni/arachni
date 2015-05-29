@@ -356,6 +356,21 @@ class Browser
             wait_for_pending_requests
             wait_for_timers
 
+            url = watir.url
+            Options.browser_cluster.css_to_wait_for( url ).each do |css|
+                print_info "Waiting for #{css.inspect} to appear for: #{url}"
+
+                begin
+                    watir.element( css: css ).
+                        wait_until_present( Options.browser_cluster.job_timeout )
+
+                    print_info "#{css.inspect} appeared for: #{url}"
+                rescue Watir::Wait::TimeoutError
+                    print_bad "#{css.inspect} did not appeared for: #{url}"
+                end
+
+            end
+
             javascript.set_element_ids
         end
 

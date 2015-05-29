@@ -28,6 +28,20 @@ get '/' do
 HTML
 end
 
+get '/wait_for_elements' do
+    <<HTML
+<html>
+    <body>
+    </body>
+
+    <script>
+        setInterval( function(){ document.write( '<button id="matchThis" />' ); }, 5000 );
+    </script>
+</html>
+HTML
+end
+
+
 get '/asset_domains' do
 end
 

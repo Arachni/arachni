@@ -2,13 +2,18 @@
 
 ## _Under development_
 
-- `OptionGroups`
-    - `HTTP`
-        - `#request_queue_size` -- Lowered from `500` to `100`.
 - `UI`
+    - `CLI::Framework::OptionParser`
+        - Added `--browser-cluster-wait-for-element`.
     - `Output`
         - `#error_log_fd` -- Catch `Errno` system errors (like `Too many open files`)
             to avoid crashing.
+- `OptionGroups`
+    - `HTTP`
+        - `#request_queue_size` -- Lowered from `500` to `100`.
+    - `BrowserCluster`
+        - `#wait_for_elements` -- Wait for element matching `CSS` to appear when
+            visiting a page whose URL matches the `PATTERN`.
 - `Framework`
     - `#pause` -- Pause is now near instant.
     - `#audit` -- Substantially simplified and optimized the consumption of URL
@@ -68,6 +73,7 @@
             - Don't process custom events.
             - Updated to handle cases where a button needs to be clicked after
                 filling in the inputs.
+            - Added progress messages.
         - `unvalidated_redirect`
             - Escalated severity to 'High'.
     - Passive

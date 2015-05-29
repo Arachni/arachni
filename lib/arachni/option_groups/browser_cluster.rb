@@ -13,6 +13,11 @@ module Arachni::OptionGroups
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class BrowserCluster < Arachni::OptionGroup
 
+    # @return   [Hash<Regexp,String>]
+    #   When the page URL matched the key `Regexp`, wait until the `String` CSS
+    #   selector in the value matches an element.
+    attr_accessor :wait_for_elements
+
     # @return   [Integer]
     #   Amount of {BrowserCluster::Worker} to keep in the pool and put to work.
     attr_accessor :pool_size
@@ -38,6 +43,7 @@ class BrowserCluster < Arachni::OptionGroup
     attr_accessor :screen_height
 
     set_defaults(
+        wait_for_elements:   {},
         pool_size:           6,
         job_timeout:         15,
         worker_time_to_live: 100,
@@ -45,6 +51,33 @@ class BrowserCluster < Arachni::OptionGroup
         screen_width:        1600,
         screen_height:       1200
     )
+
+    def css_to_wait_for( url )
+        wait_for_elements.map do |pattern, css|
+            next if !(url =~ pattern)
+            css
+        end.compact
+    end
+
+    def wait_for_elements=( rules )
+        return @wait_for_elements = defaults[:wait_for_elements].dup if !rules
+
+        @wait_for_elements = rules.inject({}) do |h, (regexp, value)|
+            regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+            h.merge!( regexp => value )
+            h
+        end
+    end
+
+    def to_rpc_data
+        d = super
+
+        %w(wait_for_elements).each do |k|
+            d[k] = d[k].my_stringify
+        end
+
+        d
+    end
 
 end
 end

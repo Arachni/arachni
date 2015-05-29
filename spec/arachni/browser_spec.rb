@@ -1952,6 +1952,48 @@ describe Arachni::Browser do
             end
         end
 
+        context "with #{Arachni::OptionGroups::BrowserCluster}#wait_for_elements" do
+            before do
+                Arachni::Options.browser_cluster.wait_for_elements = {
+                    'stuff' => '#matchThis'
+                }
+            end
+
+            context 'when the URL matches a pattern' do
+                it 'waits for the element matching the CSS to appear' do
+                    t = Time.now
+                    @browser.goto( @url + '/wait_for_elements#stuff/here' )
+                    (Time.now - t).should > 5
+
+                    @browser.watir.element( css: '#matchThis' ).tag_name.should == 'button'
+                end
+
+                it "waits a maximum of #{Arachni::OptionGroups::BrowserCluster}#job_timeout" do
+                    Arachni::Options.browser_cluster.job_timeout = 4
+
+                    t = Time.now
+                    @browser.goto( @url + '/wait_for_elements#stuff/here' )
+                    (Time.now - t).should < 5
+
+                    expect do
+                        @browser.watir.element( css: '#matchThis' ).tag_name
+                    end.to raise_error Watir::Exception::UnknownObjectException
+                end
+            end
+
+            context 'when the URL does not match any patterns' do
+                it 'does not wait' do
+                    t = Time.now
+                    @browser.goto( @url + '/wait_for_elements' )
+                    (Time.now - t).should < 5
+
+                    expect do
+                        @browser.watir.element( css: '#matchThis' ).tag_name
+                    end.to raise_error Watir::Exception::UnknownObjectException
+                end
+            end
+        end
+
         context "#{Arachni::OptionGroups::BrowserCluster}#ignore_images" do
             context true do
                 it 'does not load images' do

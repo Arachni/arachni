@@ -521,6 +521,15 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Browser cluster'
 
+        on( '--browser-cluster-wait-for-element PATTERN:CSS',
+            'Wait for element matching CSS to appear when visiting a page whose' <<
+            ' URL matches the PATTERN.'
+        ) do |rule|
+            pattern, css = rule.split( ':', 2 )
+            options.browser_cluster.wait_for_elements[ Regexp.new( pattern ) ] =
+                css
+        end
+
         on( '--browser-cluster-pool-size SIZE', Integer,
             'Amount of browser workers to keep in the pool and put to work.',
             "(Default: #{options.browser_cluster.pool_size})"
