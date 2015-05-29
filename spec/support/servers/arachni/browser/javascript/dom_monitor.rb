@@ -229,6 +229,18 @@ get '/elements_with_events/with-hidden' do
 HTML
 end
 
+get '/elements_with_events/custom-dot-delimited' do
+    <<HTML
+    <script src="/jquery.js"></script>
+
+    <button id="my-button">Click me</button>
+
+    <script>
+        $('#my-button').on( 'click.stuff', function (){});
+    </script>
+HTML
+end
+
 get '/set_element_ids' do
     <<HTML
         <a name="1" href="by-ajax" id="by-ajax">Stuff 1</a>

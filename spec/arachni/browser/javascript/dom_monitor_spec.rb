@@ -173,6 +173,40 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ]
         end
 
+        context 'when it has a dot delimited custom event' do
+            it 'retains the first part' do
+                load '/elements_with_events/custom-dot-delimited'
+
+                subject.elements_with_events.should == [
+                    {
+                        "tag_name"   => "html",
+                        "events"     => [],
+                        "attributes" => {}
+                    },
+                    {
+                        "tag_name"   => "body",
+                        "events"     => [],
+                        "attributes" => {
+                            "style" => ""
+                        }
+                    },
+                    {
+                        "tag_name"   => "button",
+                        "events"     =>
+                            [
+                                [
+                                    "click",
+                                    "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                ]
+                            ],
+                        "attributes" => {
+                            "id" => "my-button"
+                        }
+                    }
+                ]
+            end
+        end
+
         context 'when using' do
             context 'event attributes' do
                 it 'returns information about all DOM elements along with their events' do
