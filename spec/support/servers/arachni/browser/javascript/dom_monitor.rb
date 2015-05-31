@@ -113,6 +113,16 @@ get '/elements_with_events/listeners' do
 HTML
 end
 
+get '/elements_with_events/listeners/custom' do
+    <<HTML
+    <button id="my-button">Click me</button>
+
+    <script>
+        document.getElementById( "my-button" ).addEventListener( "custom_event", function(){}, false );
+    </script>
+HTML
+end
+
 get '/elements_with_events/jQuery.on' do
     <<HTML
     <script src="/jquery.js"></script>

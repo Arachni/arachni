@@ -128,6 +128,10 @@ class Javascript
         GLOBAL_EVENTS | EVENTS_PER_ELEMENT.values.flatten.uniq
     end
 
+    def self.event_whitelist
+        @event_whitelist ||= Set.new( events.flatten.map(&:to_s) )
+    end
+
     # @param    [Symbol]    element
     #
     # @return   [Array<Symbol>]
@@ -278,6 +282,8 @@ class Javascript
         dom_monitor.digest
     end
 
+    # @note Will not include custom events.
+    #
     # @return   [Array<Hash>]
     #   Information about all DOM elements, including any registered event listeners.
     def dom_elements_with_events
@@ -287,9 +293,15 @@ class Javascript
             next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name'].to_sym
 
             attributes = element['attributes']
-            element['events'] =
-                element['events'].map { |event, fn| [event.to_sym, fn] } |
-                    (self.class.events.flatten.map(&:to_s) & attributes.keys).
+
+            element['events'] = (element['events'].map do |event, fn|
+                next if !(self.class.event_whitelist.include?( event ) ||
+                    self.class.event_whitelist.include?( "on#{event}" ))
+
+                [event.to_sym, fn]
+            end.compact)
+
+            element['events'] |= (self.class.event_whitelist & attributes.keys).
                         map { |event| [event.to_sym, attributes[event]] }
 
             element

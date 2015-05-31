@@ -210,6 +210,21 @@ describe Arachni::Browser::Javascript do
                     }
                 ]
             end
+
+            it 'does not include custom events' do
+                @browser.load @dom_monitor_url + 'elements_with_events/listeners/custom'
+
+                subject.dom_elements_with_events.should == [
+                    {
+                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
+                    },
+                    {
+                        'tag_name'   => 'button',
+                        'events'     => [],
+                        'attributes' => { 'id' => 'my-button' }
+                    }
+                ]
+            end
         end
     end
 
