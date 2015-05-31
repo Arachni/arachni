@@ -76,6 +76,7 @@
             - Added progress messages.
         - `unvalidated_redirect`
             - Escalated severity to 'High'.
+            - Only perform straight payload injections.
         - `unvalidated_redirect_dom`
             - Escalated severity to 'High'.
     - Passive
