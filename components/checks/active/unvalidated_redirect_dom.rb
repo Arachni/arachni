@@ -9,7 +9,7 @@
 # Unvalidated redirect DOM check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 #
 # @see https://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
@@ -56,7 +56,7 @@ Injects URLs and checks the browser URL to determine whether the attack was succ
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS - [Element::LinkTemplate::DOM],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
 
             issue:       {
                 name:            %q{Unvalidated DOM redirect},
@@ -81,7 +81,7 @@ to redirecting the client to the injected value.
                 },
                 tags:            %w(unvalidated redirect dom injection),
                 cwe:             819,
-                severity:        Severity::MEDIUM,
+                severity:        Severity::HIGH,
                 remedy_guidance: %q{
 The application should ensure that the supplied value for a redirect is permitted.
 This can be achieved by performing whitelisting on the parameter value.

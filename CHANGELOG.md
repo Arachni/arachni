@@ -76,6 +76,8 @@
             - Added progress messages.
         - `unvalidated_redirect`
             - Escalated severity to 'High'.
+        - `unvalidated_redirect_dom`
+            - Escalated severity to 'High'.
     - Passive
         - Added
             - `common_admin_intefaces` -- By Brendan Coles.
