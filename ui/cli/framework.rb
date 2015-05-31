@@ -151,7 +151,7 @@ class Framework
     end
 
     def print_issues( unmute = false )
-        super( Data.issues.all.sort_by(&:severity).reverse, unmute )
+        super( Data.issues.all, unmute )
     end
 
     # Handles Ctrl+C signals.

@@ -19,6 +19,8 @@ module Utilities
     include Support::Mixins::Terminal
 
     def print_issues( issues, unmute = false, &interceptor )
+        issues = issues.sort_by { |i| [i.severity, i.name]}.reverse
+
         interceptor ||= proc { |s| s }
 
         print_line( interceptor.call, unmute )
