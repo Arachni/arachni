@@ -24,7 +24,9 @@ module Mixins
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Observable
+    include UI::Output
     include Utilities
+
     include MonitorMixin
 
     def self.included( base )
@@ -73,7 +75,7 @@ module Observable
     def notify_observers( event, *args )
         synchronize do
             observers_for( event ).each do |block|
-                exception_jail { block.call( *args ) }
+                exception_jail( false ) { block.call( *args ) }
             end
         end
 

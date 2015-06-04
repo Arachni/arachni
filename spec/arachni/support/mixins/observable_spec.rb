@@ -57,10 +57,24 @@ describe Arachni::Support::Mixins::Observable do
         end
     end
 
-    describe '#call_<event>' do
+    describe '#notify' do
         it 'returns nil' do
             subject.my_event { }
             subject.notify( :my_event ).should be_nil
+        end
+
+        context 'when a callback raises an exception' do
+            it 'does not affect other callbacks' do
+                called = []
+
+                subject.my_event { called << 1 }
+                subject.my_event { called << 2; raise }
+                subject.my_event { called << 3 }
+
+                subject.notify( :my_event )
+
+                called.should == [1, 2, 3]
+            end
         end
     end
 
