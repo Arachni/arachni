@@ -94,8 +94,17 @@ describe Arachni::Platform::Manager do
                         context 'and it is text based' do
                             context 'and has not yet been fingerprinted' do
                                 context 'and is within scope' do
-                                    it 'returns true' do
-                                        described_class.fingerprint?( page ).should be_true
+                                    context 'and has a #code of 200' do
+                                        it 'returns true' do
+                                            described_class.fingerprint?( page ).should be_true
+                                        end
+                                    end
+
+                                    context 'and has a non-200 #code' do
+                                        it 'returns false' do
+                                            page.stub(:code) { 404 }
+                                            described_class.fingerprint?( page ).should be_false
+                                        end
                                     end
                                 end
 

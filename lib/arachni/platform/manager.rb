@@ -242,7 +242,7 @@ class Manager
     # @return   [Bool]
     #   `true` if the resource should be fingerprinted, `false` otherwise.
     def self.fingerprint?( resource )
-        !(!Options.fingerprint? || !resource.text? ||
+        !(!Options.fingerprint? || resource.code != 200 || !resource.text? ||
         include?( resource.url ) || resource.scope.out?)
     end
 
