@@ -169,7 +169,7 @@ module Data
         # stress, hopefully high enough to grab us at least one page that has
         # some workload which will result in HTTP requests which will mask the
         # next replenishing operation.
-        [5, page_queue.free_buffer_size].min.times do
+        [10, page_queue.free_buffer_size].min.times do
             return if url_queue.empty?
 
             # We push directly to the queue instead of using #push_to_page_queue
