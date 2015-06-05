@@ -185,6 +185,14 @@ class Base < Component::Base
         framework.http
     end
 
+    def browser_cluster
+        framework.browser_cluster
+    end
+
+    def with_browser( &block )
+        browser_cluster.with_browser( &block )
+    end
+
     # Registers the plugin's results to {Data::Plugins}.
     #
     # @param    [Object]    results

@@ -391,6 +391,10 @@ module Utilities
         0
     end
 
+    def bytes_to_megabytes( bytes )
+        (bytes / 1024.0 / 1024.0).round( 2 )
+    end
+
     # Wraps the `block` in exception handling code and runs it.
     #
     # @param    [Bool]  raise_exception

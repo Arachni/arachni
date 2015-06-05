@@ -35,7 +35,93 @@
             <xs:element name="waf_detector" type="plugin_waf_detector" maxOccurs="1"/>
             <xs:element name="vector_collector" type="plugin_vector_collector" maxOccurs="1"/>
             <xs:element name="exec" type="plugin_exec" maxOccurs="1"/>
+            <xs:element name="metrics" type="plugin_metrics" maxOccurs="1"/>
         </xs:choice>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics">
+        <xs:all>
+            <xs:element name="name" type="xs:string"/>
+            <xs:element name="description" type="xs:string"/>
+            <xs:element name="results" type="plugin_metrics_results"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results">
+        <xs:all>
+            <xs:element name="general" type="plugin_metrics_results_general"/>
+            <xs:element name="scan" type="plugin_metrics_results_scan"/>
+            <xs:element name="http" type="plugin_metrics_results_http"/>
+            <xs:element name="resource" type="plugin_metrics_results_resource"/>
+            <xs:element name="element" type="plugin_metrics_results_element"/>
+            <xs:element name="dom" type="plugin_metrics_results_dom"/>
+            <xs:element name="platforms" type="plugin_metrics_results_platforms"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results_general">
+        <xs:all>
+            <xs:element name="egress_traffic" type="xs:integer"/>
+            <xs:element name="ingress_traffic" type="xs:integer"/>
+            <xs:element name="uses_http" type="xs:boolean"/>
+            <xs:element name="uses_https" type="xs:boolean"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results_scan">
+        <xs:all>
+            <xs:element name="duration" type="xs:float"/>
+            <xs:element name="authenticated" type="xs:boolean"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results_http">
+        <xs:all>
+            <xs:element name="response_time_min" type="xs:float"/>
+            <xs:element name="response_time_max" type="xs:float"/>
+            <xs:element name="response_time_average" type="xs:float"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results_resource">
+        <xs:all>
+            <xs:element name="binary" type="xs:integer"/>
+            <xs:element name="without_parameters" type="xs:integer"/>
+            <xs:element name="with_parameters" type="xs:integer"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results_element">
+        <xs:all>
+            <xs:element name="links" type="xs:integer"/>
+            <xs:element name="forms" type="xs:integer"/>
+            <xs:element name="has_forms_with_nonces" type="xs:boolean"/>
+            <xs:element name="has_forms_with_passwords" type="xs:boolean"/>
+            <xs:element name="cookies" type="xs:integer"/>
+            <xs:element name="headers" type="xs:integer"/>
+            <xs:element name="xmls" type="xs:integer"/>
+            <xs:element name="jsons" type="xs:integer"/>
+            <xs:element name="input_names_total" type="xs:integer"/>
+            <xs:element name="input_names_unique" type="xs:integer"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results_dom">
+        <xs:all>
+            <xs:element name="event_listeners" type="xs:integer"/>
+            <xs:element name="swf_objects" type="xs:integer"/>
+        </xs:all>
+    </xs:complexType>
+
+    <xs:complexType name="plugin_metrics_results_platforms">
+        <xs:all>
+            <!-- CSV platform names for values in these fields. -->
+            <xs:element name="os" type="xs:string"/>
+            <xs:element name="db" type="xs:string"/>
+            <xs:element name="servers" type="xs:string"/>
+            <xs:element name="languages" type="xs:string"/>
+            <xs:element name="frameworks" type="xs:string"/>
+        </xs:all>
     </xs:complexType>
 
     <xs:complexType name="plugin_exec">

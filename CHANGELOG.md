@@ -86,6 +86,9 @@
             `directory_listing`
             - Added MVC frameworks as exempt platforms since they do their own routing.
 - Plugins
+    - Added
+        - `metrics` -- Captures metrics about multiple aspects of the scan and
+            the web application.
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
     - `login_script` -- Added support for Javascript login scripts.
     - `proxy` -- Updated to show JSON and XML inputs in the inspection page.
