@@ -39,6 +39,8 @@
     - `#has_script?` -- Detect using the body instead of the parsed document.
 - `Parser`
     - Optimized to avoid HTML parsing if it contains no indication of elements.
+    - `#headers` -- Updated to include headers from the HTTP request in addition
+        to common ones.
     - `Extractors` -- Optimized to avoid HTML parsing if it contains no
         indication of elements.
 - `Element`

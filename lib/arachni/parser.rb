@@ -137,9 +137,8 @@ class Parser
         @document = Nokogiri::HTML( body ) if text? rescue nil
     end
 
-    # @note It's more of a placeholder method, it doesn't actually analyze anything.
-    #   It's a long shot that any of these will be vulnerable but better be safe
-    #   than sorry.
+    # @note It will include common request headers as well headers from the HTTP
+    #   request.
     #
     # @return    [Hash]
     #   List of valid auditable HTTP header fields.
@@ -153,7 +152,8 @@ class Parser
             'User-Agent'      => @options.http.user_agent || '',
             'Referer'         => @url,
             'Pragma'          => 'no-cache'
-        }.map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
+        }.merge( response.request.headers ).
+            map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
     end
 
     # @return [Array<Element::Form>]

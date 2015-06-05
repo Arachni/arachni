@@ -495,6 +495,11 @@ describe Arachni::Parser do
         it 'returns an array of headers' do
             subject.headers.each { |h| h.class.should == Arachni::Element::Header }
         end
+
+        it 'includes headers from the HTTP request' do
+            subject.response.request.headers['X-Custom-Header'] = 'My-stuff'
+            subject.headers.find { |h| h.name == 'X-Custom-Header' }.should be_true
+        end
     end
 
     describe '#link_vars' do
