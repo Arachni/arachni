@@ -13,7 +13,7 @@
 # {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.3
+# @version 0.4.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -67,6 +67,9 @@ class Arachni::Checks::Xss < Arachni::Check::Base
             return
         end
 
+        # No idea what was returned, but we can't work with it.
+        return if !response.to_page.has_script?
+
         with_browser_cluster do
             print_info 'Progressing to deferred browser evaluation of response.'
 
@@ -107,7 +110,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.3',
+            version:     '0.4.4',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},
