@@ -12,8 +12,7 @@ module Platform::Fingerprinters
 # Identifies Rails resources.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.1
+# @version 0.1.1
 class Rails < Platform::Fingerprinter
 
     IDs = %w(rails)
@@ -23,14 +22,14 @@ class Rails < Platform::Fingerprinter
             return update_platforms if header.start_with?( 'x-rails' )
         end
 
-        if cookies.include?( '_rails_admin_session' )
-            return update_platforms
-        end
-
         IDs.each do |id|
             next if !server_or_powered_by_include? id
 
             return update_platforms
+        end
+
+        if cookies.include?( '_rails_admin_session' )
+            update_platforms
         end
     end
 

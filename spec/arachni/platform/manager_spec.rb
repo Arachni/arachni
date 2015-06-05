@@ -153,6 +153,16 @@ describe Arachni::Platform::Manager do
         it 'returns the given page' do
             described_class.fingerprint( page ).should == page
         end
+
+        context 'even when no platforms have been identified' do
+            it 'marks the page as fingerprinted' do
+                page = Arachni::Page.from_url( web_server_url_for( :auditor ) )
+
+                described_class.fingerprint( page )
+                page.platforms.should be_empty
+                described_class.fingerprint?( page ).should be_false
+            end
+        end
     end
 
     describe '.[]' do

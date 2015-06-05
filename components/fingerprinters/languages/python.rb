@@ -25,7 +25,9 @@ class Python < Platform::Fingerprinter
             return update_platforms if server_or_powered_by_include?( id )
         end
 
-        cookies.include?( '_ZopeId' )
+        if cookies.include?( '_ZopeId' )
+            update_platforms
+        end
     end
 
     def update_platforms

@@ -98,7 +98,7 @@
 - Reporters
     - `xml`
         - Fixed bug causing vector `affected_input_name` to be blank.
-- Fingerprinters
+- Fingerprinters -- Optimized across the board to prefer less resource intensive checks.
     - Frameworks
         - Rack -- Expanded signatures.
     - Languages

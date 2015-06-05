@@ -19,15 +19,16 @@ class ASPXMVC < Platform::Fingerprinter
     HEADER_FIELDS   = %w(x-aspnetmvc-version)
 
     def run
-        return update_platforms if cookies.include?( ANTI_CSRF_NONCE )
-
-        page.forms.each do |form|
-            form.inputs.each do |k, v|
-                return update_platforms if k.downcase.include? ANTI_CSRF_NONCE
-            end
+        # Naive but enough, I think.
+        if html? && page.body =~ /input.*#{ANTI_CSRF_NONCE}/i
+            return update_platforms
         end
 
         if (headers.keys & HEADER_FIELDS).any?
+            return update_platforms
+        end
+
+        if cookies.include?( ANTI_CSRF_NONCE )
             update_platforms
         end
     end

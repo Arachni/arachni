@@ -243,7 +243,7 @@ class Manager
     #   `true` if the resource should be fingerprinted, `false` otherwise.
     def self.fingerprint?( resource )
         !(!Options.fingerprint? || resource.code != 200 || !resource.text? ||
-        include?( resource.url ) || resource.scope.out?)
+            include?( resource.url ) || resource.scope.out?)
     end
 
     # Runs all fingerprinters against the given `page`.
@@ -254,14 +254,24 @@ class Manager
     # @return   [Manager]
     #   Updated `self`.
     def self.fingerprint( page )
-        return page if !fingerprint? page
+        synchronize do
+            return page if !fingerprint? page
 
-        fingerprinters.available.each do |name|
-            exception_jail( false ) do
-                fingerprinters[name].new( page ).run
+            fingerprinters.available.each do |name|
+                exception_jail( false ) do
+                    fingerprinters[name].new( page ).run
+                end
             end
+
+            # We do this to flag the resource as checked even if no platforms
+            # were identified. We don't want to keep checking a resource that
+            # yields nothing over and over.
+            update( page.url, [] )
         end
-        page
+
+        # Fingerprinting will have resulted in element parsing, clear the element
+        # caches to keep RAM consumption down.
+        page.clear_cache
     end
 
     # @param    [String, URI]   uri
