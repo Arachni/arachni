@@ -71,7 +71,7 @@ class Browser
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
     ASSET_EXTENSIONS = Set.new(
-        ['css', 'js', 'jpg', 'jpeg', 'png', 'gif']
+        ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'woff', 'json']
     )
 
     ASSET_EXTRACTORS = [
