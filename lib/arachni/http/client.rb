@@ -521,6 +521,7 @@ class Client
             print_debug_level_3 "Headers: #{request.headers}"
             print_debug_level_3 "Cookies: #{request.cookies}"
             print_debug_level_3 "Train?: #{request.train?}"
+            print_debug_level_3 "Fingerprint?: #{request.fingerprint?}"
             print_debug_level_3  '------------'
         end
 
@@ -532,7 +533,9 @@ class Client
                     @burst_response_time_sum += response.time
                     @total_response_time_sum += response.time
 
-                    if Platform::Manager.fingerprint?( response )
+                    if response.request.fingerprint? &&
+                        Platform::Manager.fingerprint?( response )
+
                         # Force a fingerprint by converting the Response to a Page object.
                         response.to_page
                     end

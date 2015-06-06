@@ -29,8 +29,11 @@
             - Account for cases where the server returns intermittent errors
                 that can lead to signature corruption and possibly false positives.
             - Updated training scenarios for cases where `~` are ignored.
+            - Disable fingerprinting during the gathering of signatures.
     - `Request`
         - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
+        - Added `#fingerprint` option to enable/disable platform fingerprinting
+            on a per request basis.
         - `#response_max_size` -- In addition to setting the `maxfilesize` for
             the `Typhoeus::Request`, stream bodies and manually abort if the
             buffer exceeds the limit -- covers cases where no `Content-Type`
@@ -50,6 +53,8 @@
     - `Server`
         - `#log_remote_file_if_exists?` -- Flag issues as untrusted at that point
         if possible, instead of at the end of the scan.
+        - `#remote_file_exist?` -- Disable platform fingerprinting when dealing
+            with a dynamic handler.
 - `Check::Auditor`
     - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
 - `Issue`

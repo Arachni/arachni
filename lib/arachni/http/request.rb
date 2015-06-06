@@ -126,6 +126,7 @@ class Request < Message
         super( options )
 
         @train           = false if @train.nil?
+        @fingerprint     = true  if @fingerprint.nil?
         @update_cookies  = false if @update_cookies.nil?
         @follow_location = false if @follow_location.nil?
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
@@ -260,6 +261,13 @@ class Request < Message
     #   `true` if redirects should be followed, `false` otherwise.
     def follow_location?
         !!@follow_location
+    end
+
+    # @return   [Bool]
+    #   `true` if the {Response} should be {Platform::Manager.fingerprint fingerprinted}
+    #   for platforms, `false` otherwise.
+    def fingerprint?
+        @fingerprint
     end
 
     # @return   [Bool]

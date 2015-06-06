@@ -168,11 +168,33 @@ describe Arachni::Element::Server do
         end
 
         context 'without a custom 404 handler' do
+            it 'performs fingerprinting' do
+                url = @base_url + 'true'
+
+                # We run this twice because the cache is empty the first time
+                # around so we don't know what kind of handler we're dealing with.
+
+                auditable.remote_file_exist?( url ) {}
+                @framework.http.run
+
+                request = nil
+                @framework.http.on_complete do |response|
+                    next if url != response.url
+                    request = response.request
+                end
+
+                auditable.remote_file_exist?( url ) {}
+                @framework.http.run
+
+                request.fingerprint?.should be_true
+            end
+
             context 'when a remote file exists' do
                 it 'yields true' do
                     exists = false
                     auditable.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
                     @framework.http.run
+                    exists.should be_true
                 end
 
                 context 'on subsequent calls' do
@@ -208,8 +230,29 @@ describe Arachni::Element::Server do
             end
         end
 
-        context 'without a custom 404 handler' do
+        context 'with a custom 404 handler' do
             before { @_404_url = @base_url + 'custom_404/' }
+
+            it 'does not perform fingerprinting' do
+                url = @_404_url + 'true'
+
+                # We run this twice because the cache is empty the first time
+                # around so we don't know what kind of handler we're dealing with.
+
+                auditable.remote_file_exist?( url ) {}
+                @framework.http.run
+
+                request = nil
+                @framework.http.on_complete do |response|
+                    next if url != response.url
+                    request = response.request
+                end
+
+                auditable.remote_file_exist?( url ) {}
+                @framework.http.run
+
+                request.fingerprint?.should be_false
+            end
 
             context 'and the response' do
                 context 'is static' do

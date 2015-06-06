@@ -161,11 +161,7 @@ class Dynamic404Handler
             current_signature = (preliminary_signatures_for( url )[i] ||= {})
 
             PRECISION.times do
-                Client.get( generator.call,
-                            # This is important, helps us reduce waiting callers.
-                            high_priority:   true,
-                            performer:       self
-                ) do |c_res|
+                request( generator.call ) do |c_res|
                     next if corrupted
 
                     print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
@@ -219,11 +215,7 @@ class Dynamic404Handler
             current_signature = (advanced_signatures_for( url )[i] ||= {})
 
             PRECISION.times do
-                Client.get( generator.call,
-                            # This is important, helps us reduce waiting callers.
-                            high_priority:   true,
-                            performer:       self
-                ) do |c_res|
+                request( generator.call ) do |c_res|
                     next if corrupted
 
                     print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
@@ -414,6 +406,20 @@ class Dynamic404Handler
         end
 
         probes
+    end
+
+    def request( url, &block )
+        Client.get( url,
+            # This is important, helps us reduce waiting callers.
+            high_priority: true,
+
+            # We're going to be checking for a lot of non-existent resources,
+            # don't bother fingerprinting them
+            fingerprint:   false,
+
+            performer:     self,
+            &block
+        )
     end
 
     def data_for( url )

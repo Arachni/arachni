@@ -583,6 +583,42 @@ describe Arachni::HTTP::Client do
             ).request.effective_body.should == "1=%202&%203=4"
         end
 
+        describe :fingerprint do
+            before do
+                Arachni::Platform::Manager.clear
+            end
+
+            context 'nil' do
+                it 'performs platform fingerprinting on the response' do
+                    res = nil
+                    subject.request( @url + '/fingerprint.php' ) { |c_res| res = c_res }
+                    subject.run
+
+                    res.platforms.to_a.should == [:php]
+                end
+            end
+
+            context true do
+                it 'performs platform fingerprinting on the response' do
+                    res = nil
+                    subject.request( @url + '/fingerprint.php', fingerprint: true ) { |c_res| res = c_res }
+                    subject.run
+
+                    res.platforms.to_a.should == [:php]
+                end
+            end
+
+            context false do
+                it 'does not fingerprint the response' do
+                    res = nil
+                    subject.request( @url + '/fingerprint.php', fingerprint: false ) { |c_res| res = c_res }
+                    subject.run
+
+                    res.platforms.should be_empty
+                end
+            end
+        end
+
         describe :response_max_size do
             context 'when not specified' do
                 context "and #{Arachni::OptionGroups::HTTP}#response_max_size is specified" do

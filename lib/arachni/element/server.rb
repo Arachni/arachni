@@ -99,7 +99,13 @@ class Server < Base
         return false if !full_and_absolute_url?( url )
 
         if http.dynamic_404_handler.needs_check?( url )
-            http.get( url, performer: self ) do |r|
+
+            # Don't enable fingerprinting if there's a dynamic handler, we don't
+            # want to keep analyzing non existent resources.
+            #
+            # If a resource does exist though it will be fingerprinted down the
+            # line.
+            http.get( url, performer: self, fingerprint: false ) do |r|
                 if r.code == 200
                     http.dynamic_404_handler._404?( r ) { |bool| block.call( !bool, r ) }
                 else
