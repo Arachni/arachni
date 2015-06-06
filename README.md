@@ -564,7 +564,6 @@ Default plugins will run for every scan and are placed under `/plugins/defaults/
 - AutoThrottle (`autothrottle`) -- Dynamically adjusts HTTP throughput during the scan for
     maximum bandwidth utilization.
 - Healthmap (`healthmap`) -- Generates sitemap showing the health of each crawled/audited URL
-- Resolver (`resolver`) -- Resolves vulnerable hostnames to IP addresses.
 
 ###### Meta
 
