@@ -45,7 +45,6 @@ class Worker < Arachni::Browser
     attr_reader   :time_to_live
 
     def initialize( options = {} )
-        javascript_token  = options.delete( :javascript_token )
         @master           = options.delete( :master )
 
         @max_time_to_live = options.delete( :max_time_to_live ) ||
@@ -58,8 +57,6 @@ class Worker < Arachni::Browser
         # Don't store pages if there's a master, we'll be sending them to him
         # as soon as they're logged.
         super options.merge( store_pages: false )
-
-        @javascript.token = javascript_token
 
         @done_signal = Queue.new
 

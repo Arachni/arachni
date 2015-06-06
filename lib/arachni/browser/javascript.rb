@@ -21,6 +21,8 @@ class Javascript
     require_relative 'javascript/taint_tracer'
     require_relative 'javascript/dom_monitor'
 
+    TOKEN = 'arachni_js_namespace'
+
     # @return   [String]
     #   URL to use when requesting our custom JS scripts.
     SCRIPT_BASE_URL = 'http://javascript.browser.arachni/'
@@ -183,7 +185,7 @@ class Javascript
     # @return   [String]
     #   Token used to namespace the injected JS code and avoid clashes.
     def token
-        @token ||= generate_token.to_s
+        @token ||= TOKEN
     end
 
     # @return   [String]

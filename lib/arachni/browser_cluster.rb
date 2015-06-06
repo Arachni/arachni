@@ -61,10 +61,6 @@ class BrowserCluster
     #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
 
-    # @return   [String]
-    #   Javascript token used to namespace the custom JS environment.
-    attr_reader :javascript_token
-
     # @return   [Array<Worker>]
     #   Worker pool.
     attr_reader :workers
@@ -122,13 +118,14 @@ class BrowserCluster
         @mutex       = Monitor.new
         @done_signal = Queue.new
 
-        # Javascript token to share across all workers, this needs to be static
-        # because of the browsers' disk-cache which leads to cached responses
-        # being used between runs.
-        @javascript_token = 'arachni_js_namespace'
-
         @consumed_pids = []
         initialize_workers
+    end
+
+    # @return   [String]
+    #   Javascript token used to namespace the custom JS environment.
+    def javascript_token
+        Browser::Javascript::TOKEN
     end
 
     # @note Operates in non-blocking mode.
@@ -419,10 +416,9 @@ class BrowserCluster
         @workers = []
         pool_size.times do |i|
             worker = Worker.new(
-                javascript_token: @javascript_token,
-                master:           self,
-                width:            Options.browser_cluster.screen_width,
-                height:           Options.browser_cluster.screen_height
+                master: self,
+                width:  Options.browser_cluster.screen_width,
+                height: Options.browser_cluster.screen_height
             )
             @workers << worker
             @consumed_pids << worker.pid
