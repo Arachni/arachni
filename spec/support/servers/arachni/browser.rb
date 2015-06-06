@@ -28,6 +28,45 @@ get '/' do
 HTML
 end
 
+get '/If-None-Match' do
+    etag '1'
+
+    <<HTML
+<html>
+    <script src="/If-None-Match/asset"></script>
+
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/If-None-Match/asset' do
+    etag '1'
+    ''
+end
+
+get '/If-Modified-Since' do
+    last_modified Time.now - 24*60*60
+    expires -1
+
+    <<HTML
+<html>
+    <script src="/If-Modified-Since/asset"></script>
+
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/If-Modified-Since/asset' do
+    last_modified Time.now - 24*60*60
+    expires -1
+
+    ''
+end
+
 get '/wait_for_elements' do
     <<HTML
 <html>
@@ -40,7 +79,6 @@ get '/wait_for_elements' do
 </html>
 HTML
 end
-
 
 get '/asset_domains' do
 end

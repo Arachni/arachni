@@ -1880,6 +1880,56 @@ describe Arachni::Browser do
             described_class.asset_domains.should include Arachni::URI( @url ).domain
         end
 
+        context 'when requesting the page URL' do
+            it 'does not send If-None-Match request headers' do
+                subject.goto "#{@url}/If-None-Match"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-None-Match'
+
+                subject.goto "#{@url}/If-None-Match"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-None-Match'
+            end
+
+            it 'does not send If-Modified-Since request headers' do
+                subject.goto "#{@url}/If-Modified-Since"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-Modified-Since'
+
+                subject.goto "#{@url}/If-Modified-Since"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-Modified-Since'
+            end
+        end
+
+        context 'when requesting something other than the page URL' do
+            it 'sends If-None-Match request headers' do
+                response = nil
+                subject.on_response { |r| response = r }
+
+                subject.goto "#{@url}/If-None-Match"
+                response.code.should == 200
+                response.request.headers.should_not include 'If-None-Match'
+
+                subject.goto "#{@url}/If-None-Match"
+                response.code.should == 304
+                response.request.headers.should include 'If-None-Match'
+            end
+
+            it 'sends If-Modified-Since request headers' do
+                response = nil
+                subject.on_response { |r| response = r }
+
+                subject.goto "#{@url}/If-Modified-Since"
+                response.code.should == 200
+                response.request.headers.should_not include 'If-Modified-Since'
+
+                subject.goto "#{@url}/If-Modified-Since"
+                response.code.should == 304
+                response.request.headers.should include 'If-Modified-Since'
+            end
+        end
+
         context 'when the page requires an asset' do
             before do
                 described_class.asset_domains.clear

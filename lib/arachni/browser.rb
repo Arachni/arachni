@@ -1330,7 +1330,17 @@ class Browser
         request.performer = self
 
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
-        request.headers.delete( 'X-Arachni-Browser-Auth' )
+        request.headers.delete 'X-Arachni-Browser-Auth'
+
+        # We can't have 304 page responses in the framework, we need full request
+        # and response data, the browser cache doesn't help us here.
+        #
+        # Still, it's a nice feature to have when requesting assets or anything
+        # else.
+        if request.url == @last_url
+            request.headers.delete 'If-None-Match'
+            request.headers.delete 'If-Modified-Since'
+        end
 
         return if @javascript.serve( request, response )
 
