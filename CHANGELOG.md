@@ -89,6 +89,8 @@
             - Added MVC frameworks as exempt platforms since they do their own routing.
 - Plugins
     - Added
+        - `restrict_to_dom_state` -- Restricts the audit to a single page's DOM
+            state, based on a URL fragment.
         - `metrics` -- Captures metrics about multiple aspects of the scan and
             the web application.
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.

@@ -554,6 +554,8 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Headers collector (`headers_collector`) -- Collects response headers based on specified criteria.
 - Exec (`exec`) -- Calls external executables at different scan stages.
 - Metrics (`metrics`) -- Captures metrics about multiple aspects of the scan and the web application.
+- Restrict to DOM state (`restrict_to_dom_state`) -- Restricts the audit to a single page's DOM
+    state, based on a URL fragment.
 
 ##### Defaults
 
