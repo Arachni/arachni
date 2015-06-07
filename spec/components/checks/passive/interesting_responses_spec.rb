@@ -7,7 +7,7 @@ describe name_from_filename do
         [ Element::Server ]
     end
 
-    it 'intercepts all HTTP responses and log ones with status codes other than 200 or 404' do
+    it 'logs HTTP responses with status codes other than 200 or 404' do
         run
         current_check.acceptable.each do |code|
             http.get( url + code.to_s )
@@ -19,5 +19,18 @@ describe name_from_filename do
 
         max_issues = current_check.max_issues
         issues.size.should == max_issues
+    end
+
+    it 'skips HTTP responses which are out of scope' do
+        options.scope.exclude_path_patterns << /blah/
+
+        run
+
+        current_check.acceptable.each do |code|
+            http.get( url + 'blah/' + code.to_s )
+        end
+        http.run
+
+        issues.should be_empty
     end
 end
