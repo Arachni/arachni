@@ -14,6 +14,7 @@
     - `BrowserCluster`
         - `#wait_for_elements` -- Wait for element matching `CSS` to appear when
             visiting a page whose URL matches the `PATTERN`.
+        - `job_timeout` -- Increased from 15 to 25 seconds.
 - `Framework`
     - `#pause` -- Pause is now near instant.
     - `#audit` -- Substantially simplified and optimized the consumption of URL

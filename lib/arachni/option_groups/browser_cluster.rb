@@ -45,7 +45,7 @@ class BrowserCluster < Arachni::OptionGroup
     set_defaults(
         wait_for_elements:   {},
         pool_size:           6,
-        job_timeout:         15,
+        job_timeout:         25,
         worker_time_to_live: 100,
         ignore_images:       false,
         screen_width:        1600,
