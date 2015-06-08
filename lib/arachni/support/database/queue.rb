@@ -80,12 +80,13 @@ class Queue < Base
     def pop( non_block = false )
         synchronize do
             loop do
-                if empty?
+                if internal_empty?
                     raise ThreadError, 'queue empty' if non_block
                     @waiting.push Thread.current
                     @mutex.sleep
                 else
-                    return @buffer.shift || load_and_delete_file( @disk.shift )
+                    return @buffer.shift if !@buffer.empty?
+                    return load_and_delete_file( @disk.shift )
                 end
             end
         end
@@ -115,17 +116,21 @@ class Queue < Base
     # @return   [Bool]
     #   `true` if the queue if empty, `false` otherwise.
     def empty?
-        @buffer.empty? && @disk.empty?
+        synchronize do
+            internal_empty?
+        end
     end
 
     # Removes all objects from the queue.
     def clear
-        @buffer.clear
+        synchronize do
+            @buffer.clear
 
-        while !@disk.empty?
-            path = @disk.pop
-            next if !path
-            delete_file path
+            while !@disk.empty?
+                path = @disk.pop
+                next if !path
+                delete_file path
+            end
         end
     end
 
@@ -134,6 +139,10 @@ class Queue < Base
     end
 
     private
+
+    def internal_empty?
+        @buffer.empty? && @disk.empty?
+    end
 
     def synchronize( &block )
         @mutex.synchronize( &block )
