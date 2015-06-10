@@ -87,6 +87,8 @@
             - Only perform straight payload injections.
         - `unvalidated_redirect_dom`
             - Escalated severity to 'High'.
+        - `path_traversal`, `file_inclusion`, `os_cmd_injection`, `xxe`
+            - Updated `/etc/passwd` content matching pattern.
     - Passive
         - Added
             - `common_admin_intefaces` -- By Brendan Coles.

@@ -9,7 +9,7 @@
 # Path Traversal check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.5
+# @version 0.4.6
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see https://www.owasp.org/index.php/Path_Traversal
@@ -25,7 +25,7 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             regexp: {
                 unix: [
                     /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    /[a-z0-9_-]{3,15}:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
                     /\[boot loader\].*\[operating systems\]/im,
@@ -111,7 +111,7 @@ of relevant content in the HTML responses.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.5',
+            version:     '0.4.6',
             platforms:   payloads.keys,
 
             issue:       {
