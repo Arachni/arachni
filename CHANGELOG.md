@@ -3,8 +3,10 @@
 ## _Under development_
 
 - `UI`
-    - `CLI::Framework::OptionParser`
-        - Added `--browser-cluster-wait-for-element`.
+    - `CLI::Framework`
+        - Fixed timeout enforcement.
+        - `OptionParser`
+            - Added `--browser-cluster-wait-for-element`.
     - `Output`
         - `#error_log_fd` -- Catch `Errno` system errors (like `Too many open files`)
             to avoid crashing.
