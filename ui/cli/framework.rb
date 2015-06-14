@@ -333,7 +333,7 @@ class Framework
     end
 
     def shutdown
-        @timeout_supervisor.kill if Thread.current != @timeout_supervisor
+        @timeout_supervisor.kill if @timeout_supervisor && Thread.current != @timeout_supervisor
         capture_output_options
 
         print_status 'Aborting...'
