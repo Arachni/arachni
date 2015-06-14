@@ -60,7 +60,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info "Control panel URL: #{url_for( :panel )}"
         print_info "Shutdown URL:      #{url_for( :shutdown )}"
         print_info 'The scan will resume once you visit the shutdown URL.'
-
+        print_info
+        print_info 'When browsing HTTPS sites, please accept the Arachni SSL certificate' +
+            ' or install the CA certificate manually from:'
+        print_info "    #{Arachni::HTTP::ProxyServer::INTERCEPTOR_CA_CERTIFICATE}"
+        print_info
+        print_bad '**DO NOT** forget to revoke it after using the proxy, as it' +
+            ' can be used by anyone to impersonate 3rd party servers.'
         print_info
         print_info '*' * 82
         print_info '* You need to clear your browser\'s cookies for this site before using the proxy! *'

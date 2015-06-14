@@ -41,6 +41,9 @@
             the `Typhoeus::Request`, stream bodies and manually abort if the
             buffer exceeds the limit -- covers cases where no `Content-Type`
             is set.
+    - `ProxyServer`
+        - SSL interceptor now automatically generates certificate/key pairs
+            based on Arachni CA.
 - `Page`
     - `#has_script?` -- Detect using the body instead of the parsed document.
 - `Parser`
@@ -105,7 +108,9 @@
             the web application.
     - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
     - `login_script` -- Added support for Javascript login scripts.
-    - `proxy` -- Updated to show JSON and XML inputs in the inspection page.
+    - `proxy`
+        - Updated to show JSON and XML inputs in the inspection page.
+        - Added output message with instructions for server that use SSL.
     - `vector_feed` -- Updated to support XML and JSON elements.
 - Reporters
     - `xml`

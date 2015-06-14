@@ -21,11 +21,11 @@ module HTTP
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ProxyServer < WEBrick::HTTPProxyServer
 
-    INTERCEPTOR_CERTIFICATE =
-        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-cert.pem'
+    INTERCEPTOR_CA_CERTIFICATE =
+        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-cacert.pem'
 
-    INTERCEPTOR_PRIVATE_KEY =
-        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-pkey.pem'
+    INTERCEPTOR_CA_KEY =
+        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-cakey.pem'
 
     # @param   [Hash]  options
     # @option options   [String]    :address    ('0.0.0.0')
@@ -50,7 +50,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
         @options = {
             address:              '0.0.0.0',
             port:                 Utilities.available_port,
-            ssl_certificate_name: [ [ 'CN', 'Arachni' ] ]
+            ssl_certificate_name: [ [ 'CN', Arachni::URI( Options.url ).host ] ]
         }.merge( options )
 
         @logger = WEBrick::Log.new( Arachni.null_device, 7 )
@@ -203,15 +203,55 @@ class ProxyServer < WEBrick::HTTPProxyServer
     def start_ssl_interceptor
         return @interceptor if @interceptor
 
+        ca     = OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CA_CERTIFICATE ) )
+        ca_key = OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_CA_KEY ) )
+
+        keypair = OpenSSL::PKey::RSA.new( 4096 )
+
+        req            = OpenSSL::X509::Request.new
+        req.version    = 0
+        req.subject    = OpenSSL::X509::Name.parse(
+            "CN=#{Arachni::URI( Options.url ).host}/O=Arachni/OU=Proxy/L=Athens/ST=Attika/C=GR"
+        )
+        req.public_key = keypair.public_key
+        req.sign( keypair, OpenSSL::Digest::SHA1.new )
+
+        cert            = OpenSSL::X509::Certificate.new
+        cert.version    = 2
+        cert.serial     = rand( 999999 )
+        cert.not_before = Time.new
+        cert.not_after  = cert.not_before + (60 * 60 * 24 * 365)
+        cert.public_key = req.public_key
+        cert.subject    = req.subject
+        cert.issuer     = ca.subject
+
+        ef = OpenSSL::X509::ExtensionFactory.new
+        ef.subject_certificate = cert
+        ef.issuer_certificate  = ca
+
+        cert.extensions = [
+            ef.create_extension( 'basicConstraints', 'CA:FALSE', true ),
+            ef.create_extension( 'extendedKeyUsage', 'serverAuth', false ),
+            ef.create_extension( 'subjectKeyIdentifier', 'hash' ),
+            ef.create_extension( 'authorityKeyIdentifier', 'keyid:always,issuer:always' ),
+            ef.create_extension( 'keyUsage',
+                %w(nonRepudiation digitalSignature
+                keyEncipherment dataEncipherment).join(","),
+                true
+            )
+        ]
+        cert.sign( ca_key, OpenSSL::Digest::SHA1.new )
+
         # The interceptor is only used for SSL decryption/encryption, the actual
         # proxy functionality is forwarded to the plain proxy server.
         @interceptor = self.class.new(
             address:        '127.0.0.1',
             port:            interceptor_port,
-            ssl_certificate:
-                OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CERTIFICATE ) ),
-            ssl_private_key:
-                OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_PRIVATE_KEY ) ),
+            ssl_certificate: cert,
+            ssl_private_key: keypair,
+
+            # ssl_certificate: OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CERTIFICATE ) ),
+            # ssl_private_key: OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_PRIVATE_KEY ) ),
             service_handler: method( :proxy_service )
         )
 
