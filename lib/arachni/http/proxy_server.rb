@@ -203,6 +203,8 @@ class ProxyServer < WEBrick::HTTPProxyServer
     def start_ssl_interceptor
         return @interceptor if @interceptor
 
+        host = Arachni::URI( Options.url ).host
+
         ca     = OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CA_CERTIFICATE ) )
         ca_key = OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_CA_KEY ) )
 
@@ -211,7 +213,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
         req            = OpenSSL::X509::Request.new
         req.version    = 0
         req.subject    = OpenSSL::X509::Name.parse(
-            "CN=#{Arachni::URI( Options.url ).host}/O=Arachni/OU=Proxy/L=Athens/ST=Attika/C=GR"
+            "CN=#{host}/subjectAltName=#{host}/O=Arachni/OU=Proxy/L=Athens/ST=Attika/C=GR"
         )
         req.public_key = keypair.public_key
         req.sign( keypair, OpenSSL::Digest::SHA1.new )
@@ -235,8 +237,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
             ef.create_extension( 'subjectKeyIdentifier', 'hash' ),
             ef.create_extension( 'authorityKeyIdentifier', 'keyid:always,issuer:always' ),
             ef.create_extension( 'keyUsage',
-                %w(nonRepudiation digitalSignature
-                keyEncipherment dataEncipherment).join(","),
+                'nonRepudiation,digitalSignature,keyEncipherment,dataEncipherment',
                 true
             )
         ]
@@ -249,9 +250,6 @@ class ProxyServer < WEBrick::HTTPProxyServer
             port:            interceptor_port,
             ssl_certificate: cert,
             ssl_private_key: keypair,
-
-            # ssl_certificate: OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CERTIFICATE ) ),
-            # ssl_private_key: OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_PRIVATE_KEY ) ),
             service_handler: method( :proxy_service )
         )
 
