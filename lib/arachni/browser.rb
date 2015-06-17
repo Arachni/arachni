@@ -934,7 +934,15 @@ class Browser
 
             c[:path]     = '/' if c[:path] == '//'
             c[:name]     = Cookie.decode( c[:name].to_s )
-            c[:value]    = Cookie.decode( c[:value].to_s )
+
+            value = c[:value].to_s
+            if value.start_with?( '"' ) && value.end_with?( '"' )
+                value = value[1...-1]
+            else
+                value = Cookie.decode( value )
+            end
+
+            c[:value]    = value
             c[:httponly] = !js_cookies.include?( original_name )
 
             Cookie.new c.merge( url: @last_url || url )

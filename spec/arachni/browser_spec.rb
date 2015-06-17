@@ -2127,8 +2127,6 @@ describe Arachni::Browser do
                 end
             end
 
-        end
-
         describe :take_snapshot do
             describe true do
                 it 'captures a snapshot of the loaded page' do
@@ -2638,6 +2636,17 @@ describe Arachni::Browser do
         it 'preserves the HttpOnly attribute' do
             @browser.load @url
             @browser.cookies.first.should be_http_only
+        end
+
+        context 'when parsing cookies with quoted values' do
+            it 'removes the quotes' do
+                cookie = 'rsession="06142010_0%3Ae275d357943e9a2de0"'
+
+                @browser.load @url
+                @browser.javascript.run( "document.cookie = '#{cookie}';" )
+
+                @browser.cookies.first.value.should == '06142010_0:e275d357943e9a2de0'
+            end
         end
 
         context 'when no page is available' do
