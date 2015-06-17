@@ -1986,19 +1986,18 @@ describe Arachni::Browser do
                 transition.options[:cookies].should == cookie
             end
 
-        context 'when auditing existing cookies' do
-            it 'preserves the HttpOnly attribute' do
-                @browser.goto( @url )
-                @browser.cookies.size.should == 1
+            context 'when auditing existing cookies' do
+                it 'preserves the HttpOnly attribute' do
+                    @browser.goto( @url )
+                    @browser.cookies.size.should == 1
 
-                cookies = { @browser.cookies.first.name => 'updated' }
-                @browser.goto( @url, cookies: cookies )
+                    cookies = { @browser.cookies.first.name => 'updated' }
+                    @browser.goto( @url, cookies: cookies )
 
-                @browser.cookies.first.value == 'updated'
-                @browser.cookies.first.should be_http_only
+                    @browser.cookies.first.value == 'updated'
+                    @browser.cookies.first.should be_http_only
+                end
             end
-        end
-
         end
 
         describe :take_snapshot do
@@ -2510,6 +2509,17 @@ describe Arachni::Browser do
         it 'preserves the HttpOnly attribute' do
             @browser.load @url
             @browser.cookies.first.should be_http_only
+        end
+
+        context 'when parsing cookies with quoted values' do
+            it 'removes the quotes' do
+                cookie = 'rsession="06142010_0%3Ae275d357943e9a2de0"'
+
+                @browser.load @url
+                @browser.javascript.run( "document.cookie = '#{cookie}';" )
+
+                @browser.cookies.first.value.should == '06142010_0:e275d357943e9a2de0'
+            end
         end
 
         context 'when no page is available' do

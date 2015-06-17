@@ -96,6 +96,8 @@
     - Added `.full_and_absolute_url?`.
 - `Browser`
     - Updated to extract JSON and XML input vectors from HTTP requests.
+    - `#cookies` -- Normalize cookies with quoted values since Watir doesn't take
+        care of that bit.
     - `#shutdown` -- Fixed Selenium exceptions on dead browser process.
     - `#to_page` -- Apply DOM metadata to page elements.
     - `#spawn_phantomjs` -- Enabled `--disk-cache` option for `phantomjs`.
