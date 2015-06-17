@@ -28,6 +28,7 @@ class PluginFormatters::Metrics < Arachni::Plugin::Formatter
 
         print_ok 'HTTP'
         http = results['http']
+        print_info "Requests: #{http['requests']}"
         print_info "Minimum response time: #{http['response_time_min'].round( 4 )} seconds"
         print_info "Maximum response time: #{http['response_time_max'].round( 4 )} seconds"
         print_info "Average response time: #{http['response_time_average'].round( 4 )} seconds"

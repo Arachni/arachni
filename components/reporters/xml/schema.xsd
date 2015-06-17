@@ -77,6 +77,7 @@
 
     <xs:complexType name="plugin_metrics_results_http">
         <xs:all>
+            <xs:element name="requests" type="xs:integer"/>
             <xs:element name="response_time_min" type="xs:float"/>
             <xs:element name="response_time_max" type="xs:float"/>
             <xs:element name="response_time_average" type="xs:float"/>

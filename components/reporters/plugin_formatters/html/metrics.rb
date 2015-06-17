@@ -72,6 +72,13 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
                 <h3>HTTP</h3>
                 <dl class="dl-horizontal">
                     <dt>
+                        Requests
+                    </dt>
+                    <dd>
+                        <%= results['http']['requests'] %>
+                    </dd>
+
+                    <dt>
                         Minimum response time
                     </dt>
                     <dd>

@@ -25,6 +25,7 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
                 'authenticated' => false
             },
             'http'      => {
+                'requests'              => 0,
                 'response_time_min'     => 0,
                 'response_time_max'     => 0,
                 'response_time_average' => 0,
@@ -179,14 +180,16 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 
         @metrics = process( @metrics )
 
+        @metrics['http']['requests'] = framework.statistics[:http][:response_count]
+
         @metrics['http']['response_time_average'] =
-            http_response_time_total / framework.statistics[:http][:response_count]
+            http_response_time_total / @metrics['http']['requests']
 
         @metrics['http']['response_size_average'] =
-            @metrics['general']['ingress_traffic'] / framework.statistics[:http][:response_count]
+            @metrics['general']['ingress_traffic'] / @metrics['http']['requests']
 
         @metrics['http']['request_size_average'] =
-            @metrics['general']['egress_traffic'] / framework.statistics[:http][:request_count]
+            @metrics['general']['egress_traffic'] / @metrics['http']['requests']
 
         @metrics['scan']['duration']      = framework.statistics[:runtime]
         @metrics['scan']['authenticated'] = !!Arachni::Options.session.check_url
