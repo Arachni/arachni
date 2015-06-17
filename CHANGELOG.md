@@ -16,7 +16,7 @@
     - `BrowserCluster`
         - `#wait_for_elements` -- Wait for element matching `CSS` to appear when
             visiting a page whose URL matches the `PATTERN`.
-        - `job_timeout` -- Increased from 15 to 25 seconds.
+        - `#job_timeout` -- Increased from 15 to 25 seconds.
 - `Framework`
     - `#pause` -- Pause is now near instant.
     - `#audit` -- Substantially simplified and optimized the consumption of URL
@@ -32,7 +32,7 @@
             - Account for cases where the server returns intermittent errors
                 that can lead to signature corruption and possibly false positives.
             - Updated training scenarios for cases where `~` are ignored.
-            - Disable fingerprinting during the gathering of signatures.
+            - Disable platform fingerprinting during the gathering of signatures.
     - `Request`
         - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
         - Added `#fingerprint` option to enable/disable platform fingerprinting
@@ -68,6 +68,8 @@
 - `Browser`
     - Updated to extract and whitelist CDNs from response bodies.
     - `Javascript`
+        - `#inject` -- Inject `TaintTracer` and `DOMMonitor` update calls in
+            requested JS assets.
         - `TaintTracer`
             - Limited data and execution flow sinks to a max size of 50 entries.
             - Don't trace functions known to cause issues:
@@ -75,7 +77,7 @@
                 - `lodash()`
         - `DOMMonitor`
             - Keep track of `jQuery` delegated events.
-- Checks -- Added proofs to as many issues as possible.
+- Checks -- Added `Issue#proof` to as many issues as possible.
     - Active
         - `xss`
             - When the case involves payloads landing in `textarea`s, break out of
