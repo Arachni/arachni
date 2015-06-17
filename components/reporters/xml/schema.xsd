@@ -80,6 +80,14 @@
             <xs:element name="response_time_min" type="xs:float"/>
             <xs:element name="response_time_max" type="xs:float"/>
             <xs:element name="response_time_average" type="xs:float"/>
+
+            <xs:element name="response_size_min" type="xs:float"/>
+            <xs:element name="response_size_max" type="xs:float"/>
+            <xs:element name="response_size_average" type="xs:float"/>
+
+            <xs:element name="request_size_min" type="xs:float"/>
+            <xs:element name="request_size_max" type="xs:float"/>
+            <xs:element name="request_size_average" type="xs:float"/>
         </xs:all>
     </xs:complexType>
 

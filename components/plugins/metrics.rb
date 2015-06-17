@@ -27,7 +27,13 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
             'http'      => {
                 'response_time_min'     => 0,
                 'response_time_max'     => 0,
-                'response_time_average' => 0
+                'response_time_average' => 0,
+                'request_size_min'      => 0,
+                'request_size_max'      => 0,
+                'request_size_average'  => 0,
+                'response_size_min'     => 0,
+                'response_size_max'     => 0,
+                'response_size_average' => 0
             },
             'resource'  => {
                 'binary'            => Arachni::Support::LookUp::HashSet.new,
@@ -71,9 +77,28 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 
                 @metrics['http']['response_time_min'] = response.time
             end
-
             if response.time > @metrics['http']['response_time_max']
                 @metrics['http']['response_time_max'] = response.time
+            end
+
+            response_size = response.to_s.size
+            if @metrics['http']['response_size_min'].is_a?( Integer ) ||
+                response_size < @metrics['http']['response_size_min']
+
+                @metrics['http']['response_size_min'] = response_size
+            end
+            if response_size > @metrics['http']['response_size_max']
+                @metrics['http']['response_size_max'] = response_size
+            end
+
+            request_size = response.request.to_s.size
+            if @metrics['http']['request_size_min'].is_a?( Integer ) ||
+                request_size < @metrics['http']['request_size_min']
+
+                @metrics['http']['request_size_min'] = request_size
+            end
+            if request_size > @metrics['http']['request_size_max']
+                @metrics['http']['request_size_max'] = request_size
             end
 
             # Only track OK codes, otherwise discovery checks will muck with the
@@ -156,6 +181,12 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 
         @metrics['http']['response_time_average'] =
             http_response_time_total / framework.statistics[:http][:response_count]
+
+        @metrics['http']['response_size_average'] =
+            @metrics['general']['ingress_traffic'] / framework.statistics[:http][:response_count]
+
+        @metrics['http']['request_size_average'] =
+            @metrics['general']['egress_traffic'] / framework.statistics[:http][:request_count]
 
         @metrics['scan']['duration']      = framework.statistics[:runtime]
         @metrics['scan']['authenticated'] = !!Arachni::Options.session.check_url

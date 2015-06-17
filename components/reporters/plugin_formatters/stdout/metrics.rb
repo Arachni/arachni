@@ -14,8 +14,8 @@ class PluginFormatters::Metrics < Arachni::Plugin::Formatter
     def run
         print_ok 'General'
         general = results['general']
-        print_info "Egress traffic:  #{Arachni::Utilities.bytes_to_megabytes general['egress_traffic']}MB"
-        print_info "Ingress traffic: #{Arachni::Utilities.bytes_to_megabytes general['ingress_traffic']}MB"
+        print_info "Egress traffic:  #{Arachni::Utilities.bytes_to_megabytes general['egress_traffic']} MB"
+        print_info "Ingress traffic: #{Arachni::Utilities.bytes_to_megabytes general['ingress_traffic']} MB"
         print_info "Uses HTTP:       #{general['uses_http']}"
         print_info "Uses HTTPS:      #{general['uses_https']}"
         print_line
@@ -28,9 +28,15 @@ class PluginFormatters::Metrics < Arachni::Plugin::Formatter
 
         print_ok 'HTTP'
         http = results['http']
-        print_info "Minimum response time: #{http['response_time_min'].round( 4 )}s"
-        print_info "Maximum response time: #{http['response_time_max'].round( 4 )}s"
-        print_info "Average response time: #{http['response_time_average'].round( 4 )}s"
+        print_info "Minimum response time: #{http['response_time_min'].round( 4 )} seconds"
+        print_info "Maximum response time: #{http['response_time_max'].round( 4 )} seconds"
+        print_info "Average response time: #{http['response_time_average'].round( 4 )} seconds"
+        print_info "Minimum response size: #{Arachni::Utilities.bytes_to_kilobytes http['response_size_min']} KB"
+        print_info "Maximum response size: #{Arachni::Utilities.bytes_to_kilobytes http['response_size_max']} KB"
+        print_info "Average response size: #{Arachni::Utilities.bytes_to_kilobytes http['response_size_average']} KB"
+        print_info "Minimum request size:  #{Arachni::Utilities.bytes_to_kilobytes http['request_size_min']} KB"
+        print_info "Maximum request size:  #{Arachni::Utilities.bytes_to_kilobytes http['request_size_max']} KB"
+        print_info "Average request size:  #{Arachni::Utilities.bytes_to_kilobytes http['request_size_average']} KB"
         print_line
 
         print_ok 'Resources'

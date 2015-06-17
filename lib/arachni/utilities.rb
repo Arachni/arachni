@@ -392,7 +392,11 @@ module Utilities
     end
 
     def bytes_to_megabytes( bytes )
-        (bytes / 1024.0 / 1024.0).round( 2 )
+        (bytes / 1024.0 / 1024.0).round( 3 )
+    end
+
+    def bytes_to_kilobytes( bytes )
+        (bytes / 1024.0 ).round( 3 )
     end
 
     # Wraps the `block` in exception handling code and runs it.

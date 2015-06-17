@@ -23,8 +23,6 @@ class PluginFormatters::Metrics < Arachni::Plugin::Formatter
                 end
             }
         end
-
-        puts xml.to_xml
     end
 
 end

@@ -77,20 +77,55 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
                     <dd>
                         <%= results['http']['response_time_min'].round( 4 ) %>s
                     </dd>
-
                     <dt>
                         Maximum response time
                     </dt>
                     <dd>
                         <%= results['http']['response_time_max'].round( 4 ) %>s
                     </dd>
-
-
                     <dt>
                         Average response time
                     </dt>
                     <dd>
                         <%= results['http']['response_time_average'].round( 4 ) %>s
+                    </dd>
+
+                    <dt>
+                        Minimum response size
+                    </dt>
+                    <dd>
+                        <%= Arachni::Utilities.bytes_to_kilobytes results['http']['response_size_min'] %> KB
+                    </dd>
+                    <dt>
+                        Maximum response size
+                    </dt>
+                    <dd>
+                        <%= Arachni::Utilities.bytes_to_kilobytes results['http']['response_size_max'] %> KB
+                    </dd>
+                    <dt>
+                        Average response size
+                    </dt>
+                    <dd>
+                        <%= Arachni::Utilities.bytes_to_kilobytes results['http']['response_size_average'] %> KB
+                    </dd>
+
+                    <dt>
+                        Minimum request size
+                    </dt>
+                    <dd>
+                        <%= Arachni::Utilities.bytes_to_kilobytes results['http']['request_size_min'] %> KB
+                    </dd>
+                    <dt>
+                        Maximum request size
+                    </dt>
+                    <dd>
+                        <%= Arachni::Utilities.bytes_to_kilobytes results['http']['request_size_max'] %> KB
+                    </dd>
+                    <dt>
+                        Average request size
+                    </dt>
+                    <dd>
+                        <%= Arachni::Utilities.bytes_to_kilobytes results['http']['request_size_average'] %> KB
                     </dd>
                 </dl>
 
