@@ -2126,6 +2126,7 @@ describe Arachni::Browser do
                     @browser.cookies.first.should be_http_only
                 end
             end
+        end
 
         describe :take_snapshot do
             describe true do
@@ -2638,7 +2639,7 @@ describe Arachni::Browser do
             @browser.cookies.first.should be_http_only
         end
 
-        context 'when parsing cookies with quoted values' do
+        context 'when parsing v1 cookies' do
             it 'removes the quotes' do
                 cookie = 'rsession="06142010_0%3Ae275d357943e9a2de0"'
 

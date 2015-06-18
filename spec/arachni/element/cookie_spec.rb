@@ -526,6 +526,13 @@ describe Arachni::Element::Cookie do
              c.value.should == 'value2'
         end
 
+        it 'can handle v1 values' do
+            described_class.from_string(
+                'http://owner-url.com',
+                'cookie="blah stuff"'
+            ).first.value.should == 'blah stuff'
+        end
+
         context 'when its value is' do
             let(:value) { 'a' * size }
             let(:cookie) { "cookie=#{value}" }

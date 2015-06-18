@@ -387,9 +387,14 @@ class Cookie < Base
                 new(
                     url:    url,
                     source: cookie_pair,
-                    inputs: { decode( k ) => decode( v ) }
+                    inputs: { decode( k ) => value_to_v0( v ) }
                 )
             end.flatten.compact
+        end
+
+        def value_to_v0( value )
+            value.start_with?( '"' ) && value.end_with?( '"' ) ?
+                value[1...-1] : decode( value )
         end
 
         # Encodes a {String}'s reserved characters in order to prepare it for
