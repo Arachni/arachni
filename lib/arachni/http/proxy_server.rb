@@ -50,7 +50,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
         @options = {
             address:              '0.0.0.0',
             port:                 Utilities.available_port,
-            ssl_certificate_name: [ [ 'CN', Arachni::URI( Options.url ).host ] ]
+            ssl_certificate_name: [ [ 'CN', 'Arachni' ] ]
         }.merge( options )
 
         @logger = WEBrick::Log.new( Arachni.null_device, 7 )
@@ -168,8 +168,12 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see #service
     # @see Webrick::HTTPProxyServer#service
     def do_CONNECT( req, res )
+        host = req.unparsed_uri.split(':').first
+
         req.instance_variable_set( :@unparsed_uri, "127.0.0.1:#{interceptor_port}" )
-        start_ssl_interceptor
+
+        start_ssl_interceptor( host )
+
         super( req, res )
     end
 
@@ -200,10 +204,8 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # Starts the SSL interceptor proxy server.
     #
     # The interceptor will listen on {#interceptor_port}.
-    def start_ssl_interceptor
+    def start_ssl_interceptor( host )
         return @interceptor if @interceptor
-
-        host = Arachni::URI( Options.url ).host
 
         ca     = OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CA_CERTIFICATE ) )
         ca_key = OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_CA_KEY ) )
