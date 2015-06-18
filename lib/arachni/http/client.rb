@@ -546,7 +546,7 @@ class Client
 
                     if debug_level_3?
                         print_debug_level_3 '------------'
-                        print_debug_level_3 "Got response for request ID#: #{response.request.id}"
+                        print_debug_level_3 "Got response for request ID#: #{response.request.id}\n#{response.request}"
                         print_debug_level_3 "Performer: #{response.request.performer.inspect}"
                         print_debug_level_3 "Status: #{response.code}"
                         print_debug_level_3 "Code: #{response.return_code}"
