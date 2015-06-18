@@ -505,16 +505,18 @@ class Request < Message
     end
 
     def prepare_headers
-        headers['Cookie'] = effective_cookies.
-            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
-            join( ';' )
-        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
-
         headers['User-Agent'] ||= Options.http.user_agent
         headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
         headers['From']       ||= Options.authorized_by if Options.authorized_by
 
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
+
+        headers['Cookie'] = effective_cookies.
+            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
+            join( ';' )
+        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
+
+        headers
     end
 
     private
