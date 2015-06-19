@@ -17,7 +17,7 @@ describe name_from_filename do
             Element::Form         => 6,
             Element::Link         => 6,
             Element::Cookie       => 4,
-            Element::Header       => 3,
+            Element::Header       => 4,
             Element::LinkTemplate => 5,
             Element::JSON         => 6,
             Element::XML          => 16
