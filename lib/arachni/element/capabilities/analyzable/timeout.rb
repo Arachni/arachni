@@ -60,6 +60,15 @@ module Analyzable
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Timeout
 
+    # Override user audit options that don't play nice with this technique.
+    TIMEOUT_OPTIONS =  {
+        skip_original:          true,
+        with_both_http_methods: false,
+        parameter_names:        false,
+        with_extra_parameter:   false,
+        extensively:            false
+    }
+
     class <<self
         def reset
 
@@ -322,34 +331,24 @@ module Timeout
     def timing_attack_probe( payloads, options, &block )
         fail ArgumentError, 'Missing block' if !block_given?
 
-        options                     = options.dup
+        options                     = options.merge( TIMEOUT_OPTIONS )
         options[:delay]             = options.delete(:timeout)
         options[:timeout_divider] ||= 1
         options[:add]             ||= 0
 
-        options.merge!(
-            # Don't submit the form with its original values, we don't want
-            # any interference during timing attacks.
-            skip_original:     true,
+        # Intercept each element mutation prior to it being submitted and
+        # replace the '__TIME__' stub with the actual delay value.
+        options[:each_mutation] = proc do |mutation|
+            injected = mutation.affected_input_value
 
-            # Disable {Arachni::OptionGroups::Audit#cookies_extensively},
-            # there's little to be gained in this case and just causes interference.
-            extensively:       false,
+            # Preserve the placeholder (__TIME__) payload because it's going to
+            # be needed for the verification phases...
+            mutation.audit_options[:timing_string] = injected
 
-            # Intercept each element mutation prior to it being submitted and
-            # replace the '__TIME__' stub with the actual delay value.
-            each_mutation:     proc do |mutation|
-                injected = mutation.affected_input_value
-
-                # Preserve the placeholder (__TIME__) payload because it's going to
-                # be needed for the verification phases...
-                mutation.audit_options[:timing_string] = injected
-
-                # ...but update it to use a real payload for this audit.
-                mutation.affected_input_value = injected.
-                    gsub( '__TIME__', payload_delay_from_options( options ) )
-            end
-        )
+            # ...but update it to use a real payload for this audit.
+            mutation.affected_input_value = injected.
+                gsub( '__TIME__', payload_delay_from_options( options ) )
+        end
 
         # Ignore response bodies to preserve bandwidth since we don't care
         # about them anyways.
