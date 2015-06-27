@@ -6,6 +6,7 @@
     web site for more information on licensing and terms of use.
 =end
 
+require 'objspace'
 require 'sys/proctable'
 require 'ruby-mass'
 require 'stackprof'
@@ -86,32 +87,61 @@ class Profiler
             Watir,
             Selenium,
             Addressable,
-            Nokogiri
+            Nokogiri,
+            String,
+            Hash,
+            Array
         ]
 
         max_entries = options[:max_entries] || 50
 
-        object_space    = Hash.new(0)
-        @object_space ||= Hash.new(0)
+        object_space    = {}
+        @object_space ||= {}
 
         ObjectSpace.each_object do |o|
             next if o.class != klass && !object_within_namespace?( o, namespaces )
-            object_space[o.class] += 1
+
+            # if o.class == Thread
+            #     ap ObjectSpace.allocation_class_path( o ).to_s
+            #     ap "#{ObjectSpace.allocation_sourcefile( o )}:#{ObjectSpace.allocation_sourceline( o )}"
+            #     ap Utilities.bytes_to_megabytes( ObjectSpace.memsize_of( o ) )
+            #     ap '-' * 120
+            # end
+
+            object_space[o.class] ||= {
+                memsize: 0,
+                count:   0
+            }
+
+            object_space[o.class][:memsize] += ObjectSpace.memsize_of(o)
+            object_space[o.class][:count]   += 1
         end
 
-        object_space = Hash[object_space.sort_by { |_, v| v }.reverse[0..max_entries]]
+        object_space = Hash[object_space.sort_by { |_, v| v[:memsize] }.reverse[0..max_entries]]
 
-        with_deltas = object_space.dup
-        with_deltas.each do |k, v|
-            if v.is_a? Numeric
-                with_deltas[k] = "#{v} (#{v - @object_space[k].to_i})"
+        with_deltas = {}
+        object_space.each do |k, v|
+            @object_space[k] ||= {
+                memsize: 0,
+                count:   0
+            }
+
+            if v[:count].is_a? Numeric
+                with_deltas[k] = "#{v[:count]} (#{v[:count] - @object_space[k][:count]})"
+                with_deltas[k] << " -- #{Utilities.bytes_to_megabytes v[:memsize]}"
+                with_deltas[k] << " (#{Utilities.bytes_to_megabytes v[:memsize] - @object_space[k][:memsize]})"
             else
-                with_deltas[k] = v
+                with_deltas[k] = "#{v[:count]} -- #{Utilities.bytes_to_megabytes v[:memsize]}"
             end
         end
 
         @object_space = object_space.dup
         with_deltas
+
+    rescue => e
+        ap e
+        ap e.backtrace
+        {}
     end
 
     def write_object_space( file, options = {} )
