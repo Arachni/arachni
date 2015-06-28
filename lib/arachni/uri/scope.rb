@@ -80,7 +80,7 @@ class Scope < Arachni::Scope
 
         check_scheme = @url.scheme.to_s
 
-        return false if !%(http https).include?( check_scheme )
+        return false if check_scheme != 'http' && check_scheme != 'https'
 
         parsed_ref = Arachni::URI( Options.url )
         return false if !parsed_ref
