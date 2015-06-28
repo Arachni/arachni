@@ -146,9 +146,8 @@ class String
     end
 
     def recode!
-        force_encoding( 'utf-8' )
-        encode!( 'utf-16be', invalid: :replace, undef: :replace )
-        encode!( 'utf-8' )
+        encode!( 'utf-8', invalid: :replace, undef: :replace )
+        self
     end
 
     def recode
