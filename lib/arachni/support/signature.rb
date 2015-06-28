@@ -15,7 +15,7 @@ module Arachni::Support
 class Signature
 
     CACHE = {
-        tokens: Cache::RandomReplacement.new( 100 )
+        tokens: Cache::LeastRecentlyPushed.new( 100 )
     }
 
     attr_reader :tokens

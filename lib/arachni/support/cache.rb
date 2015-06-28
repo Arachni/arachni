@@ -8,6 +8,7 @@
 
 lib = Arachni::Options.paths.support + 'cache/'
 require lib + 'base'
+require lib + 'least_recently_pushed'
 require lib + 'least_recently_used'
 require lib + 'random_replacement'
 require lib + 'least_cost_replacement'

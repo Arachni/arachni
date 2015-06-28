@@ -22,7 +22,7 @@ class Javascript
     require_relative 'javascript/dom_monitor'
 
     CACHE = {
-        select_event_attributes: Support::Cache::RandomReplacement.new( 1_000 )
+        select_event_attributes: Support::Cache::LeastRecentlyPushed.new( 1_000 )
     }
 
     TOKEN = 'arachni_js_namespace'

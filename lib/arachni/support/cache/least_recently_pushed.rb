@@ -9,26 +9,19 @@
 module Arachni
 module Support::Cache
 
-# Least Recently Used cache implementation.
+# Least Recently Pushed cache implementation.
 #
-# Generally, the most desired mode under most circumstances.
-# Discards the least recently used entries in order to make room for newer ones.
+# Discards the least recently pushed entries, in order to make room for newer ones.
+#
+# This is the cache with best performance across the board.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class LeastRecentlyUsed < LeastRecentlyPushed
-
-    # @see Arachni::Cache::Base#[]
-    def []( k )
-        return if !include? k
-
-        renew( k )
-        super( k )
-    end
+class LeastRecentlyPushed < Base
 
     private
 
-    def renew( k )
-        @cache[make_key( k )] = @cache.delete( make_key( k ) )
+    def prune
+        @cache.delete( @cache.first.first )
     end
 
 end

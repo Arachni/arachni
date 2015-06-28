@@ -53,18 +53,18 @@ class URI
         parse:       1000,
         ruby_parse:  1000,
         fast_parse:  1000,
+        encode:      1000,
+        decode:      1000,
         normalize:   1000,
         to_absolute: 1000
     }
 
     CACHE = {
-        parser:      ::URI::Parser.new,
-        ruby_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
-        parse:       Support::Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
-        fast_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:fast_parse] ),
-        normalize:   Support::Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
-        to_absolute: Support::Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
+        parser: ::URI::Parser.new
     }
+    CACHE_SIZES.each do |name, size|
+        CACHE[name] = Support::Cache::LeastRecentlyPushed.new( size )
+    end
 
     class <<self
 
@@ -83,7 +83,8 @@ class URI
         # @return   [String]
         #   Encoded string.
         def encode( string, good_characters = nil )
-            Addressable::URI.encode_component( *[string, good_characters].compact )
+            CACHE[__method__][[string, good_characters]] ||=
+                Addressable::URI.encode_component( *[string, good_characters].compact )
         end
 
         # URL decodes a string.
@@ -92,7 +93,7 @@ class URI
         #
         # @return   [String]
         def decode( string )
-            Addressable::URI.unencode( string )
+            CACHE[__method__][string] ||= Addressable::URI.unencode( string )
         end
 
         # @note This method's results are cached for performance reasons.
@@ -176,8 +177,11 @@ class URI
             url = url.to_s.dup
 
             # Remove the fragment if there is one.
-            url   = url.split( '#', 2 )[0...-1].join if url.include?( '#' )
-            c_url = url.to_s.dup
+            if url.include?( '#' )
+                url = url.split( '#', 2 )[0...-1].join
+            end
+
+            c_url = url.dup
 
             components = {
                 scheme:   nil,
@@ -404,8 +408,8 @@ class URI
 
             cache = CACHE[__method__]
 
-            url   = url.to_s.strip.dup
-            c_url = url.to_s.strip.dup
+            url   = url.to_s.strip
+            c_url = url.dup
 
             begin
                 if (v = cache[url]) && v == :err
@@ -493,13 +497,13 @@ class URI
                               self.class.ruby_parse( url )
 
                           when ::URI
-                              url.dup
+                              url
 
                           when Hash
                               ::URI::Generic.build( url )
 
                           when Arachni::URI
-                              self.parsed_url = url.parsed_url.dup
+                              self.parsed_url = url.parsed_url
 
                           else
                               to_string = url.to_s rescue ''

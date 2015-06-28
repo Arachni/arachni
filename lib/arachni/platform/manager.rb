@@ -208,7 +208,7 @@ class Manager
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )
-        @platforms = Support::Cache::RandomReplacement.new( PLATFORM_CACHE_SIZE )
+        @platforms = Support::Cache::LeastRecentlyPushed.new( PLATFORM_CACHE_SIZE )
         platforms.each { |k, v| @platforms[k] = v }
         @platforms
     end

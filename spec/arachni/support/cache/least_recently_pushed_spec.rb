@@ -1,25 +1,33 @@
 require 'spec_helper'
 
-describe Arachni::Support::Cache::LeastRecentlyUsed do
+describe Arachni::Support::Cache::LeastRecentlyPushed do
     it_behaves_like 'cache'
 
-    it 'prunes itself by removing Least Recently Used entries' do
+    it 'prunes itself by removing Least Recently Pushed entries' do
         subject.max_size = 3
 
         subject[:k]  = '1'
         subject[:k2] = '2'
-        subject[:k]
         subject[:k3] = '3'
         subject[:k4] = '4'
-
         subject.size.should == 3
 
-        ap subject
-
-        subject[:k].should be_true
         subject[:k4].should be_true
         subject[:k3].should be_true
+        subject[:k2].should be_true
+        subject[:k].should be_nil
+
+        subject.clear
+
+        subject.max_size = 1
+        subject[:k]  = '1'
+        subject[:k2] = '3'
+        subject[:k3] = '4'
+        subject.size.should == 1
+
+        subject[:k3].should be_true
         subject[:k2].should be_nil
+        subject[:k].should be_nil
     end
 
     describe '#[]=' do

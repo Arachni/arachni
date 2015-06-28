@@ -22,7 +22,7 @@ module HTTP
 class ProxyServer < WEBrick::HTTPProxyServer
 
     CACHE = {
-        format_field_name: Support::Cache::RandomReplacement.new( 100 )
+        format_field_name: Support::Cache::LeastRecentlyPushed.new( 100 )
     }
 
     SKIP_HEADERS = Set.new( HopByHop | ['content-encoding'] )
