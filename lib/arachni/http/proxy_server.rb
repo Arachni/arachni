@@ -21,6 +21,12 @@ module HTTP
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ProxyServer < WEBrick::HTTPProxyServer
 
+    CACHE = {
+        format_field_name: Support::Cache::RandomReplacement.new( 100 )
+    }
+
+    SKIP_HEADERS = Set.new( HopByHop | ['content-encoding'] )
+
     INTERCEPTOR_CA_CERTIFICATE =
         File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-cacert.pem'
 
@@ -325,22 +331,19 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @param    [#[]=]    dst
     #   Headers of the forwarded/proxy response.
     def choose_header( src, dst )
-        connections = split_field( [src['connection']].flatten.first )
+        connections = Set.new( split_field( [src['connection']].flatten.first ) )
 
         src.each do |key, value|
             key = key.downcase
+            next if SKIP_HEADERS.include?( key ) || connections.include?( key )
 
-            if HopByHop.member?( key )          || # RFC2616: 13.5.1
-                connections.member?( key )      || # RFC2616: 14.10
-                key == 'content-encoding'
-                @logger.debug( "choose_header: `#{key}: #{value}'" )
-                next
-            end
-
-            field = key.to_s.split( /_|-/ ).
-                map { |segment| segment.capitalize }.join( '-' )
-            dst[field] = value
+            dst[self.class.format_field_name( key )] = value
         end
+    end
+
+    def self.format_field_name( field )
+        CACHE[:format_field_name][field] ||=
+            field.split( /_|-/ ).map( &:capitalize ).join( '-' )
     end
 
 end

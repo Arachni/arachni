@@ -41,9 +41,12 @@
             the `Typhoeus::Request`, stream bodies and manually abort if the
             buffer exceeds the limit -- covers cases where no `Content-Type`
             is set.
-    - `Headers` -- Merge values of headers with identical normalized names (i.e.
-        `set-cookie` and `Set-Cookie` in the same response).
+    - `Headers`
+        - Merge values of headers with identical normalized names (i.e.
+            `set-cookie` and `Set-Cookie` in the same response).
+        - Cache header name canonicalization.
     - `ProxyServer`
+        - Cache header name canonicalization.
         - SSL interceptor now automatically generates certificate/key pairs
             based on Arachni CA.
 - `Page`

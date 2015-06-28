@@ -18,6 +18,8 @@ module HTTP
 # @author Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Headers < Hash
 
+    FORMATTED_NAMES_CACHE = Support::Cache::RandomReplacement.new( 100 )
+
     # @param  [Headers, Hash] headers
     def initialize( headers = {} )
         merge!( headers || {} )
@@ -128,15 +130,12 @@ class Headers < Hash
     end
 
     def self.format_field_name( field )
-        # return field
-
         # If there's a '--' somewhere in there then skip it, it probably is an
         # audit payload.
         return field if field.include?( '--' )
 
-        @formatted ||= Hash.new
-        @formatted[field.downcase.hash] ||=
-            field.to_s.split( '-' ).map( &:capitalize ).join( '-' )
+        FORMATTED_NAMES_CACHE[field] ||=
+            field.split( '-' ).map( &:capitalize ).join( '-' )
     end
 
 end
