@@ -20,6 +20,10 @@ class Headers < Hash
 
     FORMATTED_NAMES_CACHE = Support::Cache::RandomReplacement.new( 100 )
 
+    CONTENT_TYPE = 'content-type'
+    SET_COOKIE   = 'set-cookie'
+    LOCATION     = 'location'
+
     # @param  [Headers, Hash] headers
     def initialize( headers = {} )
         merge!( headers || {} )
@@ -88,20 +92,20 @@ class Headers < Hash
     # @return   [String, nil]
     #   Value of the `Content-Type` field.
     def content_type
-        self['content-type']
+        self[CONTENT_TYPE]
     end
 
     # @return   [String, nil]
     #   Value of the `Location` field.
     def location
-        self['location']
+        self[LOCATION]
     end
 
     # @return   [Array<String>]
     #   Set-cookie strings.
     def set_cookie
-        return [] if self['set-cookie'].to_s.empty?
-        [self['set-cookie']].flatten
+        return [] if self[SET_COOKIE].to_s.empty?
+        [self[SET_COOKIE]].flatten
     end
 
     # @return   [Array<Hash>]
