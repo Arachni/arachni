@@ -282,9 +282,8 @@ class URI
                         !(query = dupped_url.split( '?', 2 ).last).empty?
 
                         components[:query] = (query.split( '&', -1 ).map do |pair|
-                            Addressable::URI.normalize_component( pair,
-                                Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' )
-                            )
+                            encode( decode( pair ),
+                                    Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' ) )
                         end).join( '&' )
                     end
                 end
