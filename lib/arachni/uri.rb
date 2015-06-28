@@ -50,9 +50,9 @@ class URI
     end
 
     CACHE_SIZES = {
-        parse:       600,
-        ruby_parse:  600,
-        fast_parse:  600,
+        parse:       1000,
+        ruby_parse:  1000,
+        fast_parse:  1000,
         normalize:   1000,
         to_absolute: 1000
     }
@@ -204,7 +204,7 @@ class URI
                     return cache[c_url] = addressable_parse( c_url ).freeze
                 end
 
-                url = url.recode
+                url = url.recode!
                 url = html_decode( url )
 
                 dupped_url = url.dup
@@ -299,7 +299,7 @@ class URI
                     print_debug "Error: #{e}"
                     print_debug_backtrace( e )
 
-                    cache[c_url] = addressable_parse( c_url.recode ).freeze
+                    cache[c_url] = addressable_parse( c_url.recode! ).freeze
                 rescue => ex
                     print_debug "Failed to parse '#{c_url}'."
                     print_debug "Error: #{ex}"
