@@ -1134,13 +1134,12 @@ class Browser
                         buff = ''
                         # Wait for PhantomJS to initialize.
                          while !buff.include?( 'running on port' )
-                             # It's silly to use #getc but it works consistently
-                             # across MRI, Rubinius and JRuby.
-                             # buff << (out.getc rescue '').to_s
-
-                             buff << (out.read rescue '').to_s
+                             # This can be problematic on something other than
+                             # MRI.
+                             buff << (out.readline rescue '').to_s
                          end
 
+                        buff = nil
                         print_debug 'Boot-up complete.'
                         done = true
                     end
