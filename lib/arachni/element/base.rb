@@ -137,7 +137,7 @@ class Base
     # @return   [Symbol]
     #   Element type.
     def self.type
-        name.split( ':' ).last.downcase.to_sym
+        @type ||= name.split( ':' ).last.downcase.to_sym
     end
 
     def dup
