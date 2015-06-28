@@ -90,6 +90,11 @@ shared_examples_for 'submittable' do
     end
 
     describe '#id' do
+        before do
+            described_class.any_instance.stub(:valid_input_name?) { true }
+            described_class.any_instance.stub(:valid_input_value?) { true }
+        end
+
         let(:action) { "#{url}/action" }
 
         it 'uniquely identifies the element based on #action' do
@@ -124,10 +129,10 @@ shared_examples_for 'submittable' do
 
         it 'uniquely identifies the element based on #inputs' do
             e = submittable.dup
-            e.stub(:inputs) { {input1: 'stuff' } }
+            e.inputs = { input1: 'stuff' }
 
             c = submittable.dup
-            c.stub(:inputs) { {input1: 'stuff2' } }
+            c.inputs = { input1: 'stuff2' }
 
             e.id.should_not == c.id
         end

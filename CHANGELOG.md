@@ -64,8 +64,10 @@
         - `#remote_file_exist?` -- Disable platform fingerprinting when dealing
             with a dynamic handler.
     - `Capabilities`
-        - `Taint` -- Added match cache based on signatures and haystacks.
-        - `Timeout` -- Override user audit options that don't play nice with this technique.
+        - `Inputtable` -- Added cache for `#inputtable_id` calculation.
+        - `Analyzable`
+            - `Taint` -- Added match cache based on signatures and haystacks.
+            - `Timeout` -- Override user audit options that don't play nice with this technique.
 - `Check::Auditor`
     - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
 - `Issue`

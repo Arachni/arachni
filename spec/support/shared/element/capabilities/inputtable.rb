@@ -165,48 +165,53 @@ shared_examples_for 'inputtable' do |options = {}|
     end
 
     describe '#inputtable_id' do
+        before do
+            described_class.any_instance.stub(:valid_input_name?) { true }
+            described_class.any_instance.stub(:valid_input_value?) { true }
+        end
+
         it 'takes into account input names' do
             e = subject.dup
-            e.stub(:inputs) { { 1 => 2 } }
+            e.inputs = { 1 => 2 }
 
             c = subject.dup
-            c.stub(:inputs) { { 1 => 2 } }
+            c.inputs = { 1 => 2 }
 
             e.inputtable_id.should == c.inputtable_id
 
             e = subject.dup
-            e.stub(:inputs) { { 1 => 2 } }
+            e.inputs = { 1 => 2 }
 
             c = subject.dup
-            c.stub(:inputs) { { 2 => 2 } }
+            c.inputs = { 2 => 2 }
 
             e.inputtable_id.should_not == c.inputtable_id
         end
 
         it 'takes into account input values' do
             e = subject.dup
-            e.stub(:inputs) { { 1 => 2 } }
+            e.inputs = { 1 => 2 }
 
             c = subject.dup
-            c.stub(:inputs) { { 1 => 2 } }
+            c.inputs = { 1 => 2 }
 
             e.inputtable_id.should == c.inputtable_id
 
             e = subject.dup
-            e.stub(:inputs) { { 1 => 1 } }
+            e.inputs = { 1 => 1 }
 
             c = subject.dup
-            c.stub(:inputs) { { 1 => 2 } }
+            c.inputs = { 1 => 2 }
 
             e.inputtable_id.should_not == c.inputtable_id
         end
 
-        it 'ignores input order' do
+        it 'ignores input order', if: !options[:single_input] do
             e = subject.dup
-            e.stub(:inputs) { { 1 => 2, 3 => 4 } }
+            e.inputs = { 1 => 2, 3 => 4 }
 
             c = subject.dup
-            c.stub(:inputs) { { 3 => 4, 1 => 2 } }
+            c.inputs = { 3 => 4, 1 => 2 }
 
             e.inputtable_id.should == c.inputtable_id
         end
