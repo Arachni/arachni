@@ -393,6 +393,8 @@ class Cookie < Base
         end
 
         def value_to_v0( value )
+            return '' if !value
+
             value.start_with?( '"' ) && value.end_with?( '"' ) ?
                 value[1...-1] : decode( value )
         end
