@@ -90,7 +90,9 @@ class Profiler
             Nokogiri,
             String,
             Hash,
-            Array
+            Array,
+            Set,
+            Thread
         ]
 
         max_entries = options[:max_entries] || 50
