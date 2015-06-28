@@ -16,7 +16,7 @@ module Analyzable
 module Taint
 
     CACHE = {
-        match: Support::Cache::RandomReplacement.new( 1_000 )
+        match: Support::Cache::RandomReplacement.new( 10_000 )
     }
 
     TAINT_OPTIONS = {
