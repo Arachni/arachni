@@ -15,7 +15,7 @@ module Analyzable
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Taint
 
-    CACHE = {
+    TAINT_CACHE = {
         match: Support::Cache::RandomReplacement.new( 10_000 )
     }
 
@@ -104,7 +104,7 @@ module Taint
 
     def match_patterns( patterns, matcher, response, opts )
         k = [patterns, response.body]
-        return if CACHE[:match][k] == false
+        return if TAINT_CACHE[:match][k] == false
 
         if opts[:longest_word_optimization]
             opts[:downcased_body] = response.body.downcase
@@ -114,7 +114,7 @@ module Taint
             when Regexp, String, Array
                 [patterns].flatten.compact.each do |pattern|
                     res = matcher.call( pattern, response, opts )
-                    CACHE[:match][k] ||= !!res
+                    TAINT_CACHE[:match][k] ||= !!res
                 end
 
             when Hash
@@ -122,7 +122,7 @@ module Taint
                     [patterns[opts[:platform]]].flatten.compact.each do |p|
                         [p].flatten.compact.each do |pattern|
                             res = matcher.call( pattern, response, opts )
-                            CACHE[:match][k] ||= !!res
+                            TAINT_CACHE[:match][k] ||= !!res
                         end
                     end
 
@@ -133,7 +133,7 @@ module Taint
 
                         [p].flatten.compact.each do |pattern|
                             res = matcher.call( pattern, response, dopts )
-                            CACHE[:match][k] ||= !!res
+                            TAINT_CACHE[:match][k] ||= !!res
                         end
                     end
                 end
@@ -149,7 +149,7 @@ module Taint
 
                         [p].flatten.compact.each do |pattern|
                             res = matcher.call( pattern, response, dopts )
-                            CACHE[:match][k] ||= !!res
+                            TAINT_CACHE[:match][k] ||= !!res
                         end
                     end
         end
@@ -159,9 +159,9 @@ module Taint
         return if substring.to_s.empty?
 
         k = [substring, response.body]
-        return if CACHE[:match][k] == false
+        return if TAINT_CACHE[:match][k] == false
 
-        CACHE[:match][k] = includes = response.body.include?( substring )
+        TAINT_CACHE[:match][k] = includes = response.body.include?( substring )
         return if !includes || ignore?( response, opts )
 
         @candidate_issues << {
@@ -178,7 +178,7 @@ module Taint
 
     def match_regexp_and_log( regexp, response, opts )
         k = [regexp, response.body]
-        return if CACHE[:match][k] == false
+        return if TAINT_CACHE[:match][k] == false
 
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
@@ -192,7 +192,7 @@ module Taint
 
         match_data = match_data[0].to_s
 
-        CACHE[:match][k] = !match_data.empty?
+        TAINT_CACHE[:match][k] = !match_data.empty?
 
         return if match_data.empty? || ignore?( response, opts )
 

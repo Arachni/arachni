@@ -37,7 +37,7 @@ module Capabilities::Inputtable
         end
     end
 
-    CACHE = {
+    INPUTTABLE_CACHE = {
         inputtable_id: Support::Cache::RandomReplacement.new( 1_000 )
     }
 
@@ -227,7 +227,7 @@ module Capabilities::Inputtable
     # @return   [String]
     #   Uniquely identifies the {#inputs}.
     def inputtable_id
-        CACHE[:inputtable_id][@inputs] ||=
+        INPUTTABLE_CACHE[:inputtable_id][@inputs] ||=
             @inputs ? @inputs.sort_by { |k, _| k }.hash.to_s : ''
     end
 
