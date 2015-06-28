@@ -1136,7 +1136,9 @@ class Browser
                          while !buff.include?( 'running on port' )
                              # It's silly to use #getc but it works consistently
                              # across MRI, Rubinius and JRuby.
-                             buff << (out.getc rescue '').to_s
+                             # buff << (out.getc rescue '').to_s
+
+                             buff << (out.read rescue '').to_s
                          end
 
                         print_debug 'Boot-up complete.'
