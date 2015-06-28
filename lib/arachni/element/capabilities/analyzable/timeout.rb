@@ -440,7 +440,12 @@ module Timeout
         e = super
         return e if !@timing_attack_remark_data
 
-        e.timing_attack_remark_data = @timing_attack_remark_data.deep_clone
+        dupped_remark_data = {}
+        @timing_attack_remark_data.each do |k, v|
+            dupped_remark_data[k] = v.dup
+        end
+
+        e.timing_attack_remark_data = dupped_remark_data
         e
     end
 
