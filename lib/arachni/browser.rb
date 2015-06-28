@@ -1151,6 +1151,7 @@ class Browser
             if @process.io.stdout
                 last_attempt_output = IO.read( @process.io.stdout )
                 print_debug last_attempt_output
+                @process.io.stdout.close!
             end
 
             if done
