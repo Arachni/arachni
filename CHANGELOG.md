@@ -92,6 +92,7 @@
 - `Support`
     - `Cache`
         - `RandomReplacement` -- Removed extra key `Array`.
+    - `Signature` -- Cache token generation.
 - Checks -- Added `Issue#proof` to as many issues as possible.
     - Active
         - `xss`
