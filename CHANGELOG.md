@@ -89,6 +89,9 @@
                 - `lodash()`
         - `DOMMonitor`
             - Keep track of `jQuery` delegated events.
+- `Support`
+    - `Cache`
+        - `RandomReplacement` -- Removed extra key `Array`.
 - Checks -- Added `Issue#proof` to as many issues as possible.
     - Active
         - `xss`
