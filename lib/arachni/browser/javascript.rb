@@ -21,6 +21,10 @@ class Javascript
     require_relative 'javascript/taint_tracer'
     require_relative 'javascript/dom_monitor'
 
+    CACHE = {
+        select_event_attributes: Support::Cache::RandomReplacement.new( 1_000 )
+    }
+
     TOKEN = 'arachni_js_namespace'
 
     # @return   [String]
@@ -148,9 +152,11 @@ class Javascript
     # @return   [Hash]
     #   `attributes` that include {.events}.
     def self.select_event_attributes( attributes = {} )
-        attributes = attributes.my_stringify
-        Hash[(self.events.flatten.map(&:to_s) & attributes.keys).
-            map { |event| [event.to_sym, attributes[event]] }]
+        CACHE[:select_event_attributes][attributes] ||=
+            attributes.inject({}) do |h, (event, handler)|
+                next h if !event_whitelist.include?( event.to_s )
+                h.merge!( event.to_sym => handler )
+            end
     end
 
     # @param    [Browser]   browser
@@ -303,8 +309,7 @@ class Javascript
                 [event.to_sym, fn]
             end.compact)
 
-            element['events'] |= (self.class.event_whitelist & attributes.keys).
-                        map { |event| [event.to_sym, attributes[event]] }
+            element['events'] |= self.class.select_event_attributes( attributes ).to_a
 
             element
         end.compact
