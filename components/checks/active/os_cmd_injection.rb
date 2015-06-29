@@ -19,7 +19,7 @@ class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
         @options ||= {
             regexp: {
                 unix: [
-                    /[a-z0-9_-]{3,15}:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
                     /\[boot loader\].*\[operating systems\]/im,

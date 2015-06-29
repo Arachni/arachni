@@ -21,7 +21,7 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
             regexp: {
                 unix: [
                     /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /[a-z0-9_-]{3,15}:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
                     /\[boot loader\].*\[operating systems\]/im,
