@@ -206,27 +206,27 @@ describe Arachni::URI do
         end
     end
 
-    describe '.ruby_parse' do
-        it 'cleans the URL' do
-            @urls.each do |url|
-                described_class.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
-            end
-        end
-
-        it 'ignores javascript: URLs' do
-            described_class.ruby_parse( 'javascript:stuff()' ).should be_nil
-            described_class.ruby_parse( 'jAvaScRipT:stuff()' ).should be_nil
-        end
-
-        context 'when an error occurs' do
-            it 'returns nil' do
-                described_class.stub(:fast_parse){ raise }
-                described_class.stub(:normalize){ raise }
-
-                described_class.ruby_parse( 'http://test.com/222' ).should be_nil
-            end
-        end
-    end
+    # describe '.ruby_parse' do
+    #     it 'cleans the URL' do
+    #         @urls.each do |url|
+    #             described_class.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
+    #         end
+    #     end
+    #
+    #     it 'ignores javascript: URLs' do
+    #         described_class.ruby_parse( 'javascript:stuff()' ).should be_nil
+    #         described_class.ruby_parse( 'jAvaScRipT:stuff()' ).should be_nil
+    #     end
+    #
+    #     context 'when an error occurs' do
+    #         it 'returns nil' do
+    #             described_class.stub(:fast_parse){ raise }
+    #             described_class.stub(:normalize){ raise }
+    #
+    #             described_class.ruby_parse( 'http://test.com/222' ).should be_nil
+    #         end
+    #     end
+    # end
 
     describe '.fast_parse' do
         it 'parses a URI and return its components as a hash' do
@@ -313,53 +313,11 @@ describe Arachni::URI do
     end
 
     describe '#initialize' do
-        context String do
-            it 'normalizes and parse the string' do
-                @urls.each do |url|
-                    uri = described_class.new( url )
-                    uri.is_a?( Arachni::URI ).should be_true
-                    uri.to_s.should == @ref_normalizer.call( url )
-                end
-            end
-        end
-
-        context Hash do
-            it 'normalizes and construct a URI from a Hash of components' do
-                @urls.each do |url|
-                    uri = described_class.new( described_class.fast_parse( url ) )
-                    uri.is_a?( Arachni::URI ).should be_true
-                    uri.to_s.should == @ref_normalizer.call( url )
-                end
-            end
-        end
-
-        context URI do
-            it 'normalizes and construct a URI from a Hash of components' do
-                @urls.each do |url|
-                    uri = ::URI.parse( described_class.normalize( url ) )
-                    uri.is_a?( ::URI ).should be_true
-
-                    a_uri = described_class.new( url )
-                    a_uri.is_a?( Arachni::URI ).should be_true
-                    a_uri.to_s.should == @ref_normalizer.call( url )
-                end
-            end
-        end
-
-        context Arachni::URI do
-            it 'normalizes and construct a URI from a Hash of components' do
-                @urls.each do |url|
-                    uri = described_class.new( url )
-                    a_uri = described_class.new( uri )
-                    a_uri.is_a?( Arachni::URI ).should be_true
-                    a_uri.should == uri
-                end
-            end
-        end
-
-        context 'else' do
-            it 'raises a ArgumentError' do
-                expect { described_class.new( [] ) }.to raise_error ArgumentError
+        it 'normalizes and parses the string' do
+            @urls.each do |url|
+                uri = described_class.new( url )
+                uri.is_a?( Arachni::URI ).should be_true
+                uri.to_s.should == @ref_normalizer.call( url )
             end
         end
     end
@@ -368,18 +326,18 @@ describe Arachni::URI do
         it 'converts both objects to strings and compare them' do
             @urls.each do |url|
                 normalized_str = described_class.normalize( url )
-                uri = ::URI.parse( normalized_str )
-                uri.is_a?( ::URI ).should be_true
 
                 a_uri = described_class.new( url )
                 a_uri.is_a?( Arachni::URI ).should be_true
 
-                a_uri.should == uri
                 a_uri.should == normalized_str
                 a_uri.should == a_uri
             end
         end
     end
+
+    describe '#relative?'
+    describe '#absolute?'
 
     describe '#query=' do
         subject { described_class.new( 'http://test.com/?my=val' ) }
@@ -563,19 +521,6 @@ describe Arachni::URI do
         it 'returns the extension of the resource' do
             uri = "http://test.com/direct.ory/resource.php?param=1&param2=2"
             described_class.new( uri ).resource_extension.should == 'php'
-        end
-    end
-
-    describe '#mailto?' do
-        context 'when the URI has a mailto scheme' do
-            it 'returns true' do
-                described_class.new( 'mailto:stuff@blah.com' ).mailto?.should be_true
-            end
-        end
-        context 'when the URI does not have a mailto scheme' do
-            it 'returns false' do
-                described_class.new( 'blah.com' ).mailto?.should be_false
-            end
         end
     end
 

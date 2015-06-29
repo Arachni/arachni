@@ -287,7 +287,7 @@ class URI
 
                         components[:query] = (query.split( '&', -1 ).map do |pair|
                             encode( decode( pair ),
-                                    Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' ) )
+                                    "'" + Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' ) )
                         end).join( '&' )
                     end
                 end
@@ -418,25 +418,7 @@ class URI
                     return v
                 end
 
-                components = fast_parse( url )
-
-                normalized = ''
-                normalized << components[:scheme] + '://' if components[:scheme]
-
-                if components[:userinfo]
-                    normalized << components[:userinfo]
-                    normalized << '@'
-                end
-
-                if components[:host]
-                    normalized << components[:host]
-                    normalized << ':' + components[:port].to_s if components[:port]
-                end
-
-                normalized << components[:path] if components[:path]
-                normalized << '?' + components[:query] if components[:query]
-
-                cache[c_url] = normalized.freeze
+                cache[c_url] = parse( url ).to_s.freeze
             rescue => e
                 print_debug "Failed to normalize '#{c_url}'."
                 print_debug "Error: #{e}"
@@ -488,35 +470,19 @@ class URI
     #
     # {.normalize Normalizes} and parses the provided URL.
     #
-    # @param    [Arachni::URI, String, URI, Hash]    url
+    # @param    [String]    url
     #   {String} URL to parse, `URI` to convert, or a `Hash` holding URL components
     #   (for `URI::Generic.build`). Also accepts {Arachni::URI} for convenience.
     def initialize( url )
-        @parsed_url = case url
-                          when String
-                              self.class.ruby_parse( url )
+        @data = self.class.fast_parse( url )
 
-                          when ::URI
-                              url
+        fail Error, 'Failed to parse URL.' if !@data
 
-                          when Hash
-                              ::URI::Generic.build( url )
+        %w(scheme userinfo host port path query).each do |part|
+            instance_variable_set( "@#{part}", @data[part.to_sym] )
+        end
 
-                          when Arachni::URI
-                              self.parsed_url = url.parsed_url
-
-                          else
-                              to_string = url.to_s rescue ''
-                              msg = 'Argument must either be String, URI or Hash'
-                              msg << " -- #{url.class.name} '#{to_string}' passed."
-                              fail ArgumentError.new( msg )
-                      end
-
-        fail Error, 'Failed to parse URL.' if !@parsed_url
-
-        # We probably got it from the cache, dup it to avoid corrupting the cache
-        # entries.
-        @parsed_url = @parsed_url.dup
+        reset_userpass
     end
 
     # @return   [Scope]
@@ -528,25 +494,99 @@ class URI
         to_s == other.to_s
     end
 
+    def absolute?
+        !!@scheme
+    end
+
+    def relative?
+        !absolute?
+    end
+
     # Converts self into an absolute URL using `reference` to fill in the
     # missing data.
     #
-    # @param    [Arachni::URI, URI, String]    reference
+    # @param    [Arachni::URI, #to_s]    reference
     #   Full, absolute URL.
     #
     # @return   [Arachni::URI]
-    #   Self, as an absolute URL.
-    def to_absolute( reference )
-        absolute = case reference
-                       when Arachni::URI
-                           reference.parsed_url
-                       when ::URI
-                           reference
-                       else
-                           self.class.new( reference.to_s ).parsed_url
-                   end.merge( @parsed_url )
+    #   Copy of self, as an absolute URL.
+    def to_absolute!( reference )
+        if !reference.is_a?( self.class )
+            reference = self.class.new( reference.to_s )
+        end
 
-        self.class.new( absolute )
+        %w(scheme userinfo host port query).each do |part|
+            next if send( part )
+
+            ref_part = reference.send( "#{part}" )
+            next if !ref_part
+
+            send( "#{part}=", ref_part )
+        end
+
+        base_path = reference.path.split( %r{/+}, -1 )
+        rel_path  = path.split( %r{/+}, -1 )
+
+        # RFC2396, Section 5.2, 6), a)
+        base_path << '' if base_path.last == '..'
+        while (i = base_path.index( '..' ))
+            base_path.slice!( i - 1, 2 )
+        end
+
+        if (first = rel_path.first) && first.empty?
+            base_path.clear
+            rel_path.shift
+        end
+
+        # RFC2396, Section 5.2, 6), c)
+        # RFC2396, Section 5.2, 6), d)
+        rel_path.push('') if rel_path.last == '.' || rel_path.last == '..'
+        rel_path.delete('.')
+
+        # RFC2396, Section 5.2, 6), e)
+        tmp = []
+        rel_path.each do |x|
+            if x == '..' &&
+                !(tmp.empty? || tmp.last == '..')
+                tmp.pop
+            else
+                tmp << x
+            end
+        end
+
+        add_trailer_slash = !tmp.empty?
+        if base_path.empty?
+            base_path = [''] # keep '/' for root directory
+        elsif add_trailer_slash
+            base_path.pop
+        end
+
+        while (x = tmp.shift)
+            if x == '..'
+                # RFC2396, Section 4
+                # a .. or . in an absolute path has no special meaning
+                base_path.pop if base_path.size > 1
+            else
+                # if x == '..'
+                #   valid absolute (but abnormal) path "/../..."
+                # else
+                #   valid absolute path
+                # end
+                base_path << x
+                tmp.each {|t| base_path << t}
+                add_trailer_slash = false
+                break
+            end
+        end
+
+        base_path.push('') if add_trailer_slash
+        @path = base_path.join('/')
+
+        self
+    end
+
+    def to_absolute( reference )
+        dup.to_absolute!( reference )
     end
 
     # @return   [String]
@@ -621,15 +661,15 @@ class URI
         !(IPAddr.new( host ) rescue nil).nil?
     end
 
-    def mailto?
-        scheme == 'mailto'
+    def query
+        @query
     end
 
     def query=( q )
         q = q.to_s
         q = nil if q.empty?
 
-        @parsed_url.query = q
+        @query = q
     end
 
     # @return   [Hash]
@@ -645,9 +685,95 @@ class URI
         end
     end
 
+    def userinfo=( ui )
+        @userinfo = ui
+    ensure
+        reset_userpass
+    end
+
+    def userinfo
+        @userinfo
+    end
+
+    def user
+        @user
+    end
+
+    def password
+        @password
+    end
+
+    def port
+        @port
+    end
+
+    def port=( p )
+        if p
+            @port = p.to_i
+        else
+            @port = nil
+        end
+    end
+
+    def host
+        @host
+    end
+
+    def host=( h )
+        @host = h
+    end
+
+    def path
+        @path
+    end
+
+    def path=( p )
+        @path = p
+    end
+
+    def scheme
+        @scheme
+    end
+
+    def scheme=( s )
+        @scheme = s
+    end
+
     # @return   [String]
     def to_s
-        @parsed_url.to_s
+        s = ''
+
+        if @scheme
+            s << @scheme
+            s << '://'
+        end
+
+        if @userinfo
+            s << @userinfo
+            s << '@'
+        end
+
+        if @host
+            s << @host
+
+            if @port
+                if (@scheme == 'http' && @port != 80) ||
+                    (@scheme == 'https' && @port != 443)
+
+                    s << ':'
+                    s << @port.to_s
+                end
+            end
+        end
+
+        s << @path
+
+        if @query
+            s << '?'
+            s << @query
+        end
+
+        s
     end
 
     def dup
@@ -670,29 +796,29 @@ class URI
         to_s.persistent_hash
     end
 
-    # Delegates unimplemented methods to Ruby's `URI::Generic` class for
-    # compatibility.
-    def method_missing( sym, *args, &block )
-        if @parsed_url.respond_to?( sym )
-            @parsed_url.send( sym, *args, &block )
+    private
+
+    def reset_userpass
+        if @userinfo
+            @user, @password = @userinfo.split( ':', -1 )
         else
-            super
+            @user = @password = nil
         end
     end
 
-    def respond_to?( *args )
-        super || @parsed_url.respond_to?( *args )
-    end
-
-    protected
-
-    def parsed_url
-        @parsed_url
-    end
-
-    def parsed_url=( url )
-        @parsed_url = url
-    end
+    # Delegates unimplemented methods to Ruby's `URI::Generic` class for
+    # compatibility.
+    # def method_missing( sym, *args, &block )
+    #     if @data.respond_to?( sym )
+    #         @parsed_url.send( sym, *args, &block )
+    #     else
+    #         super
+    #     end
+    # end
+    #
+    # def respond_to?( *args )
+    #     super || @parsed_url.respond_to?( *args )
+    # end
 
 end
 end
