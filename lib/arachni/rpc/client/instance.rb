@@ -63,6 +63,10 @@ class Instance
         @plugins   = Proxy.new( @client, 'plugins' )
     end
 
+    def when_ready( &block )
+        self.class.when_ready( url, token, &block )
+    end
+
     def token
         @token
     end
