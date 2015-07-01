@@ -101,6 +101,10 @@ class Job
     # @param    [Hash]  data
     #   Used to initialize the {Result}.
     def save_result( data )
+        # Results coming in after the job has already finished won't have a
+        # browser.
+        return if !browser
+
         browser.master.handle_job_result(
             self.class::Result.new( data.merge( job: self.clean_copy ) )
         )
