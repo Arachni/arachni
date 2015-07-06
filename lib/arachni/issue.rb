@@ -15,7 +15,7 @@ require Options.paths.lib + 'issue/severity'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Issue
 
-    # Attributes removed from a parent issue (i.e. an issues with variations)
+    # Attributes removed from a parent issue (i.e. an issue with variations)
     # and solely populating variations.
     VARIATION_ATTRIBUTES = Set.new([
         :@page, :@referring_page, :@proof, :@signature, :@remarks, :@trusted
@@ -506,7 +506,10 @@ class Issue
             data['variations'] = data['variations'].map(&:to_rpc_data)
         end
 
-        data['digest']   = digest
+        if !variation?
+            data['digest'] = digest
+        end
+
         data['severity'] = data['severity'].to_s
 
         data
