@@ -1904,28 +1904,34 @@ describe Arachni::Browser do
 
         context 'when requesting something other than the page URL' do
             it 'sends If-None-Match request headers' do
-                response = nil
-                subject.on_response { |r| response = r }
+                url = "#{@url}If-None-Match"
 
-                subject.goto "#{@url}/If-None-Match"
-                response.code.should == 200
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
                 response.request.headers.should_not include 'If-None-Match'
 
-                subject.goto "#{@url}/If-None-Match"
-                response.code.should == 304
+                subject.goto url
                 response.request.headers.should include 'If-None-Match'
             end
 
             it 'sends If-Modified-Since request headers' do
-                response = nil
-                subject.on_response { |r| response = r }
+                url = "#{@url}If-Modified-Since"
 
-                subject.goto "#{@url}/If-Modified-Since"
-                response.code.should == 200
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
                 response.request.headers.should_not include 'If-Modified-Since'
 
-                subject.goto "#{@url}/If-Modified-Since"
-                response.code.should == 304
+                subject.goto url
                 response.request.headers.should include 'If-Modified-Since'
             end
         end
