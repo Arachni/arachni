@@ -73,7 +73,7 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
     </tr>
     <tr>
         <th>License</th>
-        <td>Dual-licensed (Apache License v2.0/Commercial) - (see LICENSE file)</td>
+        <td>Arachni Public Source License v1.0 - (see LICENSE file)</td>
     </tr>
 </table>
 
@@ -81,9 +81,8 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
 
 ## Synopsis
 
-Arachni is an Open Source, feature-full, modular, high-performance Ruby framework
-aimed towards helping penetration testers and administrators evaluate the security
-of web applications.
+Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
+helping penetration testers and administrators evaluate the security of web applications.
 
 It is smart, it trains itself by monitoring and learning from the web application's
 behavior during the scan process and is able to perform meta-analysis using a number of
@@ -635,5 +634,4 @@ need to follow in order to contribute code:
 
 ## License
 
-Dual-licensed (Apache License v2.0/Commercial) -- please see the _LICENSE_ file
-for more information.
+Arachni Public Source License v1.0 -- please see the _LICENSE_ file for more information.

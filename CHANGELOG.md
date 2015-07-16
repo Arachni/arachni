@@ -2,6 +2,7 @@
 
 ## _Under development_
 
+- Switched to Arachni Public Source License v1.0.
 - `UI`
     - `CLI::Framework`
         - Fixed timeout enforcement.
