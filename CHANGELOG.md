@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.2 _(July 16, 2015)_
 
 - Switched to Arachni Public Source License v1.0.
 - `UI`
