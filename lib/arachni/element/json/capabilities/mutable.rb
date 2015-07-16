@@ -26,7 +26,7 @@ module Mutable
     #   If the `name` is an `Array`, it will be treated as a path to the location
     #   of the input.
     #
-    # @see  Capabilities::Mutable#affected_input_name=
+    # @see  Arachni::Element::Capabilities::Mutable#affected_input_name=
     def affected_input_name=( name )
         if name.is_a?( Array ) && name.size == 1
             name = name.first
