@@ -276,12 +276,13 @@ class Instance
         @framework.resume( @rpc_pause_request )
 
         if !@framework.has_slaves?
+            @rpc_pause_request = nil
             block.call true
             return
         end
 
         each = proc { |instance, iter| instance.service.resume { iter.next } }
-        each_slave( each, proc { block.call true } )
+        each_slave( each, proc { @rpc_pause_request = nil; block.call true } )
     end
 
     # @note Don't forget to {#shutdown} the instance once you get the report.

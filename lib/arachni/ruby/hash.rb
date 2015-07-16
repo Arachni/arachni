@@ -100,6 +100,11 @@ class Hash
         recoded
     end
 
+    def recode!
+        each { |_, v| v.recode! if v.respond_to?( :recode! ) }
+        self
+    end
+
     # @return   [Array<Symbol>]
     #   Returns all symbol keys from +self+ and children hashes.
     def find_symbol_keys_recursively

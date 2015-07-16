@@ -288,6 +288,32 @@ shared_examples_for 'element_dom' do |options = {}|
         end
     end
 
+    describe '#encode' do
+        it 'returns the string as is' do
+            v = 'blah'
+            subject.encode( v ).object_id.should == v.object_id
+        end
+    end
+    describe '.encode' do
+        it 'returns the string as is' do
+            v = 'blah'
+            subject.class.encode( v ).object_id.should == v.object_id
+        end
+    end
+
+    describe '#decode' do
+        it 'returns the string as is' do
+            v = 'blah'
+            subject.decode( v ).object_id.should == v.object_id
+        end
+    end
+    describe '.decode' do
+        it 'returns the string as is' do
+            v = 'blah'
+            subject.class.decode( v ).object_id.should == v.object_id
+        end
+    end
+
     describe '#dup' do
         it 'preserves the #parent' do
             subject.dup.parent.should == subject.parent

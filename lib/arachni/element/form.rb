@@ -262,7 +262,14 @@ class Form < Base
         #
         # @return   [Array<Form>]
         def from_document( url, document, ignore_scope = false )
-            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            if !document.is_a?( Nokogiri::HTML::Document )
+                document = document.to_s
+
+                return [] if !(document =~ /<\s*form/i)
+
+                document = Nokogiri::HTML( document )
+            end
+
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
             base_url = to_absolute( base_url, url )
 
@@ -305,16 +312,20 @@ class Form < Base
 
                     # Handle the easy stuff first...
                     if elem.name != 'select'
-                        options[:inputs][name]           = elem_attrs
+                        options[:inputs][name] = elem_attrs
 
                         if elem_attrs[:type] == :submit
                             multiple_choice_submits[name] ||= Set.new
-                            multiple_choice_submits[name] <<
-                                elem_attrs[:value]
+                            multiple_choice_submits[name] << elem_attrs[:value]
                         end
 
                         options[:inputs][name][:type]  ||= :text
                         options[:inputs][name][:value] ||= ''
+
+                        if too_big?( options[:inputs][name][:value] )
+                            options[:inputs][name][:value] = ''
+                        end
+
                         next
                     end
 
@@ -322,19 +333,22 @@ class Form < Base
                     if elem.children.css('option').any?
                         elem.children.css('option').each do |child|
                             h = attributes_to_hash( child.attributes )
-                            h[:type] = :select
+                            h[:type]    = :select
+                            h[:value] ||= child.text
+
+                            if too_big?( h[:value] )
+                                h[:value] = ''
+                            end
 
                             # Prefer the selected or first option.
                             if h[:selected]
-                                h[:value] ||= child.text
                                 options[:inputs][name] = h
                             else
-                                h[:value] ||= child.text
                                 options[:inputs][name] ||= h
                             end
                         end
 
-                        # The select has no options, use an empty string.
+                    # The select has no options, use an empty string.
                     else
                         options[:inputs][name] = {
                             type:  :select,
@@ -376,20 +390,20 @@ class Form < Base
         # Encodes a {String}'s reserved characters in order to prepare it
         # to be included in a request body.
         #
-        # @param    [String]    str
+        # @param    [String]    string
         #
         # @return   [String]
-        def encode( str )
-            ::URI.encode_www_form_component str.to_s
+        def encode( string )
+            Arachni::HTTP::Request.encode string
         end
 
         # Decodes a {String} encoded for an HTTP request's body.
         #
-        # @param    [String]    str
+        # @param    [String]    string
         #
         # @return   [String]
-        def decode( str )
-            ::URI.decode_www_form_component str.to_s
+        def decode( string )
+            ::URI.decode_www_form_component string.to_s
         end
 
     end

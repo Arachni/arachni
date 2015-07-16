@@ -82,6 +82,48 @@ shared_examples_for 'element' do
         end
     end
 
+    describe '.too_big?' do
+        context 'when passed an Numeric' do
+            context "equal to #{described_class::MAX_SIZE}" do
+                it 'returns true' do
+                    described_class.too_big?( described_class::MAX_SIZE ).should be_true
+                end
+            end
+
+            context "larger than #{described_class::MAX_SIZE}" do
+                it 'returns true' do
+                    described_class.too_big?( described_class::MAX_SIZE + 1 ).should be_true
+                end
+            end
+
+            context "smaller than #{described_class::MAX_SIZE}" do
+                it 'returns false' do
+                    described_class.too_big?( described_class::MAX_SIZE - 1 ).should be_false
+                end
+            end
+        end
+
+        context 'when passed a String' do
+            context "whose size is equal to #{described_class::MAX_SIZE}" do
+                it 'returns true' do
+                    described_class.too_big?( 'a' * described_class::MAX_SIZE ).should be_true
+                end
+            end
+
+            context "whose size is larger than #{described_class::MAX_SIZE}" do
+                it 'returns true' do
+                    described_class.too_big?( 'a' * (described_class::MAX_SIZE + 1) ).should be_true
+                end
+            end
+
+            context "whose size is smaller than #{described_class::MAX_SIZE}" do
+                it 'returns false' do
+                    described_class.too_big?( 'a' * (described_class::MAX_SIZE - 1) ).should be_false
+                end
+            end
+        end
+    end
+
     describe '#marshal_dump' do
         it 'excludes #page' do
             subject.page = page

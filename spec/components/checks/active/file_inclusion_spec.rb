@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.platforms
-        [:unix, :windows, :tomcat, :php, :perl]
+        [:unix, :windows, :php, :perl, :java]
     end
 
     def self.elements
@@ -32,7 +32,7 @@ describe name_from_filename do
                 Element::JSON         => 96,
                 Element::XML          => 192
             },
-            tomcat:  {
+            java:    {
                 Element::Form         => 8,
                 Element::Link         => 8,
                 Element::Cookie       => 8,
@@ -44,11 +44,11 @@ describe name_from_filename do
             php:  {
                 Element::Form         => 120,
                 Element::Link         => 120,
-                Element::Cookie       => 120,
-                Element::Header       => 60,
+                Element::Cookie       => 112,
+                Element::Header       => 56,
                 Element::LinkTemplate => 60,
-                Element::JSON         => 120,
-                Element::XML          => 240
+                Element::JSON         => 112,
+                Element::XML          => 224
             },
             perl:  {
                 Element::Form         => 120,

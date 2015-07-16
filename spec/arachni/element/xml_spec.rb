@@ -174,6 +174,26 @@ EOXML
                 subject.should be_nil
             end
         end
+
+        context 'when it is' do
+            context "equal to #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE }
+
+                it 'returns nil'
+            end
+
+            context "larger than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE + 1 }
+
+                it 'returns nil'
+            end
+
+            context "smaller than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE - 1 }
+
+                it 'leaves parses it'
+            end
+        end
     end
 
     describe '.parse_inputs' do

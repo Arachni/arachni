@@ -28,7 +28,6 @@ module Differential
     end
 
     DIFFERENTIAL_OPTIONS =  {
-        # Append our seeds to the default values.
         format:         [Mutable::Format::STRAIGHT],
 
         # Amount of refinement operations to remove context-irrelevant dynamic

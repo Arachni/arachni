@@ -89,12 +89,13 @@ class Manager
         :nginx,
         :tomcat,
         :iis,
-        :jetty
+        :jetty,
+        :gunicorn
     ]
 
     LANGUAGES = [
         :php,
-        :jsp,
+        :java,
         :python,
         :ruby,
         :asp,
@@ -104,7 +105,13 @@ class Manager
 
     # WebApp frameworks.
     FRAMEWORKS = [
-        :rack
+        :rack,
+        :rails,
+        :cakephp,
+        :django,
+        :aspx_mvc,
+        :jsf,
+        :cherrypy
     ]
 
     PLATFORM_NAMES = {
@@ -143,10 +150,11 @@ class Manager
         tomcat:     'TomCat',
         iis:        'IIS',
         jetty:      'Jetty',
+        gunicorn:   'Gunicorn',
 
         # Programming languages
         php:    'PHP',
-        jsp:    'JSP',
+        java:   'Java',
         python: 'Python',
         ruby:   'Ruby',
         asp:    'ASP',
@@ -154,7 +162,13 @@ class Manager
         perl:   'Perl',
 
         # Web frameworks
-        rack:   'Rack'
+        rack:     'Rack',
+        django:   'Django',
+        cakephp:  'CakePHP',
+        rails:    'Ruby on Rails',
+        aspx_mvc: 'ASP.NET MVC',
+        jsf:      'JavaServer Faces',
+        cherrypy: 'CherryPy'
     }
 
     # Amount of
@@ -194,7 +208,7 @@ class Manager
     # Sets global platforms fingerprints
     # @private
     def self.set( platforms )
-        @platforms = Support::Cache::RandomReplacement.new( PLATFORM_CACHE_SIZE )
+        @platforms = Support::Cache::LeastRecentlyPushed.new( PLATFORM_CACHE_SIZE )
         platforms.each { |k, v| @platforms[k] = v }
         @platforms
     end
@@ -228,8 +242,8 @@ class Manager
     # @return   [Bool]
     #   `true` if the resource should be fingerprinted, `false` otherwise.
     def self.fingerprint?( resource )
-        !(!Options.fingerprint? || !resource.text? ||
-        include?( resource.url ) || resource.scope.out?)
+        !(!Options.fingerprint? || resource.code != 200 || !resource.text? ||
+            include?( resource.url ) || resource.scope.out?)
     end
 
     # Runs all fingerprinters against the given `page`.
@@ -240,14 +254,40 @@ class Manager
     # @return   [Manager]
     #   Updated `self`.
     def self.fingerprint( page )
-        return page if !fingerprint? page
+        synchronize do
+            return page if !fingerprint? page
 
-        fingerprinters.available.each do |name|
-            exception_jail( false ) do
-                fingerprinters[name].new( page ).run
+            fingerprinters.available.each do |name|
+                exception_jail( false ) do
+                    fingerprinters[name].new( page ).run
+                end
             end
+
+            # We do this to flag the resource as checked even if no platforms
+            # were identified. We don't want to keep checking a resource that
+            # yields nothing over and over.
+            update( page.url, [] )
         end
-        page
+
+        # Fingerprinting will have resulted in element parsing, clear the element
+        # caches to keep RAM consumption down.
+        page.clear_cache
+    end
+
+    # @param    [String, URI]   uri
+    #
+    # @return   [Manager]
+    #   Platform for the given `uri`
+    def self.[]( uri )
+        # If fingerprinting is disabled there's no point in filling the cache
+        # with the same object over and over, create an identical one for all
+        # URLs and return that always.
+        if !Options.fingerprint?
+            return @default ||= new_from_options
+        end
+
+        return new_from_options if !(key = make_key( uri ))
+        synchronize { @platforms[key] ||= new_from_options }
     end
 
     # Sets platform manager for the given `uri`.
@@ -260,11 +300,16 @@ class Manager
     # @raise    [Error::Invalid]
     #   On {#invalid?} platforms.
     def self.[]=( uri, platforms )
-        return new( platforms ) if !(key = make_key( uri ))
+        # For some reason we failed to make a key, try to salvage the situation.
+        if !(key = make_key( uri ))
+            return new_from_options( platforms )
+        end
 
         synchronize do
             @platforms[key] =
-                platforms.is_a?( self ) ? platforms : new( platforms )
+                platforms.is_a?( self ) ?
+                    platforms :
+                    new_from_options( platforms )
         end
     end
 
@@ -293,22 +338,6 @@ class Manager
         end
     end
 
-    # @param    [String, URI]   uri
-    #
-    # @return   [Manager]
-    #   Platform for the given `uri`
-    def self.[]( uri )
-        # If fingerprinting is disabled there's no point in filling the cache
-        # with the same object over and over, create an identical one for all
-        # URLs and return that always.
-        if !Options.fingerprint?
-            return @default ||= new( Options.platforms )
-        end
-
-        return new if !(key = make_key( uri ))
-        synchronize { @platforms[key] ||= new }
-    end
-
     # @return   [Boolean]
     #   `true` if there are no platforms fingerprints, `false` otherwise.
     def self.empty?
@@ -326,6 +355,10 @@ class Manager
         parsed.without_query
     end
 
+    def self.new_from_options( platforms = [] )
+        new( platforms | Options.platforms )
+    end
+
     # @param    [Array<String, Symbol>] platforms
     #   Platforms with which to initialize the lists.
     def initialize( platforms = [] )
@@ -335,7 +368,7 @@ class Manager
                 List.new( self.class.const_get( type.to_s.upcase.to_sym ) )
         end
 
-        update [platforms | Options.platforms].flatten.compact
+        update platforms
     end
 
     # @!method os

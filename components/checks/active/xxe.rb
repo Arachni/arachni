@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::Xxe < Arachni::Check::Base
 
     ENTITY = 'xxe_entity'
@@ -18,7 +18,7 @@ class Arachni::Checks::Xxe < Arachni::Check::Base
             regexp: {
                 unix: [
                     /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
                     /\[boot loader\].*\[operating systems\]/im,
@@ -74,7 +74,7 @@ processed based on the resulting HTTP response.
 },
             elements:    [Element::XML],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             platforms:   options[:regexp].keys,
 
             issue:       {

@@ -137,6 +137,7 @@ class XML < Base
         # @return   [XML, nil]
         def from_request( url, request )
             return if !request.body.is_a?( String ) || request.body.empty?
+            return if too_big?( request.body )
 
             data = parse_inputs( request.body )
             return if data.empty?

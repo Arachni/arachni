@@ -70,7 +70,16 @@ class Browser
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
-    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
+    ASSET_EXTENSIONS = Set.new(
+        ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'woff', 'json']
+    )
+
+    ASSET_EXTRACTORS = [
+        /<\s*link.*?href=['"](.*?)['"].*?>/im,
+        /<\s*script.*?src=['"](.*?)['"].*?>/im,
+        /<\s*img.*?src=['"](.*?)['"].*?>/im,
+        /<\s*input.*?src=['"](.*?)['"].*?>/im,
+    ]
 
     # @return   [Array<Page::DOM::Transition>]
     attr_reader :transitions
@@ -107,6 +116,10 @@ class Browser
     # @return   [Integer]
     attr_reader :pid
 
+    attr_reader :last_url
+
+    attr_reader :last_dom_url
+
     # @return   [Bool]
     #   `true` if a supported browser is in the OS PATH, `false` otherwise.
     def self.has_executable?
@@ -117,6 +130,19 @@ class Browser
     #   Path to the PhantomJS executable.
     def self.executable
         Selenium::WebDriver::PhantomJS.path
+    end
+
+    def self.asset_domains
+        @asset_domains ||= Set.new
+    end
+    asset_domains
+
+    def self.add_asset_domain( url )
+        return if url.to_s.empty?
+        return if !(curl = Arachni::URI( url ))
+        return if !(domain = curl.domain)
+
+        asset_domains << domain
     end
 
     # @param    [Hash]  options
@@ -313,7 +339,8 @@ class Browser
             @add_request_transitions = false
         end
 
-        @last_url = url
+        @last_url = Arachni::URI( url ).to_s
+        self.class.add_asset_domain @last_url
 
         ensure_open_window
 
@@ -326,9 +353,23 @@ class Browser
             watir.goto url
 
             @javascript.wait_till_ready
+            wait_for_pending_requests
             wait_for_timers
 
-            wait_for_pending_requests
+            url = watir.url
+            Options.browser_cluster.css_to_wait_for( url ).each do |css|
+                print_info "Waiting for #{css.inspect} to appear for: #{url}"
+
+                begin
+                    watir.element( css: css ).
+                        wait_until_present( Options.browser_cluster.job_timeout )
+
+                    print_info "#{css.inspect} appeared for: #{url}"
+                rescue Watir::Wait::TimeoutError
+                    print_bad "#{css.inspect} did not appeared for: #{url}"
+                end
+
+            end
 
             javascript.set_element_ids
         end
@@ -771,32 +812,35 @@ class Browser
         # them if no events are associated with it.
         #
         # This can save **A LOT** of time during the audit.
-        if Options.audit.form_doms? && @javascript.supported?
-            page.forms.each do |form|
-                next if !form.node || !form.dom
+        if @javascript.supported?
+            if Options.audit.form_doms?
+                page.forms.each do |form|
+                    next if !form.node || !form.dom
 
-                action = form.node['action'].to_s
-                form.dom.browser = self
+                    action = form.node['action'].to_s
+                    form.dom.browser = self
 
-                next if action.downcase.start_with?( 'javascript:' ) ||
-                    form.dom.locate.events.any?
+                    next if action.downcase.start_with?( 'javascript:' ) ||
+                        form.dom.locate.events.any?
 
-                form.skip_dom = true
+                    form.skip_dom = true
+                end
+
+                page.update_metadata
+                page.clear_cache
             end
 
-            page.update_metadata
-        end
+            if Options.audit.cookie_doms?
+                sinks = @javascript.taint_tracer.data_flow_sinks
+                page.cookies.each do |cookie|
+                    next if sinks.include?( cookie.name ) ||
+                        sinks.include?( cookie.value )
 
-        if Options.audit.cookie_doms? && @javascript.supported?
-            sinks = @javascript.taint_tracer.data_flow_sinks
-            page.cookies.each do |cookie|
-                next if sinks.include?( cookie.name ) ||
-                    sinks.include?( cookie.value )
+                    cookie.skip_dom = true
+                end
 
-                cookie.skip_dom = true
+                page.update_metadata
             end
-
-            page.update_metadata
         end
 
         page
@@ -890,7 +934,7 @@ class Browser
 
             c[:path]     = '/' if c[:path] == '//'
             c[:name]     = Cookie.decode( c[:name].to_s )
-            c[:value]    = Cookie.decode( c[:value].to_s )
+            c[:value]    = Cookie.value_to_v0( c[:value].to_s )
             c[:httponly] = !js_cookies.include?( original_name )
 
             Cookie.new c.merge( url: @last_url || url )
@@ -1090,11 +1134,12 @@ class Browser
                         buff = ''
                         # Wait for PhantomJS to initialize.
                          while !buff.include?( 'running on port' )
-                             # It's silly to use #getc but it works consistently
-                             # across MRI, Rubinius and JRuby.
-                             buff << (out.getc rescue '').to_s
+                             # This can be problematic on something other than
+                             # MRI.
+                             buff << (out.readline rescue '').to_s
                          end
 
+                        buff = nil
                         print_debug 'Boot-up complete.'
                         done = true
                     end
@@ -1106,6 +1151,7 @@ class Browser
             if @process.io.stdout
                 last_attempt_output = IO.read( @process.io.stdout )
                 print_debug last_attempt_output
+                @process.io.stdout.close!
             end
 
             if done
@@ -1286,7 +1332,17 @@ class Browser
         request.performer = self
 
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
-        request.headers.delete( 'X-Arachni-Browser-Auth' )
+        request.headers.delete 'X-Arachni-Browser-Auth'
+
+        # We can't have 304 page responses in the framework, we need full request
+        # and response data, the browser cache doesn't help us here.
+        #
+        # Still, it's a nice feature to have when requesting assets or anything
+        # else.
+        if request.url == @last_url
+            request.headers.delete 'If-None-Match'
+            request.headers.delete 'If-Modified-Since'
+        end
 
         return if @javascript.serve( request, response )
 
@@ -1300,20 +1356,28 @@ class Browser
 
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
-        return if from_preloads( request, response ) || from_cache( request, response )
-
-        begin
-            # Capture the request as elements of pages -- let's us grab AJAX and
-            # other browser requests and convert them into elements we can analyze
-            # and audit.
-            capture( request )
-        rescue => e
-            print_debug "Could not capture: #{request.url}"
-            print_debug request.body.to_s
-            print_debug_exception e
+        if from_preloads( request, response ) || from_cache( request, response )
+            # There may be taints or custom JS code that need to be updated.
+            javascript.inject response
+            return
         end
 
+        # Capture the request as elements of pages -- let's us grab AJAX and
+        # other browser requests and convert them into elements we can analyze
+        # and audit.
+        capture( request )
+
         request.headers['user-agent'] = Options.http.user_agent
+
+        # The proxy has an unlimited response_max_size so if we're not requesting
+        # an asset remove the response_max_size option so that it'll end up using
+        # the system settings.
+        #
+        # However, this is not foolproof, a lot of assets don't have the expected
+        # extension.
+        if !request_for_asset?( request )
+            request.response_max_size = nil
+        end
 
         # Signal the proxy to continue with its request to the origin server.
         true
@@ -1327,63 +1391,50 @@ class Browser
             transition.complete
         end
 
+        javascript.inject response
+
+        # Don't store assets, the browsers will cache them accordingly.
+        return if request_for_asset?( request ) || !response.text?
+
         # No-matter the scope, don't store resources for external domains.
         return if !response.scope.in_domain?
 
         return if enforce_scope? && response.scope.out?
 
-        intercept response
+        whitelist_asset_domains( response )
         save_response response
 
         nil
     end
 
-    def intercept( response )
-        return if !intercept?( response )
-        @javascript.inject( response )
-    end
-
-    def intercept?( response )
-        return false if response.body.empty?
-
-        # We only care about HTML.
-        return false if !response.headers.content_type.to_s.downcase.start_with?( 'text/html' )
-
-        # Let's check that the response at least looks like it contains HTML
-        # code of interest.
-        body = response.body.downcase
-        return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
-
-        # The last check isn't fool-proof, so don't do it when loading the page
-        # for the first time, but only when the page loads stuff via AJAX and whatnot.
-        #
-        # Well, we can be pretty sure that the root page will be HTML anyways.
-        return true if @last_url == response.url
-
-        # Finally, verify that we're really working with markup (hopefully HTML)
-        # and that the previous checks weren't just flukes matching some other
-        # kind of document.
-        #
-        # For example, it may have been JSON with the wrong content-type that
-        # includes HTML -- it happens.
-        begin
-            return false if Nokogiri::XML( response.body ).children.empty?
-        rescue => e
-            print_debug "Javascript injection failed for: #{response.url}"
-            print_debug "\n#{response.body}"
-            print_debug_exception e
-            return false
-        end
-
-        true
-    end
-
     def ignore_request?( request )
         return if !enforce_scope?
 
-        # Only allow CSS and JS resources to be loaded from out-of-scope domains.
-        !['css', 'js'].include?( request.parsed_url.resource_extension ) &&
-            (request.scope.out? || request.scope.redundant?)
+        return false if request_for_asset?( request )
+
+        return true if !request.scope.follow_protocol?
+
+        return true if !request.scope.in_domain? &&
+            !self.class.asset_domains.include?( request.parsed_url.domain )
+
+        return true if request.scope.too_deep?
+        return true if !request.scope.include?
+        return true if request.scope.exclude?
+        return true if request.scope.redundant?
+
+        false
+    end
+
+    def request_for_asset?( request )
+        ASSET_EXTENSIONS.include?( request.parsed_url.resource_extension.to_s.downcase )
+    end
+
+    def whitelist_asset_domains( response )
+        ASSET_EXTRACTORS.each do |regexp|
+            response.body.scan( regexp ).flatten.compact.each do |url|
+                self.class.add_asset_domain url
+            end
+        end
     end
 
     def capture( request )
@@ -1452,6 +1503,10 @@ class Browser
 
         @captured_pages << page if store_pages?
         notify_on_new_page( page )
+    rescue => e
+        print_debug "Could not capture: #{request.url}"
+        print_debug request.body.to_s
+        print_debug_exception e
     end
 
     def from_preloads( request, response )
@@ -1478,7 +1533,7 @@ class Browser
             destination.send "#{m}=", source.send( m )
         end
 
-        intercept destination
+        javascript.inject destination
         nil
     end
 

@@ -37,6 +37,10 @@ module Capabilities::Inputtable
         end
     end
 
+    INPUTTABLE_CACHE = {
+        inputtable_id: Support::Cache::LeastRecentlyPushed.new( 1_000 )
+    }
+
     # Frozen version of {#inputs}, has all the original names and values.
     #
     # @return   [Hash]
@@ -223,7 +227,8 @@ module Capabilities::Inputtable
     # @return   [String]
     #   Uniquely identifies the {#inputs}.
     def inputtable_id
-        inputs.sort_by { |k,_| k }.to_s
+        INPUTTABLE_CACHE[:inputtable_id][@inputs] ||=
+            @inputs ? @inputs.sort_by { |k, _| k }.hash.to_s : ''
     end
 
     def to_h
@@ -255,7 +260,6 @@ module Capabilities::Inputtable
             fail Error::InvalidData::Value,
                  "Invalid value for #{self.class}: #{value.inspect}"
         end
-
     end
 
     def copy_inputtable( other )

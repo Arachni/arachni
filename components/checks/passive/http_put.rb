@@ -28,7 +28,7 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
             next if res.code != 201
 
             http.get( path ) do |c_res|
-                check_and_log( c_res )
+                check_and_log( c_res, res )
 
                 # Try to DELETE the PUT file.
                 http.request( path, method: :delete ){}
@@ -36,10 +36,14 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
         end
     end
 
-    def check_and_log( response )
+    def check_and_log( response, put_response )
         return if !response.body.to_s.include?( self.class.substring )
 
-        log vector: Element::Server.new( response.url ), response: response
+        log(
+            vector:   Element::Server.new( response.url ),
+            response: put_response,
+            proof:    put_response.status_line
+        )
         print_ok "File has been created: #{response.url}"
     end
 
@@ -49,7 +53,7 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
             description: %q{Checks if uploading files is possible using the HTTP PUT method.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.1',
+            version:     '0.2.2',
 
             issue:       {
                 name:            %q{Publicly writable directory},

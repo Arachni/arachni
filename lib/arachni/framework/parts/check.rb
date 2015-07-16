@@ -67,11 +67,12 @@ module Check
     #   Check to run.
     # @param    [Page]    page
     def check_page( check, page )
+        ps = page.platforms.to_a
+
         # If we've been given platforms which the check doesn't support don't
         # even bother running it.
-        if !check.supports_platforms?( Options.platforms )
-            print_info "Check #{check.shortname} does not support: " <<
-                           Options.platforms.join( ' + ' )
+        if !check.supports_platforms?( ps )
+            print_info "Check #{check.shortname} does not support: #{ps.join( ' + ' )}"
             return false
         end
 

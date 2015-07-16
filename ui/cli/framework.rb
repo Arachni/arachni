@@ -33,7 +33,7 @@ class Framework
 
         # Reset the framework's HTTP interface so that options will take effect.
         @framework.http.reset
-        # The Trainer needs to setup its hooks again.
+
         @framework.reset_trainer
 
         @show_command_screen = nil
@@ -151,7 +151,7 @@ class Framework
     end
 
     def print_issues( unmute = false )
-        super( Data.issues.summary, unmute )
+        super( Data.issues.all, unmute )
     end
 
     # Handles Ctrl+C signals.
@@ -333,7 +333,7 @@ class Framework
     end
 
     def shutdown
-        @timeout_supervisor.kill if @timeout_supervisor
+        @timeout_supervisor.kill if @timeout_supervisor && Thread.current != @timeout_supervisor
         capture_output_options
 
         print_status 'Aborting...'

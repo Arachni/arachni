@@ -6,6 +6,10 @@ get '/' do
     'Match this!'
 end
 
+get '/s.php' do
+    'OK'
+end
+
 get '/each_candidate_element' do
     cookies['cookie-input'] = 'blah'
 

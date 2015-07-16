@@ -1,7 +1,6 @@
+require 'ap'
 require 'sinatra'
 require 'sinatra/contrib'
-
-require 'ap'
 
 get '/' do
     <<-EOHTML
@@ -24,12 +23,12 @@ get "/link/straight" do
     return if params['input'].start_with?( default ) ||
         !params['input'].include?( '_arachni_trainer_' )
 
-    redirect "/link/straight/trained"
+    redirect "/link/straight/redir"
 end
 
-get "/link/straight/trained" do
+get "/link/straight/redir" do
     <<-EOHTML
-        <a href="new stuff">Stuff</a>
+        <a href="trained">Stuff</a>
     EOHTML
 end
 
@@ -38,12 +37,12 @@ get "/link/append" do
     return if !params['input'].start_with?( default ) ||
         !params['input'].include?( '_arachni_trainer_' )
 
-    redirect "/link/append/trained"
+    redirect "/link/append/redir"
 end
 
-get "/link/append/trained" do
+get "/link/append/redir" do
     <<-EOHTML
-        <a href="more new stuff">Stuff</a>
+        <a href="trained">Stuff</a>
     EOHTML
 end
 
@@ -68,7 +67,7 @@ end
 
 get "/form/straight/trained" do
     <<-EOHTML
-        <form action="?new stuff"/>Stuff</form>
+        <form action="?new_stuff"/>Stuff</form>
     EOHTML
 end
 
@@ -81,7 +80,7 @@ end
 
 get "/form/append/trained" do
     <<-EOHTML
-        <form action="?more new stuff"/>Stuff</form>
+        <form action="?more_new_stuff"/>Stuff</form>
     EOHTML
 end
 

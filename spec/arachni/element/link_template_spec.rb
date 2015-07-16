@@ -215,12 +215,8 @@ describe Arachni::Element::LinkTemplate do
     end
 
     describe '.encode' do
-        it "double encodes ';'" do
-            described_class.encode( 'test;' ).should == 'test%253B'
-        end
-
-        it "double encodes '/'" do
-            described_class.encode( 'test/' ).should == 'test%2F'
+        it 'URL-encodes the passed string' do
+            described_class.encode( 'test/;' ).should == 'test%2F%3B'
         end
     end
 

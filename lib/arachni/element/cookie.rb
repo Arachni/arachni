@@ -26,6 +26,7 @@ class Cookie < Base
 
     # Generic element capabilities.
     include Arachni::Element::Capabilities::Analyzable
+    include Arachni::Element::Capabilities::WithSource
 
     # Cookie-specific overrides.
     include Capabilities::WithDOM
@@ -48,9 +49,6 @@ class Cookie < Base
         domain:      nil,
         httponly:    false
     }
-
-    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", "'", '&', '=', ' ', '"']
-    ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
 
     attr_reader :data
 
@@ -78,7 +76,7 @@ class Cookie < Base
         end
 
         @data.merge!( DEFAULT.merge( @data ) )
-        @data[:value] = decode( @data[:value].to_s )
+        @data[:value] = decode( @data[:value].to_s ) rescue @data[:value].to_s
 
         parsed_uri = uri_parse( action )
         if !@data[:path]
@@ -287,8 +285,8 @@ class Cookie < Base
         # @see .from_document
         # @see .from_headers
         def from_response( response )
-            ( from_document( response.url, response.body ) |
-                from_headers( response.url, response.headers ) )
+            from_document( response.url, response.body ) |
+                from_headers( response.url, response.headers )
         end
 
         # Extracts cookies from a document based on `Set-Cookie` `http-equiv`
@@ -302,21 +300,18 @@ class Cookie < Base
         #
         # @see .parse_set_cookie
         def from_document( url, document )
-            # optimizations in case there are no cookies in the doc,
-            # avoid parsing unless absolutely necessary!
             if !document.is_a?( Nokogiri::HTML::Document )
-                # get get the head in order to check if it has an http-equiv for set-cookie
-                head = document.to_s.match( /<head(.*)<\/head>/imx )
+                document = document.to_s
 
-                # if it does feed the head to the parser in order to extract the cookies
-                return [] if !head || !head.to_s.downcase.include?( 'set-cookie' )
+                return [] if !(document =~ /set-cookie/i )
 
-                document = Nokogiri::HTML( head.to_s )
+                document = Nokogiri::HTML( document )
             end
 
             Arachni::Utilities.exception_jail {
-                document.search( "//meta[@http-equiv]" ).map do |elem|
+                document.search( '//meta[@http-equiv]' ).map do |elem|
                     next if elem['http-equiv'].downcase != 'set-cookie'
+
                     from_set_cookie( url, elem['content'] )
                 end.flatten.compact
             } rescue []
@@ -358,9 +353,14 @@ class Cookie < Base
 
                 cookie_hash['path'] ||= '/'
                 cookie_hash['name']  = decode( cookie.name )
-                cookie_hash['value'] = decode( cookie.value )
 
-                new( { url: url }.merge( cookie_hash.my_symbolize_keys ) )
+                if too_big?( cookie.value )
+                    cookie_hash['value'] = ''
+                else
+                    cookie_hash['value'] = decode( cookie.value )
+                end
+
+                new( { url: url, source: str }.merge( cookie_hash.my_symbolize_keys ) )
             end.flatten.compact
         end
         alias :parse_set_cookie :from_set_cookie
@@ -376,10 +376,27 @@ class Cookie < Base
         # @return   [Array<Cookie>]
         def from_string( url, string )
             return [] if string.empty?
+
             string.split( ';' ).map do |cookie_pair|
+                cookie_pair.strip!
+
                 k, v = *cookie_pair.split( '=', 2 )
-                new( url: url, inputs: { decode( k.strip ) => decode( v.strip ) } )
+
+                v = '' if too_big?( v )
+
+                new(
+                    url:    url,
+                    source: cookie_pair,
+                    inputs: { decode( k ) => value_to_v0( v ) }
+                )
             end.flatten.compact
+        end
+
+        def value_to_v0( value )
+            return '' if !value
+
+            value.start_with?( '"' ) && value.end_with?( '"' ) ?
+                value[1...-1] : decode( value )
         end
 
         # Encodes a {String}'s reserved characters in order to prepare it for
@@ -387,16 +404,13 @@ class Cookie < Base
         #
         # @example
         #    p Cookie.encode "+;%=\0 "
-        #    #=> "%2B%3B%25%3D%00+"
+        #    #=> "%2B%3B%25%3D%00%20"
         #
         # @param    [String]    str
         #
         # @return   [String]
         def encode( str )
-            str = str.to_s
-            return str if !ENCODE_CHARACTERS.find { |c| str.include? c }
-
-            ::URI.encode( str, ENCODE_CHARACTERS_LIST )
+            Arachni::HTTP::Request.encode( str )
         end
 
         # Decodes a {String} encoded for the `Cookie` header field.
@@ -409,7 +423,7 @@ class Cookie < Base
         #
         # @return   [String]
         def decode( str )
-            ::URI.decode( str.to_s.gsub('+', ' ' ) )
+            ::URI.decode_www_form_component str.to_s
         end
 
         def keep_for_set_cookie

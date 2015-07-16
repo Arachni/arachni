@@ -33,7 +33,7 @@ shared_examples_for "path_extractor" do
     end
 
     def results_for( name )
-        paths = extractors[name].new.run( doc ) || []
+        paths = extractors[name].new( document: doc, html: text ).run || []
         paths.delete( 'http://www.w3.org/TR/REC-html40/loose.dtd' )
         paths.compact.flatten
     end

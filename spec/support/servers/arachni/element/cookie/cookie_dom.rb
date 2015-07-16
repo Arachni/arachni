@@ -13,7 +13,7 @@ get '/' do
         </div>
 
         <script>
-            document.getElementById('container').innerHTML = document.cookie;
+            document.getElementById('container').innerHTML = decodeURIComponent(document.cookie);
         </script>
     </body>
 </html>

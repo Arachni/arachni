@@ -170,6 +170,7 @@ class LinkTemplate < Base
             end
 
             document.search( '//a' ).map do |link|
+                next if too_big?( link['href'] )
                 next if !(href = to_absolute( link['href'], base_url ))
 
                 template, inputs = extract_inputs( href, templates )
@@ -212,11 +213,11 @@ class LinkTemplate < Base
         end
 
         def encode( string )
-            URI.encode( URI.encode( URI.encode( string.to_s, ';' ) ), '/' )
+            Link.encode string
         end
 
         def decode( *args )
-            URI.decode( *args )
+            Link.decode( *args )
         end
 
         def type

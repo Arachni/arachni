@@ -379,31 +379,44 @@ class Page
     def has_script?
         return @has_javascript if !@has_javascript.nil?
 
-        if !response.headers.content_type.to_s.start_with?( 'text/html' ) ||
-            !text? || !document
+        if !response.headers.content_type.to_s.start_with?( 'text/html' ) || !text?
             return @has_javascript = false
         end
 
+        dbody = body.downcase
+
         # First check, quick and simple.
-        return @has_javascript = true if document.css( 'script' ).any?
+        if dbody.include?( '<script' ) || dbody.include?( 'javascript:' )
+            return @has_javascript = true
+        end
 
         # Check for event attributes, if there are any then there's JS to be
         # executed.
         Browser::Javascript.events.flatten.each do |event|
-            return @has_javascript = true if document.xpath( "//*[@#{event}]" ).any?
-        end
-
-        # If there's 'javascript:' in 'href' and 'action' attributes then
-        # there's JS to be executed.
-        [:action, :href].each do |candidate|
-            document.xpath( "//*[@#{candidate}]" ).each do |attribute|
-                if attribute.attributes[candidate.to_s].to_s.start_with?( 'javascript:' )
-                    return @has_javascript = true
-                end
-            end
+            return @has_javascript = true if dbody.include?( "#{event}=" )
         end
 
         @has_javascript = false
+    end
+
+    # @param    [String, Symbol,Array<String, Symbol>]  tags
+    #   Element tag names.
+    #
+    # @return   [Boolean]
+    #   `true` if the page contains any of the given elements, `false` otherwise.
+    def has_elements?( *tags )
+        return if !text?
+
+        tags.flatten.each do |tag|
+            tag = tag.to_s
+
+            next if !(body =~ /<\s*#{tag}/i)
+
+            return false if !document
+            return true  if document.css( tag ).any?
+        end
+
+        false
     end
 
     # @return   [Boolean]

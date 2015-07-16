@@ -37,6 +37,11 @@ get '/http_response_max_size' do
     '1' * 1000000
 end
 
+get '/http_response_max_size/without_content_length' do
+    headers 'Content-Type' => ''
+    '1' * 1000000
+end
+
 get '/auth/simple-chars' do
     simple_protected!
     'authenticated!'

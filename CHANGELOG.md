@@ -1,5 +1,162 @@
 # ChangeLog
 
+## 1.2 _(July 16, 2015)_
+
+- Switched to Arachni Public Source License v1.0.
+- `UI`
+    - `CLI::Framework`
+        - Fixed timeout enforcement.
+        - `OptionParser`
+            - Added `--browser-cluster-wait-for-element`.
+    - `Output`
+        - `#error_log_fd` -- Catch `Errno` system errors (like `Too many open files`)
+            to avoid crashing.
+- `OptionGroups`
+    - `HTTP`
+        - `#request_queue_size` -- Lowered from `500` to `100`.
+    - `BrowserCluster`
+        - `#wait_for_elements` -- Wait for element matching `CSS` to appear when
+            visiting a page whose URL matches the `PATTERN`.
+        - `#job_timeout` -- Increased from 15 to 25 seconds.
+- `Framework`
+    - `#pause` -- Pause is now near instant.
+    - `#audit` -- Substantially simplified and optimized the consumption of URL
+        and page queues.
+    - `#audit_page` -- Application of DOM metadata now happens asynchronously
+        and uses the `BrowserCluster` instead of an independent `Browser`.
+- `HTTP`
+    - `Client`
+        - Updated cookie setting from `OptionGroups::HTTP#cookies` `Hash`.
+        - Trigger garbage collections before and after performing the queued
+            requests to prevent large RAM spikes.
+        - `Dynamic404Handler`
+            - Account for cases where the server returns intermittent errors
+                that can lead to signature corruption and possibly false positives.
+            - Updated training scenarios for cases where `~` are ignored.
+            - Disable platform fingerprinting during the gathering of signatures.
+    - `Request`
+        - Ignore proxy-related traffic (`CONNECT`) when capturing raw traffic data.
+        - Added `#fingerprint` option to enable/disable platform fingerprinting
+            on a per request basis.
+        - `#response_max_size` -- In addition to setting the `maxfilesize` for
+            the `Typhoeus::Request`, stream bodies and manually abort if the
+            buffer exceeds the limit -- covers cases where no `Content-Type`
+            is set.
+    - `Headers`
+        - Merge values of headers with identical normalized names (i.e.
+            `set-cookie` and `Set-Cookie` in the same response).
+        - Cache header name canonicalization.
+    - `ProxyServer`
+        - Cache header name canonicalization.
+        - SSL interceptor now automatically generates certificate/key pairs
+            based on Arachni CA.
+- `Page`
+    - `#has_script?` -- Detect using the body instead of the parsed document.
+- `Parser`
+    - Optimized to avoid HTML parsing if it contains no indication of elements.
+    - `#headers` -- Updated to include headers from the HTTP request in addition
+        to common ones.
+    - `Extractors` -- Optimized to avoid HTML parsing if it contains no
+        indication of elements.
+- `Element`
+    - Cleaned up per-element input value encoding.
+    - Enforce a `MAX_SIZE` on acceptable values during parsing.
+    - Optimized to avoid HTML parsing if it contains no indication of elements.
+    - `Server`
+        - `#log_remote_file_if_exists?` -- Flag issues as untrusted at that point
+        if possible, instead of at the end of the scan.
+        - `#remote_file_exist?` -- Disable platform fingerprinting when dealing
+            with a dynamic handler.
+    - `Capabilities`
+        - `Inputtable` -- Added cache for `#inputtable_id` calculation.
+        - `Analyzable`
+            - `Taint` -- Added match cache based on signatures and haystacks.
+            - `Timeout` -- Override user audit options that don't play nice with this technique.
+- `Check::Auditor`
+    - `#log_remote_file` -- Assign `HTTP::Response#status_line` as proof.
+- `Issue`
+    - `#signature` -- Store `Regexp` source instead of converting it to String.
+- `Browser`
+    - Updated to extract and whitelist CDNs from response bodies.
+    - `#cookies` -- Normalize cookies with quoted values since Watir doesn't take
+        care of that bit.
+    - `Javascript`
+        - `#inject` -- Inject `TaintTracer` and `DOMMonitor` update calls in
+            requested JS assets.
+        - `TaintTracer`
+            - Limited data and execution flow sinks to a max size of 50 entries.
+            - Don't trace functions known to cause issues:
+                - Anonymous functions.
+                - `lodash()`
+        - `DOMMonitor`
+            - Keep track of `jQuery` delegated events.
+- `Support`
+    - `Cache`
+        - `RandomReplacement` -- Removed extra key `Array`.
+    - `Signature` -- Cache token generation.
+- Checks -- Added `Issue#proof` to as many issues as possible.
+    - Active
+        - `xss`
+            - When the case involves payloads landing in `textarea`s, break out of
+                them to prevent possible FPs.
+            - Added double-encoded payloads.
+        - `xss_dom_inputs`
+            - Don't perform redundant audits.
+            - Don't process custom events.
+            - Updated to handle cases where a button needs to be clicked after
+                filling in the inputs.
+            - Added progress messages.
+        - `unvalidated_redirect`
+            - Escalated severity to 'High'.
+            - Only perform straight payload injections.
+        - `unvalidated_redirect_dom`
+            - Escalated severity to 'High'.
+        - `path_traversal`, `file_inclusion`, `os_cmd_injection`, `xxe`
+            - Updated `/etc/passwd` content matching pattern.
+    - Passive
+        - Added
+            - `common_admin_intefaces` -- By Brendan Coles.
+        - `backdoors`, `backup_directories`, `backup_files`, `common_files`,
+            `directory_listing`
+            - Added MVC frameworks as exempt platforms since they do their own routing.
+- Plugins
+    - Added
+        - `restrict_to_dom_state` -- Restricts the audit to a single page's DOM
+            state, based on a URL fragment.
+        - `metrics` -- Captures metrics about multiple aspects of the scan and
+            the web application.
+    - `autologin` -- Updated to fail gracefully in cases of an invisible form DOM elements.
+    - `login_script` -- Added support for Javascript login scripts.
+    - `proxy`
+        - Updated to show JSON and XML inputs in the inspection page.
+        - Added output message with instructions for server that use SSL.
+    - `vector_feed` -- Updated to support XML and JSON elements.
+- Reporters
+    - `xml`
+        - Fixed bug causing vector `affected_input_name` to be blank.
+- Fingerprinters -- Optimized across the board to prefer less resource intensive checks.
+    - Frameworks
+        - Rack -- Expanded signatures.
+    - Languages
+        - JSP renamed to Java and expanded signatures.
+        - PHP -- Expanded signatures.
+        - Python -- Expanded signatures.
+    - Servers
+        - Tomcat -- Expanded signatures.
+    - Added
+        - Frameworks
+            - Django
+            - Rails
+            - ASP.NET MVC
+            - CakePHP
+            - JSF
+            - CherryPy
+        - Servers
+            - Gunicorn
+- Path extractors
+    - Added
+        - `data_url` -- Extracts paths from `data-url` attributes of `a` tags.
+
 ## 1.1 _(May 1, 2015)_
 
 - `gemspec` -- Require Ruby >= 2.0.0.

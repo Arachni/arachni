@@ -152,18 +152,50 @@ class Base < Component::Base
             @platforms ||= [info[:platforms]].flatten.compact
         end
 
-        # @param    [Array<Symbol, String>]     platforms
+        # @return   [Bool]
+        #   `true` if the check has specified platforms for which it does not apply.
+        #
+        # @see .platforms
+        def has_exempt_platforms?
+            exempt_platforms.any?
+        end
+
+        # @return   [Array<Symbol>]
+        #   Platforms not applicable to this check.
+        #
+        # @see .info
+        def exempt_platforms
+            @exempt_platforms ||= [info[:exempt_platforms]].flatten.compact
+        end
+
+        # @param    [Array<Symbol, String>]     resource_platforms
         #   List of platforms to check for support.
         #
         # @return   [Boolean]
         #   `true` if any of the given platforms are supported, `false` otherwise.
-        def supports_platforms?( platforms )
-            return true if platforms.empty? || !has_platforms?
+        def supports_platforms?( resource_platforms )
+            if resource_platforms.any? && has_exempt_platforms?
+                manager = Platform::Manager.new( exempt_platforms )
+
+                resource_platforms.each do |p|
+
+                    # When we check for exempt platforms we're looking for info
+                    # from the same type.
+                    ptype = Platform::Manager.find_type( p )
+                    type_manager = manager.send( ptype )
+
+                    return false if type_manager.pick( p => true ).any?
+                end
+            end
+
+            return true if resource_platforms.empty? || !has_platforms?
 
             # Determine if we've got anything for the given platforms, the same
             # way payloads are picked.
-            foo_data = self.platforms.inject({}) { |h, platform| h.merge!( platform => true ) }
-            Platform::Manager.new( platforms ).pick( foo_data ).any?
+            foo_data = self.platforms.
+                inject({}) { |h, platform| h.merge!( platform => true ) }
+
+            Platform::Manager.new( resource_platforms ).pick( foo_data ).any?
         end
 
         # @return   [Array<Symbol>]
@@ -193,7 +225,7 @@ class Base < Component::Base
 
         # @private
         def clear_info_cache
-            @elements = @platforms = nil
+            @elements = @exempt_platforms = @platforms = nil
         end
     end
 

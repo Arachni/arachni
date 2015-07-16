@@ -9,7 +9,7 @@
 # HTTP Response Splitting check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.1
+# @version 0.2.3
 #
 # @see http://cwe.mitre.org/data/definitions/20.html
 # @see https://www.owasp.org/index.php/HTTP_Response_Splitting
@@ -30,7 +30,12 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
         # and pass a block that will check for a positive result
         audit( header, submit: { follow_location: false } ) do |response, element|
             next if response.headers[header_name].to_s.downcase != 'no'
-            log vector: element, response: response
+
+            log(
+                vector:   element,
+                response: response,
+                proof:    response.headers_string[/#{header_name}.*$/i]
+            )
         end
     end
 
@@ -42,7 +47,7 @@ Injects arbitrary and checks if any of them end up in the response header.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.1',
+            version:     '0.2.3',
 
             issue:       {
                 name:            %q{Response Splitting},
@@ -68,7 +73,7 @@ other attacks.
                 },
                 tags:            %w(response splitting injection header),
                 cwe:             20,
-                severity:        Severity::MEDIUM,
+                severity:        Severity::HIGH,
                 remedy_guidance: %q{
 It is recommended that untrusted data is never used to form the contents of the
 response header.

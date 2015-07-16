@@ -9,7 +9,7 @@
 # Path Traversal check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.4
+# @version 0.4.6
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see https://www.owasp.org/index.php/Path_Traversal
@@ -25,13 +25,13 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             regexp: {
                 unix: [
                     /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
                     /\[boot loader\].*\[operating systems\]/im,
                     /\[fonts\].*\[extensions\]/im
                 ],
-                tomcat: [
+                java: [
                     /<web\-app/im
                 ]
             },
@@ -58,9 +58,9 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             end,
 
             skip_like: proc do |m|
-                # Tomcat payloads begin with a traversal which won't be preserved
+                # Java payloads begin with a traversal which won't be preserved
                 # via LinkTemplate injections so don't bother.
-                m.is_a?( LinkTemplate ) && m.audit_options[:platform] == :tomcat
+                m.is_a?( LinkTemplate ) && m.audit_options[:platform] == :java
             end
         }
     end
@@ -90,7 +90,7 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
             h
         end
 
-        @payloads[:tomcat] = [ '/../../', '../../', ].map do |trv|
+        @payloads[:java] = [ '/../../', '../../', ].map do |trv|
              [ "#{trv}WEB-INF/web.xml", "file://#{trv}WEB-INF/web.xml" ]
         end.flatten
 
@@ -111,7 +111,7 @@ of relevant content in the HTML responses.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.4',
+            version:     '0.4.6',
             platforms:   payloads.keys,
 
             issue:       {

@@ -42,6 +42,10 @@ describe Arachni::Browser do
         Typhoeus::Request.get( "#{@url}/hit-count" ).body.to_i
     end
 
+    def image_hit_count
+        Typhoeus::Request.get( "#{@url}/image-hit-count" ).body.to_i
+    end
+
     def clear_hit_count
         Typhoeus::Request.get( "#{@url}/clear-hit-count" )
     end
@@ -1011,7 +1015,7 @@ describe Arachni::Browser do
             @browser.load( @url )
             @browser.to_page.dom.instance_variable_get(:@digest).should ==
                 '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' <<
-                    'taint_tracer.js><SCRIPT><SCRIPT src=http://javascript.' <<
+                    'taint_tracer.js><SCRIPT src=http://javascript.' <<
                     'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
                     'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
         end
@@ -1871,6 +1875,104 @@ describe Arachni::Browser do
             @browser.source.should include( ua )
         end
 
+        it 'puts the domain in the asset domains list' do
+            subject.goto @url
+            described_class.asset_domains.should include Arachni::URI( @url ).domain
+        end
+
+        context 'when requesting the page URL' do
+            it 'does not send If-None-Match request headers' do
+                subject.goto "#{@url}/If-None-Match"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-None-Match'
+
+                subject.goto "#{@url}/If-None-Match"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-None-Match'
+            end
+
+            it 'does not send If-Modified-Since request headers' do
+                subject.goto "#{@url}/If-Modified-Since"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-Modified-Since'
+
+                subject.goto "#{@url}/If-Modified-Since"
+                subject.response.code.should == 200
+                subject.response.request.headers.should_not include 'If-Modified-Since'
+            end
+        end
+
+        context 'when requesting something other than the page URL' do
+            it 'sends If-None-Match request headers' do
+                url = "#{@url}If-None-Match"
+
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
+                response.request.headers.should_not include 'If-None-Match'
+
+                subject.goto url
+                response.request.headers.should include 'If-None-Match'
+            end
+
+            it 'sends If-Modified-Since request headers' do
+                url = "#{@url}If-Modified-Since"
+
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
+                response.request.headers.should_not include 'If-Modified-Since'
+
+                subject.goto url
+                response.request.headers.should include 'If-Modified-Since'
+            end
+        end
+
+        context 'when the page requires an asset' do
+            before do
+                described_class.asset_domains.clear
+                subject.goto url
+            end
+
+            let(:url) { "#{@url}/asset_domains" }
+
+            %w(link input script img).each do |type|
+                context 'via link' do
+                    let(:url) { "#{super()}/#{type}" }
+
+                    it 'whitelists it' do
+                        described_class.asset_domains.should include "#{type}.stuff"
+                    end
+                end
+            end
+
+            context 'with an extension of' do
+                described_class::ASSET_EXTENSIONS.each do |extension|
+                    context extension do
+                        it 'loads it'
+                    end
+                end
+            end
+
+            context 'without an extension' do
+                context 'and has been whitelisted' do
+                    it 'loads it'
+                end
+
+                context 'and has not been whitelisted' do
+                    it 'does not load it'
+                end
+            end
+        end
+
         context 'when the page has JS timeouts' do
             it 'waits for them to complete' do
                 time = Time.now
@@ -1906,38 +2008,70 @@ describe Arachni::Browser do
             end
         end
 
+        context "with #{Arachni::OptionGroups::BrowserCluster}#wait_for_elements" do
+            before do
+                Arachni::Options.browser_cluster.wait_for_elements = {
+                    'stuff' => '#matchThis'
+                }
+            end
+
+            context 'when the URL matches a pattern' do
+                it 'waits for the element matching the CSS to appear' do
+                    t = Time.now
+                    @browser.goto( @url + '/wait_for_elements#stuff/here' )
+                    (Time.now - t).should > 5
+
+                    @browser.watir.element( css: '#matchThis' ).tag_name.should == 'button'
+                end
+
+                it "waits a maximum of #{Arachni::OptionGroups::BrowserCluster}#job_timeout" do
+                    Arachni::Options.browser_cluster.job_timeout = 4
+
+                    t = Time.now
+                    @browser.goto( @url + '/wait_for_elements#stuff/here' )
+                    (Time.now - t).should < 5
+
+                    expect do
+                        @browser.watir.element( css: '#matchThis' ).tag_name
+                    end.to raise_error Watir::Exception::UnknownObjectException
+                end
+            end
+
+            context 'when the URL does not match any patterns' do
+                it 'does not wait' do
+                    t = Time.now
+                    @browser.goto( @url + '/wait_for_elements' )
+                    (Time.now - t).should < 5
+
+                    expect do
+                        @browser.watir.element( css: '#matchThis' ).tag_name
+                    end.to raise_error Watir::Exception::UnknownObjectException
+                end
+            end
+        end
+
         context "#{Arachni::OptionGroups::BrowserCluster}#ignore_images" do
             context true do
                 it 'does not load images' do
                     Arachni::Options.browser_cluster.ignore_images = true
                     @browser.shutdown
-                    @browser = described_class.new
-
-                    loaded_image = false
-                    @browser.on_response do |response|
-                        loaded_image ||= (response.parsed_url.resource_extension == 'png')
-                    end
+                    @browser = described_class.new( disk_cache: false )
 
                     @browser.load( "#{@url}form-with-image-button" )
 
-                    loaded_image.should be_false
+                    image_hit_count.should == 0
                 end
             end
 
             context false do
-                it 'does not load images' do
+                it 'loads images' do
                     Arachni::Options.browser_cluster.ignore_images = false
                     @browser.shutdown
-                    @browser = described_class.new
-
-                    loaded_image = false
-                    @browser.on_response do |response|
-                        loaded_image ||= (response.parsed_url.resource_extension == 'png')
-                    end
+                    @browser = described_class.new( disk_cache: false )
 
                     @browser.load( "#{@url}form-with-image-button" )
 
-                    loaded_image.should be_true
+                    image_hit_count.should == 1
                 end
             end
         end
@@ -1986,19 +2120,18 @@ describe Arachni::Browser do
                 transition.options[:cookies].should == cookie
             end
 
-        context 'when auditing existing cookies' do
-            it 'preserves the HttpOnly attribute' do
-                @browser.goto( @url )
-                @browser.cookies.size.should == 1
+            context 'when auditing existing cookies' do
+                it 'preserves the HttpOnly attribute' do
+                    @browser.goto( @url )
+                    @browser.cookies.size.should == 1
 
-                cookies = { @browser.cookies.first.name => 'updated' }
-                @browser.goto( @url, cookies: cookies )
+                    cookies = { @browser.cookies.first.name => 'updated' }
+                    @browser.goto( @url, cookies: cookies )
 
-                @browser.cookies.first.value == 'updated'
-                @browser.cookies.first.should be_http_only
+                    @browser.cookies.first.value == 'updated'
+                    @browser.cookies.first.should be_http_only
+                end
             end
-        end
-
         end
 
         describe :take_snapshot do
@@ -2510,6 +2643,17 @@ describe Arachni::Browser do
         it 'preserves the HttpOnly attribute' do
             @browser.load @url
             @browser.cookies.first.should be_http_only
+        end
+
+        context 'when parsing v1 cookies' do
+            it 'removes the quotes' do
+                cookie = 'rsession="06142010_0%3Ae275d357943e9a2de0"'
+
+                @browser.load @url
+                @browser.javascript.run( "document.cookie = '#{cookie}';" )
+
+                @browser.cookies.first.value.should == '06142010_0:e275d357943e9a2de0'
+            end
         end
 
         context 'when no page is available' do

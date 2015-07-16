@@ -34,7 +34,8 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
 
     def check_and_log( response )
         return if IGNORE_CODES.include?( response.code ) ||
-            response.body.to_s.empty? || issue_limit_reached?
+            response.body.to_s.empty? || issue_limit_reached? ||
+            response.scope.out?
 
         path = uri_parse( response.url ).path
 
@@ -57,7 +58,7 @@ class Arachni::Checks::InterestingResponses < Arachni::Check::Base
             description: %q{Logs all non 200 (OK) server responses.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
 
             issue:       {
                 name:        %q{Interesting response},

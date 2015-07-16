@@ -7,16 +7,18 @@
 =end
 
 # @author  Tasos Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
+# @version 0.1.1
 class Arachni::Checks::XFrameOptions < Arachni::Check::Base
 
     def run
         return if audited?( page.parsed_url.host ) ||
             page.response.headers['X-Frame-Options']
-
         audited( page.parsed_url.host )
 
-        log( vector: Element::Server.new( page.url ) )
+        log(
+            vector: Element::Server.new( page.url ),
+            proof:  page.response.headers_string
+        )
     end
 
     def self.info
@@ -24,7 +26,7 @@ class Arachni::Checks::XFrameOptions < Arachni::Check::Base
             name:        'Missing X-Frame-Options header',
             description: %q{Checks the host for a missing `X-Frame-Options` header.},
             author:      'Tasos Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             elements:    [ Element::Server ],
 
             issue:       {

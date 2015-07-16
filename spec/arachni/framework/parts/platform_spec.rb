@@ -36,26 +36,32 @@ describe Arachni::Framework::Parts::Platform do
                     mongodb:    'MongoDB'
                 },
                 'Web servers' => {
-                    apache: 'Apache',
-                    iis:    'IIS',
-                    jetty:  'Jetty',
-                    nginx:  'Nginx',
-                    tomcat: 'TomCat'
+                    apache:   'Apache',
+                    iis:      'IIS',
+                    jetty:    'Jetty',
+                    nginx:    'Nginx',
+                    tomcat:   'TomCat',
+                    gunicorn: 'Gunicorn',
                 },
                 'Programming languages' => {
                     asp:    'ASP',
                     aspx:   'ASP.NET',
-                    jsp:    'JSP',
+                    java:   'Java',
                     perl:   'Perl',
                     php:    'PHP',
                     python: 'Python',
                     ruby:   'Ruby'
                 },
                 'Frameworks' => {
-                    rack: 'Rack'
+                    rack:     'Rack',
+                    django:   'Django',
+                    rails:    'Ruby on Rails',
+                    aspx_mvc: 'ASP.NET MVC',
+                    jsf:      'JavaServer Faces',
+                    cherrypy: 'CherryPy',
+                    cakephp:  'CakePHP'
                 }
             }
-
         end
     end
 

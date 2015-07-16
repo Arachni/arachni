@@ -4,7 +4,7 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.platforms
-        [:ruby, :php, :perl, :python, :jsp, :asp]
+        [:ruby, :php, :perl, :python, :java, :asp]
     end
 
     def self.elements

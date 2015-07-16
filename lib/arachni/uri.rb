@@ -50,21 +50,21 @@ class URI
     end
 
     CACHE_SIZES = {
-        parse:       600,
-        ruby_parse:  600,
-        fast_parse:  600,
+        parse:       1000,
+        ruby_parse:  1000,
+        fast_parse:  1000,
+        encode:      1000,
+        decode:      1000,
         normalize:   1000,
         to_absolute: 1000
     }
 
     CACHE = {
-        parser:      ::URI::Parser.new,
-        ruby_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:ruby_parse] ),
-        parse:       Support::Cache::RandomReplacement.new( CACHE_SIZES[:parse] ),
-        fast_parse:  Support::Cache::RandomReplacement.new( CACHE_SIZES[:fast_parse] ),
-        normalize:   Support::Cache::RandomReplacement.new( CACHE_SIZES[:normalize] ),
-        to_absolute: Support::Cache::RandomReplacement.new( CACHE_SIZES[:to_absolute] )
+        parser: ::URI::Parser.new
     }
+    CACHE_SIZES.each do |name, size|
+        CACHE[name] = Support::Cache::LeastRecentlyPushed.new( size )
+    end
 
     class <<self
 
@@ -76,14 +76,15 @@ class URI
         # URL encodes a string.
         #
         # @param [String] string
-        # @param [String, Regexp] bad_characters
-        #   Class of characters to encode -- if {String} is passed, it should
+        # @param [String, Regexp] good_characters
+        #   Class of characters to allow -- if {String} is passed, it should
         #   formatted as a regexp (for `Regexp.new`).
         #
         # @return   [String]
         #   Encoded string.
-        def encode( string, bad_characters = nil )
-            Addressable::URI.encode_component( *[string, bad_characters].compact )
+        def encode( string, good_characters = nil )
+            CACHE[__method__][[string, good_characters]] ||=
+                Addressable::URI.encode_component( *[string, good_characters].compact )
         end
 
         # URL decodes a string.
@@ -92,7 +93,7 @@ class URI
         #
         # @return   [String]
         def decode( string )
-            Addressable::URI.unencode( string )
+            CACHE[__method__][string] ||= Addressable::URI.unencode( string )
         end
 
         # @note This method's results are cached for performance reasons.
@@ -176,8 +177,11 @@ class URI
             url = url.to_s.dup
 
             # Remove the fragment if there is one.
-            url   = url.split( '#', 2 )[0...-1].join if url.include?( '#' )
-            c_url = url.to_s.dup
+            if url.include?( '#' )
+                url = url.split( '#', 2 )[0...-1].join
+            end
+
+            c_url = url.dup
 
             components = {
                 scheme:   nil,
@@ -204,7 +208,7 @@ class URI
                     return cache[c_url] = addressable_parse( c_url ).freeze
                 end
 
-                url = url.recode
+                url = url.recode!
                 url = html_decode( url )
 
                 dupped_url = url.dup
@@ -282,9 +286,8 @@ class URI
                         !(query = dupped_url.split( '?', 2 ).last).empty?
 
                         components[:query] = (query.split( '&', -1 ).map do |pair|
-                            Addressable::URI.normalize_component( pair,
-                                Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' )
-                            )
+                            encode( decode( pair ),
+                                    Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' ) )
                         end).join( '&' )
                     end
                 end
@@ -300,7 +303,7 @@ class URI
                     print_debug "Error: #{e}"
                     print_debug_backtrace( e )
 
-                    cache[c_url] = addressable_parse( c_url.recode ).freeze
+                    cache[c_url] = addressable_parse( c_url.recode! ).freeze
                 rescue => ex
                     print_debug "Failed to parse '#{c_url}'."
                     print_debug "Error: #{ex}"
@@ -405,8 +408,8 @@ class URI
 
             cache = CACHE[__method__]
 
-            url   = url.to_s.strip.dup
-            c_url = url.to_s.strip.dup
+            url   = url.to_s.strip
+            c_url = url.dup
 
             begin
                 if (v = cache[url]) && v == :err
@@ -494,13 +497,13 @@ class URI
                               self.class.ruby_parse( url )
 
                           when ::URI
-                              url.dup
+                              url
 
                           when Hash
                               ::URI::Generic.build( url )
 
                           when Arachni::URI
-                              self.parsed_url = url.parsed_url.dup
+                              self.parsed_url = url.parsed_url
 
                           else
                               to_string = url.to_s rescue ''

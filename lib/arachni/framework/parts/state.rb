@@ -65,6 +65,14 @@ module State
     def initialize
         super
 
+        Element::Capabilities::Auditable.skip_like do |element|
+            if pause?
+                print_debug "Blocking on element audit: #{element.audit_id}"
+            end
+
+            wait_if_paused
+        end
+
         state.status = :ready
     end
 
@@ -96,13 +104,14 @@ module State
         return if @cleaned_up
         @cleaned_up = true
 
+        state.force_resume
+
         state.status = :cleanup
 
         sitemap.merge!( browser_sitemap )
 
         if shutdown_browsers
             state.set_status_message :browser_cluster_shutdown
-            shutdown_browser
             shutdown_browser_cluster
         end
 
@@ -126,6 +135,11 @@ module State
         @session = nil
 
         true
+    end
+
+    # @private
+    def reset_trainer
+        @trainer = Trainer.new( self )
     end
 
     # @note Prefer this from {.reset} if you already have an instance.
@@ -319,11 +333,6 @@ module State
         state.suspended?
     end
 
-    # @private
-    def reset_trainer
-        @trainer = Trainer.new( self )
-    end
-
     private
 
     # @note Must be called before calling any audit methods.
@@ -370,7 +379,7 @@ module State
                 new_element = true
             end
 
-            if e.respond_to?( :dom ) && e.dom
+            if page.dom.depth > 0 && e.respond_to?( :dom ) && e.dom
                 if !state.element_checked?( e.dom )
                     state.element_checked e.dom
                     new_element = true

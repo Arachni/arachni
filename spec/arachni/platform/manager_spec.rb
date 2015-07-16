@@ -74,7 +74,7 @@ describe Arachni::Platform::Manager do
 
     describe '.clear' do
         it 'clear all platforms' do
-            described_class.update( 'http://test/', [:unix, :jsp] )
+            described_class.update( 'http://test/', [:unix, :java] )
             described_class.should be_any
             described_class.clear
             described_class.should be_empty
@@ -94,8 +94,17 @@ describe Arachni::Platform::Manager do
                         context 'and it is text based' do
                             context 'and has not yet been fingerprinted' do
                                 context 'and is within scope' do
-                                    it 'returns true' do
-                                        described_class.fingerprint?( page ).should be_true
+                                    context 'and has a #code of 200' do
+                                        it 'returns true' do
+                                            described_class.fingerprint?( page ).should be_true
+                                        end
+                                    end
+
+                                    context 'and has a non-200 #code' do
+                                        it 'returns false' do
+                                            page.stub(:code) { 404 }
+                                            described_class.fingerprint?( page ).should be_false
+                                        end
                                     end
                                 end
 
@@ -144,6 +153,16 @@ describe Arachni::Platform::Manager do
         it 'returns the given page' do
             described_class.fingerprint( page ).should == page
         end
+
+        context 'even when no platforms have been identified' do
+            it 'marks the page as fingerprinted' do
+                page = Arachni::Page.from_url( web_server_url_for( :auditor ) )
+
+                described_class.fingerprint( page )
+                page.platforms.should be_empty
+                described_class.fingerprint?( page ).should be_false
+            end
+        end
     end
 
     describe '.[]' do
@@ -151,7 +170,7 @@ describe Arachni::Platform::Manager do
             base = 'http://stuff.com/'
             uri  = base + '?stuff=here'
 
-            platforms << :unix << :jsp
+            platforms << :unix << :java
             described_class[uri] = platforms
             described_class[uri].should == platforms
             described_class[base].should == described_class[uri]
@@ -175,7 +194,7 @@ describe Arachni::Platform::Manager do
             base = 'http://stuff.com/'
             uri  = base + '?stuff=here'
 
-            platforms << :unix << :jsp
+            platforms << :unix << :java
 
             described_class[uri] = platforms
             described_class[uri].should == platforms
@@ -183,7 +202,7 @@ describe Arachni::Platform::Manager do
         end
 
         it 'set the platforms for the given URI' do
-            platforms = [:unix, :jsp]
+            platforms = [:unix, :java]
             described_class['http://stuff.com'] = platforms
 
             platforms.each do |platform|
@@ -192,11 +211,21 @@ describe Arachni::Platform::Manager do
         end
 
         it "converts the value to a #{described_class}" do
-            platforms = [:unix, :jsp]
+            platforms = [:unix, :java]
             described_class['http://stuff.com'] = platforms
             platforms.each do |platform|
                 described_class['http://stuff.com'].should be_kind_of described_class
             end
+        end
+
+        it 'includes Options.platforms' do
+            Arachni::Options.platforms = [:ruby, :windows]
+            platforms = [:unix, :java]
+
+            described_class['http://stuff.com'] = platforms
+
+            described_class['http://stuff.com'].sort.should ==
+                (Arachni::Options.platforms | platforms).sort
         end
 
         context 'when invalid platforms are given' do
@@ -212,8 +241,8 @@ describe Arachni::Platform::Manager do
         context 'with valid platforms' do
             it 'updates self with the given platforms' do
                 described_class['http://test.com/'] << :unix
-                described_class.update( 'http://test.com/', [:jsp] )
-                described_class['http://test.com/'].sort.should == [:unix, :jsp].sort
+                described_class.update( 'http://test.com/', [:java] )
+                described_class['http://test.com/'].sort.should == [:unix, :java].sort
             end
         end
         context 'with invalid platforms' do
@@ -252,18 +281,20 @@ describe Arachni::Platform::Manager do
         end
     end
 
+    describe '#new_from_options' do
+        it 'includes Options.platforms' do
+            Arachni::Options.platforms = [:ruby, :windows]
+            platforms = [:unix, :java]
+
+            described_class.new_from_options( platforms ).sort.should ==
+                (platforms | Arachni::Options.platforms).sort
+        end
+    end
+
     describe '#initialize' do
         it 'initializes the manager with the given platforms' do
-            platforms = [:unix, :jsp, :mysql].sort
+            platforms = [:unix, :java, :mysql].sort
             described_class.new( platforms ).sort.should == platforms
-        end
-
-        context 'when there are Options.platforms' do
-            it 'takes them into account' do
-                platforms = [:unix]
-                Arachni::Options.platforms = [:php, :mysql]
-                described_class.new( platforms ).sort.should == (Arachni::Options.platforms | platforms).sort
-            end
         end
     end
 
@@ -314,7 +345,7 @@ describe Arachni::Platform::Manager do
                 unix: [ 'UNIX stuff' ],
                 php:  [ 'PHP stuff' ]
             }
-            data = applicable_data.merge( jsp:  [ 'JSP stuff' ],
+            data = applicable_data.merge( java:    [ 'JSP stuff' ],
                                           windows: [ 'Windows stuff' ] )
 
             platforms << :unix << :php
@@ -326,7 +357,7 @@ describe Arachni::Platform::Manager do
                 linux: [ 'UNIX stuff' ],
                 bsd:   [ 'UNIX stuff' ],
                 php:   [ 'PHP stuff' ],
-                jsp:   [ 'JSP stuff' ]
+                java:  [ 'JSP stuff' ]
             }
             data = applicable_data.merge( windows: [ 'Windows stuff' ] )
 
@@ -358,7 +389,7 @@ describe Arachni::Platform::Manager do
                         linux:   [ 'Linux stuff' ],
                         php:     [ 'PHP stuff' ]
                     }
-                    data = applicable_data.merge( jsp: [ 'JSP stuff' ],
+                    data = applicable_data.merge( java: [ 'JSP stuff' ],
                                                   windows: [ 'Windows stuff' ] )
 
                     platforms << :linux << :php << :unix
@@ -386,15 +417,16 @@ describe Arachni::Platform::Manager do
                 [:unix, :linux, :bsd, :solaris, :windows,
                  :db2, :emc, :informix, :interbase, :mssql, :mysql,
                  :oracle, :firebird, :maxdb, :pgsql, :sqlite, :apache, :iis, :nginx,
-                 :tomcat, :asp, :aspx, :jsp, :perl, :php, :python, :ruby, :rack,
+                 :tomcat, :asp, :aspx, :java, :perl, :php, :python, :ruby, :rack,
                  :sybase, :frontbase, :ingres, :hsqldb, :access, :jetty, :mongodb,
-                 :aix, :sql, :nosql].sort
+                 :aix, :sql, :nosql, :aspx_mvc, :rails, :django, :gunicorn, :cakephp,
+                 :cherrypy, :jsf].sort
         end
     end
 
     describe '#each' do
         it 'iterates over all applicable platforms' do
-            included_platforms = platforms.update( [:unix, :jsp] ).sort
+            included_platforms = platforms.update( [:unix, :java] ).sort
             included_platforms.should be_any
 
             iterated = []
@@ -408,7 +440,7 @@ describe Arachni::Platform::Manager do
 
     describe '#clear' do
         it 'clear the platforms' do
-            platforms.update( [:unix, :jsp] )
+            platforms.update( [:unix, :java] )
             platforms.should be_any
             platforms.clear
             platforms.should be_empty

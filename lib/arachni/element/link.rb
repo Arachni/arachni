@@ -55,17 +55,9 @@ class Link < Base
     def to_s
         uri = uri_parse( self.action ).dup
         uri.query = self.inputs.
-            map { |k, v| "#{encode_query_params(k)}=#{encode_query_params(v)}" }.
+            map { |k, v| "#{encode(k)}=#{encode(v)}" }.
             join( '&' )
         uri.to_s
-    end
-
-    # @param   (see .encode_query_params)
-    # @return  (see .encode_query_params)
-    #
-    # @see .encode_query_params
-    def encode_query_params( *args )
-        self.class.encode_query_params( *args )
     end
 
     # @param   (see .encode)
@@ -114,7 +106,14 @@ class Link < Base
         #
         # @return   [Array<Link>]
         def from_document( url, document )
-            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            if !document.is_a?( Nokogiri::HTML::Document )
+                document = document.to_s
+
+                return [] if !(document =~ /\?.*=/)
+
+                document = Nokogiri::HTML( document )
+            end
+
             base_url =  begin
                 document.search( '//base[@href]' )[0]['href']
             rescue
@@ -122,6 +121,8 @@ class Link < Base
             end
 
             document.search( '//a' ).map do |link|
+                next if too_big?( link['href'] )
+
                 href = to_absolute( link['href'], base_url )
                 next if !href
 
@@ -137,12 +138,8 @@ class Link < Base
             end.compact
         end
 
-        def encode_query_params( param )
-            encode( encode( param.recode ), '=' )
-        end
-
-        def encode( *args )
-            ::URI.encode( *args )
+        def encode( string )
+            Arachni::HTTP::Request.encode string
         end
 
         def decode( *args )

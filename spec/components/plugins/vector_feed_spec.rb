@@ -45,6 +45,16 @@ describe name_from_filename do
                 'type'   => 'header',
                 'action' => "#{url}header",
                 'inputs' => { 'User-Agent' => "Blah/2" }
+            },
+            {
+                'type'   => 'json',
+                'action' => "#{url}json",
+                'source' => '{"name": "value"}'
+            },
+            {
+                'type'   => 'xml',
+                'action' => "#{url}xml",
+                'source' => '<forgot><username>admin</username></forgot>'
             }
         ]
     end
@@ -116,9 +126,37 @@ describe name_from_filename do
 
                 oks += 1
             end
+
+            if page.jsons.any?
+                json = v.select { |vector| vector['type'] == 'json' }.first
+                page.jsons.first.action.should == json['action']
+                page.jsons.first.source.should == json['source']
+                page.jsons.first.inputs.should == { 'name' => 'value' }
+
+                page.url.should  == json['action']
+                page.code.should == 200
+                page.body.should == ''
+
+                oks += 1
+            end
+
+            if page.xmls.any?
+                xml = v.select { |vector| vector['type'] == 'xml' }.first
+                page.xmls.first.action.should == xml['action']
+                page.xmls.first.source.should == xml['source']
+                page.xmls.first.inputs.should == {
+                    'forgot > username > text()' => 'admin'
+                }
+
+                page.url.should  == xml['action']
+                page.code.should == 200
+                page.body.should == ''
+
+                oks += 1
+            end
         end
 
-        oks.should == 5
+        oks.should == 7
     end
 
     def run_test

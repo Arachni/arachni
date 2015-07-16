@@ -28,7 +28,7 @@ class Preference < Base
     #   `v`
     def store( k, v )
         prune if capped? && (size > max_size - 1)
-        cache[k.hash] = v
+        cache[make_key( k )] = v
     end
 
     def prefer( &block )

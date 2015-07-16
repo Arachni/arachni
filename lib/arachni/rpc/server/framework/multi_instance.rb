@@ -222,14 +222,6 @@ module MultiInstance
         end
     end
 
-    def audit_page_queue
-        if master?
-            master_audit_page_queue
-        else
-            super
-        end
-    end
-
     # @return   [Boolean]
     #   `true` if `token` matches the local privilege token, `false` otherwise.
     def valid_token?( token )

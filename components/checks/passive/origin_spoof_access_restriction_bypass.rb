@@ -34,7 +34,11 @@ class Arachni::Checks::OriginSpoofAccessRestrictionBypass < Arachni::Check::Base
     def check_and_log( response )
         return if response.code != 200
 
-        log vector: Element::Server.new( response.url ), response: response
+        log(
+            vector:   Element::Server.new( response.url ),
+            response: response,
+            proof:    response.status_line
+        )
         print_ok "Request was accepted: #{response.url}"
     end
 

@@ -228,7 +228,7 @@ module Master
 
         # If for some reason we've got pages in the page queue this early,
         # consume them and get it over with.
-        audit_page_queue
+        master_audit_page_queue
 
         @first_run = true if @first_run.nil?
         next_page = nil
@@ -266,10 +266,10 @@ module Master
                 audit_page( page ) or http.run
             end
 
-            audit_page_queue
+            master_audit_page_queue
         end
 
-        audit_page_queue
+        master_audit_page_queue
 
         @audit_queues_done = true
         true

@@ -77,6 +77,7 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         pages  = pages.values
         pages << page_buffer
         pages.flatten!
+
         if !pages.empty?
             print_status 'Pushing the vectors to the audit queue...'
             pages.each { |page| framework.push_to_page_queue( page, true ) }
@@ -105,37 +106,65 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         owner  = framework.options.url.to_s
         action = vector[:action]
         inputs = vector[:inputs]
+        source = vector[:source].to_s
         method = vector[:method] || 'get'
-        type   = vector[:type]   || 'link'
+        type   = (vector[:type]  || 'link').to_s
 
-        return if !inputs || inputs.empty?
+        return if (!inputs || inputs.empty?) &&
+            (!(type == 'xml' || type == 'json') && !source.empty?)
 
         e = case type
             when Element::Link.type.to_s
-                Link.new(
+                Element::Link.new(
                     url:    owner,
                     action: action,
                     inputs: inputs,
+                    source: source
                 )
+
             when Element::Form.type.to_s
-                Form.new(
+                Element::Form.new(
                     url:    owner,
                     method: method,
                     action: action,
-                    inputs: inputs
+                    inputs: inputs,
+                    source: source
                 )
+
             when Element::Cookie.type.to_s
-                Cookie.new( url: action, inputs: inputs )
+                Element::Cookie.new(
+                    url:    action,
+                    inputs: inputs,
+                    source: source
+                )
+
             when Element::Header.type.to_s
                 Header.new( url: action, inputs: inputs )
+
+            when Element::JSON.type.to_s
+                Element::JSON.new(
+                    url:    action,
+                    inputs: inputs,
+                    source: source
+                )
+
+            when Element::XML.type.to_s
+                Element::XML.new(
+                    url:    action,
+                    inputs: inputs,
+                    source: source
+                )
+
             else
-                Link.new(
+                Element::Link.new(
                     url:    owner,
                     action: action,
                     inputs: inputs
                 )
-        end
+            end
+
         (vector[:skip] || []).each { |i| e.immutables << i }
+
         e
     end
 
@@ -205,7 +234,7 @@ Example YAML file:
 
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.7',
+            version:     '0.2',
             options:     [
                 Options::Object.new( :vectors,
                     description: ' Vector array (for configuration over RPC).'

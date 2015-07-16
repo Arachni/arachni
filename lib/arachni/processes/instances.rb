@@ -68,7 +68,7 @@ class Instances
     #   `rpc_server_address` and `port` instead of `rpc_port`.
     #
     # @return   [RPC::Client::Instance]
-    def spawn( options = {} )
+    def spawn( options = {}, &block )
         token = options.delete(:token) || generate_token
         fork  = options.delete(:fork)
 
@@ -93,17 +93,24 @@ class Instances
 
         Manager.spawn( :instance, options: options, token: token, fork: fork )
 
-        while sleep( 0.1 )
-            begin
-                connect( url, token ).service.alive?
-                break
-            rescue => e
-                # ap e
-            end
-        end
+        client = connect( url, token )
 
-        @list[url] = token
-        connect( url )
+        if block_given?
+            client.when_ready do
+                block.call client
+            end
+        else
+            while sleep( 0.1 )
+                begin
+                    client.service.alive?
+                    break
+                rescue => e
+                    # ap "#{e.class}: #{e}"
+                    # ap e.backtrace
+                end
+            end
+            client
+        end
     end
 
     # Starts {RPC::Server::Dispatcher} grid and returns a high-performance Instance.
@@ -168,7 +175,14 @@ class Instances
     end
 
     def kill( url )
-        Manager.kill_many connect( url ).service.consumed_pids
+        service = connect( url ).service
+        service.consumed_pids do |pids|
+            service.shutdown do
+                # Make sure....
+                Manager.kill_many pids
+            end
+        end
+
         @list.delete url
     end
 

@@ -43,6 +43,10 @@ class Session
         # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class FormNotFound < Error
         end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class FormNotVisible < Error
+        end
     end
 
     LOGIN_TRIES      = 5
@@ -153,7 +157,8 @@ class Session
                 elsif (url = opts[:url])
                     http_opts = {
                         update_cookies:  true,
-                        follow_location: true
+                        follow_location: true,
+                        performer:       self
                     }
 
                     if async
@@ -263,14 +268,20 @@ class Session
 
         http_options = http_options.merge(
             mode:            block_given? ? :async : :sync,
-            follow_location: true
+            follow_location: true,
+            performer:       self
         )
+
+        print_debug 'Performing login check.'
 
         bool = nil
         http.get( Options.session.check_url, http_options ) do |response|
             bool = !!response.body.match( Options.session.check_pattern )
+
+            print_debug "Login check done: #{bool}"
             block.call( bool ) if block
         end
+
         bool
     end
 
@@ -335,8 +346,15 @@ class Session
 
         form.page = page
 
-        # Use the form DOM to submit if a browser is available.
-        form = form.dom if has_browser?
+        if has_browser?
+            # Use the form DOM to submit if a browser is available.
+            form = form.dom
+            form.browser = browser
+
+            if !form.element.visible?
+                fail Error::FormNotVisible, 'Login form is not visible in the DOM.'
+            end
+        end
 
         form.update configuration[:inputs]
         form.auditor = self
@@ -352,14 +370,22 @@ class Session
             page = form.submit(
                 mode:            :sync,
                 follow_location: false,
-                update_cookies:  true
+                update_cookies:  true,
+                performer:       self
             ).to_page
 
             if page.response.redirection?
                 url  = to_absolute( page.response.headers.location, page.url )
                 print_debug "Redirected to: #{url}"
 
-                page = Page.from_url( url, precision: 1, http: { update_cookies: true } )
+                page = Page.from_url(
+                    url,
+                    precision: 1,
+                    http: {
+                        performer:      self,
+                        update_cookies: true
+                    }
+                )
             end
         end
 

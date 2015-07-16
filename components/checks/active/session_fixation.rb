@@ -20,7 +20,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.1.1
+# @version 0.1.2
 class Arachni::Checks::SessionFixation < Arachni::Check::Base
 
     def token
@@ -48,7 +48,11 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
                         select { |c| c.name == name }.first
                     next if !cookie || !cookie.value.include?( token )
 
-                    log vector: element, response: response
+                    log(
+                        vector:   element,
+                        response: response,
+                        proof:    cookie.source
+                    )
                 end
             end
         end
@@ -62,7 +66,7 @@ Checks whether or not the session cookie can be set to an arbitrary value.
 },
             elements:    [ Element::Form, Element::Link, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
 
             issue:       {
                 name:        %q{Session fixation},

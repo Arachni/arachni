@@ -30,6 +30,11 @@ class Array
         map { |v| v.respond_to?( :recode ) ? v.recode : v }
     end
 
+    def recode!
+        each { |v| v.recode! if v.respond_to?( :recode! ) }
+        self
+    end
+
     def chunk( pieces = 2 )
         return self if pieces <= 0
 

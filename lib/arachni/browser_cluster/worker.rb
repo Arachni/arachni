@@ -45,7 +45,6 @@ class Worker < Arachni::Browser
     attr_reader   :time_to_live
 
     def initialize( options = {} )
-        javascript_token  = options.delete( :javascript_token )
         @master           = options.delete( :master )
 
         @max_time_to_live = options.delete( :max_time_to_live ) ||
@@ -58,8 +57,6 @@ class Worker < Arachni::Browser
         # Don't store pages if there's a master, we'll be sending them to him
         # as soon as they're logged.
         super options.merge( store_pages: false )
-
-        @javascript.token = javascript_token
 
         @done_signal = Queue.new
 
@@ -90,13 +87,19 @@ class Worker < Arachni::Browser
                 exception_jail false do
                     begin
                         @job.configure_and_run( self )
-                    rescue Selenium::WebDriver::Error::WebDriverError
+                    rescue Selenium::WebDriver::Error::WebDriverError,
+                        Watir::Exception::Error => e
+
+                        print_debug "Error while processing job: #{@job}"
+                        print_debug
+                        print_debug_exception e
+
                         browser_respawn
                     end
                 end
             end
         rescue TimeoutError => e
-            print_debug "Job timed-out after #{@job_timeout} seconds: #{@job}"
+            print_bad "Job timed-out after #{@job_timeout} seconds: #{@job}"
 
             # Could have left us with a broken browser.
             browser_respawn

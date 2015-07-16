@@ -9,7 +9,7 @@
 # File inclusion check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.4
+# @version 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/98.html
 # @see https://www.owasp.org/index.php/PHP_File_Inclusion
@@ -21,22 +21,21 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
             regexp: {
                 unix: [
                     /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
                     /\[boot loader\].*\[operating systems\]/im,
                     /\[fonts\].*\[extensions\]/im
                 ],
-                tomcat: [
+                java:    [
                     /<web\-app/im
                 ],
-
                 # Generic PHP errors.
                 php: [
                     /An error occurred in script/,
                     /Failed opening '.*?' for inclusion/,
                     /Failed opening required/,
-                    /failed to open stream:.*/,
+                    /failed to open stream:/,
                     /<b>Warning<\/b>:\s+file/,
                     /<b>Warning<\/b>:\s+read_file/,
                     /<b>Warning<\/b>:\s+highlight_file/,
@@ -81,7 +80,7 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
                 '/windows/win.ini',
                 '/winnt/win.ini'
             ].map { |p| [p, "c:#{p}", "#{p}#{'.'* 700}", p.gsub( '/', '\\' ) ] }.flatten,
-            tomcat: [ '/WEB-INF/web.xml', '\WEB-INF\web.xml' ]
+            java:    [ '/WEB-INF/web.xml', '\WEB-INF\web.xml' ]
         }.inject({}) do |h, (platform, payloads)|
             h.merge platform => payloads.map { |p| [p, "file://#{p}" ] }.flatten
         end
@@ -101,7 +100,7 @@ content or errors in the HTTP response body.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.4',
+            version:     '0.1.6',
             platforms:   options[:regexp].keys,
 
             issue:       {

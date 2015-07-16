@@ -190,13 +190,6 @@ describe Arachni::Framework::Parts::Audit do
             end
         end
 
-        it 'passes the page to #apply_dom_metadata' do
-            page = Arachni::Page.from_url( @url + '/link' )
-
-            subject.should receive(:apply_dom_metadata).with(page)
-            subject.audit_page( page )
-        end
-
         context 'when checks were' do
             context 'ran against the page' do
                 it 'returns true' do
@@ -232,15 +225,14 @@ describe Arachni::Framework::Parts::Audit do
                 Arachni::Framework.new do |f|
                     f.options.url = @url
                     f.options.audit.elements :links, :forms, :cookies
-                    f.checks.load :taint
 
                     f.url_queue_total_size.should == 0
 
                     f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
-                    sleep 0.1 while f.wait_for_browser_cluster?
+                    f.run
 
-                    f.url_queue_total_size.should == 2
+                    f.url_queue_total_size.should == 5
                 end
             end
 
@@ -254,8 +246,8 @@ describe Arachni::Framework::Parts::Audit do
                         f.options.scope.dom_depth_limit = 1
                         f.url_queue_total_size.should == 0
                         f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
-                        sleep 0.1 while f.wait_for_browser_cluster?
-                        f.url_queue_total_size.should == 2
+                        f.run
+                        f.url_queue_total_size.should == 5
 
                         f.reset
 
@@ -268,8 +260,8 @@ describe Arachni::Framework::Parts::Audit do
                         page.dom.push_transition Arachni::Page::DOM::Transition.new( :page, :load )
 
                         f.audit_page( page ).should be_true
-                        sleep 0.1 while f.wait_for_browser_cluster?
-                        f.url_queue_total_size.should == 0
+                        f.run
+                        f.url_queue_total_size.should == 1
                     end
                 end
 
@@ -316,6 +308,11 @@ describe Arachni::Framework::Parts::Audit do
         end
 
         context "when #{Arachni::Options}#platforms" do
+            before do
+                Arachni::Platform::Manager.reset
+                subject.options.paths.fingerprinters = fixtures_path + '/empty/'
+            end
+
             context 'have been provided' do
                 context 'and are supported by the check' do
                     it 'audits it' do
@@ -333,6 +330,7 @@ describe Arachni::Framework::Parts::Audit do
                 context 'and are not supported by the check' do
                     it 'does not audit it' do
                         subject.options.platforms = [:windows]
+
                         subject.options.audit.elements :links, :forms, :cookies
 
                         subject.checks.load :taint

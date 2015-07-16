@@ -75,15 +75,6 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
                 restored = q.pop
                 restored.should == subject
             end
-
-            it 'dups the page' do
-                q = Arachni::Support::Database::Queue.new
-                q.max_buffer_size = 0
-
-                expect_any_instance_of(Arachni::Page).to receive(:dup)
-
-                q << subject
-            end
         end
     end
 end

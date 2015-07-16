@@ -85,6 +85,13 @@ module Output
         end
 
         @@error_fd
+
+    # Errno::EMFILE (too many open files) or something, nothing we can do
+    # about it except catch it to avoid a crash.
+    rescue SystemCallError => e
+        print_bad "[#{e.class}] #{e}"
+        e.backtrace.each { |line| print_bad line }
+        nil
     end
 
     # Prints and logs an error message.
@@ -111,6 +118,8 @@ module Output
     #
     # @param    [String]    str
     def log_error( str = '' )
+        return if !error_log_fd
+
         if !@@error_log_written_env
             @@error_log_written_env = true
 

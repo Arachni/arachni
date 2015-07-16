@@ -18,13 +18,28 @@ module HTTP
 # @author Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Headers < Hash
 
+    FORMATTED_NAMES_CACHE = Support::Cache::LeastRecentlyPushed.new( 100 )
+
+    CONTENT_TYPE = 'content-type'
+    SET_COOKIE   = 'set-cookie'
+    LOCATION     = 'location'
+
     # @param  [Headers, Hash] headers
     def initialize( headers = {} )
         merge!( headers || {} )
     end
 
     def merge!( headers )
-        headers.each { |k, v| self[k] = v }
+        headers.each do |k, v|
+            # Handle headers with identical normalized names, like a mixture of
+            # Set-Cookie and SET-COOKIE.
+            if include? k
+                self[k] = [self[k]].flatten
+                self[k] << v
+            else
+                self[k] = v
+            end
+        end
     end
 
     # @note `field` will be capitalized appropriately before storing.
@@ -77,20 +92,20 @@ class Headers < Hash
     # @return   [String, nil]
     #   Value of the `Content-Type` field.
     def content_type
-        self['content-type']
+        self[CONTENT_TYPE]
     end
 
     # @return   [String, nil]
     #   Value of the `Location` field.
     def location
-        self['location']
+        self[LOCATION]
     end
 
     # @return   [Array<String>]
     #   Set-cookie strings.
     def set_cookie
-        return [] if self['set-cookie'].to_s.empty?
-        [self['set-cookie']].flatten
+        return [] if self[SET_COOKIE].to_s.empty?
+        [self[SET_COOKIE]].flatten
     end
 
     # @return   [Array<Hash>]
@@ -119,15 +134,12 @@ class Headers < Hash
     end
 
     def self.format_field_name( field )
-        # return field
-
         # If there's a '--' somewhere in there then skip it, it probably is an
         # audit payload.
         return field if field.include?( '--' )
 
-        @formatted ||= Hash.new
-        @formatted[field.downcase.hash] ||=
-            field.to_s.split( '-' ).map( &:capitalize ).join( '-' )
+        FORMATTED_NAMES_CACHE[field] ||=
+            field.split( '-' ).map( &:capitalize ).join( '-' )
     end
 
 end

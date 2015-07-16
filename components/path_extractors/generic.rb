@@ -8,7 +8,6 @@
 
 require 'uri'
 
-#
 # Extract URLs from arbitrary text.
 #
 # You might think that this renders the rest path extractors redundant
@@ -17,19 +16,11 @@ require 'uri'
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.2.1
-#
+# @version 0.3
 class Arachni::Parser::Extractors::Generic < Arachni::Parser::Extractors::Base
 
-    #
-    # Returns an array of paths as plain strings
-    #
-    # @param    [Nokogiri]  doc  Nokogiri document
-    #
-    # @return   [Array<String>]  paths
-    #
-    def run( doc )
-        URI.extract( doc.to_s, %w(http https) ).map do |u|
+    def run
+        URI.extract( html, %w(http https) ).map do |u|
             #
             # This extractor needs to be a tiny bit intelligent because
             # due to its generic nature it'll inevitably match some garbage.

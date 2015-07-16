@@ -140,7 +140,7 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
 
         audited( "#{url}::#{name}" )
 
-        log( vector: form )
+        log( vector: form, proof: form.source )
         print_ok "Found unprotected form with name '#{name}' at '#{page.url}'"
     end
 
@@ -155,7 +155,7 @@ checks them for lack of anti-CSRF tokens.
 },
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3.4',
+            version:     '0.3.5',
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},

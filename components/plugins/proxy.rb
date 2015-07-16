@@ -60,7 +60,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info "Control panel URL: #{url_for( :panel )}"
         print_info "Shutdown URL:      #{url_for( :shutdown )}"
         print_info 'The scan will resume once you visit the shutdown URL.'
-
+        print_info
+        print_info 'When browsing HTTPS sites, please accept the Arachni SSL certificate' +
+            ' or install the CA certificate manually from:'
+        print_info "    #{Arachni::HTTP::ProxyServer::INTERCEPTOR_CA_CERTIFICATE}"
+        print_info
+        print_bad '**DO NOT** forget to revoke it after using the proxy, as it' +
+            ' can be used by anyone to impersonate 3rd party servers.'
         print_info
         print_info '*' * 82
         print_info '* You need to clear your browser\'s cookies for this site before using the proxy! *'
@@ -77,7 +83,12 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     end
 
     def prepare_pages_for_inspection
-        @pages.select { |p| (p.forms.any? || p.links.any? || p.cookies.any?) && p.text? }
+        (@pages.select do |p|
+            next if !p.text?
+
+            p.forms.any? || p.links.any? || p.cookies.any? || p.jsons.any? ||
+                p.xmls.any?
+        end).to_a
     end
 
     def vectors_yaml
@@ -86,12 +97,18 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             page.elements.each do |element|
                 next if element.inputs.empty?
 
-                vectors << {
+                data = {
                     type:   element.type,
                     method: element.method,
                     action: element.action,
                     inputs: element.inputs
                 }
+
+                if element.respond_to? :source
+                    data[:source] = element.source
+                end
+
+                vectors << data
             end
         end
         vectors.to_yaml
@@ -476,7 +493,7 @@ a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.2',
+            version:     '0.3.3',
             options:     [
                 Options::Port.new( :port,
                     description: 'Port to bind to.',

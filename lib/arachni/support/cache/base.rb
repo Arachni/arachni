@@ -60,7 +60,7 @@ class Base
     # @return   [Integer]
     #   Number of entries in the cache.
     def size
-        cache.size
+        @cache.size
     end
 
     # Storage method.
@@ -74,7 +74,7 @@ class Base
     def store( k, v )
         prune while capped? && (size > max_size - 1)
 
-        cache[k.hash] = v
+        @cache[make_key( k )] = v
     end
 
     # @see {#store}
@@ -90,7 +90,7 @@ class Base
     # @return   [Object, nil]
     #   Value for key `k`, `nil` if there is no key `k`.
     def []( k )
-        cache[k.hash]
+        @cache[make_key( k )]
     end
 
     # @note If key `k` exists, its corresponding value will be returned.
@@ -109,13 +109,13 @@ class Base
     # @return   [Bool]
     #   `true` if cache includes an entry for key `k`, false otherwise.
     def include?( k )
-        cache.include?( k.hash )
+        @cache.include?( make_key( k ) )
     end
 
     # @return   [Bool]
     #   `true` if cache is empty, false otherwise.
     def empty?
-        cache.empty?
+        @cache.empty?
     end
 
     # @return   [Bool]
@@ -132,12 +132,12 @@ class Base
     # @return   [Object, nil]
     #   Value for key `k`, `nil` if there is no key `k`.
     def delete( k )
-        cache.delete( k.hash )
+        @cache.delete( make_key( k ) )
     end
 
     # Clears/empties the cache.
     def clear
-        cache.clear
+        @cache.clear
     end
 
     def ==( other )
@@ -145,7 +145,7 @@ class Base
     end
 
     def hash
-        cache.hash
+        @cache.hash
     end
 
     def dup
@@ -153,6 +153,10 @@ class Base
     end
 
     private
+
+    def make_key( k )
+        k.hash
+    end
 
     def cache
         @cache

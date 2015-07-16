@@ -16,34 +16,10 @@ module Support::Cache
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class RandomReplacement < Base
 
-    # @see Arachni::Cache::Base#initialize
-    def initialize( * )
-        super
-        @keys = []
-    end
-
-    # @see Arachni::Cache::Base#store
-    def store( k, v )
-        already_in = include?( k )
-
-        super( k, v )
-    ensure
-        @keys << k if !already_in
-    end
-
-    def clear
-        super
-        @keys.clear
-    end
-
     private
 
-    def prune_candidate
-        @keys.delete_at( rand( size ) )
-    end
-
     def prune
-        delete( prune_candidate )
+        @cache.delete( @cache.keys.sample )
     end
 
 end

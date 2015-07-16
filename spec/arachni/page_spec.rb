@@ -468,7 +468,7 @@ describe Arachni::Page do
             context 'elements with event attributes' do
                 it 'returns true' do
                     create_page(
-                        body:    '<a onmouseover="doStuff();">Stuff</a>',
+                        body:    '<a onMouseOver="doStuff();">Stuff</a>',
                         headers: { 'content-type' => 'text/html' }
                     ).has_script?.should be_true
                 end
@@ -476,7 +476,7 @@ describe Arachni::Page do
             context 'anchors with javacript: in href' do
                 it 'returns true' do
                     create_page(
-                        body:    '<a href="javascript:doStuff();">Stuff</a>',
+                        body:    '<a href="JavaScript:doStuff();">Stuff</a>',
                         headers: { 'content-type' => 'text/html' }
                     ).has_script?.should be_true
                 end
@@ -493,6 +493,26 @@ describe Arachni::Page do
                 it 'returns false' do
                     create_page( body: 'stuff' ).has_script?.should be_false
                 end
+            end
+        end
+    end
+
+    describe '#has_elements?' do
+        context 'when the page has any of the given elements' do
+            it 'returns true' do
+                create_page(
+                    body:    '<fOrM></form>',
+                    headers: { 'content-type' => 'text/html' }
+                ).has_elements?( 'form', 'script' ).should be_true
+            end
+        end
+
+        context 'when the page has none of the given elements' do
+            it 'returns false' do
+                create_page(
+                    body:    '<fOrM></form>',
+                    headers: { 'content-type' => 'text/html' }
+                ).has_elements?( 'a', 'script' ).should be_false
             end
         end
     end

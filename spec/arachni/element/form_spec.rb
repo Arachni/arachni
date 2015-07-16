@@ -1076,12 +1076,55 @@ EOHTML
                     }
                 end
             end
+
+            context 'when its value is' do
+                let(:form) { described_class.from_document( url, form_html ).first }
+                let(:value) { 'a' * size }
+                let(:form_html) do
+                    '<html>
+                        <body>
+                            <form method="post" action="/form" name="my_form">
+                                <input type="text" name="input_1" value="' + value + '">
+                                <input type="text" name="input_2" value="val_2">
+                                <input type="submit">
+                            </form>
+                        </body>
+                    </html>'
+                end
+
+                context "equal to #{described_class::MAX_SIZE}" do
+                    let(:size) { described_class::MAX_SIZE }
+
+                    it 'returns empty array' do
+                        form.inputs['input_1'].should be_empty
+                        form.inputs['input_2'].should == 'val_2'
+                    end
+                end
+
+                context "larger than #{described_class::MAX_SIZE}" do
+                    let(:size) { described_class::MAX_SIZE + 1 }
+
+                    it 'sets empty value' do
+                        form.inputs['input_1'].should be_empty
+                        form.inputs['input_2'].should == 'val_2'
+                    end
+                end
+
+                context "smaller than #{described_class::MAX_SIZE}" do
+                    let(:size) { described_class::MAX_SIZE - 1 }
+
+                    it 'leaves the values alone' do
+                        form.inputs['input_1'].should == value
+                        form.inputs['input_2'].should == 'val_2'
+                    end
+                end
+            end
         end
     end
 
     describe '.encode' do
         it 'form-encodes the passed string' do
-            described_class.encode( '% value\ +=&;' ).should == '%25+value%5C+%2B%3D%26%3B'
+            described_class.encode( '% value\ +=&;' ).should == '%25%20value%5C%20%2B%3D%26%3B'
         end
     end
     describe '#encode' do
@@ -1093,12 +1136,12 @@ EOHTML
 
     describe '.decode' do
         it 'form-decodes the passed string' do
-            described_class.decode( '%25+value%5C+%2B%3D%26%3B' ).should == '% value\ +=&;'
+            described_class.decode( '%25%20value%5C%20%2B%3D%26%3B' ).should == '% value\ +=&;'
         end
     end
     describe '#decode' do
         it 'form-decodes the passed string' do
-            v = '%25+value%5C+%2B%3D%26%3B'
+            v = '%25%20value%5C%20%2B%3D%26%3B'
             subject.decode( v ).should == described_class.decode( v )
         end
     end

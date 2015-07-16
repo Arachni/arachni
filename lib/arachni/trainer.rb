@@ -120,6 +120,7 @@ class Trainer
         # no new cookies have appeared there's no reason to analyze the page
         if incoming_page.body == @page.body && !has_new_elements &&
             @page.url == incoming_page.url
+            incoming_page.clear_cache
             print_debug 'Page hasn\'t changed.'
             return
         end
@@ -140,12 +141,17 @@ class Trainer
             end
         end
 
+        incoming_page.clear_cache
+
         print_debug 'Training complete.'
     end
 
     def has_new?( incoming_page, element_type )
-        count = ElementFilter.send( "update_#{element_type}".to_sym, incoming_page.send( element_type ) )
-        incoming_page.clear_cache
+        count = ElementFilter.send(
+            "update_#{element_type}".to_sym,
+            incoming_page.send( element_type )
+        )
+
         return if count == 0
 
         print_info "Found #{count} new #{element_type}."

@@ -2,6 +2,7 @@ require 'spec_helper'
 
 describe Arachni::Element::Cookie do
     it_should_behave_like 'element'
+    it_should_behave_like 'with_source'
     it_should_behave_like 'with_dom'
     it_should_behave_like 'auditable', single_input: true
 
@@ -452,6 +453,7 @@ describe Arachni::Element::Cookie do
             cookie.name.should == 'coo@ki e2'
             cookie.value.should == 'blah val2@'
             cookie.path.should == '/stuff'
+            cookie.source.should == sc3
         end
 
         context 'when there is no path' do
@@ -463,6 +465,44 @@ describe Arachni::Element::Cookie do
                 cookie.name.should == 'coo@ki e2'
                 cookie.value.should == 'blah val2@'
                 cookie.path.should == '/'
+            end
+        end
+
+        context 'when its value is' do
+            let(:value) { 'a' * size }
+            let(:cookie) { "cookie=#{value}; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.foo.com; HttpOnly" }
+
+            context "equal to #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE }
+
+                it 'returns empty array' do
+                    described_class.from_set_cookie(
+                        'http://test.com/stuff',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "larger than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE + 1 }
+
+                it 'sets empty value' do
+                    described_class.from_set_cookie(
+                        'http://test.com/stuff',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "smaller than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE - 1 }
+
+                it 'leaves the values alone' do
+                    described_class.from_set_cookie(
+                        'http://test.com/stuff',
+                        cookie
+                    ).first.value.should == value
+                end
             end
         end
     end
@@ -484,6 +524,51 @@ describe Arachni::Element::Cookie do
              c = cookies.shift
              c.name.should == 'name2'
              c.value.should == 'value2'
+        end
+
+        it 'can handle v1 values' do
+            described_class.from_string(
+                'http://owner-url.com',
+                'cookie="blah stuff"'
+            ).first.value.should == 'blah stuff'
+        end
+
+        context 'when its value is' do
+            let(:value) { 'a' * size }
+            let(:cookie) { "cookie=#{value}" }
+
+            context "equal to #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE }
+
+                it 'sets empty value' do
+                    described_class.from_string(
+                        'http://owner-url.com',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "larger than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE + 1 }
+
+                it 'sets empty value' do
+                    described_class.from_string(
+                        'http://owner-url.com',
+                        cookie
+                    ).first.value.should be_empty
+                end
+            end
+
+            context "smaller than #{described_class::MAX_SIZE}" do
+                let(:size) { described_class::MAX_SIZE - 1 }
+
+                it 'leaves the values alone' do
+                    described_class.from_string(
+                        'http://owner-url.com',
+                        cookie
+                    ).first.value.should == value
+                end
+            end
         end
     end
 

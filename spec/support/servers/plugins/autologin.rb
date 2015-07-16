@@ -37,6 +37,15 @@ get '/login' do
     HTML
 end
 
+get '/hidden_login' do
+    <<-HTML
+        <form style='display: none' method='post' name='login_form' action="/login">
+            <input name='username' value='' />
+            <input name='password' type='password' value='' />
+        </form>
+    HTML
+end
+
 post '/login' do
     if params['username'] == 'john' && params['password'] == 'doe' &&
         params['token'] == 'secret!' && cookies[:preserve] == 'this'

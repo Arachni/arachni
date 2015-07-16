@@ -42,14 +42,6 @@ class DOM < Base
         p.to_set_cookie
     end
 
-    def encode( *args )
-        Cookie.encode( *args )
-    end
-
-    def decode( *args )
-        Cookie.decode( *args )
-    end
-
     def type
         self.class.type
     end

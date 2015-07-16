@@ -16,7 +16,6 @@ module UI::CLI
 # Provides a command line interface to the {Arachni::Report::Manager}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
 class Reporter
     include UI::Output
     include Utilities
@@ -36,15 +35,19 @@ class Reporter
         reporters = parser.reporters
         reporters = { 'stdout' => {} } if reporters.empty?
 
+        errors = false
         begin
             report = Report.load( parser.report_path )
 
             reporters.each do |name, options|
-                @reporters.run( name, report, options )
+                @reporters.run( name, report, options, true )
             end
         rescue => e
+            errors = true
             print_exception e
         end
+
+        exit( errors ? 1 : 0 )
     end
 
 end

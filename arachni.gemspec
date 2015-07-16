@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
     s.homepage          = 'https://www.arachni-scanner.com'
     s.email             = 'tasos.laskos@arachni-scanner.com'
     s.authors           = [ 'Tasos Laskos' ]
-    s.licenses          = ['Apache-2.0', 'Proprietary']
+    s.licenses          = ['Arachni Public Source License v1.0']
 
     s.files            += Dir.glob( 'config/**/**' )
     s.files            += Dir.glob( 'gfx/**/**' )
@@ -78,8 +78,9 @@ Gem::Specification.new do |s|
     # Printing complex objects.
     s.add_dependency 'awesome_print',     '~> 1.2.0'
 
-    # JSON reporter.
-    s.add_dependency 'json',              '~> 1.8.1'
+    # Optimized JSON.
+    s.add_dependency 'oj',                '~> 2.12.9'
+    s.add_dependency 'oj_mimic_json'
 
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',       '0.5.1'
@@ -111,7 +112,7 @@ Documentation      - http://arachni-scanner.com/wiki
 Support            - http://support.arachni-scanner.com
 GitHub page        - http://github.com/Arachni/arachni
 Code Documentation - http://rubydoc.info/github/Arachni/arachni
-License            - Apache License v2.0/Proprietary
+License            - Arachni Public Source License v1.0
                         (https://github.com/Arachni/arachni/blob/master/LICENSE.md)
 Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
 Twitter            - http://twitter.com/ArachniScanner
@@ -123,9 +124,8 @@ or report a bug (via GitHub Issues) if you come across any problem.
 MSG
 
     s.description = <<DESCRIPTION
-Arachni is an Open Source, feature-full, modular, high-performance Ruby framework
-aimed towards helping penetration testers and administrators evaluate the security
-of web applications.
+Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
+helping penetration testers and administrators evaluate the security of web applications.
 
 It is smart, it trains itself by monitoring and learning from the web application's
 behavior during the scan process and is able to perform meta-analysis using a number of

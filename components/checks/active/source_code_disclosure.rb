@@ -11,7 +11,7 @@
 # source code.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.2
+# @version 0.2.3
 #
 # @see http://cwe.mitre.org/data/definitions/540.html
 class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
@@ -20,15 +20,15 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
         @options ||= {
             format:  [Format::STRAIGHT],
             regexp:  {
-                php: [
+                php:  [
                     /<\?php/
                 ],
-                jsp: [
+                java: [
                     /<%|<%=|<%@\s+page|<%@\s+include|<%--|import\s+javax.servlet|
                         import\s+java.io|import=['"]java.io|request\.getParameterValues\(|
                         response\.setHeader|response\.setIntHeader\(/m
                 ],
-                asp: [
+                asp:  [
                     /<%|Response\.Write|Request\.Form|Request\.QueryString|
                         Response\.Flush|Session\.SessionID|Session\.Timeout|
                         Server\.CreateObject|Server\.MapPath/im
@@ -121,7 +121,7 @@ source code.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.2',
+            version:     '0.2.3',
             platforms:   options[:regexp].keys,
 
             issue:       {

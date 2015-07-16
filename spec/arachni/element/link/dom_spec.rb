@@ -43,15 +43,6 @@ describe Arachni::Element::Link::DOM do
         end
     end
 
-    %w(encode decode).each do |m|
-        describe "##{m}" do
-            it "delegates to #{Arachni::Element::Link}.#{m}" do
-                Arachni::Element::Link.stub(m) { |arg| "#{arg}1" }
-                subject.send( m, 'blah' ).should == 'blah1'
-            end
-        end
-    end
-
     describe '#parent' do
         it 'returns the parent element' do
             subject.parent.should be_kind_of Arachni::Element::Link

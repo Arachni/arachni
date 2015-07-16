@@ -9,21 +9,29 @@
 module Arachni
 module Platform::Fingerprinters
 
-#
 # Identifies Python resources.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.1
-#
+# @version 0.1.2
 class Python < Platform::Fingerprinter
 
+    IDS       = %w(python zope zserver wsgi plone)
     EXTENSION = 'py'
 
     def run
-        if extension == EXTENSION || powered_by.include?( 'python' )
-            platforms << :python
+        return update_platforms if extension == EXTENSION
+
+        IDS.each do |id|
+            return update_platforms if server_or_powered_by_include?( id )
         end
+
+        if cookies.include?( '_ZopeId' )
+            update_platforms
+        end
+    end
+
+    def update_platforms
+        platforms << :python
     end
 
 end

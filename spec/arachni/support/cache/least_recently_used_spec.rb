@@ -8,26 +8,18 @@ describe Arachni::Support::Cache::LeastRecentlyUsed do
 
         subject[:k]  = '1'
         subject[:k2] = '2'
+        subject[:k]
         subject[:k3] = '3'
         subject[:k4] = '4'
+
         subject.size.should == 3
 
+        ap subject
+
+        subject[:k].should be_true
         subject[:k4].should be_true
         subject[:k3].should be_true
-        subject[:k2].should be_true
-        subject[:k].should be_nil
-
-        subject.clear
-
-        subject.max_size = 1
-        subject[:k]  = '1'
-        subject[:k2] = '3'
-        subject[:k3] = '4'
-        subject.size.should == 1
-
-        subject[:k3].should be_true
         subject[:k2].should be_nil
-        subject[:k].should be_nil
     end
 
     describe '#[]=' do

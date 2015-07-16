@@ -83,7 +83,13 @@ class Base
     end
 
     def dup
-        deep_clone
+        self.class.new( @options.dup ).tap { |c| c.collection = @collection.dup }
+    end
+
+    protected
+
+    def collection=( c )
+        @collection = c
     end
 
     private

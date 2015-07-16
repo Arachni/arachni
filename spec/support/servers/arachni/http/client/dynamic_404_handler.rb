@@ -1,5 +1,7 @@
 require 'sinatra'
 
+@@erratic = 0
+
 def handler_response_1
     "Random #{rand( 999 ).to_s} bits #{rand( 999 ).to_s} go #{rand( 999 ).to_s} here #{rand( 999 ).to_s}"
 end
@@ -19,6 +21,17 @@ end
 
 get '/static/*' do
     'This is a custom 404, try to catch it. ;)'
+end
+
+get '/dynamic/erratic/*' do
+    if @@erratic > 3
+        return 500
+    end
+
+    @@erratic += 1
+
+    'This is a custom 404 which includes the requested resource, try to catch it. ;)' +
+        '<br/>You asked for "' + params[:splat].first.to_s + '", which could not be found.'
 end
 
 get '/dynamic/*' do

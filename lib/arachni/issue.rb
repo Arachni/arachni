@@ -15,7 +15,7 @@ require Options.paths.lib + 'issue/severity'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Issue
 
-    # Attributes removed from a parent issue (i.e. an issues with variations)
+    # Attributes removed from a parent issue (i.e. an issue with variations)
     # and solely populating variations.
     VARIATION_ATTRIBUTES = Set.new([
         :@page, :@referring_page, :@proof, :@signature, :@remarks, :@trusted
@@ -286,10 +286,21 @@ class Issue
         end
     end
 
-    [:name, :description, :remedy_guidance, :remedy_code, :proof, :signature].each do |m|
+    [:name, :description, :remedy_guidance, :remedy_code, :proof].each do |m|
         define_method "#{m}=" do |s|
             instance_variable_set( "@#{m}".to_sym, s ? s.to_s.freeze : nil )
         end
+    end
+
+    def signature=( sig )
+        @signature = case sig
+                         when Regexp
+                             sig.source
+                         when String, nil
+                             sig
+                         else
+                             sig.to_s
+                     end
     end
 
     # @return   [Hash]
@@ -495,7 +506,10 @@ class Issue
             data['variations'] = data['variations'].map(&:to_rpc_data)
         end
 
-        data['digest']   = digest
+        if !variation?
+            data['digest'] = digest
+        end
+
         data['severity'] = data['severity'].to_s
 
         data

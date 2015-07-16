@@ -36,6 +36,11 @@ class Fingerprinter
     def run
     end
 
+    def html?
+        @is_html ||= page.response.headers['content-type'].to_s.
+            downcase.include?( 'text/html' )
+    end
+
     # @param    [String]    string
     #
     # @return   [Boolean]

@@ -101,9 +101,6 @@ class Request < Message
     #   Maximum HTTP response size to accept, in bytes.
     attr_accessor :response_max_size
 
-    # @private
-    attr_accessor :root_redirect_id
-
     # @param  [Hash]  options
     #   Request options.
     # @option options [String] :url
@@ -129,6 +126,7 @@ class Request < Message
         super( options )
 
         @train           = false if @train.nil?
+        @fingerprint     = true  if @fingerprint.nil?
         @update_cookies  = false if @update_cookies.nil?
         @follow_location = false if @follow_location.nil?
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
@@ -266,6 +264,13 @@ class Request < Message
     end
 
     # @return   [Bool]
+    #   `true` if the {Response} should be {Platform::Manager.fingerprint fingerprinted}
+    #   for platforms, `false` otherwise.
+    def fingerprint?
+        @fingerprint
+    end
+
+    # @return   [Bool]
     #   `true` if the {Response} should be analyzed by the {Trainer}
     #   for new elements, `false` otherwise.
     def train?
@@ -343,6 +348,10 @@ class Request < Message
 
             accept_encoding: 'gzip, deflate',
             nosignal:        true,
+
+            # If Content-Length is missing this option will have no effect, so
+            # we'll also stream the body to make sure that we can at least abort
+            # the reading of the response body if it exceeds this limit.
             maxfilesize:     max_size,
 
             # Don't keep the socket alive if this is a blocking request because
@@ -384,17 +393,25 @@ class Request < Message
             end
         end
 
-        curl = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
-        r = Typhoeus::Request.new( curl, options )
+        curl             = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
+        typhoeus_request = Typhoeus::Request.new( curl, options )
 
         if @on_complete.any?
-            r.on_complete do |typhoeus_response|
+            response_body_buffer = ''
+            set_body_reader( typhoeus_request, response_body_buffer )
+
+            typhoeus_request.on_complete do |typhoeus_response|
+                if typhoeus_request.options[:maxfilesize]
+                    typhoeus_response.options[:response_body] =
+                        response_body_buffer
+                end
+
                 fill_in_data_from_typhoeus_response typhoeus_response
                 handle_response Response.from_typhoeus( typhoeus_response )
             end
         end
 
-        r
+        typhoeus_request
     end
 
     def to_h
@@ -480,33 +497,69 @@ class Request < Message
                 h
             end
         end
+
+        def encode( string )
+            @easy ||= Ethon::Easy.new( url: 'www.example.com' )
+            @easy.escape string
+        end
     end
 
     def prepare_headers
-        headers['Cookie'] = effective_cookies.
-            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
-            join( ';' )
-        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
-
         headers['User-Agent'] ||= Options.http.user_agent
         headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
         headers['From']       ||= Options.authorized_by if Options.authorized_by
 
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
+
+        headers['Cookie'] = effective_cookies.
+            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
+            join( ';' )
+        headers.delete( 'Cookie' ) if headers['Cookie'].empty?
+
+        headers
     end
 
     private
 
-    def fill_in_data_from_typhoeus_response( response )
-        @headers_string = response.debug_info.header_out.first
-        @effective_body = response.debug_info.data_out.first
+    def client_run
+        typhoeus_request = to_typhoeus
+
+        response_body_buffer = ''
+        set_body_reader( typhoeus_request, response_body_buffer )
+
+        typhoeus_response = typhoeus_request.run
+
+        if typhoeus_request.options[:maxfilesize]
+            typhoeus_response.options[:response_body] = response_body_buffer
+        end
+
+        fill_in_data_from_typhoeus_response typhoeus_response
+
+        Response.from_typhoeus( typhoeus_response )
     end
 
-    def client_run
-        response = to_typhoeus.run
-        fill_in_data_from_typhoeus_response response
+    def fill_in_data_from_typhoeus_response( response )
+        # Only grab the last data.
+        # In case of CONNECT calls for HTTPS via proxy the first data will be
+        # the proxy-related stuff.
+        @headers_string = response.debug_info.header_out.last
+        @effective_body = response.debug_info.data_out.last
+    end
 
-        Response.from_typhoeus( response )
+    def set_body_reader( typhoeus_request, buffer )
+        return if !typhoeus_request.options[:maxfilesize]
+
+        aborted = nil
+        typhoeus_request.on_body do |chunk|
+            next aborted if aborted
+
+            if buffer.size >= typhoeus_request.options[:maxfilesize]
+                buffer.clear
+                next aborted = :abort
+            end
+
+            buffer << chunk
+        end
     end
 
 end

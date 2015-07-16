@@ -7,9 +7,13 @@
                     <%= html_encode page.title %>
                     -
                     <%= page.forms.size %> forms,
-                    <%= page.links.size %> links and
-                    <%= page.cookies.size %> cookies
+                    <%= page.links.size %> links,
+                    <%= page.cookies.size %> cookies,
+                    <%= page.jsons.size %> JSONs and
+                    <%= page.xmls.size %> XMLs.
+
                     <br/>
+
                     (<%= page.url %>)
                 </p>
             </div>
@@ -53,6 +57,34 @@
                                 <b>Action: <%= html_encode cookie.action %></b>
                             <ul>
                                 <% cookie.inputs.each do |k, v| %>
+                                    <li><%= k.inspect %> = <%= v.inspect %></li>
+                                <% end %>
+                            </ul>
+                            </p>
+                            <hr />
+                        <% end %>
+                    </div>
+                    <div class="well links">
+                        <h2>JSONs</h2>
+                        <% page.jsons.each do |json| %>
+                            <p>
+                                <b>Action: <%= html_encode json.action %></b>
+                            <ul>
+                                <% json.inputs.each do |k, v| %>
+                                    <li><%= k.inspect %> = <%= v.inspect %></li>
+                                <% end %>
+                            </ul>
+                            </p>
+                            <hr />
+                        <% end %>
+                    </div>
+                    <div class="well links">
+                        <h2>XMLs</h2>
+                        <% page.xmls.each do |xml| %>
+                            <p>
+                                <b>Action: <%= html_encode xml.action %></b>
+                            <ul>
+                                <% xml.inputs.each do |k, v| %>
                                     <li><%= k.inspect %> = <%= v.inspect %></li>
                                 <% end %>
                             </ul>

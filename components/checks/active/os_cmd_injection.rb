@@ -9,7 +9,7 @@
 # Simple OS command injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.4
+# @version 0.2.5
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see https://www.owasp.org/index.php/OS_Command_Injection
@@ -19,7 +19,7 @@ class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
         @options ||= {
             regexp: {
                 unix: [
-                    /(root|mail):.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
                 ],
                 windows: [
                     /\[boot loader\].*\[operating systems\]/im,
@@ -73,7 +73,7 @@ Tries to find Operating System command injections.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.4',
+            version:     '0.2.5',
             platforms:   payloads.keys,
 
             issue:       {

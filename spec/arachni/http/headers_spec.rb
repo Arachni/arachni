@@ -1,6 +1,24 @@
 require 'spec_helper'
 
 describe Arachni::HTTP::Headers do
+
+    context 'when it includes multiple same names that differ in case' do
+        subject do
+            described_class.new( cookies )
+        end
+        let(:cookies) do
+            {
+                'set-cookie' => 'mycookie1=myvalue1',
+                'Set-Cookie' => 'mycookie2=myvalue2',
+                'SET-COOKIE' => 'mycookie3=myvalue3'
+            }
+        end
+
+        it 'merges them into an array' do
+            subject['set-cookie'].should == cookies.values
+        end
+    end
+
     describe '#delete' do
         it 'deleted a header field' do
             h = described_class.new( 'x-my-field' => 'stuff' )

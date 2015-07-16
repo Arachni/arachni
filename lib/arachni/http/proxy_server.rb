@@ -21,11 +21,17 @@ module HTTP
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ProxyServer < WEBrick::HTTPProxyServer
 
-    INTERCEPTOR_CERTIFICATE =
-        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-cert.pem'
+    CACHE = {
+        format_field_name: Support::Cache::LeastRecentlyPushed.new( 100 )
+    }
 
-    INTERCEPTOR_PRIVATE_KEY =
-        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-pkey.pem'
+    SKIP_HEADERS = Set.new( HopByHop | ['content-encoding'] )
+
+    INTERCEPTOR_CA_CERTIFICATE =
+        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-cacert.pem'
+
+    INTERCEPTOR_CA_KEY =
+        File.dirname( __FILE__ ) + '/proxy_server/ssl-interceptor-cakey.pem'
 
     # @param   [Hash]  options
     # @option options   [String]    :address    ('0.0.0.0')
@@ -168,8 +174,12 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see #service
     # @see Webrick::HTTPProxyServer#service
     def do_CONNECT( req, res )
+        host = req.unparsed_uri.split(':').first
+
         req.instance_variable_set( :@unparsed_uri, "127.0.0.1:#{interceptor_port}" )
-        start_ssl_interceptor
+
+        start_ssl_interceptor( host )
+
         super( req, res )
     end
 
@@ -177,8 +187,10 @@ class ProxyServer < WEBrick::HTTPProxyServer
     #   Merges the given HTTP options with some default ones.
     def http_opts( options = {} )
         options.merge(
+            performer:         self,
+
             # Don't follow redirects, the client should handle this.
-            follow_location: false,
+            follow_location:   false,
 
             # Set the HTTP request timeout.
             timeout:           @options[:timeout],
@@ -198,18 +210,54 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # Starts the SSL interceptor proxy server.
     #
     # The interceptor will listen on {#interceptor_port}.
-    def start_ssl_interceptor
+    def start_ssl_interceptor( host )
         return @interceptor if @interceptor
+
+        ca     = OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CA_CERTIFICATE ) )
+        ca_key = OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_CA_KEY ) )
+
+        keypair = OpenSSL::PKey::RSA.new( 4096 )
+
+        req            = OpenSSL::X509::Request.new
+        req.version    = 0
+        req.subject    = OpenSSL::X509::Name.parse(
+            "CN=#{host}/subjectAltName=#{host}/O=Arachni/OU=Proxy/L=Athens/ST=Attika/C=GR"
+        )
+        req.public_key = keypair.public_key
+        req.sign( keypair, OpenSSL::Digest::SHA1.new )
+
+        cert            = OpenSSL::X509::Certificate.new
+        cert.version    = 2
+        cert.serial     = rand( 999999 )
+        cert.not_before = Time.new
+        cert.not_after  = cert.not_before + (60 * 60 * 24 * 365)
+        cert.public_key = req.public_key
+        cert.subject    = req.subject
+        cert.issuer     = ca.subject
+
+        ef = OpenSSL::X509::ExtensionFactory.new
+        ef.subject_certificate = cert
+        ef.issuer_certificate  = ca
+
+        cert.extensions = [
+            ef.create_extension( 'basicConstraints', 'CA:FALSE', true ),
+            ef.create_extension( 'extendedKeyUsage', 'serverAuth', false ),
+            ef.create_extension( 'subjectKeyIdentifier', 'hash' ),
+            ef.create_extension( 'authorityKeyIdentifier', 'keyid:always,issuer:always' ),
+            ef.create_extension( 'keyUsage',
+                'nonRepudiation,digitalSignature,keyEncipherment,dataEncipherment',
+                true
+            )
+        ]
+        cert.sign( ca_key, OpenSSL::Digest::SHA1.new )
 
         # The interceptor is only used for SSL decryption/encryption, the actual
         # proxy functionality is forwarded to the plain proxy server.
         @interceptor = self.class.new(
             address:        '127.0.0.1',
             port:            interceptor_port,
-            ssl_certificate:
-                OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CERTIFICATE ) ),
-            ssl_private_key:
-                OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_PRIVATE_KEY ) ),
+            ssl_certificate: cert,
+            ssl_private_key: keypair,
             service_handler: method( :proxy_service )
         )
 
@@ -283,22 +331,19 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @param    [#[]=]    dst
     #   Headers of the forwarded/proxy response.
     def choose_header( src, dst )
-        connections = split_field( [src['connection']].flatten.first )
+        connections = Set.new( split_field( [src['connection']].flatten.first ) )
 
         src.each do |key, value|
             key = key.downcase
+            next if SKIP_HEADERS.include?( key ) || connections.include?( key )
 
-            if HopByHop.member?( key )          || # RFC2616: 13.5.1
-                connections.member?( key )      || # RFC2616: 14.10
-                key == 'content-encoding'
-                @logger.debug( "choose_header: `#{key}: #{value}'" )
-                next
-            end
-
-            field = key.to_s.split( /_|-/ ).
-                map { |segment| segment.capitalize }.join( '-' )
-            dst[field] = value
+            dst[self.class.format_field_name( key )] = value
         end
+    end
+
+    def self.format_field_name( field )
+        CACHE[:format_field_name][field] ||=
+            field.split( /_|-/ ).map( &:capitalize ).join( '-' )
     end
 
 end

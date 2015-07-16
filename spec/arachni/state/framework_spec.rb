@@ -52,8 +52,8 @@ describe Arachni::State::Framework do
             context Symbol do
                 context 'and it exists in #available_status_messages' do
                     it 'pushes the associated message to #status_messages' do
-                        subject.add_status_message :pausing
-                        subject.status_messages.should == [subject.available_status_messages[:pausing]]
+                        subject.add_status_message :suspending
+                        subject.status_messages.should == [subject.available_status_messages[:suspending]]
                     end
                 end
 
@@ -631,12 +631,6 @@ describe Arachni::State::Framework do
                 it 'sets the #status to :pausing' do
                     subject.pause( :a_caller, false )
                     subject.status.should == :pausing
-                end
-
-                it 'sets the status message to :pausing' do
-                    subject.pause( :a_caller, false )
-                    subject.status_messages.should ==
-                        [subject.available_status_messages[:pausing]]
                 end
 
                 it 'returns true' do

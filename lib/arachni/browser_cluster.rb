@@ -6,8 +6,6 @@
     web site for more information on licensing and terms of use.
 =end
 
-require 'monitor'
-
 module Arachni
 
 # Real browser driver providing DOM/JS/AJAX support.
@@ -63,10 +61,6 @@ class BrowserCluster
     #   List of crawled URLs with their HTTP codes.
     attr_reader :sitemap
 
-    # @return   [String]
-    #   Javascript token used to namespace the custom JS environment.
-    attr_reader :javascript_token
-
     # @return   [Array<Worker>]
     #   Worker pool.
     attr_reader :workers
@@ -87,6 +81,8 @@ class BrowserCluster
     #
     # @raise    ArgumentError   On missing `:handler` option.
     def initialize( options = {} )
+        super()
+
         {
             pool_size: Options.browser_cluster.pool_size
         }.merge( options ).each do |k, v|
@@ -122,13 +118,14 @@ class BrowserCluster
         @mutex       = Monitor.new
         @done_signal = Queue.new
 
-        # Javascript token to share across all workers, this needs to be static
-        # because of the browsers' disk-cache which leads to cached responses
-        # being used between runs.
-        @javascript_token = 'arachni_js_namespace'
-
         @consumed_pids = []
         initialize_workers
+    end
+
+    # @return   [String]
+    #   Javascript token used to namespace the custom JS environment.
+    def javascript_token
+        Browser::Javascript::TOKEN
     end
 
     # @note Operates in non-blocking mode.
@@ -154,6 +151,8 @@ class BrowserCluster
         synchronize do
             print_debug "Queueing: #{job}"
 
+            notify_on_queue job
+
             @pending_job_counter  += 1
             @pending_jobs[job.id] += 1
             @job_callbacks[job.id] = block if block
@@ -167,6 +166,14 @@ class BrowserCluster
 
         nil
     end
+
+    # def on_queue( &block )
+        # synchronize { @on_queue << block }
+    # end
+
+    # def on_job_done( &block )
+        # synchronize { @on_job_done << block }
+    # end
 
     # @param    [Page, String, HTTP::Response]  resource
     #   Resource to explore, if given a `String` it will be treated it as a URL
@@ -205,6 +212,8 @@ class BrowserCluster
     def job_done( job )
         synchronize do
             print_debug "Job done: #{job}"
+
+            notify_on_job_done job
 
             if !job.never_ending?
                 @skip_states_per_job.delete job.id
@@ -299,6 +308,7 @@ class BrowserCluster
     # @private
     def pop
         {} while job_done?( job = @jobs.pop )
+        notify_on_pop job
         job
     end
 
@@ -365,6 +375,23 @@ class BrowserCluster
 
     private
 
+    def notify_on_queue( job )
+        return if !@on_queue
+        @on_queue.call job
+    end
+
+    def notify_on_job_done( job )
+        return if !@on_job_done
+
+        @on_job_done.call job
+    end
+
+    def notify_on_pop( job )
+        return if !@on_pop
+
+        @on_pop.call job
+    end
+
     def fail_if_shutdown
         fail Error::AlreadyShutdown, 'Cluster has been shut down.' if @shutdown
     end
@@ -389,10 +416,9 @@ class BrowserCluster
         @workers = []
         pool_size.times do |i|
             worker = Worker.new(
-                javascript_token: @javascript_token,
-                master:           self,
-                width:            Options.browser_cluster.screen_width,
-                height:           Options.browser_cluster.screen_height
+                master: self,
+                width:  Options.browser_cluster.screen_width,
+                height: Options.browser_cluster.screen_height
             )
             @workers << worker
             @consumed_pids << worker.pid

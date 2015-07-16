@@ -62,15 +62,6 @@ describe Arachni::Element::Cookie::DOM do
         end
     end
 
-    %w(encode decode).each do |m|
-        describe "##{m}" do
-            it "delegates to #{Arachni::Element::Cookie}.#{m}" do
-                Arachni::Element::Cookie.stub(m) { |arg| "#{arg}1" }
-                subject.send( m, 'blah' ).should == 'blah1'
-            end
-        end
-    end
-
     describe '#type' do
         it 'returns :cookie_dom' do
             subject.type.should == :cookie_dom

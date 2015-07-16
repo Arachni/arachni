@@ -98,6 +98,29 @@ describe Arachni::HTTP::Request do
             r.parameters.should == { 'test' => 'blah' }
         end
 
+        describe :fingerprint do
+            context true do
+                it 'enables fingerprinting' do
+                    r = described_class.new( options.merge( fingerprint: true ) )
+                    r.fingerprint?.should be_true
+                end
+            end
+
+            context false do
+                it 'disables fingerprinting' do
+                    r = described_class.new( options.merge( fingerprint: false ) )
+                    r.fingerprint?.should_not be_true
+                end
+            end
+
+            context 'nil' do
+                it 'enables fingerprinting' do
+                    r = described_class.new( options.merge( fingerprint: nil ) )
+                    r.fingerprint?.should be_true
+                end
+            end
+        end
+
         context 'when url is not a String' do
             it 'raises ArgumentError' do
                 raised = false

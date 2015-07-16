@@ -24,8 +24,11 @@ describe Arachni::RPC::Server::ActiveOptions do
                 },
                 'datastore' => { 'key' => 'val' },
                 'http'      => {
-                    'cookies'       => { 'name' => 'value' },
-                    'cookie_string' => 'name3=value3'
+                    'cookies'       => {
+                        'name'  => 'value',
+                        'name2' => 'value2'
+                    },
+                    'cookie_string' => 'name3=value3;name4=value4'
                 }
             }
 
@@ -44,8 +47,10 @@ describe Arachni::RPC::Server::ActiveOptions do
             h['datastore'].should == opts['datastore']
 
             @instance.service.cookies.map { |c| Arachni::Cookie.from_rpc_data c }.should == [
-                Arachni::Cookie.new( url: opts['url'], inputs: opts['http']['cookies'] ),
-                Arachni::Cookie.new( url: opts['url'], inputs: { name3: 'value3' } )
+                Arachni::Cookie.new( url: opts['url'], inputs: { 'name'  => 'value' } ),
+                Arachni::Cookie.new( url: opts['url'], inputs: { 'name2'  => 'value2' } ),
+                Arachni::Cookie.new( url: opts['url'], inputs: { 'name3'  => 'value3' } ),
+                Arachni::Cookie.new( url: opts['url'], inputs: { 'name4'  => 'value4' } )
             ]
         end
     end

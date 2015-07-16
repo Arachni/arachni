@@ -99,9 +99,9 @@ describe Arachni::Trainer do
                 @framework.pages.size.should == 0
 
                 Arachni::HTTP::Client.request( @url + '/elems', train: true )
-                @framework.run
 
-                @framework.pages.size.should == 1
+                @trainer.should receive(:push)
+                @framework.run
             end
 
             context 'when a redirection leads to new elements' do

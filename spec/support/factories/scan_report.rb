@@ -1,13 +1,15 @@
 Factory.define :report_data do
+    issues = Arachni::Data::Issues.new
+
+    (0..10).map do |i|
+        issues << Factory[:passive_issue].tap { |issue| issue.vector.action += i.to_s }
+        issues << Factory[:active_issue].tap { |issue| issue.vector.action += i.to_s }
+    end
+
     {
         options:  Arachni::Options.to_hash,
         sitemap:  { Arachni::Options.url => 200 },
-        issues:   (0..10).map do |i|
-            [
-                Factory[:passive_issue].tap { |issue| issue.vector.action += i.to_s },
-                Factory[:active_issue].tap { |issue| issue.vector.action += i.to_s }
-            ]
-        end.flatten,
+        issues:   issues,
         plugins:  {
             plugin_name: {
                 results: 'stuff',

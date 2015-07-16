@@ -140,7 +140,11 @@ class Client
         headers.merge!( Options.http.request_headers )
 
         cookie_jar.load( Options.http.cookie_jar_filepath ) if Options.http.cookie_jar_filepath
-        update_cookies( Options.http.cookies )
+
+        Options.http.cookies.each do |name, value|
+            update_cookies( name => value )
+        end
+
         update_cookies( Options.http.cookie_string ) if Options.http.cookie_string
 
         reset_burst_info
@@ -465,13 +469,29 @@ class Client
         @running = true
 
         reset_burst_info
+
+        # Lots of new objects are about to be generated, make sure that old ones
+        # have been collected to prevent RAM spikes.
+        gc
+
         client_run
+
+        # Collect the new objects as well.
+        gc
 
         @queue_size = 0
         @running    = false
 
         @burst_runtime += Time.now - @burst_runtime_start
         @total_runtime += @burst_runtime
+    end
+
+    def gc
+        # Don't GC after every little run, only do it when we're past the
+        # maximum queue size.
+        return if @queue_size < Options.http.request_queue_size
+
+        GC.start
     end
     
     def reset_burst_info
@@ -501,46 +521,12 @@ class Client
             print_debug_level_3 "Headers: #{request.headers}"
             print_debug_level_3 "Cookies: #{request.cookies}"
             print_debug_level_3 "Train?: #{request.train?}"
+            print_debug_level_3 "Fingerprint?: #{request.fingerprint?}"
             print_debug_level_3  '------------'
         end
 
         if add_callbacks
-            request.on_complete do |response|
-                synchronize do
-                    @response_count          += 1
-                    @burst_response_count    += 1
-                    @burst_response_time_sum += response.time
-                    @total_response_time_sum += response.time
-
-                    if Platform::Manager.fingerprint?( response )
-                        # Force a fingerprint by converting the Response to a Page object.
-                        response.to_page
-                    end
-
-                    notify_on_complete( response )
-
-                    parse_and_set_cookies( response ) if request.update_cookies?
-
-                    if debug_level_3?
-                        print_debug_level_3 '------------'
-                        print_debug_level_3 "Got response for request ID#: #{response.request.id}"
-                        print_debug_level_3 "Performer: #{response.request.performer.inspect}"
-                        print_debug_level_3 "Status: #{response.code}"
-                        print_debug_level_3 "Code: #{response.return_code}"
-                        print_debug_level_3 "Message: #{response.return_message}"
-                        print_debug_level_3 "URL: #{response.url}"
-                        print_debug_level_3 "Headers:\n#{response.headers_string}"
-                        print_debug_level_3 "Parsed headers: #{response.headers}"
-                    end
-
-                    if response.timed_out?
-                        print_debug_level_3 "Request timed-out! -- ID# #{response.request.id}"
-                        @time_out_count += 1
-                    end
-
-                    print_debug_level_3 '------------'
-                end
-            end
+            request.on_complete( &method(:global_on_complete) )
         end
 
         synchronize { @request_count += 1 }
@@ -559,6 +545,47 @@ class Client
         request
     end
 
+    def global_on_complete( response )
+        request = response.request
+
+        synchronize do
+            @response_count          += 1
+            @burst_response_count    += 1
+            @burst_response_time_sum += response.time
+            @total_response_time_sum += response.time
+
+            if response.request.fingerprint? &&
+                Platform::Manager.fingerprint?( response )
+
+                # Force a fingerprint by converting the Response to a Page object.
+                response.to_page
+            end
+
+            notify_on_complete( response )
+
+            parse_and_set_cookies( response ) if request.update_cookies?
+
+            if debug_level_3?
+                print_debug_level_3 '------------'
+                print_debug_level_3 "Got response for request ID#: #{response.request.id}\n#{response.request}"
+                print_debug_level_3 "Performer: #{response.request.performer.inspect}"
+                print_debug_level_3 "Status: #{response.code}"
+                print_debug_level_3 "Code: #{response.return_code}"
+                print_debug_level_3 "Message: #{response.return_message}"
+                print_debug_level_3 "URL: #{response.url}"
+                print_debug_level_3 "Headers:\n#{response.headers_string}"
+                print_debug_level_3 "Parsed headers: #{response.headers}"
+            end
+
+            if response.timed_out?
+                print_debug_level_3 "Request timed-out! -- ID# #{response.request.id}"
+                @time_out_count += 1
+            end
+
+            print_debug_level_3 '------------'
+        end
+    end
+
     def client_initialize
         @hydra = Typhoeus::Hydra.new(
             max_concurrency: Options.http.request_concurrency || MAX_CONCURRENCY
@@ -566,7 +593,8 @@ class Client
     end
 
     def client_run
-        @hydra.run
+        # Can get Ethon select errors.
+        exception_jail( false ) { @hydra.run }
     end
 
     def client_abort

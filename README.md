@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>1.1</td>
+        <td>1.2</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -42,7 +42,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td>Dual-licensed (Apache License v2.0/Commercial) - (see LICENSE file)</td>
+        <td>Arachni Public Source License v1.0 - (see LICENSE file)</td>
     </tr>
 </table>
 
@@ -50,9 +50,8 @@
 
 ## Synopsis
 
-Arachni is an Open Source, feature-full, modular, high-performance Ruby framework
-aimed towards helping penetration testers and administrators evaluate the security
-of web applications.
+Arachni is a feature-full, modular, high-performance Ruby framework aimed towards
+helping penetration testers and administrators evaluate the security of web applications.
 
 It is smart, it trains itself by monitoring and learning from the web application's
 behavior during the scan process and is able to perform meta-analysis using a number of
@@ -325,15 +324,22 @@ Currently, the following platforms can be identified:
     - Nginx
     - Tomcat
     - Jetty
+    - Gunicorn
 - Programming languages
     - PHP
     - ASP
     - ASPX
-    - JSP
+    - Java
     - Python
     - Ruby
 - Frameworks
     - Rack
+    - CakePHP
+    - Rails
+    - Django
+    - ASP.NET MVC
+    - JSF
+    - CherryPy
 
 The user also has the option of specifying extra platforms (like a DB server)
 in order to help the system be as efficient as possible. Alternatively, fingerprinting
@@ -380,23 +386,23 @@ Active checks engage the web application via its inputs.
     - PHP
     - Ruby
     - Python
-    - JSP
-    - ASP.NET
+    - Java
+    - ASP
 - Blind code injection using timing attacks (`code_injection_timing`).
     - PHP
     - Ruby
     - Python
-    - JSP
-    - ASP.NET
+    - Java
+    - ASP
 - LDAP injection (`ldap_injection`).
 - Path traversal (`path_traversal`).
     - *nix
     - Windows
-    - Tomcat
+    - Java
 - File inclusion (`file_inclusion`).
     - *nix
     - Windows
-    - Tomcat
+    - Java
     - PHP
     - Perl
 - Response splitting (`response_splitting`).
@@ -441,6 +447,7 @@ Passive checks look for the existence of files, folders and signatures.
 - Allowed HTTP methods (`allowed_methods`).
 - Back-up files (`backup_files`).
 - Backup directories (`backup_directories`)
+- Common administration interfaces (`common_admin_interfaces`).
 - Common directories (`common_directories`).
 - Common files (`common_files`).
 - HTTP PUT (`http_put`).
@@ -514,6 +521,9 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
     which are within the scan scope.
 - Headers collector (`headers_collector`) -- Collects response headers based on specified criteria.
 - Exec (`exec`) -- Calls external executables at different scan stages.
+- Metrics (`metrics`) -- Captures metrics about multiple aspects of the scan and the web application.
+- Restrict to DOM state (`restrict_to_dom_state`) -- Restricts the audit to a single page's DOM
+    state, based on a URL fragment.
 
 ##### Defaults
 
@@ -522,7 +532,6 @@ Default plugins will run for every scan and are placed under `/plugins/defaults/
 - AutoThrottle (`autothrottle`) -- Dynamically adjusts HTTP throughput during the scan for
     maximum bandwidth utilization.
 - Healthmap (`healthmap`) -- Generates sitemap showing the health of each crawled/audited URL
-- Resolver (`resolver`) -- Resolves vulnerable hostnames to IP addresses.
 
 ###### Meta
 
@@ -594,5 +603,4 @@ need to follow in order to contribute code:
 
 ## License
 
-Dual-licensed (Apache License v2.0/Commercial) -- please see the _LICENSE_ file
-for more information.
+Arachni Public Source License v1.0 -- please see the _LICENSE_ file for more information.

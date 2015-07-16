@@ -6,24 +6,16 @@
     web site for more information on licensing and terms of use.
 =end
 
-#
 # Extracts meta refresh URLs.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.1.2
-#
+# @version 0.2
 class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Base
 
-    #
-    # Returns an array of paths as plain strings
-    #
-    # @param    [Nokogiri]  doc  Nokogiri document
-    #
-    # @return   [Array<String>]  paths
-    #
-    def run( doc )
-        doc.search( "//meta[
+    def run
+        return [] if !includes?( 'http-equiv' )
+
+        document.search( "//meta[
                 translate(
                     @http-equiv,
                         'ABCDEFGHIJKLMNOPQRSTUVWXYZ',

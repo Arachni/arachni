@@ -6,24 +6,16 @@
     web site for more information on licensing and terms of use.
 =end
 
-#
 # Extracts paths from anchor elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.1.1
-#
+# @version 0.2
 class Arachni::Parser::Extractors::Areas < Arachni::Parser::Extractors::Base
 
-    #
-    # Returns an array of paths as plain strings
-    #
-    # @param    [Nokogiri]  doc  Nokogiri document
-    #
-    # @return   [Array<String>]  paths
-    #
-    def run( doc )
-        doc.search( '//area[@href]' ).map { |a| a['href'] }
+    def run
+        return [] if !includes?( 'area' ) || !includes?( 'href' )
+
+        document.search( '//area[@href]' ).map { |a| a['href'] }
     end
 
 end

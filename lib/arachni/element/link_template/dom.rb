@@ -68,22 +68,6 @@ class DOM < Base
         LinkTemplate.extract_inputs( url, templates )
     end
 
-    def encode( string )
-        self.class.encode( string )
-    end
-
-    def self.encode( string )
-        string
-    end
-
-    def decode( *args )
-        self.class.decode( *args )
-    end
-
-    def self.decode( *args )
-        Link.decode( *args )
-    end
-
     def type
         self.class.type
     end

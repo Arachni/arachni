@@ -9,14 +9,14 @@
 # Logs cookies that are accessible via JavaScript.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.2
+# @version 0.1.3
 class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
 
     def run
         page.cookies.each do |cookie|
             next if cookie.http_only? || audited?( cookie.name )
 
-            log( vector: cookie )
+            log( vector: cookie, proof: cookie.source )
             audited( cookie.name )
         end
     end
@@ -27,7 +27,7 @@ class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
             description: %q{Logs cookies that are accessible via JavaScript.},
             elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
 
             issue:       {
                 name:            %q{HttpOnly cookie},

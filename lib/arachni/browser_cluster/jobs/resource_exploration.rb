@@ -36,15 +36,6 @@ class ResourceExploration < Job
         browser.trigger_events
     end
 
-    def resource=( resource )
-        # Get a copy of the page with the caches cleared, this way when the
-        # modules (or anything else) lazy-load elements and populate the caches
-        # there won't be any lingering references to them from the more time
-        # consuming browser analysis.
-        resource = resource.dup if resource.is_a? Page
-        @resource = resource
-    end
-
     def dup
         super.tap { |j| j.resource = resource }
     end

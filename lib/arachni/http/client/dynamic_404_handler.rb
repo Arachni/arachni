@@ -161,16 +161,14 @@ class Dynamic404Handler
             current_signature = (preliminary_signatures_for( url )[i] ||= {})
 
             PRECISION.times do
-                Client.get( generator.call,
-                            # This is important, helps us reduce waiting callers.
-                            high_priority:   true,
-                            performer:       self
-                ) do |c_res|
+                request( generator.call ) do |c_res|
                     next if corrupted
 
+                    print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
+
                     # Well, bad luck, bail out to avoid FPs.
-                    if c_res.code == 0
-                        print_debug "#{__method__} [corrupted]: #{url} #{block}"
+                    if corrupted_response?( c_res )
+                        print_debug "#{__method__} [corrupted]: #{url} #{c_res.code} #{block}"
                         corrupted = true
                         next clear_data_for( url )
                     end
@@ -217,15 +215,13 @@ class Dynamic404Handler
             current_signature = (advanced_signatures_for( url )[i] ||= {})
 
             PRECISION.times do
-                Client.get( generator.call,
-                            # This is important, helps us reduce waiting callers.
-                            high_priority:   true,
-                            performer:       self
-                ) do |c_res|
+                request( generator.call ) do |c_res|
                     next if corrupted
 
+                    print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
+
                     # Well, bad luck, bail out to avoid FPs.
-                    if c_res.code == 0
+                    if corrupted_response?( c_res )
                         print_debug "#{__method__} [corrupted]: #{url} #{block}"
                         corrupted = true
                         next clear_data_for( url )
@@ -305,7 +301,20 @@ class Dynamic404Handler
     def needs_advanced_analysis?( url )
         uri = uri_parse( url )
         resource_name = uri.resource_name.to_s.split('.').tap(&:pop).join('.')
-        !!(!resource_name.empty? || uri.resource_extension)
+        !!(
+            !resource_name.empty? ||
+            uri.resource_extension ||
+            uri.resource_name.to_s.include?( '~' )
+        )
+    end
+
+    # If this is neither a regular 404 nor a 202 the server probably freaked out
+    # -- 500 errors under stress and the like.
+    #
+    # In that case we should bail out to avoid corrupted signatures which can
+    # lead to FPs.
+    def corrupted_response?( response )
+        response.code != 404 && response.code != 200
     end
 
     def url_for( url )
@@ -387,7 +396,30 @@ class Dynamic404Handler
             probes << proc { up_to_path + random_string + '.' + resource_extension }
         end
 
+        if uri.resource_name.include?( '~' )
+            probes << proc {
+                up_to_path.sub(
+                    uri.resource_name,
+                    resource_name.gsub( '~', '~~' )
+                )
+            }
+        end
+
         probes
+    end
+
+    def request( url, &block )
+        Client.get( url,
+            # This is important, helps us reduce waiting callers.
+            high_priority: true,
+
+            # We're going to be checking for a lot of non-existent resources,
+            # don't bother fingerprinting them
+            fingerprint:   false,
+
+            performer:     self,
+            &block
+        )
     end
 
     def data_for( url )

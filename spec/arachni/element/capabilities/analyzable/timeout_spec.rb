@@ -47,7 +47,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
         context 'when #timing_attack_remark_data is' do
             context 'not nil' do
                 it 'duplicates it' do
-                    h = { stuff: 1 }
+                    h = { stuff: [1] }
 
                     subject.timing_attack_remark_data = h
 
