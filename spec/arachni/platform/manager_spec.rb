@@ -420,7 +420,7 @@ describe Arachni::Platform::Manager do
                  :tomcat, :asp, :aspx, :java, :perl, :php, :python, :ruby, :rack,
                  :sybase, :frontbase, :ingres, :hsqldb, :access, :jetty, :mongodb,
                  :aix, :sql, :nosql, :aspx_mvc, :rails, :django, :gunicorn, :cakephp,
-                 :cherrypy, :jsf].sort
+                 :cherrypy, :symfony, :nette, :jsf].sort
         end
     end
 
