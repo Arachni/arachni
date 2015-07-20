@@ -59,7 +59,9 @@ describe Arachni::Framework::Parts::Platform do
                     aspx_mvc: 'ASP.NET MVC',
                     jsf:      'JavaServer Faces',
                     cherrypy: 'CherryPy',
-                    cakephp:  'CakePHP'
+                    cakephp:  'CakePHP',
+                    symfony:  'Symfony',
+                    nette:  'Nette Framework'
                 }
             }
         end
