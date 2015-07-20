@@ -9,7 +9,7 @@
 module Arachni
 module Platform::Fingerprinters
 
-# Identifies Symfony Framework cookies.
+# Identifies Default Symfony Framework cookie.
 #
 # @author Tomas Dobrotka <tomas@dobrotka.sk>
 #
