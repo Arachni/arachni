@@ -30,7 +30,7 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
             elements:         [Element::Server],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
             version:          '0.2.4',
-            exempt_platforms: [ :ruby, :aspx_mvc, :django, :cakephp, :symfony ],
+            exempt_platforms: [ :ruby, :aspx_mvc, :django, :cakephp ],
 
             issue:       {
                 name:            %q{A backdoor file exists on the server},
