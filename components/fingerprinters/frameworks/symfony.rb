@@ -12,14 +12,14 @@ module Platform::Fingerprinters
 # Identifies Default Symfony Framework cookie.
 #
 # @author Tomas Dobrotka <tomas@dobrotka.sk>
-#
+# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 # @version 0.1
 class Symfony < Platform::Fingerprinter
 
     def run
-        if cookies.include?( 'symfony' )
-            platforms << :php << :symfony
-        end
+        return if !cookies.include?( 'symfony' )
+
+        platforms << :php << :symfony
     end
 
 end
