@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- HTTP
+    - `ProxyServer` -- Updated SSL interception to use different interceptors
+        for each host.
 - Checks
     - Passive
         - `backdoors` -- Updated exempt platforms to all Framework platforms.

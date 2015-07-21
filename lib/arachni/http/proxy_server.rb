@@ -63,6 +63,9 @@ class ProxyServer < WEBrick::HTTPProxyServer
         # Will force the proxy to stfu.
         @logger.close
 
+        @interceptor_ports = {}
+        @interceptors      = {}
+
         super(
             BindAddress:        @options[:address],
             Port:               @options[:port],
@@ -176,7 +179,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     def do_CONNECT( req, res )
         host = req.unparsed_uri.split(':').first
 
-        req.instance_variable_set( :@unparsed_uri, "127.0.0.1:#{interceptor_port}" )
+        req.instance_variable_set( :@unparsed_uri, "127.0.0.1:#{interceptor_port( host )}" )
 
         start_ssl_interceptor( host )
 
@@ -211,7 +214,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
     #
     # The interceptor will listen on {#interceptor_port}.
     def start_ssl_interceptor( host )
-        return @interceptor if @interceptor
+        return @interceptors[host] if @interceptors[host]
 
         ca     = OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CA_CERTIFICATE ) )
         ca_key = OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_CA_KEY ) )
@@ -253,25 +256,25 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
         # The interceptor is only used for SSL decryption/encryption, the actual
         # proxy functionality is forwarded to the plain proxy server.
-        @interceptor = self.class.new(
+        @interceptors[host] = interceptor = self.class.new(
             address:        '127.0.0.1',
-            port:            interceptor_port,
+            port:            interceptor_port( host ),
             ssl_certificate: cert,
             ssl_private_key: keypair,
             service_handler: method( :proxy_service )
         )
 
-        def @interceptor.service( request, response )
+        def interceptor.service( request, response )
             @options[:service_handler].call( request, response )
         end
 
-        @interceptor.start_async
+        interceptor.start_async
     end
 
     # @return    [Integer]
     #   Picks and stores an available port number for the interceptor.
-    def interceptor_port
-        @interceptor_port ||= Utilities.available_port
+    def interceptor_port( host )
+        @interceptor_ports[host] ||= Utilities.available_port
     end
 
     # Communicates with the endpoint webapp and forwards its responses to the
