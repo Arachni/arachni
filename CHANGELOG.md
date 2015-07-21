@@ -2,6 +2,9 @@
 
 ## _Under development_
 
+- Checks
+    - Passive
+        - `backdoors` -- Updated exempt platforms to all Framework platforms.
 - Fingerprinters
     - Added
         - Frameworks
