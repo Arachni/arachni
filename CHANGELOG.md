@@ -3,8 +3,10 @@
 ## _Under development_
 
 - HTTP
-    - `ProxyServer` -- Updated SSL interception to use different interceptors
-        for each host.
+    - `ProxyServer`
+        - Updated SSL interception to use different interceptors for each host.
+        - Shutdown on framework abort, instead of waiting for the user to shutdown
+            the proxy manually.
 - Checks
     - Passive
         - `backdoors` -- Updated exempt platforms to all Framework platforms.

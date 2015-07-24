@@ -114,6 +114,14 @@ class ProxyServer < WEBrick::HTTPProxyServer
         @tokens.max - @tokens.size
     end
 
+    def shutdown
+        @interceptors.each do |_, interceptor|
+            interceptor.shutdown
+        end
+
+        super
+    end
+
     private
 
     # Performs a GET request.

@@ -15,8 +15,6 @@ require 'ostruct'
 # data to {Arachni::Framework#push_to_page_queue} to be audited.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.3.2
 class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     BASEDIR  = "#{File.dirname( __FILE__ )}/proxy/"
@@ -74,7 +72,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info
 
         TemplateScope.get.set :params, {}
-        @server.start
+
+        Thread.new do
+            @server.start
+        end
+
+        wait_while_framework_running
+        @server.shutdown
     end
 
     def clean_up
@@ -493,7 +497,7 @@ a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.3',
+            version:     '0.3.4',
             options:     [
                 Options::Port.new( :port,
                     description: 'Port to bind to.',
