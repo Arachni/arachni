@@ -45,7 +45,7 @@ module Inputtable
     #
     # @return   [Object]
     #
-    # @see  Capabilities::Inputtable#[]
+    # @see  Arachni::Element::Capabilities::Inputtable#[]
     def []( name )
         key, data = find( name )
         data[key]
@@ -65,7 +65,7 @@ module Inputtable
     # @return   [Object]
     #   `value`
     #
-    # @see  Capabilities::Inputtable#[]=
+    # @see  Arachni::Element::Capabilities::Inputtable#[]=
     def []=( name, value )
         @inputs = @inputs.dup
         key, data = find( name )
@@ -80,11 +80,11 @@ module Inputtable
     # Overrides {Capabilities::Inputtable#update} to allow for non-string data
     # of variable depth.
     #
-    # @param    (see Capabilities::Inputtable#update)
-    # @return   (see Capabilities::Inputtable#update)
-    # @raise    (see Capabilities::Inputtable#update)
+    # @param    (see Arachni::Element::Capabilities::Inputtable#update)
+    # @return   (see Arachni::Element::Capabilities::Inputtable#update)
+    # @raise    (see Arachni::Element::Capabilities::Inputtable#update)
     #
-    # @see  Capabilities::Inputtable#update
+    # @see  Arachni::Element::Capabilities::Inputtable#update
     def update( hash )
         traverse_data hash do |path, value|
             self[path] = value

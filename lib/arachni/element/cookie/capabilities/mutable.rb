@@ -17,15 +17,15 @@ module Capabilities
 module Mutable
     include Arachni::Element::Capabilities::Mutable
 
-    # Overrides {Capabilities::Mutable#each_mutation} to handle cookie-specific
+    # Overrides {Arachni::Element::Capabilities::Mutable#each_mutation} to handle cookie-specific
     # limitations and the {Arachni::OptionGroups::Audit#cookies_extensively} option.
     #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
+    # @param (see Arachni::Element::Capabilities::Mutable#each_mutation)
+    # @return (see Arachni::Element::Capabilities::Mutable#each_mutation)
+    # @yield (see Arachni::Element::Capabilities::Mutable#each_mutation)
+    # @yieldparam (see Arachni::Element::Capabilities::Mutable#each_mutation)
     #
-    # @see Capabilities::Mutable#each_mutation
+    # @see Arachni::Element::Capabilities::Mutable#each_mutation
     def each_mutation( payload, options = {}, &block )
         options              = prepare_mutation_options( options )
         parameter_names      = options.delete( :parameter_names )

@@ -33,8 +33,8 @@ module Auditable
         end
     end
 
-    # @param   (see Capabilities::Auditable#audit_id)
-    # @return  (see Capabilities::Auditable#audit_id)
+    # @param   (see Arachni::Element::Capabilities::Auditable#audit_id)
+    # @return  (see Arachni::Element::Capabilities::Auditable#audit_id)
     def audit_id( payload = nil )
         force_train? ? id : super( payload )
     end
