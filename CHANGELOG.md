@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.2.1 _(July 25, 2015)_
 
 - HTTP
     - `ProxyServer`
