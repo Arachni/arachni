@@ -1,5 +1,21 @@
 # ChangeLog
 
+## 1.2.1 _(July 25, 2015)_
+
+- HTTP
+    - `ProxyServer`
+        - Updated SSL interception to use different interceptors for each host.
+        - Shutdown on framework abort, instead of waiting for the user to shutdown
+            the proxy manually.
+- Checks
+    - Passive
+        - `backdoors` -- Updated exempt platforms to all Framework platforms.
+- Fingerprinters
+    - Added
+        - Frameworks
+            - Nette
+            - Symphony
+
 ## 1.2 _(July 16, 2015)_
 
 - Switched to Arachni Public Source License v1.0.

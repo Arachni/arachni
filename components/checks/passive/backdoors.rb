@@ -29,8 +29,8 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
             description:      %q{Tries to find common backdoors on the server.},
             elements:         [Element::Server],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:          '0.2.4',
-            exempt_platforms: [ :ruby, :aspx_mvc, :django, :cakephp ],
+            version:          '0.2.5',
+            exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {
                 name:            %q{A backdoor file exists on the server},

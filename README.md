@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>1.2</td>
+        <td>1.2.1</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -340,6 +340,8 @@ Currently, the following platforms can be identified:
     - ASP.NET MVC
     - JSF
     - CherryPy
+    - Nette
+    - Symfony
 
 The user also has the option of specifying extra platforms (like a DB server)
 in order to help the system be as efficient as possible. Alternatively, fingerprinting
