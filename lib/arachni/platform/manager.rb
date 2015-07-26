@@ -167,7 +167,7 @@ class Manager
         rack:     'Rack',
         django:   'Django',
         cakephp:  'CakePHP',
-        nette:  'Nette Framework',
+        nette:    'Nette',
         symfony:  'Symfony',
         rails:    'Ruby on Rails',
         aspx_mvc: 'ASP.NET MVC',
@@ -175,7 +175,6 @@ class Manager
         cherrypy: 'CherryPy'
     }
 
-    # Amount of
     PLATFORM_CACHE_SIZE = 1000
 
     def self.synchronize( &block )

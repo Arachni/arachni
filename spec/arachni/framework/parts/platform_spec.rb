@@ -61,7 +61,7 @@ describe Arachni::Framework::Parts::Platform do
                     cherrypy: 'CherryPy',
                     cakephp:  'CakePHP',
                     symfony:  'Symfony',
-                    nette:  'Nette Framework'
+                    nette:    'Nette'
                 }
             }
         end
