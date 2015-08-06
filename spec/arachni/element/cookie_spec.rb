@@ -247,6 +247,15 @@ describe Arachni::Element::Cookie do
         end
     end
 
+    describe '.decode' do
+        it 'delegates to Form.decode' do
+            string = 'some stuff'
+
+            Arachni::Form.stub(:decode) { 'ret' }.with( string )
+            described_class.decode( string ).should == 'ret'
+        end
+    end
+
     describe '#to_set_cookie' do
         it 'returns a string suitable for the Set-Cookie HTTP response header' do
             c = described_class.new(

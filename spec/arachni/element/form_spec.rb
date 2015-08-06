@@ -1138,6 +1138,10 @@ EOHTML
         it 'form-decodes the passed string' do
             described_class.decode( '%25%20value%5C%20%2B%3D%26%3B' ).should == '% value\ +=&;'
         end
+
+        it 'handles broken encodings' do
+            described_class.decode( '%g' ).should == '%g'
+        end
     end
     describe '#decode' do
         it 'form-decodes the passed string' do

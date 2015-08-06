@@ -403,7 +403,16 @@ class Form < Base
         #
         # @return   [String]
         def decode( string )
-            ::URI.decode_www_form_component string.to_s
+            string = string.to_s
+
+            # Fast, but could throw error.
+            begin
+                ::URI.decode_www_form_component string
+
+            # Slower, but reliable.
+            rescue ArgumentError
+                URI.decode( string.gsub( '+', ' ' ) )
+            end
         end
 
     end

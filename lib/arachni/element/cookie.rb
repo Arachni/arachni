@@ -423,7 +423,7 @@ class Cookie < Base
         #
         # @return   [String]
         def decode( str )
-            ::URI.decode_www_form_component str.to_s
+            Form.decode str
         end
 
         def keep_for_set_cookie
