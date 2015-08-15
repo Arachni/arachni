@@ -549,10 +549,15 @@ class Client
         request = response.request
 
         synchronize do
-            @response_count          += 1
-            @burst_response_count    += 1
-            @burst_response_time_sum += response.time
-            @total_response_time_sum += response.time
+            @response_count       += 1
+            @burst_response_count += 1
+
+            response_time = response.timed_out? ?
+                request.timeout / 1_000.0 :
+                response.time
+
+            @burst_response_time_sum += response_time
+            @total_response_time_sum += response_time
 
             if response.request.fingerprint? &&
                 Platform::Manager.fingerprint?( response )
