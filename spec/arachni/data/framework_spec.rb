@@ -68,8 +68,27 @@ describe Arachni::Data::Framework do
 
     describe '#add_page_to_sitemap' do
         it 'updates the sitemap with the given page' do
+            subject.should receive(:update_sitemap).with( page.dom.url => page.code )
             subject.add_page_to_sitemap page
-            subject.sitemap[page.url].should == page.code
+        end
+    end
+
+    describe '#update_sitemap' do
+        let(:url) { 'http://stuff/' }
+        let(:code) { 201 }
+
+        it 'updates the sitemap with the given data' do
+            subject.update_sitemap( url => code )
+            subject.sitemap[url].should == code
+        end
+
+        context "when the URL includes #{Arachni::Utilities}.random_seed" do
+            let(:url) { super() + Arachni::Utilities.random_seed }
+
+            it 'is ignored' do
+                subject.update_sitemap( url => code )
+                subject.sitemap.should_not include url
+            end
         end
     end
 

@@ -2,11 +2,22 @@
 
 ## Under development
 
+- `Data`
+    - `Framework`
+        - `#update_sitemap` -- Don't push URLs that include the
+            `Utilities.random_seed` to the sitemap to keep noise down.
 - `Element`
     - `Cookie`
         - `.decode` -- Handle broken encodings.
     - `Form`
         - `.decode` -- Handle broken encodings.
+- `Components`
+    - `Checks`
+        - `Active`
+            - `unvalidated_redirect` -- Updated to use `Utilities.random_seed`
+                in the injected URL.
+            - `unvalidated_redirect_dom` -- Updated to use `Utilities.random_seed`
+                in the injected URL.
 
 ## 1.2.1 _(July 25, 2015)_
 
