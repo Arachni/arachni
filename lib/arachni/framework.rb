@@ -141,6 +141,7 @@ class Framework
     #   *  `:messages`      -- {#status_messages}
     def statistics
         {
+            seed:          Utilities.random_seed,
             http:          http.statistics,
             runtime:       @start_datetime ? Time.now - @start_datetime : 0,
             found_pages:   sitemap.size,

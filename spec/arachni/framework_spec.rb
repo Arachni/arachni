@@ -170,6 +170,10 @@ describe Arachni::Framework do
             statistics[:http].should == subject.http.statistics
         end
 
+        it 'includes the current seed' do
+            statistics[:seed].should == Arachni::Utilities.random_seed
+        end
+
         [:found_pages, :audited_pages, :current_page].each  do |k|
             it "includes #{k}" do
                 statistics.should include k
