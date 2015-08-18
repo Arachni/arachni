@@ -108,7 +108,7 @@ module State
 
         state.status = :cleanup
 
-        sitemap.merge!( browser_sitemap )
+        update_sitemap( browser_sitemap )
 
         if shutdown_browsers
             state.set_status_message :browser_cluster_shutdown
