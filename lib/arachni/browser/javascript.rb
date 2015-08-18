@@ -504,13 +504,13 @@ class Javascript
     end
 
     def wrapped_taint_tracer_initializer
-        "/* #{token}_initialize_start */" <<
-            "#{@taint_tracer.stub.function( :initialize, taints )}" <<
+        "/* #{token}_initialize_start */ " <<
+            "#{@taint_tracer.stub.function( :initialize, taints )} " <<
             "/* #{token}_initialize_stop */"
     end
 
     def wrapped_custom_code
-        "/* #{token}_code_start */#{custom_code}/* #{token}_code_stop */"
+        "/* #{token}_code_start */ #{custom_code} /* #{token}_code_stop */"
     end
 
     def js_initialization_signal
