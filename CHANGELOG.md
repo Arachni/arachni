@@ -24,6 +24,8 @@
                 in the injected URL.
             - `unvalidated_redirect_dom` -- Updated to use `Utilities.random_seed`
                 in the injected URL.
+            - `xss_dom_inputs` -- Updated to include `input` buttons instead of
+                just `buttons`.
 
 ## 1.2.1 _(July 25, 2015)_
 

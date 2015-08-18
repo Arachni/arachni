@@ -7,7 +7,7 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
+# @version 0.2.1
 class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
     INPUTS = Set.new([:input, :textarea])
@@ -57,18 +57,28 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
                         b.javascript.taint = self.tag_name
                         b.load page
 
+                        transitions = fill_in_inputs( b )
+                        if transitions.empty?
+                            print_bad "Could not fill in any inputs for '#{event}' on '#{locator}'"
+                            next
+                        end
+
                         transition = b.fire_event( locator, event, value: self.tag )
                         if !transition
                             print_bad "Could not '#{event}' on '#{locator}'"
                             next
                         end
 
+                        transitions << transition
+
                         # Page may be out of scope, some sort of JS redirection.
                         if !(p = b.to_page)
                             print_bad "Could not capture page snapshot after '#{event}' on '#{locator}'"
                         end
 
-                        p.dom.transitions << transition
+                        transitions.each do |t|
+                            p.dom.transitions << t
+                        end
 
                         check_and_log( p )
 
@@ -120,7 +130,6 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
                         end
 
                         check_and_log( p )
-
                         print_status "Finished '#{event}' on '#{locator}' after filling in inputs"
                     end
                 end
@@ -133,6 +142,11 @@ class Arachni::Checks::XssDomInputs < Arachni::Check::Base
 
         INPUTS.each do |tag|
             browser.watir.send("#{tag}s").each do |locator|
+                attrs = Browser::ElementLocator.
+                    from_html( locator.opening_tag ).attributes
+
+                next if attrs['type'] && attrs['type'] != 'text'
+
                 print_status "Filling in '#{locator.opening_tag}'"
 
                 transitions << fill_in_input( browser, locator )
@@ -181,7 +195,7 @@ Injects an HTML element into page text fields, triggers their associated events
 and inspects the DOM for proof of vulnerability.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             elements:    [Element::GenericDOM],
 
             issue:       {

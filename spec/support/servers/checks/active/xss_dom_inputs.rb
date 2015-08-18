@@ -12,6 +12,7 @@ get '/' do
     end
 
     html << "<a href='/with_button'>With button</a>"
+    html << "<a href='/with_input_type_button'>With button</a>"
     html + '</body></html>'
 end
 
@@ -43,6 +44,27 @@ get '/with_button' do
         <body>
             <input id="my-input" type="text">
             <button id="insert">Insert into DOM</button>
+
+            <div id="container">
+            </div>
+
+            <script>
+               document.getElementById('insert').addEventListener('click', function() {
+                    document.getElementById("container").innerHTML =
+                        document.getElementById("my-input").value;
+               });
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/with_input_type_button' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text">
+            <input type="button" id="insert">Insert into DOM</button>
 
             <div id="container">
             </div>
