@@ -15,6 +15,8 @@ describe name_from_filename do
     def text
         s = <<SCRIPT
         <script>
+            /*Blah.1*/
+            //Blah.2
             var path = "test/stuff2.php"
         </script>
 SCRIPT
