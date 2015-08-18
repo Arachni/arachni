@@ -18,6 +18,8 @@
             - Updated sanitization of traced `Event` arguments to extract only
                 certain properties instead of iterating through the whole object.
 - `Components`
+    - `Plugins`
+        - `proxy` -- Fixed bug causing the plugin to hang after proxy server shutdown.
     - `Checks`
         - `Active`
             - `unvalidated_redirect` -- Updated to use `Utilities.random_seed`
