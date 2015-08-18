@@ -348,6 +348,10 @@ class ProxyServer < WEBrick::HTTPProxyServer
             key = key.downcase
             next if SKIP_HEADERS.include?( key ) || connections.include?( key )
 
+            if key == 'cache-control' && value.is_a?( Array )
+                value = value.join( ', ' )
+            end
+
             dst[self.class.format_field_name( key )] = value
         end
     end
