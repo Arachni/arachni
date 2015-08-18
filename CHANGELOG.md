@@ -12,6 +12,11 @@
         - `.decode` -- Handle broken encodings.
     - `Form`
         - `.decode` -- Handle broken encodings.
+- `Browser`
+    - `Javascript`
+        - `TaintTracer`
+            - Updated sanitization of traced `Event` arguments to extract only
+                certain properties instead of iterating through the whole object.
 - `Components`
     - `Checks`
         - `Active`
