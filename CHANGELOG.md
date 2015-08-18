@@ -8,6 +8,7 @@
             `Utilities.random_seed` to the sitemap to keep noise down.
 - `Element`
     - `Cookie`
+        - `.encode` -- Updated list of reversed characters.
         - `.decode` -- Handle broken encodings.
     - `Form`
         - `.decode` -- Handle broken encodings.

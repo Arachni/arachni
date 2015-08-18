@@ -33,6 +33,12 @@ class Cookie < Base
     include Capabilities::Inputtable
     include Capabilities::Mutable
 
+    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", '&', ' ', '"']
+    ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
+
+    ENCODE_CHARACTERS_IN_NAME      = ENCODE_CHARACTERS + ['=']
+    ENCODE_CHARACTERS_IN_NAME_LIST = ENCODE_CHARACTERS_IN_NAME.join
+
     # Default cookie values
     DEFAULT = {
         name:        nil,
@@ -163,7 +169,7 @@ class Cookie < Base
     # @return   [String]
     #   To be used in a `Cookie` HTTP request header.
     def to_s
-        "#{encode( name )}=#{encode( value )}"
+        "#{encode( name, true )}=#{encode( value )}"
     end
 
     # @return   [String]
@@ -404,13 +410,35 @@ class Cookie < Base
         #
         # @example
         #    p Cookie.encode "+;%=\0 "
-        #    #=> "%2B%3B%25%3D%00%20"
+        #    #=> "%2B%3B%25=%00+"
         #
+        #    p Cookie.encode "+;%=\0 ", true
+        #    #=> "%2B%3B%25%3D%00+"
         # @param    [String]    str
         #
         # @return   [String]
-        def encode( str )
-            Arachni::HTTP::Request.encode( str )
+        def encode( str, name = false )
+            str = str.to_s
+
+            return str if !(name ? ENCODE_CHARACTERS_IN_NAME : ENCODE_CHARACTERS).
+                find { |c| str.include? c }
+
+            # Instead of just encoding everything we do this selectively because:
+            #
+            #  * Some webapps don't actually decode some cookies, they just get
+            #    the raw value, so if we encode something may break.
+            #  * We need to encode spaces as '+' because of the above.
+            #    Since we decode values, any un-encoded '+' will be converted
+            #    to spaces, and in order to send back a value that the server
+            #    expects we use '+' for spaces.
+
+            s = ::URI.encode(
+                str,
+                name ? ENCODE_CHARACTERS_IN_NAME_LIST :
+                    ENCODE_CHARACTERS_LIST
+            )
+            s.gsub!( '%20', '+' )
+            s
         end
 
         # Decodes a {String} encoded for the `Cookie` header field.

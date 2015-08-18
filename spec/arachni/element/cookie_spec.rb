@@ -242,8 +242,45 @@ describe Arachni::Element::Cookie do
     end
 
     describe '.encode' do
+
         it 'encodes the string in a way that makes is suitable to be included in a cookie header' do
-            described_class.encode( 'some stuff \'";%=&' ).should == 'some%20stuff%20%27%22%3B%25%3D%26'
+            described_class.encode( 'some stuff \'";%=&' ).should == 'some+stuff+\'%22%3B%25=%26'
+        end
+
+        context 'when encoding values' do
+            %w(! = ' / : ).each do |character|
+                it "preserves '#{character}'" do
+                    described_class.encode( character ).should == character
+                end
+            end
+
+            ['+', ';', '%', "\0", '&', '"'].each do |character|
+                it "encodes '#{character}'" do
+                    described_class.encode( character ).should == "%#{character.unpack('H*')[0]}".upcase
+                end
+
+                it "encodes space as '+'" do
+                    described_class.encode( ' ' ).should == '+'
+                end
+            end
+        end
+
+        context 'when encoding names' do
+            %w(! ' / : ).each do |character|
+                it "preserves '#{character}'" do
+                    described_class.encode( character, true ).should == character
+                end
+            end
+
+            ['=', '+', ';', '%', "\0", '&', '"'].each do |character|
+                it "encodes '#{character}'" do
+                    described_class.encode( character, true ).should == "%#{character.unpack('H*')[0]}".upcase
+                end
+
+                it "encodes space as '+'" do
+                    described_class.encode( ' ', true ).should == '+'
+                end
+            end
         end
     end
 
@@ -267,7 +304,7 @@ describe Arachni::Element::Cookie do
             )
 
             c.to_set_cookie.should ==
-                'blah%3Dha%25=some%20stuff%20%3B; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
+                'blah%3Dha%25=some+stuff+%3B; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
             described_class.from_set_cookie( url, c.to_set_cookie ).first.should == c
 
             c = described_class.new(
@@ -279,7 +316,7 @@ describe Arachni::Element::Cookie do
 
             described_class.from_set_cookie( url, c.to_set_cookie ).first.should == c
             c.to_set_cookie.should ==
-                'blah%3Dha%25=some%20stuff%20%3B; Path=/stuff; Domain=127.0.0.2'
+                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=127.0.0.2'
         end
     end
 
@@ -290,7 +327,7 @@ describe Arachni::Element::Cookie do
                 name:  'blah=ha%',
                 value: 'some stuff ;',
             )
-            c.to_s.should == 'blah%3Dha%25=some%20stuff%20%3B'
+            c.to_s.should == 'blah%3Dha%25=some+stuff+%3B'
         end
     end
 

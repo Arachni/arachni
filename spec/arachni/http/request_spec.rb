@@ -438,7 +438,7 @@ describe Arachni::HTTP::Request do
             end
 
             it 'encodes and puts them in the Cookie header' do
-                subject.options[:headers]['Cookie'].should == 'na%20me=stu%20ff;na%20me2=stu%20ff2'
+                subject.options[:headers]['Cookie'].should == 'na+me=stu+ff;na+me2=stu+ff2'
             end
         end
 
