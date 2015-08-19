@@ -551,6 +551,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
                 p[:instances].should be_nil
                 p[:issues].should be_nil
+                p[:seed].should_not be_empty
             end
 
             describe :without do

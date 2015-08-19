@@ -100,7 +100,8 @@ module MultiInstance
 
         data = {
             status: status,
-            busy:   running?
+            busy:   running?,
+            seed:   Utilities.random_seed
         }
 
         if include_issues

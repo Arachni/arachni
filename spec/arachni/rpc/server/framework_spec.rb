@@ -216,7 +216,7 @@ describe 'Arachni::RPC::Server::Framework' do
         end
     end
     describe '#progress' do
-        before { @progress_keys = %W(statistics status busy messages issues).sort.map(&:to_sym) }
+        before { @progress_keys = %W(seed statistics status busy messages issues).sort.map(&:to_sym) }
 
         context 'when called without options' do
             it 'returns all progress data' do
@@ -230,6 +230,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 data[:status].should be_true
                 data[:busy].nil?.should be_false
                 data[:issues].should be_any
+                data[:seed].should_not be_empty
                 data.should_not include :errors
             end
         end
