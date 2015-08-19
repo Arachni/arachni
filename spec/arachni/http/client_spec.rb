@@ -42,7 +42,7 @@ describe Arachni::HTTP::Client do
          :total_responses_per_second, :burst_response_time_sum,
          :burst_response_count, :burst_responses_per_second,
          :burst_average_response_time, :total_average_response_time,
-         :max_concurrency].each do |k|
+         :original_max_concurrency, :max_concurrency].each do |k|
             it "includes #{k}" do
                 statistics[k].should == subject.send(k)
             end
@@ -528,6 +528,16 @@ describe Arachni::HTTP::Client do
             end
             subject.run
             cnt.should < n
+        end
+    end
+
+    describe '#original_max_concurrency' do
+        it 'returns the original max concurrency' do
+            subject.original_max_concurrency.should == 20
+            subject.original_max_concurrency.should == subject.max_concurrency
+
+            subject.max_concurrency = 10
+            subject.original_max_concurrency.should == 20
         end
     end
 

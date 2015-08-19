@@ -116,6 +116,8 @@ class Client
     # @return   [Dynamic404Handler]
     attr_reader :dynamic_404_handler
 
+    attr_reader :original_max_concurrency
+
     def initialize
         super
         reset
@@ -177,12 +179,14 @@ class Client
     #   *  {#burst_responses_per_second}
     #   *  {#burst_average_response_time}
     #   *  {#max_concurrency}
+    #   *  {#original_max_concurrency}
     def statistics
        [:request_count, :response_count, :time_out_count,
         :total_responses_per_second, :burst_response_time_sum,
         :burst_response_count, :burst_responses_per_second,
         :burst_average_response_time, :total_average_response_time,
-        :max_concurrency].inject({}) { |h, k| h[k] = send(k); h }
+        :max_concurrency, :original_max_concurrency].
+           inject({}) { |h, k| h[k] = send(k); h }
     end
 
     # @return    [CookieJar]
@@ -592,8 +596,10 @@ class Client
     end
 
     def client_initialize
+        @original_max_concurrency = Options.http.request_concurrency || MAX_CONCURRENCY
+
         @hydra = Typhoeus::Hydra.new(
-            max_concurrency: Options.http.request_concurrency || MAX_CONCURRENCY
+            max_concurrency: @original_max_concurrency
         )
     end
 
