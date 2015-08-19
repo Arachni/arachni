@@ -24,7 +24,7 @@ describe name_from_filename do
                 http.max_concurrency.times { http.get( url ) }
                 http.run
 
-                http.max_concurrency.should == pre
+                expect(http.max_concurrency).to eq(pre)
             end
         end
         context 'above threshold' do
@@ -34,21 +34,21 @@ describe name_from_filename do
                 http.max_concurrency.times { http.get( url + 'slow' ) }
                 http.run
 
-                http.max_concurrency.should < pre
+                expect(http.max_concurrency).to be < pre
             end
             context 'and then fall bellow threshold' do
                 it 'increases the max concurrency (without exceeding http_request_concurrency)' do
                     http.max_concurrency.times { http.get( url + 'slow' ) }
                     http.run
-                    http.max_concurrency.should < options.http.request_concurrency
+                    expect(http.max_concurrency).to be < options.http.request_concurrency
 
                     pre = http.max_concurrency
 
                     (10 * http.max_concurrency).times { http.get( url ) }
                     http.run
 
-                    http.max_concurrency.should > pre
-                    http.max_concurrency.should <= options.http.request_concurrency
+                    expect(http.max_concurrency).to be > pre
+                    expect(http.max_concurrency).to be <= options.http.request_concurrency
                 end
             end
         end

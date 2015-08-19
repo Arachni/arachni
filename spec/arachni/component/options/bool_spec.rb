@@ -10,34 +10,34 @@ describe Arachni::Component::Options::Bool do
         context 'when the value is valid' do
             it 'returns true' do
                 trues.each do |v|
-                    described_class.new( '', value: v ).valid?.should be_true
+                    expect(described_class.new( '', value: v ).valid?).to be_truthy
                 end
             end
         end
 
         context 'when the value is not valid' do
             it 'returns false' do
-                described_class.new( '', value: 'dds' ).valid?.should be_false
+                expect(described_class.new( '', value: 'dds' ).valid?).to be_falsey
             end
         end
     end
 
     describe '#normalize' do
         it 'converts the string input into a boolean value' do
-            trues.each { |v| described_class.new( '', value: v  ).normalize.should be_true }
-            falses.each { |v| described_class.new( '', value: v  ).normalize.should be_false }
+            trues.each { |v| expect(described_class.new( '', value: v  ).normalize).to be_truthy }
+            falses.each { |v| expect(described_class.new( '', value: v  ).normalize).to be_falsey }
         end
     end
 
     describe '#true?' do
         context 'when the value option represents true' do
             it 'returns true' do
-                trues.each { |v| described_class.new( '', value: v  ).true?.should be_true }
+                trues.each { |v| expect(described_class.new( '', value: v  ).true?).to be_truthy }
             end
         end
         context 'when the value option represents false' do
             it 'returns false' do
-                falses.each { |v| described_class.new( '', value: v  ).true?.should be_false }
+                falses.each { |v| expect(described_class.new( '', value: v  ).true?).to be_falsey }
             end
         end
     end
@@ -45,19 +45,19 @@ describe Arachni::Component::Options::Bool do
     describe '#false?' do
         context 'when the value option represents false' do
             it 'returns true' do
-                falses.each { |v| described_class.new( '', value: v  ).false?.should be_true }
+                falses.each { |v| expect(described_class.new( '', value: v  ).false?).to be_truthy }
             end
         end
         context 'when the value option represents true' do
             it 'returns false' do
-                trues.each { |v| described_class.new( '', value: v  ).false?.should be_false }
+                trues.each { |v| expect(described_class.new( '', value: v  ).false?).to be_falsey }
             end
         end
     end
 
     describe '#type' do
         it 'returns the option type as a string' do
-            described_class.new( '' ).type.should == :bool
+            expect(described_class.new( '' ).type).to eq(:bool)
         end
     end
 

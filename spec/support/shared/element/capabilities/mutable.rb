@@ -37,7 +37,7 @@ shared_examples_for 'mutable' do |options = {}|
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        mutation.should == Arachni::RPC::Serializer.deep_clone( mutation )
+        expect(mutation).to eq(Arachni::RPC::Serializer.deep_clone( mutation ))
     end
 
     describe '#to_rpc_data' do
@@ -45,7 +45,7 @@ shared_examples_for 'mutable' do |options = {}|
 
         %w(seed format affected_input_name).each do |attribute|
             it "includes '#{attribute}'" do
-                data[attribute].should == mutation.send( attribute )
+                expect(data[attribute]).to eq(mutation.send( attribute ))
             end
         end
     end
@@ -56,7 +56,7 @@ shared_examples_for 'mutable' do |options = {}|
 
         %w(seed format affected_input_name).each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == mutation.send( attribute )
+                expect(restored.send( attribute )).to eq(mutation.send( attribute ))
             end
         end
     end
@@ -64,12 +64,12 @@ shared_examples_for 'mutable' do |options = {}|
     describe '#mutation?' do
         context 'when the element has not been mutated' do
             it 'returns true' do
-                mutable.mutation?.should be_false
+                expect(mutable.mutation?).to be_falsey
             end
         end
         context 'when the element has been mutated' do
             it 'returns false' do
-                mutable.mutations( seed ).first.mutation?.should be_true
+                expect(mutable.mutations( seed ).first.mutation?).to be_truthy
             end
         end
     end
@@ -77,12 +77,12 @@ shared_examples_for 'mutable' do |options = {}|
     describe '#affected_input_value' do
         it 'returns the value of the affected_input_name input' do
             elem = mutable.mutations( seed ).first
-            elem.affected_input_value.should == seed
+            expect(elem.affected_input_value).to eq(seed)
         end
 
         context 'when no input has been affected_input_name' do
             it 'returns nil' do
-                mutable.affected_input_value.should be_nil
+                expect(mutable.affected_input_value).to be_nil
             end
         end
     end
@@ -91,8 +91,8 @@ shared_examples_for 'mutable' do |options = {}|
         it 'sets the value of the affected_input_name input' do
             elem = mutable.mutations( seed ).first
             elem.affected_input_value = 'stuff'
-            elem.affected_input_value.should == 'stuff'
-            elem.inputs.values.first.should == 'stuff'
+            expect(elem.affected_input_value).to eq('stuff')
+            expect(elem.inputs.values.first).to eq('stuff')
         end
     end
 
@@ -101,44 +101,45 @@ shared_examples_for 'mutable' do |options = {}|
             input = mutable.inputs.keys.first
 
             mutable.immutables << input
-            mutable.mutations( seed ).
-                reject { |e| e.affected_input_name != input }.
-                should be_empty
+            expect(mutable.mutations( seed ).
+                reject { |e| e.affected_input_name != input }).
+                to be_empty
 
             mutable.immutables.clear
-            mutable.mutations( seed ).
-                reject { |e| e.affected_input_name != input }.
-                should be_any
+            expect(mutable.mutations( seed ).
+                reject { |e| e.affected_input_name != input }).
+                to be_any
         end
     end
 
     describe '#mutations' do
         it 'mutates #inputs' do
             mutable.mutations( seed, skip_original: true ).each do |m|
-                mutable.url.should == m.url
-                mutable.action.should == m.action
-                mutable.inputs.should_not == m.inputs
+                expect(mutable.url).to eq(m.url)
+                expect(mutable.action).to eq(m.action)
+                expect(mutable.inputs).not_to eq(m.inputs)
             end
         end
 
         it 'sets #affected_input_name to the name of the fuzzed input' do
             checked = false
             mutable.mutations( seed, skip_original: true ).each do |m|
-                mutable.url.should == m.url
-                mutable.action.should == m.action
-                mutable.affected_input_name.should_not == m.affected_input_name
-                m.inputs[m.affected_input_name].should include seed
+                expect(mutable.url).to eq(m.url)
+                expect(mutable.action).to eq(m.action)
+                expect(mutable.affected_input_name).not_to eq(m.affected_input_name)
+                expect(m.inputs[m.affected_input_name]).to include seed
 
                 checked = true
             end
 
-            checked.should be_true
+            expect(checked).to be_truthy
         end
 
         context 'with no options' do
             it 'returns all combinations' do
-                mutable.mutations( seed, skip_original: true ).size.should ==
+                expect(mutable.mutations( seed, skip_original: true ).size).to eq(
                     (inputs.size * 4) / (opts[:supports_nulls] ? 1 : 2)
+                )
             end
         end
 
@@ -146,37 +147,37 @@ shared_examples_for 'mutable' do |options = {}|
             describe :parameter_values do
                 describe true do
                     it 'injects the payload into parameter values' do
-                        mutable.mutations( seed, parameter_values: true ).
-                            find { |m| m.affected_input_value.include? seed }.
-                            should be_true
+                        expect(mutable.mutations( seed, parameter_values: true ).
+                            find { |m| m.affected_input_value.include? seed }).
+                            to be_truthy
                     end
                 end
                 describe false do
                     it 'does not inject the payload into parameter values' do
-                        mutable.mutations( seed, parameter_values: false ).
-                            find { |m| m.affected_input_value.include? seed }.
-                            should be_false
+                        expect(mutable.mutations( seed, parameter_values: false ).
+                            find { |m| m.affected_input_value.include? seed }).
+                            to be_falsey
                     end
                 end
                 describe 'nil' do
                     it 'injects the payload into parameter names' do
-                        mutable.mutations( seed ).
-                            find { |m| m.affected_input_value.include? seed }.
-                            should be_true
+                        expect(mutable.mutations( seed ).
+                            find { |m| m.affected_input_value.include? seed }).
+                            to be_truthy
                     end
                 end
 
                 describe "#{Arachni::OptionGroups::Audit}#parameter_values" do
                     it 'serves as the default value of :parameter_values' do
                         Arachni::Options.audit.parameter_values = true
-                        mutable.mutations( seed ).
-                            find { |m| m.affected_input_value.include? seed }.
-                            should be_true
+                        expect(mutable.mutations( seed ).
+                            find { |m| m.affected_input_value.include? seed }).
+                            to be_truthy
 
                         Arachni::Options.audit.parameter_values = false
-                        mutable.mutations( seed ).
-                            find { |m| m.affected_input_value.include? seed }.
-                            should be_false
+                        expect(mutable.mutations( seed ).
+                            find { |m| m.affected_input_value.include? seed }).
+                            to be_falsey
                     end
                 end
             end
@@ -191,32 +192,32 @@ shared_examples_for 'mutable' do |options = {}|
 
                 describe true do
                     it 'injects the payload into an extra parameter' do
-                        mutable.mutations( seed, with_extra_parameter: true ).
-                            find { |m| m[extra_name].to_s.include? seed }.should be_true
+                        expect(mutable.mutations( seed, with_extra_parameter: true ).
+                            find { |m| m[extra_name].to_s.include? seed }).to be_truthy
                     end
                 end
                 describe false do
                     it 'does not inject the payload into an extra parameter' do
-                        mutable.mutations( seed, with_extra_parameter: false ).
-                            find { |m| m[extra_name].to_s.include? seed }.should be_false
+                        expect(mutable.mutations( seed, with_extra_parameter: false ).
+                            find { |m| m[extra_name].to_s.include? seed }).to be_falsey
                     end
                 end
                 describe 'nil' do
                     it 'does not inject the payload into an extra parameter' do
-                        mutable.mutations( seed ).
-                            find { |m| m[extra_name].to_s.include? seed }.should be_false
+                        expect(mutable.mutations( seed ).
+                            find { |m| m[extra_name].to_s.include? seed }).to be_falsey
                     end
                 end
 
                 describe "#{Arachni::OptionGroups::Audit}#with_extra_parameter" do
                     it 'serves as the default value of :with_extra_parameter' do
                         Arachni::Options.audit.with_extra_parameter = true
-                        mutable.mutations( seed ).
-                            find { |m| m[extra_name].to_s.include? seed }.should be_true
+                        expect(mutable.mutations( seed ).
+                            find { |m| m[extra_name].to_s.include? seed }).to be_truthy
 
                         Arachni::Options.audit.with_extra_parameter = false
-                        mutable.mutations( seed ).
-                            find { |m| m[extra_name].to_s.include? seed }.should be_false
+                        expect(mutable.mutations( seed ).
+                            find { |m| m[extra_name].to_s.include? seed }).to be_falsey
                     end
                 end
             end
@@ -229,32 +230,32 @@ shared_examples_for 'mutable' do |options = {}|
 
                 describe false do
                     it 'does not fuzz methods' do
-                        mutable.mutations( seed, with_both_http_methods: false ).
-                            map(&:method).uniq.should eq [mutable.method]
+                        expect(mutable.mutations( seed, with_both_http_methods: false ).
+                            map(&:method).uniq).to eq [mutable.method]
                     end
                 end
                 describe true do
                     it 'fuzzes methods' do
-                        mutable.mutations( seed, with_both_http_methods: true ).
-                            map(&:method).uniq.should eq [:get, :post]
+                        expect(mutable.mutations( seed, with_both_http_methods: true ).
+                            map(&:method).uniq).to eq [:get, :post]
                     end
                 end
                 describe 'nil' do
                     it 'does not fuzz methods' do
-                        mutable.mutations( seed ).map(&:method).uniq.
-                            should == [mutable.method]
+                        expect(mutable.mutations( seed ).map(&:method).uniq).
+                            to eq([mutable.method])
                     end
                 end
 
                 describe "#{Arachni::OptionGroups::Audit}#with_both_http_methods" do
                     it 'serves as the default value of :with_both_http_methods' do
                         Arachni::Options.audit.with_both_http_methods = true
-                        mutable.mutations( seed ).map(&:method).uniq.
-                            should eq [:get, :post]
+                        expect(mutable.mutations( seed ).map(&:method).uniq).
+                            to eq [:get, :post]
 
                         Arachni::Options.audit.with_both_http_methods = false
-                        mutable.mutations( seed ).map(&:method).uniq.
-                            should == [mutable.method]
+                        expect(mutable.mutations( seed ).map(&:method).uniq).
+                            to eq([mutable.method])
                     end
                 end
             end
@@ -267,43 +268,43 @@ shared_examples_for 'mutable' do |options = {}|
 
                 describe true do
                     it 'uses the seed as a parameter name' do
-                        mutable.mutations( seed, parameter_names: true ).
-                            find { |m| m.inputs.keys.include? seed }.
-                            should be_true
+                        expect(mutable.mutations( seed, parameter_names: true ).
+                            find { |m| m.inputs.keys.include? seed }).
+                            to be_truthy
                     end
                 end
                 describe false do
                     it 'does not use the seed as a parameter name' do
-                        mutable.class.any_instance.
-                            stub(:valid_input_name_data?) { |name| name != seed }
+                        allow_any_instance_of(mutable.class).
+                            to receive(:valid_input_name_data?) { |instance, name| name != seed }
 
-                        mutable.mutations( seed, parameter_names: false ).
-                            find { |m| m.inputs.keys.include? seed }.
-                            should be_false
+                        expect(mutable.mutations( seed, parameter_names: false ).
+                            find { |m| m.inputs.keys.include? seed }).
+                            to be_falsey
                     end
                 end
                 describe 'nil' do
                     it 'does not use the seed as a parameter name' do
-                        described_class.any_instance.
-                            stub(:valid_input_name_data?) { |name| name != seed }
+                        allow_any_instance_of(described_class).
+                            to receive(:valid_input_name_data?) { |instance, name| name != seed }
 
-                        mutable.mutations( seed ).
-                            find { |m| m.inputs.keys.include? seed }.
-                            should be_false
+                        expect(mutable.mutations( seed ).
+                            find { |m| m.inputs.keys.include? seed }).
+                            to be_falsey
                     end
                 end
 
                 describe "#{Arachni::OptionGroups::Audit}#parameter_names" do
                     it 'serves as the default value of :parameter_names' do
                         Arachni::Options.audit.parameter_names = true
-                        mutable.mutations( seed ).
-                            find { |m| m.inputs.keys.include? seed }.
-                            should be_true
+                        expect(mutable.mutations( seed ).
+                            find { |m| m.inputs.keys.include? seed }).
+                            to be_truthy
 
                         Arachni::Options.audit.parameter_names = false
-                        mutable.mutations( seed ).
-                            find { |m| m.inputs.keys.include? seed }.
-                            should be_false
+                        expect(mutable.mutations( seed ).
+                            find { |m| m.inputs.keys.include? seed }).
+                            to be_falsey
                     end
                 end
             end
@@ -320,7 +321,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
                                                 skip_original: true ).first
-                        m[m.affected_input_name].should == seed
+                        expect(m[m.affected_input_name]).to eq(seed)
                     end
                 end
                 describe 'Format::APPEND' do
@@ -328,7 +329,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::APPEND],
                                                 skip_original: true ).first
-                        m[m.affected_input_name].should == inputs[m.affected_input_name] + seed
+                        expect(m[m.affected_input_name]).to eq(inputs[m.affected_input_name] + seed)
                     end
                 end
                 describe 'Format::NULL' do
@@ -339,7 +340,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::NULL],
                                                 skip_original: true ).first
-                        m[m.affected_input_name].should == seed + "\0"
+                        expect(m[m.affected_input_name]).to eq(seed + "\0")
                     end
                 end
                 describe 'Format::SEMICOLON' do
@@ -347,7 +348,7 @@ shared_examples_for 'mutable' do |options = {}|
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::SEMICOLON],
                                                 skip_original: true ).first
-                        m[m.affected_input_name].should == ';' + seed
+                        expect(m[m.affected_input_name]).to eq(';' + seed)
                     end
                 end
                 describe 'Format::APPEND | Format::NULL' do
@@ -358,7 +359,7 @@ shared_examples_for 'mutable' do |options = {}|
                         format = [Arachni::Element::Capabilities::Mutable::Format::APPEND |
                                       Arachni::Element::Capabilities::Mutable::Format::NULL]
                         m = mutable.mutations( seed, format: format, skip_original: true  ).first
-                        m[m.affected_input_name].should == inputs[m.affected_input_name] + seed + "\0"
+                        expect(m[m.affected_input_name]).to eq(inputs[m.affected_input_name] + seed + "\0")
                     end
                 end
             end
@@ -367,23 +368,23 @@ shared_examples_for 'mutable' do |options = {}|
         context 'when the payload is not supported' do
             it 'returns an empty array' do
                 mutable
-                mutable.class.any_instance.stub(:valid_input_data?) { |i| i != '1' }
+                allow_any_instance_of(mutable.class).to receive(:valid_input_data?) { |instance, i| i != '1' }
 
-                mutable.mutations('1', skip_original: true ).size.should == 0
+                expect(mutable.mutations('1', skip_original: true ).size).to eq(0)
             end
 
             context 'as a value' do
                 it 'skips the mutation' do
-                    mutable.mutations(seed).
+                    expect(mutable.mutations(seed).
                         select { |m| m.affected_input_value.include? seed }.
-                        size.should > 0
+                        size).to be > 0
 
-                    mutable.class.any_instance.
-                        stub(:valid_input_value_data?) { |value| value.include? seed }
+                    allow_any_instance_of(mutable.class).
+                        to receive(:valid_input_value_data?) { |instance, value| value.include? seed }
 
-                    mutable.mutations('1').
+                    expect(mutable.mutations('1').
                         select { |m| m.affected_input_value.include? seed }.
-                        size.should == 0
+                        size).to eq(0)
                 end
             end
         end
@@ -394,12 +395,12 @@ shared_examples_for 'mutable' do |options = {}|
             m = mutable.mutations( seed,
                                     format: [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
                                     skip_original: true ).first
-            m.inputs[m.affected_input_name].should_not == inputs[m.affected_input_name]
+            expect(m.inputs[m.affected_input_name]).not_to eq(inputs[m.affected_input_name])
         end
 
         context 'when no input has been affected_input_name' do
             it 'returns nil' do
-                mutable.affected_input_name.should be_nil
+                expect(mutable.affected_input_name).to be_nil
             end
         end
     end
@@ -414,7 +415,7 @@ shared_examples_for 'mutable' do |options = {}|
                 values << m.affected_input_value
             end
 
-            seeds.sort.uniq.should == %w(my_seed)
+            expect(seeds.sort.uniq).to eq(%w(my_seed))
         end
     end
 
@@ -422,34 +423,34 @@ shared_examples_for 'mutable' do |options = {}|
         let(:dupped) { mutation.dup }
 
         it 'preserves #seed' do
-            dupped.seed.should == mutation.seed
+            expect(dupped.seed).to eq(mutation.seed)
         end
         it 'preserves #affected_input_name' do
-            dupped.affected_input_name.should == mutation.affected_input_name
+            expect(dupped.affected_input_name).to eq(mutation.affected_input_name)
         end
         it 'preserves #format' do
-            dupped.format.should == mutation.format
+            expect(dupped.format).to eq(mutation.format)
         end
         it 'preserves #immutables' do
             mutation.immutables << 'stuff'
-            dupped.immutables.should == mutation.immutables
+            expect(dupped.immutables).to eq(mutation.immutables)
         end
     end
 
     describe '#to_h' do
         it 'returns a hash representation of self' do
             hash = mutation.to_h
-            hash[:affected_input_name].should == mutation.affected_input_name
-            hash[:affected_input_value].should == mutation.affected_input_value
-            hash[:seed].should == mutation.seed
+            expect(hash[:affected_input_name]).to eq(mutation.affected_input_name)
+            expect(hash[:affected_input_value]).to eq(mutation.affected_input_value)
+            expect(hash[:seed]).to eq(mutation.seed)
         end
 
         context 'when the element is not a mutation' do
             it 'does not include mutation related data' do
                 hash = mutable.to_h
-                hash.should_not include :affected_input_name
-                hash.should_not include :affected_input_value
-                hash.should_not include :seed
+                expect(hash).not_to include :affected_input_name
+                expect(hash).not_to include :affected_input_value
+                expect(hash).not_to include :seed
             end
         end
     end

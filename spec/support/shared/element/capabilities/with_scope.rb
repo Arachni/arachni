@@ -10,13 +10,13 @@ shared_examples_for 'with_scope' do
         let(:data) { with_scope.to_rpc_data }
 
         it "does not include 'scope'" do
-            data.should_not include 'scope'
+            expect(data).not_to include 'scope'
         end
     end
 
     describe '#scope' do
         it 'returns scope' do
-            subject.scope.should be_kind_of described_class::Scope
+            expect(subject.scope).to be_kind_of described_class::Scope
         end
     end
 end

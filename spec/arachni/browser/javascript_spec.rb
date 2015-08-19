@@ -21,7 +21,7 @@ describe Arachni::Browser::Javascript do
     describe '.events_for' do
         it 'returns events for the given element' do
             described_class::EVENTS_PER_ELEMENT.each do |element, events|
-                described_class.events_for( element ).should == described_class::GLOBAL_EVENTS | events
+                expect(described_class.events_for( element )).to eq(described_class::GLOBAL_EVENTS | events)
             end
         end
     end
@@ -33,24 +33,24 @@ describe Arachni::Browser::Javascript do
                 onmouseover: 'blah2();',
                 id:          'my-id'
             }
-            described_class.select_event_attributes( attributes ).should == {
+            expect(described_class.select_event_attributes( attributes )).to eq({
                 onclick:     'blah();',
                 onmouseover: 'blah2();'
-            }
+            })
         end
     end
 
     describe '#dom_monitor' do
         it 'provides access to the DOMMonitor javascript interface' do
             @browser.load "#{@taint_tracer_url}/debug"
-            subject.dom_monitor.js_object.should end_with 'DOMMonitor'
+            expect(subject.dom_monitor.js_object).to end_with 'DOMMonitor'
         end
     end
 
     describe '#taint_tracer' do
         it 'provides access to the TaintTracer javascript interface' do
             @browser.load "#{@taint_tracer_url}/debug"
-            subject.taint_tracer.js_object.should end_with 'TaintTracer'
+            expect(subject.taint_tracer.js_object).to end_with 'TaintTracer'
         end
     end
 
@@ -58,28 +58,31 @@ describe Arachni::Browser::Javascript do
         it 'injects the given code into the response' do
             subject.custom_code = 'window.has_custom_code = true'
             @browser.load "#{@taint_tracer_url}/debug"
-            subject.run( 'return window.has_custom_code' ).should == true
+            expect(subject.run( 'return window.has_custom_code' )).to eq(true)
         end
     end
 
     describe '#log_execution_flow_sink_stub' do
         it 'returns JS code for TaintTracer.log_execution_flow_sink()' do
-            subject.log_execution_flow_sink_stub( 1, 2, 3 ).should ==
+            expect(subject.log_execution_flow_sink_stub( 1, 2, 3 )).to eq(
                 "_#{subject.token}TaintTracer.log_execution_flow_sink(1, 2, 3)"
+            )
         end
     end
 
     describe '#log_data_flow_sink_stub' do
         it 'returns JS code for TaintTracer.log_data_flow_sink()' do
-            subject.log_data_flow_sink_stub( 1, 2, 3 ).should ==
+            expect(subject.log_data_flow_sink_stub( 1, 2, 3 )).to eq(
                 "_#{subject.token}TaintTracer.log_data_flow_sink(1, 2, 3)"
+            )
         end
     end
 
     describe '#debug_stub' do
         it 'returns JS code for TaintTracer.debug()' do
-            subject.debug_stub( 1, 2, 3 ).should ==
+            expect(subject.debug_stub( 1, 2, 3 )).to eq(
                 "_#{subject.token}TaintTracer.debug(1, 2, 3)"
+            )
         end
     end
 
@@ -87,14 +90,14 @@ describe Arachni::Browser::Javascript do
         context 'when there is support for the Javascript environment' do
             it 'returns true' do
                 @browser.load "#{@taint_tracer_url}/debug"
-                subject.supported?.should be_true
+                expect(subject.supported?).to be_truthy
             end
         end
 
         context 'when there is no support for the Javascript environment' do
             it 'returns false' do
                 @browser.load "#{@taint_tracer_url}/without_javascript_support"
-                subject.supported?.should be_false
+                expect(subject.supported?).to be_falsey
             end
         end
 
@@ -102,21 +105,22 @@ describe Arachni::Browser::Javascript do
             it 'returns false' do
                 Arachni::Options.url = @taint_tracer_url
                 @browser.load 'http://google.com/'
-                subject.supported?.should be_false
+                expect(subject.supported?).to be_falsey
             end
         end
     end
 
     describe '#log_execution_flow_sink_stub' do
         it 'returns JS code that calls JS\'s log_execution_flow_sink_stub()' do
-            subject.log_execution_flow_sink_stub.should ==
+            expect(subject.log_execution_flow_sink_stub).to eq(
                 "_#{subject.token}TaintTracer.log_execution_flow_sink()"
+            )
 
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub}"
 
             @browser.watir.form.submit
-            subject.execution_flow_sinks.should be_any
-            subject.execution_flow_sinks.first.data.should be_empty
+            expect(subject.execution_flow_sinks).to be_any
+            expect(subject.execution_flow_sinks.first.data).to be_empty
         end
     end
 
@@ -126,24 +130,24 @@ describe Arachni::Browser::Javascript do
 
             as = @browser.watir.as
 
-            as[0].name.should == '1'
-            as[0].html.should_not include 'data-arachni-id'
+            expect(as[0].name).to eq('1')
+            expect(as[0].html).not_to include 'data-arachni-id'
 
-            as[1].name.should == '2'
-            as[1].html.should include 'data-arachni-id'
+            expect(as[1].name).to eq('2')
+            expect(as[1].html).to include 'data-arachni-id'
 
-            as[2].name.should == '3'
-            as[2].html.should_not include 'data-arachni-id'
+            expect(as[2].name).to eq('3')
+            expect(as[2].html).not_to include 'data-arachni-id'
 
-            as[3].name.should == '4'
-            as[3].html.should_not include 'data-arachni-id'
+            expect(as[3].name).to eq('4')
+            expect(as[3].html).not_to include 'data-arachni-id'
         end
     end
 
     describe '#dom_digest' do
         it 'returns a string digest of the current DOM tree' do
             @browser.load( @dom_monitor_url + 'digest' )
-            subject.dom_digest.should == subject.dom_monitor.digest
+            expect(subject.dom_digest).to eq(subject.dom_monitor.digest)
         end
     end
 
@@ -152,7 +156,7 @@ describe Arachni::Browser::Javascript do
             it 'returns information about all DOM elements along with their events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/attributes'
 
-                subject.dom_elements_with_events.should == [
+                expect(subject.dom_elements_with_events).to eq([
                     {
                         'tag_name' => 'body', 'events' => [], 'attributes' => {}
                     },
@@ -177,7 +181,7 @@ describe Arachni::Browser::Javascript do
                         ],
                         'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
                     }
-                ]
+                ])
             end
         end
 
@@ -185,7 +189,7 @@ describe Arachni::Browser::Javascript do
             it 'returns information about all DOM elements along with their events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/listeners'
 
-                subject.dom_elements_with_events.should == [
+                expect(subject.dom_elements_with_events).to eq([
                     {
                         'tag_name' => 'body', 'events' => [], 'attributes' => {}
                     },
@@ -208,13 +212,13 @@ describe Arachni::Browser::Javascript do
                         'events'     => [],
                         'attributes' => { 'id' => 'my-button3' }
                     }
-                ]
+                ])
             end
 
             it 'does not include custom events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/listeners/custom'
 
-                subject.dom_elements_with_events.should == [
+                expect(subject.dom_elements_with_events).to eq([
                     {
                         'tag_name' => 'body', 'events' => [], 'attributes' => {}
                     },
@@ -223,7 +227,7 @@ describe Arachni::Browser::Javascript do
                         'events'     => [],
                         'attributes' => { 'id' => 'my-button' }
                     }
-                ]
+                ])
             end
         end
     end
@@ -231,14 +235,14 @@ describe Arachni::Browser::Javascript do
     describe '#timeouts' do
         it 'keeps track of setTimeout() timers' do
             @browser.load( @dom_monitor_url + 'timeout-tracker' )
-            subject.timeouts.should == subject.dom_monitor.timeouts
+            expect(subject.timeouts).to eq(subject.dom_monitor.timeouts)
         end
     end
 
     describe '#intervals' do
         it 'keeps track of setInterval() timers' do
             @browser.load( @dom_monitor_url + 'interval-tracker' )
-            subject.intervals.should == subject.dom_monitor.intervals
+            expect(subject.intervals).to eq(subject.dom_monitor.intervals)
         end
     end
 
@@ -246,7 +250,7 @@ describe Arachni::Browser::Javascript do
         it 'returns debugging information' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.debug_stub(1)}"
             @browser.watir.form.submit
-            subject.debugging_data.should == subject.taint_tracer.debugging_data
+            expect(subject.debugging_data).to eq(subject.taint_tracer.debugging_data)
         end
     end
 
@@ -255,8 +259,8 @@ describe Arachni::Browser::Javascript do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub(1)}"
             @browser.watir.form.submit
 
-            subject.execution_flow_sinks.should be_any
-            subject.execution_flow_sinks.should == subject.taint_tracer.execution_flow_sinks
+            expect(subject.execution_flow_sinks).to be_any
+            expect(subject.execution_flow_sinks).to eq(subject.taint_tracer.execution_flow_sinks)
         end
     end
 
@@ -267,8 +271,8 @@ describe Arachni::Browser::Javascript do
             @browser.watir.form.submit
 
             sinks = subject.data_flow_sinks
-            sinks.should be_any
-            sinks.should == subject.taint_tracer.data_flow_sinks[@browser.javascript.taint]
+            expect(sinks).to be_any
+            expect(sinks).to eq(subject.taint_tracer.data_flow_sinks[@browser.javascript.taint])
         end
     end
 
@@ -290,7 +294,7 @@ describe Arachni::Browser::Javascript do
             sink2 = subject.taint_tracer.data_flow_sinks[@browser.javascript.taint]
             sink2[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
-            sink.should == sink2
+            expect(sink).to eq(sink2)
         end
 
         it 'empties the sink' do
@@ -298,7 +302,7 @@ describe Arachni::Browser::Javascript do
             @browser.watir.form.submit
 
             subject.flush_data_flow_sinks
-            subject.data_flow_sinks.should be_empty
+            expect(subject.data_flow_sinks).to be_empty
         end
     end
 
@@ -316,7 +320,7 @@ describe Arachni::Browser::Javascript do
             sink2 = subject.taint_tracer.execution_flow_sinks
             sink2[0].trace[1].function.arguments[0].delete( 'timeStamp' )
 
-            sink.should == sink2
+            expect(sink).to eq(sink2)
         end
 
         it 'empties the sink' do
@@ -324,7 +328,7 @@ describe Arachni::Browser::Javascript do
             @browser.watir.form.submit
 
             subject.flush_execution_flow_sinks
-            subject.execution_flow_sinks.should be_empty
+            expect(subject.execution_flow_sinks).to be_empty
         end
     end
 
@@ -351,23 +355,23 @@ describe Arachni::Browser::Javascript do
                     before(:each){ subject.serve( request, response ) }
 
                     it 'sets the correct status code' do
-                        response.code.should == 200
+                        expect(response.code).to eq(200)
                     end
 
                     it 'populates the given response body with its contents' do
-                        response.body.should == body
+                        expect(response.body).to eq(body)
                     end
 
                     it 'sets the correct Content-Type' do
-                        response.headers.content_type.should == content_type
+                        expect(response.headers.content_type).to eq(content_type)
                     end
 
                     it 'sets the correct Content-Length' do
-                        response.headers['content-length'].should == content_length
+                        expect(response.headers['content-length']).to eq(content_length)
                     end
 
                     it 'returns true' do
-                        subject.serve( request, response ).should be_true
+                        expect(subject.serve( request, response )).to be_truthy
                     end
                 end
             end
@@ -375,7 +379,7 @@ describe Arachni::Browser::Javascript do
             context 'other' do
                 it 'returns false' do
                     request.url = 'stuff'
-                    subject.serve( request, response ).should be_false
+                    expect(subject.serve( request, response )).to be_falsey
                 end
             end
         end
@@ -411,15 +415,15 @@ EOHTML
                 end
 
                 it 'inject a TaintTracer.update_tracers() call before the code' do
-                    injected.body.scan( /(.*)foo/m ).flatten.first.should include taint_tracer_update
+                    expect(injected.body.scan( /(.*)foo/m ).flatten.first).to include taint_tracer_update
                 end
 
                 it 'inject a DOMMonitor.update_trackers() call before the code' do
-                    injected.body.scan( /(.*)foo/m ).flatten.first.should include dom_monitor_update
+                    expect(injected.body.scan( /(.*)foo/m ).flatten.first).to include dom_monitor_update
                 end
 
                 it 'appends a semicolon and newline to the body' do
-                    injected.body.should include "#{response.body};\n"
+                    expect(injected.body).to include "#{response.body};\n"
                 end
 
                 it 'updates the Content-Length' do
@@ -429,8 +433,8 @@ EOHTML
 
                     new_content_length = response.headers['content-length'].to_i
 
-                    new_content_length.should > old_content_length
-                    new_content_length.should == response.body.bytesize
+                    expect(new_content_length).to be > old_content_length
+                    expect(new_content_length).to eq(response.body.bytesize)
                 end
             end
 
@@ -455,8 +459,8 @@ EOHTML
 
                     new_content_length = response.headers['content-length'].to_i
 
-                    new_content_length.should > old_content_length
-                    new_content_length.should == response.body.bytesize
+                    expect(new_content_length).to be > old_content_length
+                    expect(new_content_length).to eq(response.body.bytesize)
                 end
 
                 context 'when the response does not already contain the JS code' do
@@ -465,7 +469,7 @@ EOHTML
 
                         %w(taint_tracer dom_monitor).each do |name|
                             src = "#{described_class::SCRIPT_BASE_URL}#{name}.js"
-                            Nokogiri::HTML( response.body ).xpath( "//script[@src='#{src}']" ).should be_any
+                            expect(Nokogiri::HTML( response.body ).xpath( "//script[@src='#{src}']" )).to be_any
                         end
                     end
 
@@ -474,7 +478,7 @@ EOHTML
 
                         it 'injects taint tracer update calls at the top of the script' do
                             subject.inject( response )
-                            Nokogiri::HTML(response.body).css('script')[-2].to_s.should ==
+                            expect(Nokogiri::HTML(response.body).css('script')[-2].to_s).to eq(
                                 "<script>
 
                 // Injected by #{described_class}
@@ -482,15 +486,17 @@ EOHTML
                 _#{subject.token}DOMMonitor.update_trackers();
 
 // My code and stuff</script>"
+                            )
                         end
 
                         it 'injects taint tracer update calls after the script' do
                             subject.inject( response )
-                            Nokogiri::HTML(response.body).css('script')[-1].to_s.should ==
+                            expect(Nokogiri::HTML(response.body).css('script')[-1].to_s).to eq(
                                 "<script type=\"text/javascript\">" +
                                 "_#{subject.token}TaintTracer.update_tracers();" +
                                 "_#{subject.token}DOMMonitor.update_trackers();" +
                                 '</script>'
+                            )
                         end
                     end
                 end
@@ -506,7 +512,7 @@ EOHTML
                         subject.inject( response )
                         intializer = subject.taint_tracer.stub.function( :initialize, subject.taint )
 
-                        response.body.should == presponse.body.gsub( pintializer, intializer )
+                        expect(response.body).to eq(presponse.body.gsub( pintializer, intializer ))
                     end
 
                     it 'updates the custom code' do
@@ -519,7 +525,7 @@ EOHTML
                         subject.custom_code = 'alert(2);'
                         subject.inject( response )
 
-                        response.body.should == presponse.body.gsub( code, subject.custom_code )
+                        expect(response.body).to eq(presponse.body.gsub( code, subject.custom_code ))
                     end
                 end
             end
@@ -561,8 +567,9 @@ EOHTML
     describe '#run' do
         it 'executes the given script under the browser\'s context' do
             @browser.load @dom_monitor_url
-            Nokogiri::HTML(@browser.source).to_s.should ==
+            expect(Nokogiri::HTML(@browser.source).to_s).to eq(
                 Nokogiri::HTML(subject.run( 'return document.documentElement.innerHTML' ) ).to_s
+            )
         end
     end
 
@@ -571,14 +578,17 @@ EOHTML
             @browser.load @dom_monitor_url
             source = Nokogiri::HTML(@browser.source).to_s
 
-            source.should ==
+            expect(source).to eq(
                 Nokogiri::HTML(subject.run_without_elements( 'return document.documentElement' ) ).to_s
+            )
 
-            source.should ==
+            expect(source).to eq(
                 Nokogiri::HTML(subject.run_without_elements( 'return [document.documentElement]' ).first ).to_s
+            )
 
-            source.should ==
+            expect(source).to eq(
                 Nokogiri::HTML(subject.run_without_elements( 'return { html: document.documentElement }' )['html'] ).to_s
+            )
         end
     end
 end

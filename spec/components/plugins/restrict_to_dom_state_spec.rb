@@ -11,6 +11,6 @@ describe name_from_filename do
         options.plugins[component_name] = { 'fragment' => 'stuff/blah' }
 
         run
-        framework.sitemap.should == { "#{options.url}#stuff/blah" => 200 }
+        expect(framework.sitemap).to eq({ "#{options.url}#stuff/blah" => 200 })
     end
 end

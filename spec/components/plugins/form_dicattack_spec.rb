@@ -18,7 +18,7 @@ describe name_from_filename do
             }
 
             run
-            actual_results.should == { 'username' => 'sys', 'password' => 'admin' }
+            expect(actual_results).to eq({ 'username' => 'sys', 'password' => 'admin' })
         end
     end
 
@@ -33,7 +33,7 @@ describe name_from_filename do
             }
 
             run
-            actual_results.should be_nil
+            expect(actual_results).to be_nil
         end
     end
 
@@ -48,7 +48,7 @@ describe name_from_filename do
             }
 
             run
-            actual_results.should be_nil
+            expect(actual_results).to be_nil
         end
     end
 end

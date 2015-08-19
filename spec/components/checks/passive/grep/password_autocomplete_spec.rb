@@ -11,5 +11,5 @@ describe name_from_filename do
         2
     end
 
-    easy_test { issues.map { |i| i.vector.name_or_id }.sort.should == %w(insecure insecure_2).sort }
+    easy_test { expect(issues.map { |i| i.vector.name_or_id }.sort).to eq %w(insecure insecure_2).sort }
 end

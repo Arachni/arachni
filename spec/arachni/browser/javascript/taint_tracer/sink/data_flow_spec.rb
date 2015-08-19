@@ -6,12 +6,12 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
     subject { Factory[:data_flow] }
 
     %w(function object tainted_argument_index tainted_value taint).each do |m|
-        it { should respond_to m }
-        it { should respond_to "#{m}=" }
+        it { is_expected.to respond_to m }
+        it { is_expected.to respond_to "#{m}=" }
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+        expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
     describe '#to_rpc_data' do
@@ -19,7 +19,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
 
         %w(function object tainted_argument_index tainted_value taint).each do |attribute|
             it "includes '#{attribute}'" do
-                data[attribute.to_sym].should == subject.send( attribute )
+                expect(data[attribute.to_sym]).to eq(subject.send( attribute ))
             end
         end
     end
@@ -30,7 +30,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
 
         %w(function object tainted_argument_index tainted_value taint).each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == subject.send( attribute )
+                expect(restored.send( attribute )).to eq(subject.send( attribute ))
             end
         end
     end
@@ -38,14 +38,14 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
     describe '#tainted_argument_value' do
         context 'when there are #arguments' do
             it 'returns the tainted argument' do
-                subject.tainted_argument_value.should == 'blah-val'
+                expect(subject.tainted_argument_value).to eq('blah-val')
             end
         end
 
         context 'when there are no #arguments' do
             it 'returns nil' do
                 subject.function.arguments = nil
-                subject.tainted_argument_value.should be_nil
+                expect(subject.tainted_argument_value).to be_nil
             end
         end
     end
@@ -53,29 +53,29 @@ describe Arachni::Browser::Javascript::TaintTracer::Sink::DataFlow do
     describe '#tainted_argument_name' do
         context 'when there are #arguments' do
             it 'returns the tainted argument' do
-                subject.tainted_argument_name.should == 'blah'
+                expect(subject.tainted_argument_name).to eq('blah')
             end
         end
 
         context "when there are are no #{Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction}#signature_arguments" do
             it 'returns nil' do
-                subject.function.stub(:signature_arguments){ nil }
-                subject.tainted_argument_name.should be_nil
+                allow(subject.function).to receive(:signature_arguments){ nil }
+                expect(subject.tainted_argument_name).to be_nil
             end
         end
     end
 
     describe '#to_h' do
         it 'returns a hash containing frame data' do
-            subject.to_h.should == Factory[:data_flow]
+            expect(subject.to_h).to eq(Factory[:data_flow])
         end
 
         it 'converts #function to hash' do
-            subject.to_h[:function].should == Factory[:called_function_data]
+            expect(subject.to_h[:function]).to eq(Factory[:called_function_data])
         end
 
         it 'is aliased to #to_hash' do
-            subject.to_h.should == subject.to_hash
+            expect(subject.to_h).to eq(subject.to_hash)
         end
     end
 end

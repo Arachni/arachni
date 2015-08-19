@@ -22,10 +22,10 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
         context 'when #differential_analysis_options is' do
             context 'nil' do
                 it 'skips it' do
-                    subject.differential_analysis_options.should be_nil
+                    expect(subject.differential_analysis_options).to be_nil
                     dupped = subject.dup
-                    dupped.should == dupped
-                    dupped.differential_analysis_options.should be_nil
+                    expect(dupped).to eq(dupped)
+                    expect(dupped.differential_analysis_options).to be_nil
                 end
             end
 
@@ -36,9 +36,9 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                     subject.differential_analysis_options = h
 
                     dupped = subject.dup
-                    dupped.should == dupped
-                    dupped.differential_analysis_options.should == h
-                    dupped.differential_analysis_options.object_id.should_not == h.object_id
+                    expect(dupped).to eq(dupped)
+                    expect(dupped.differential_analysis_options).to eq(h)
+                    expect(dupped.differential_analysis_options.object_id).not_to eq(h.object_id)
                 end
             end
         end
@@ -46,7 +46,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
 
     describe '#to_rpc_data' do
         it "does not include 'differential_analysis_options'" do
-            subject.to_rpc_data.should_not include 'differential_analysis_options'
+            expect(subject.to_rpc_data).not_to include 'differential_analysis_options'
         end
     end
 
@@ -64,7 +64,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
             let(:url) { 'http://stuff.com/' }
 
             it 'returns false' do
-                subject.differential_analysis( @opts ).should be_false
+                expect(subject.differential_analysis( @opts )).to be_falsey
             end
         end
 
@@ -76,15 +76,15 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 auditor.http.run
 
                 results = Arachni::Data.issues.flatten
-                results.should be_any
-                results.first.vector.affected_input_name.should == 'input'
+                expect(results).to be_any
+                expect(results.first.vector.affected_input_name).to eq('input')
             end
 
             it 'adds remarks' do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                Arachni::Data.issues.first.variations.first.remarks[:differential_analysis].size.should == 3
+                expect(Arachni::Data.issues.first.variations.first.remarks[:differential_analysis].size).to eq(3)
             end
         end
 
@@ -95,7 +95,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 
@@ -106,14 +106,14 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts.merge( submit: { timeout: 1_000 } ) )
                 auditor.http.run
 
-                issues.should be_empty
+                expect(issues).to be_empty
 
                 Arachni::Element::Capabilities::Auditable.reset
 
                 subject.differential_analysis( @opts.merge( timeout: 3_000 ) )
                 auditor.http.run
 
-                issues.should be_any
+                expect(issues).to be_any
             end
         end
 
@@ -124,7 +124,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 
@@ -135,7 +135,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 
@@ -146,7 +146,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 
@@ -157,7 +157,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 
@@ -168,7 +168,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 

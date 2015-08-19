@@ -6,7 +6,7 @@ describe Arachni::OptionGroups::BrowserCluster do
 
     %w(pool_size job_timeout worker_time_to_live ignore_images screen_width
         screen_height).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 end

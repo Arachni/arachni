@@ -10,14 +10,14 @@ describe Arachni::Element::Capabilities::WithScope::Scope do
 
     describe '#out?' do
         it 'returns false' do
-            subject.should_not be_out
+            expect(subject).not_to be_out
         end
 
         context 'when #redundant?' do
             context 'is true' do
                 it 'returns true' do
-                    subject.stub(:redundant?) { true }
-                    subject.should be_out
+                    allow(subject).to receive(:redundant?) { true }
+                    expect(subject).to be_out
                 end
             end
         end
@@ -25,8 +25,8 @@ describe Arachni::Element::Capabilities::WithScope::Scope do
         context "when #{Arachni::OptionGroups::Audit}#element?" do
             context 'is false' do
                 it 'returns true' do
-                    Arachni::Options.audit.stub(:element?) { false }
-                    subject.should be_out
+                    allow(Arachni::Options.audit).to receive(:element?) { false }
+                    expect(subject).to be_out
                 end
             end
         end

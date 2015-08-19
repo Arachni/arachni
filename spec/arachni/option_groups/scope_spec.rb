@@ -9,8 +9,8 @@ describe Arachni::OptionGroups::Scope do
         exclude_path_patterns exclude_content_patterns include_subdomains https_only
         url_rewrites exclude_binaries
     ).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     describe '#url_rewrites' do
@@ -19,9 +19,9 @@ describe Arachni::OptionGroups::Scope do
                 '/article/(\d+)' => 'articles?id=\1'
             }
 
-            subject.url_rewrites.to_s.should == {
+            expect(subject.url_rewrites.to_s).to eq({
                 /\/article\/(\d+)/ => 'articles?id=\1'
-            }.to_s
+            }.to_s)
         end
     end
 
@@ -29,18 +29,18 @@ describe Arachni::OptionGroups::Scope do
         describe 'when #https_only has been enabled' do
             it 'returns true' do
                 subject.https_only = true
-                subject.https_only?.should be_true
+                expect(subject.https_only?).to be_truthy
             end
         end
         describe 'when #https_only has been disabled' do
             it 'returns false' do
                 subject.https_only = false
-                subject.https_only?.should be_false
+                expect(subject.https_only?).to be_falsey
             end
         end
         describe 'by default' do
             it 'returns false' do
-                subject.https_only?.should be_false
+                expect(subject.https_only?).to be_falsey
             end
         end
     end
@@ -49,18 +49,18 @@ describe Arachni::OptionGroups::Scope do
         describe 'when #auto_redundant_paths has been enabled' do
             it 'returns true' do
                 subject.auto_redundant_paths = 10
-                subject.auto_redundant?.should be_true
+                expect(subject.auto_redundant?).to be_truthy
             end
         end
         describe 'when #auto_redundant_paths has been disabled' do
             it 'returns false' do
                 subject.auto_redundant_paths = nil
-                subject.auto_redundant?.should be_false
+                expect(subject.auto_redundant?).to be_falsey
             end
         end
         describe 'by default' do
             it 'returns false' do
-                subject.auto_redundant?.should be_false
+                expect(subject.auto_redundant?).to be_falsey
             end
         end
     end
@@ -68,47 +68,47 @@ describe Arachni::OptionGroups::Scope do
     describe '#redundant_path_patterns=' do
         it 'converts its param to properly typed filters' do
             subject.redundant_path_patterns = { /pattern/ => '45', 'regexp' => 39 }
-            subject.redundant_path_patterns.should == {
+            expect(subject.redundant_path_patterns).to eq({
                 /pattern/ => 45,
                 /regexp/  => 39
-            }
+            })
         end
     end
 
     describe '#do_not_crawl' do
         it 'sets the page_limit to 0' do
             subject.do_not_crawl
-            subject.page_limit.should == 0
+            expect(subject.page_limit).to eq(0)
         end
     end
 
     describe '#crawl' do
         it 'sets the page_limit to < 0' do
             subject.crawl
-            subject.crawl?.should be_true
-            !subject.page_limit.should be_nil
+            expect(subject.crawl?).to be_truthy
+            !expect(subject.page_limit).to be_nil
         end
     end
 
     describe '#crawl?' do
         context 'by default' do
             it 'returns true' do
-                subject.crawl?.should be_true
+                expect(subject.crawl?).to be_truthy
             end
         end
         context 'when crawling is enabled' do
             it 'returns true' do
                 subject.do_not_crawl
-                subject.crawl?.should be_false
+                expect(subject.crawl?).to be_falsey
                 subject.crawl
-                subject.crawl?.should be_true
+                expect(subject.crawl?).to be_truthy
             end
         end
         context 'when crawling is disabled' do
             it 'returns false' do
-                subject.crawl?.should be_true
+                expect(subject.crawl?).to be_truthy
                 subject.do_not_crawl
-                subject.crawl?.should be_false
+                expect(subject.crawl?).to be_falsey
             end
         end
     end
@@ -117,22 +117,22 @@ describe Arachni::OptionGroups::Scope do
         context 'when #page_limit has' do
             context 'not been set' do
                 it 'returns false' do
-                    subject.page_limit_reached?( 44 ).should be_false
+                    expect(subject.page_limit_reached?( 44 )).to be_falsey
                 end
             end
 
             context 'not been reached' do
                 it 'returns false' do
                     subject.page_limit = 5
-                    subject.page_limit_reached?( 2 ).should be_false
+                    expect(subject.page_limit_reached?( 2 )).to be_falsey
                 end
             end
 
             context 'been reached' do
                 it 'returns true' do
                     subject.page_limit = 5
-                    subject.page_limit_reached?( 5 ).should be_true
-                    subject.page_limit_reached?( 6 ).should be_true
+                    expect(subject.page_limit_reached?( 5 )).to be_truthy
+                    expect(subject.page_limit_reached?( 6 )).to be_truthy
                 end
             end
         end
@@ -143,10 +143,10 @@ describe Arachni::OptionGroups::Scope do
             restrict_paths = %w(my_restrict_paths my_other_restrict_paths)
 
             subject.restrict_paths = restrict_paths.first
-            subject.restrict_paths.should == [restrict_paths.first]
+            expect(subject.restrict_paths).to eq([restrict_paths.first])
 
             subject.restrict_paths = restrict_paths
-            subject.restrict_paths.should == restrict_paths
+            expect(subject.restrict_paths).to eq(restrict_paths)
         end
     end
 
@@ -155,10 +155,10 @@ describe Arachni::OptionGroups::Scope do
             extend_paths = %w(my_extend_paths my_other_extend_paths)
 
             subject.extend_paths = extend_paths.first
-            subject.extend_paths.should == [extend_paths.first]
+            expect(subject.extend_paths).to eq([extend_paths.first])
 
             subject.extend_paths = extend_paths
-            subject.extend_paths.should == extend_paths
+            expect(subject.extend_paths).to eq(extend_paths)
         end
     end
 
@@ -167,13 +167,13 @@ describe Arachni::OptionGroups::Scope do
             include = %w(my_include my_other_include)
 
             subject.include_path_patterns = /test/
-            subject.include_path_patterns.should == [/test/]
+            expect(subject.include_path_patterns).to eq([/test/])
 
             subject.include_path_patterns = include.first
-            subject.include_path_patterns.should == [Regexp.new( include.first )]
+            expect(subject.include_path_patterns).to eq([Regexp.new( include.first )])
 
             subject.include_path_patterns = include
-            subject.include_path_patterns.should == include.map { |p| Regexp.new( p ) }
+            expect(subject.include_path_patterns).to eq(include.map { |p| Regexp.new( p ) })
         end
     end
 
@@ -182,13 +182,13 @@ describe Arachni::OptionGroups::Scope do
             exclude = %w(my_exclude my_other_exclude)
 
             subject.exclude_path_patterns= /test/
-            subject.exclude_path_patterns.should == [/test/]
+            expect(subject.exclude_path_patterns).to eq([/test/])
 
             subject.exclude_path_patterns= exclude.first
-            subject.exclude_path_patterns.should == [Regexp.new( exclude.first )]
+            expect(subject.exclude_path_patterns).to eq([Regexp.new( exclude.first )])
 
             subject.exclude_path_patterns= exclude
-            subject.exclude_path_patterns.should == exclude.map { |p| Regexp.new( p ) }
+            expect(subject.exclude_path_patterns).to eq(exclude.map { |p| Regexp.new( p ) })
         end
     end
 
@@ -197,13 +197,13 @@ describe Arachni::OptionGroups::Scope do
             exclude_pages = %w(my_ignore my_other_ignore)
 
             subject.exclude_content_patterns = /test/
-            subject.exclude_content_patterns.should == [/test/]
+            expect(subject.exclude_content_patterns).to eq([/test/])
 
             subject.exclude_content_patterns = exclude_pages.first
-            subject.exclude_content_patterns.should == [Regexp.new( exclude_pages.first )]
+            expect(subject.exclude_content_patterns).to eq([Regexp.new( exclude_pages.first )])
 
             subject.exclude_content_patterns = exclude_pages
-            subject.exclude_content_patterns.should == exclude_pages.map { |p| Regexp.new( p ) }
+            expect(subject.exclude_content_patterns).to eq(exclude_pages.map { |p| Regexp.new( p ) })
         end
     end
 
@@ -214,14 +214,14 @@ describe Arachni::OptionGroups::Scope do
             values = { /redundant_path_patterns/ => 1 }
             subject.redundant_path_patterns = values
 
-            data['redundant_path_patterns'].should == values.my_stringify
+            expect(data['redundant_path_patterns']).to eq(values.my_stringify)
         end
 
         it "converts 'url_rewrites' to strings" do
             values = { /url_rewrites/ => 'test' }
             subject.url_rewrites = values
 
-            data['url_rewrites'].should == values.my_stringify
+            expect(data['url_rewrites']).to eq(values.my_stringify)
         end
 
         %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|
@@ -229,7 +229,7 @@ describe Arachni::OptionGroups::Scope do
                 values = [/#{k}/]
                 subject.send( "#{k}=", values )
 
-                data[k].should == [/#{k}/.to_s]
+                expect(data[k]).to eq([/#{k}/.to_s])
             end
         end
     end

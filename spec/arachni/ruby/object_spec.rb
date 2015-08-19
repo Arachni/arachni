@@ -15,7 +15,7 @@ describe Object do
             b = a.deep_clone
             a[0] << 3
 
-            b.should == [ [1,2] ]
+            expect(b).to eq([ [1,2] ])
         end
     end
 

@@ -20,11 +20,11 @@ describe name_from_filename do
     end
 
     easy_test do
-        issues.select { |i| i.vector.type == :input }.size.should == 9
-        issues.select { |i| i.vector.type == :button }.size.should == 1
+        expect(issues.select { |i| i.vector.type == :input }.size).to eq 9
+        expect(issues.select { |i| i.vector.type == :button }.size).to eq 1
 
         Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
-            find_issue( event ).vector.action.should end_with event.to_s
+            expect(find_issue( event ).vector.action).to end_with event.to_s
         end
     end
 end

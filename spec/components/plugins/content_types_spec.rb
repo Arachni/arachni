@@ -60,7 +60,7 @@ YAML
     context 'with default options' do
         it "skips 'text' content types" do
             run
-            actual_results.should eq default_results
+            expect(actual_results).to eq default_results
         end
     end
 
@@ -69,7 +69,7 @@ YAML
             options.plugins[component_name] = { 'exclude' => 'image|excel' }
 
             run
-            actual_results.should eq results_with_options
+            expect(actual_results).to eq results_with_options
         end
     end
 
@@ -78,14 +78,14 @@ YAML
             options.plugins[component_name] = { 'exclude' => '' }
 
             run
-            actual_results.should eq results_with_empty_options
+            expect(actual_results).to eq results_with_empty_options
         end
     end
 
     describe '.merge' do
         it 'merges an array of results' do
             results = plugin.merge( [default_results, results_with_options] )
-            results.should eq results_with_empty_options
+            expect(results).to eq results_with_empty_options
         end
     end
 end

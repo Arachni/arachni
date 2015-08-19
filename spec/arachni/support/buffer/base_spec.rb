@@ -7,7 +7,7 @@ describe Arachni::Support::Buffer::Base do
             it 'determines whether or not the buffer is full' do
                 b = described_class.new( 10 )
                 20.times { |i| b << i }
-                b.full?.should be_true
+                expect(b.full?).to be_truthy
             end
         end
 
@@ -16,15 +16,15 @@ describe Arachni::Support::Buffer::Base do
                 b = described_class.new( 10, Set )
                 b << 'test'
                 b << 'test'
-                b.size.should == 1
-                b.flush.class.should == Set
+                expect(b.size).to eq(1)
+                expect(b.flush.class).to eq(Set)
 
                 b = described_class.new
                 b << 'test'
                 b << 'test'
-                b.size.should == 2
+                expect(b.size).to eq(2)
 
-                b.flush.class.should == Array
+                expect(b.flush.class).to eq(Array)
             end
         end
     end
@@ -34,13 +34,13 @@ describe Arachni::Support::Buffer::Base do
             b = described_class.new
             b << 'test'
             b << 'test'
-            b.size.should == 2
+            expect(b.size).to eq(2)
         end
         it 'aliased to #push' do
             b = described_class.new
             b.push 'test'
             b.push 'test'
-            b.size.should == 2
+            expect(b.size).to eq(2)
         end
     end
 
@@ -48,7 +48,7 @@ describe Arachni::Support::Buffer::Base do
         it 'pushes a batch of entries' do
             b = described_class.new
             b.batch_push [ 'test', 'test2' ]
-            b.size.should == 2
+            expect(b.size).to eq(2)
         end
     end
 
@@ -56,7 +56,7 @@ describe Arachni::Support::Buffer::Base do
         it 'returns the number of entries in the buffer' do
             b = described_class.new
             b.batch_push [ 'test', 'test2', 'test3' ]
-            b.size.should == 3
+            expect(b.size).to eq(3)
         end
     end
 
@@ -65,14 +65,14 @@ describe Arachni::Support::Buffer::Base do
             context 'is empty' do
                 it 'returns true' do
                     b = described_class.new( 10 )
-                    b.empty?.should be_true
+                    expect(b.empty?).to be_truthy
                 end
             end
             context 'is not empty' do
                 it 'returns false' do
                     b = described_class.new( 10 )
                     b << 1
-                    b.empty?.should be_false
+                    expect(b.empty?).to be_falsey
                 end
             end
         end
@@ -84,14 +84,14 @@ describe Arachni::Support::Buffer::Base do
                 it 'returns true' do
                     b = described_class.new( 10 )
                     20.times { |i| b << i }
-                    b.full?.should be_true
+                    expect(b.full?).to be_truthy
                 end
             end
             context 'not reached its maximum size' do
                 it 'returns false' do
                     b = described_class.new( 100 )
                     20.times { |i| b << i }
-                    b.full?.should be_false
+                    expect(b.full?).to be_falsey
                 end
             end
         end
@@ -101,18 +101,18 @@ describe Arachni::Support::Buffer::Base do
         it 'returns buffer contents' do
             b = described_class.new
             b.batch_push [ 'test', 'test2', 'test3' ]
-            b.size.should == 3
+            expect(b.size).to eq(3)
 
-            b.flush.should == [ 'test', 'test2', 'test3' ]
-            b.size.should == 0
+            expect(b.flush).to eq([ 'test', 'test2', 'test3' ])
+            expect(b.size).to eq(0)
         end
         it 'empties the buffer' do
             b = described_class.new
             b.batch_push [ 'test', 'test2', 'test3' ]
-            b.size.should == 3
+            expect(b.size).to eq(3)
 
-            b.flush.should == [ 'test', 'test2', 'test3' ]
-            b.size.should == 0
+            expect(b.flush).to eq([ 'test', 'test2', 'test3' ])
+            expect(b.size).to eq(0)
         end
     end
 
@@ -123,30 +123,30 @@ describe Arachni::Support::Buffer::Base do
             b = described_class.new
 
             call_args = []
-            b.on_push do |buffer|
+            expect(b.on_push do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
-            b.on_push do |buffer|
+            expect(b.on_push do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
             b << item
-            call_args.should == [ item, item]
+            expect(call_args).to eq([ item, item])
 
             b = described_class.new
 
             call_args = []
-            b.on_push do |buffer|
+            expect(b.on_push do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
-            b.on_push do |buffer|
+            expect(b.on_push do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
             b.push item
-            call_args.should == [ item, item]
+            expect(call_args).to eq([ item, item])
         end
     end
 
@@ -157,16 +157,16 @@ describe Arachni::Support::Buffer::Base do
             b = described_class.new
 
             call_args = []
-            b.on_batch_push do |buffer|
+            expect(b.on_batch_push do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
-            b.on_batch_push do |buffer|
+            expect(b.on_batch_push do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
             b.batch_push item
-            call_args.should == [ item, item]
+            expect(call_args).to eq([ item, item])
         end
     end
 
@@ -178,16 +178,16 @@ describe Arachni::Support::Buffer::Base do
             b << item
 
             call_args = []
-            b.on_flush do |buffer|
+            expect(b.on_flush do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
-            b.on_flush do |buffer|
+            expect(b.on_flush do |buffer|
                 call_args << buffer
-            end.should == b
+            end).to eq(b)
 
             b.flush
-            call_args.should == [ [item], [item]]
+            expect(call_args).to eq([ [item], [item]])
         end
     end
 end

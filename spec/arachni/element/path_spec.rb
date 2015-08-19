@@ -27,7 +27,7 @@ describe Arachni::Element::Path do
 
     describe '#action' do
         it 'delegates to #url' do
-            subject.action.should == subject.url
+            expect(subject.action).to eq(subject.url)
         end
     end
 end

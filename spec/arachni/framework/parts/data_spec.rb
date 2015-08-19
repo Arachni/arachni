@@ -5,7 +5,7 @@ describe Arachni::Framework::Parts::Data do
 
     describe '#data' do
         it "returns #{Arachni::Data::Framework}" do
-            subject.data.should be_kind_of Arachni::Data::Framework
+            expect(subject.data).to be_kind_of Arachni::Data::Framework
         end
     end
 
@@ -17,7 +17,7 @@ describe Arachni::Framework::Parts::Data do
                 f.checks.load :taint
 
                 f.run
-                f.sitemap.should == { "#{@url}/" => 200 }
+                expect(f.sitemap).to eq({ "#{@url}/" => 200 })
             end
         end
     end
@@ -29,31 +29,31 @@ describe Arachni::Framework::Parts::Data do
             subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 
-            subject.page_queue_total_size.should == 0
-            subject.push_to_page_queue( page ).should be_true
+            expect(subject.page_queue_total_size).to eq(0)
+            expect(subject.push_to_page_queue( page )).to be_truthy
             subject.run
 
-            subject.report.issues.size.should == 1
-            subject.page_queue_total_size.should > 0
+            expect(subject.report.issues.size).to eq(1)
+            expect(subject.page_queue_total_size).to be > 0
         end
 
         it 'updates the #sitemap with the DOM URL' do
             subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 
-            subject.sitemap.should be_empty
+            expect(subject.sitemap).to be_empty
 
             page = Arachni::Page.from_url( @url + '/link' )
             page.dom.url = @url + '/link/#/stuff'
 
             subject.push_to_page_queue page
-            subject.sitemap.should include @url + '/link/#/stuff'
+            expect(subject.sitemap).to include @url + '/link/#/stuff'
         end
 
         it "passes it to #{Arachni::ElementFilter}#update_from_page_cache" do
             page = Arachni::Page.from_url( @url + '/link' )
 
-            Arachni::ElementFilter.should receive(:update_from_page_cache).with(page)
+            expect(Arachni::ElementFilter).to receive(:update_from_page_cache).with(page)
 
             subject.push_to_page_queue page
         end
@@ -62,58 +62,58 @@ describe Arachni::Framework::Parts::Data do
             it 'ignores it' do
                 page = Arachni::Page.from_url( @url + '/stuff' )
 
-                subject.page_queue_total_size.should == 0
+                expect(subject.page_queue_total_size).to eq(0)
                 subject.push_to_page_queue( page )
                 subject.push_to_page_queue( page )
                 subject.push_to_page_queue( page )
-                subject.page_queue_total_size.should == 1
+                expect(subject.page_queue_total_size).to eq(1)
             end
 
             it 'returns false' do
                 page = Arachni::Page.from_url( @url + '/stuff' )
 
-                subject.page_queue_total_size.should == 0
-                subject.push_to_page_queue( page ).should be_true
-                subject.push_to_page_queue( page ).should be_false
-                subject.push_to_page_queue( page ).should be_false
-                subject.page_queue_total_size.should == 1
+                expect(subject.page_queue_total_size).to eq(0)
+                expect(subject.push_to_page_queue( page )).to be_truthy
+                expect(subject.push_to_page_queue( page )).to be_falsey
+                expect(subject.push_to_page_queue( page )).to be_falsey
+                expect(subject.page_queue_total_size).to eq(1)
             end
         end
 
         context 'when #accepts_more_pages?' do
             context false do
                 it 'returns false' do
-                    subject.stub(:accepts_more_pages?) { false }
-                    subject.push_to_page_queue( page ).should be_false
+                    allow(subject).to receive(:accepts_more_pages?) { false }
+                    expect(subject.push_to_page_queue( page )).to be_falsey
                 end
             end
 
             context true do
                 it 'returns true' do
-                    subject.stub(:accepts_more_pages?) { true }
-                    subject.push_to_page_queue( page ).should be_true
+                    allow(subject).to receive(:accepts_more_pages?) { true }
+                    expect(subject.push_to_page_queue( page )).to be_truthy
                 end
             end
         end
 
         context "when #{Arachni::Page::Scope}#out? is true" do
             it 'returns false' do
-                Arachni::Page::Scope.any_instance.stub(:out?) { true }
-                subject.push_to_page_queue( page ).should be_false
+                allow_any_instance_of(Arachni::Page::Scope).to receive(:out?) { true }
+                expect(subject.push_to_page_queue( page )).to be_falsey
             end
         end
 
         context "when #{Arachni::URI::Scope}#redundant? is true" do
             it 'returns false' do
-                Arachni::Page::Scope.any_instance.stub(:redundant?) { true }
-                subject.push_to_page_queue( page ).should be_false
+                allow_any_instance_of(Arachni::Page::Scope).to receive(:redundant?) { true }
+                expect(subject.push_to_page_queue( page )).to be_falsey
             end
         end
 
         context "when #{Arachni::Page::Scope}#auto_redundant? is true" do
             it 'returns false' do
-                Arachni::Page::Scope.any_instance.stub(:auto_redundant?) { true }
-                subject.push_to_page_queue( page ).should be_false
+                allow_any_instance_of(Arachni::Page::Scope).to receive(:auto_redundant?) { true }
+                expect(subject.push_to_page_queue( page )).to be_falsey
             end
         end
     end
@@ -123,63 +123,63 @@ describe Arachni::Framework::Parts::Data do
             subject.options.audit.elements :links, :forms, :cookies
             subject.checks.load :taint
 
-            subject.url_queue_total_size.should == 0
-            subject.push_to_url_queue(  @url + '/link' ).should be_true
+            expect(subject.url_queue_total_size).to eq(0)
+            expect(subject.push_to_url_queue(  @url + '/link' )).to be_truthy
             subject.run
 
-            subject.report.issues.size.should == 1
-            subject.url_queue_total_size.should == 3
+            expect(subject.report.issues.size).to eq(1)
+            expect(subject.url_queue_total_size).to eq(3)
         end
 
         context 'when the URL has already been seen' do
             it 'returns false' do
-                subject.push_to_url_queue( @url + '/link' ).should be_true
-                subject.push_to_url_queue( @url + '/link' ).should be_false
+                expect(subject.push_to_url_queue( @url + '/link' )).to be_truthy
+                expect(subject.push_to_url_queue( @url + '/link' )).to be_falsey
             end
 
             it 'ignores it' do
-                subject.url_queue_total_size.should == 0
+                expect(subject.url_queue_total_size).to eq(0)
                 subject.push_to_url_queue( @url + '/link' )
                 subject.push_to_url_queue( @url + '/link' )
                 subject.push_to_url_queue( @url + '/link' )
-                subject.url_queue_total_size.should == 1
+                expect(subject.url_queue_total_size).to eq(1)
             end
         end
 
         context 'when #accepts_more_pages?' do
             context false do
                 it 'returns false' do
-                    subject.stub(:accepts_more_pages?) { false }
-                    subject.push_to_url_queue( @url ).should be_false
+                    allow(subject).to receive(:accepts_more_pages?) { false }
+                    expect(subject.push_to_url_queue( @url )).to be_falsey
                 end
             end
 
             context true do
                 it 'returns true' do
-                    subject.stub(:accepts_more_pages?) { true }
-                    subject.push_to_url_queue( @url ).should be_true
+                    allow(subject).to receive(:accepts_more_pages?) { true }
+                    expect(subject.push_to_url_queue( @url )).to be_truthy
                 end
             end
         end
 
         context "when #{Arachni::URI::Scope}#out? is true" do
             it 'returns false' do
-                Arachni::URI::Scope.any_instance.stub(:out?) { true }
-                subject.push_to_url_queue( @url ).should be_false
+                allow_any_instance_of(Arachni::URI::Scope).to receive(:out?) { true }
+                expect(subject.push_to_url_queue( @url )).to be_falsey
             end
         end
 
         context "when #{Arachni::URI::Scope}#redundant? is true" do
             it 'returns false' do
-                Arachni::URI::Scope.any_instance.stub(:redundant?) { true }
-                subject.push_to_url_queue( @url ).should be_false
+                allow_any_instance_of(Arachni::URI::Scope).to receive(:redundant?) { true }
+                expect(subject.push_to_url_queue( @url )).to be_falsey
             end
         end
 
         context "when #{Arachni::URI::Scope}#auto_redundant? is true" do
             it 'returns false' do
-                Arachni::URI::Scope.any_instance.stub(:auto_redundant?) { true }
-                subject.push_to_url_queue( @url ).should be_false
+                allow_any_instance_of(Arachni::URI::Scope).to receive(:auto_redundant?) { true }
+                expect(subject.push_to_url_queue( @url )).to be_falsey
             end
         end
     end

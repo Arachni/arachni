@@ -25,14 +25,14 @@ describe Arachni::Parser do
 
     describe '#url' do
         it 'holds the effective URL of the response' do
-            subject.url.should == @url
+            expect(subject.url).to eq(@url)
         end
     end
 
     describe '#link' do
         it 'returns the URL of the response as a Link' do
-            subject.link.action.should == @opts.url
-            subject.link.inputs.should == { 'query_var_input' => 'query_var_val' }
+            expect(subject.link.action).to eq(@opts.url)
+            expect(subject.link.inputs).to eq({ 'query_var_input' => 'query_var_val' })
         end
     end
 
@@ -47,17 +47,17 @@ describe Arachni::Parser do
 
         it 'overrides the body of the HTTP response for the parsing process' do
             subject.body = '<a href="/?name2=val2">Stuff</a>'
-            subject.links.size.should == 1
-            subject.links.first.inputs.should == { 'name2' => 'val2' }
+            expect(subject.links.size).to eq(1)
+            expect(subject.links.first.inputs).to eq({ 'name2' => 'val2' })
         end
 
         it 'clears the existing element cache' do
-            subject.links.size.should == 1
-            subject.links.first.inputs.should == { 'name' => 'val' }
+            expect(subject.links.size).to eq(1)
+            expect(subject.links.first.inputs).to eq({ 'name' => 'val' })
 
             subject.body = '<a href="/?name2=val2">Stuff</a>'
-            subject.links.size.should == 1
-            subject.links.first.inputs.should == { 'name2' => 'val2' }
+            expect(subject.links.size).to eq(1)
+            expect(subject.links.first.inputs).to eq({ 'name2' => 'val2' })
         end
     end
 
@@ -65,22 +65,22 @@ describe Arachni::Parser do
         it 'returns a Page' do
             page = subject.page
 
-            page.should be_kind_of Arachni::Page
-            page.url.should == subject.url
-            page.method.should == @response.request.method
-            page.query_vars.should == { 'query_var_input' => 'query_var_val' }
-            page.body.should == @response.body
-            page.response.should == @response
-            page.paths.should == subject.paths
+            expect(page).to be_kind_of Arachni::Page
+            expect(page.url).to eq(subject.url)
+            expect(page.method).to eq(@response.request.method)
+            expect(page.query_vars).to eq({ 'query_var_input' => 'query_var_val' })
+            expect(page.body).to eq(@response.body)
+            expect(page.response).to eq(@response)
+            expect(page.paths).to eq(subject.paths)
 
             link = Arachni::Element::Link.new( url: @url, inputs: subject.link_vars )
 
-            page.links.should == subject.links | [link]
-            page.forms.should == subject.forms
-            page.cookies.should == subject.cookies_to_be_audited
-            page.headers.should == subject.headers
+            expect(page.links).to eq(subject.links | [link])
+            expect(page.forms).to eq(subject.forms)
+            expect(page.cookies).to eq(subject.cookies_to_be_audited)
+            expect(page.headers).to eq(subject.headers)
 
-            page.cookie_jar.should == subject.cookie_jar
+            expect(page.cookie_jar).to eq(subject.cookie_jar)
         end
     end
 
@@ -98,10 +98,10 @@ describe Arachni::Parser do
         end
 
         it 'returns cookies that need to be transmitted to the page' do
-            subject.cookie_jar.map(&:inputs).should == [
+            expect(subject.cookie_jar.map(&:inputs)).to eq([
                  { 'cname'               => 'cval' },
                  { 'name_from_cookiejar' => 'updated' }
-            ]
+            ])
         end
     end
 
@@ -127,23 +127,23 @@ describe Arachni::Parser do
                 }
             ))
 
-            subject.cookies_to_be_audited.map(&:inputs).should == [
+            expect(subject.cookies_to_be_audited.map(&:inputs)).to eq([
                 { 'cname'               => 'cval' },
                 { 'name_from_cookiejar' => 'updated' },
                 { 'irrelevant'          => 'iv' }
-            ]
+            ])
         end
 
         it 'forces the #action to the page URL' do
             cookies = subject.cookies_to_be_audited
-            cookies.size.should == 2
-            cookies.map { |c| c.action }.uniq.should == [@url]
+            expect(cookies.size).to eq(2)
+            expect(cookies.map { |c| c.action }.uniq).to eq([@url])
         end
     end
 
     describe '#text?' do
         context 'when the response is text based' do
-            it { subject.text?.should be_true }
+            it { expect(subject.text?).to be_truthy }
         end
 
         context 'when the response is not text based' do
@@ -152,7 +152,7 @@ describe Arachni::Parser do
                     'Content-Type' => 'bin/stuff'
                 })
             end
-            it { subject.text?.should be_false }
+            it { expect(subject.text?).to be_falsey }
         end
     end
 
@@ -171,7 +171,7 @@ describe Arachni::Parser do
             end
 
             it 'returns nil' do
-                subject.document.should be_nil
+                expect(subject.document).to be_nil
             end
         end
 
@@ -210,7 +210,7 @@ describe Arachni::Parser do
 
             it 'includes the URL in the array' do
                 subject.links.size == 1
-                subject.links.first.inputs.should == { 'stuff' => 'ba' }
+                expect(subject.links.first.inputs).to eq({ 'stuff' => 'ba' })
             end
         end
 
@@ -227,7 +227,7 @@ describe Arachni::Parser do
             end
 
             it 'should not include it the response URL' do
-                subject.links.should be_empty
+                expect(subject.links).to be_empty
             end
         end
         context 'when the response is not text based' do
@@ -238,7 +238,7 @@ describe Arachni::Parser do
             end
 
             it 'returns nil' do
-                subject.links.should be_empty
+                expect(subject.links).to be_empty
             end
 
             context 'and the URL has query parameters' do
@@ -249,8 +249,8 @@ describe Arachni::Parser do
                 end
 
                 it 'returns the URL parsed as a link' do
-                    subject.links.size.should == 1
-                    subject.links.first.should == subject.link
+                    expect(subject.links.size).to eq(1)
+                    expect(subject.links.first).to eq(subject.link)
                 end
             end
         end
@@ -258,22 +258,22 @@ describe Arachni::Parser do
 
     describe '#forms' do
         it 'returns an array of parsed forms' do
-            subject.forms.size.should == 2
+            expect(subject.forms.size).to eq(2)
 
             form = subject.forms.first
-            form.action.should == @utils.normalize_url( @opts.url + '/form' )
-            form.url.should == @url
+            expect(form.action).to eq(@utils.normalize_url( @opts.url + '/form' ))
+            expect(form.url).to eq(@url)
 
-            form.inputs.should == {
+            expect(form.inputs).to eq({
                 "form_input_1" => "form_val_1",
                 "form_input_2" => "form_val_2"
-            }
-            form.method.should == :post
+            })
+            expect(form.method).to eq(:post)
 
             form = subject.forms.last
-            form.action.should == @utils.normalize_url( @opts.url + '/form_2' )
-            form.url.should == @url
-            form.inputs.should == { "form_2_input_1" => "form_2_val_1" }
+            expect(form.action).to eq(@utils.normalize_url( @opts.url + '/form_2' ))
+            expect(form.url).to eq(@url)
+            expect(form.inputs).to eq({ "form_2_input_1" => "form_2_val_1" })
         end
 
         context 'when passed secondary responses' do
@@ -284,7 +284,7 @@ describe Arachni::Parser do
                 responses << Arachni::HTTP::Client.get( @opts.url + 'with_nonce', mode: :sync )
 
                 parser = Arachni::Parser.new( responses, @opts )
-                parser.forms.map { |f| f.nonce_name }.sort.should == %w(nonce nonce2).sort
+                expect(parser.forms.map { |f| f.nonce_name }.sort).to eq(%w(nonce nonce2).sort)
             end
         end
         context 'when the response is not text based' do
@@ -293,40 +293,40 @@ describe Arachni::Parser do
             end
 
             it 'returns nil' do
-                subject.forms.should be_empty
+                expect(subject.forms).to be_empty
             end
         end
     end
 
     describe '#cookies' do
         it 'returns an array of cookies' do
-            subject.cookies.size.should == 3
+            expect(subject.cookies.size).to eq(3)
 
             cookies = subject.cookies.sort_by { |cookie| cookie.name }.reverse
 
             cookie = cookies.pop
-            cookie.action.should == @url
-            cookie.inputs.should == { 'cookie_input' => 'cookie_val' }
-            cookie.method.should == :get
-            cookie.secure?.should be_true
-            cookie.http_only?.should be_true
-            cookie.url.should == @url
+            expect(cookie.action).to eq(@url)
+            expect(cookie.inputs).to eq({ 'cookie_input' => 'cookie_val' })
+            expect(cookie.method).to eq(:get)
+            expect(cookie.secure?).to be_truthy
+            expect(cookie.http_only?).to be_truthy
+            expect(cookie.url).to eq(@url)
 
             cookie = cookies.pop
-            cookie.action.should == @url
-            cookie.inputs.should == { 'cookie_input2' => 'cookie_val2' }
-            cookie.method.should == :get
-            cookie.secure?.should be_false
-            cookie.http_only?.should be_false
-            cookie.url.should == @url
+            expect(cookie.action).to eq(@url)
+            expect(cookie.inputs).to eq({ 'cookie_input2' => 'cookie_val2' })
+            expect(cookie.method).to eq(:get)
+            expect(cookie.secure?).to be_falsey
+            expect(cookie.http_only?).to be_falsey
+            expect(cookie.url).to eq(@url)
 
             cookie = cookies.pop
-            cookie.action.should == @url
-            cookie.inputs.should == { "http_equiv_cookie_name" => "http_equiv_cookie_val" }
-            cookie.secure?.should be_true
-            cookie.http_only?.should be_true
-            cookie.method.should == :get
-            cookie.url.should == @url
+            expect(cookie.action).to eq(@url)
+            expect(cookie.inputs).to eq({ "http_equiv_cookie_name" => "http_equiv_cookie_val" })
+            expect(cookie.secure?).to be_truthy
+            expect(cookie.http_only?).to be_truthy
+            expect(cookie.method).to eq(:get)
+            expect(cookie.url).to eq(@url)
         end
     end
 
@@ -344,11 +344,11 @@ describe Arachni::Parser do
 
             it "returns a #{Arachni::Element::LinkTemplate}" do
                 link = subject.link_template
-                link.action.should == response.url
-                link.url.should == response.url
-                link.inputs.should == {
+                expect(link.action).to eq(response.url)
+                expect(link.url).to eq(response.url)
+                expect(link.inputs).to eq({
                     'param'  => 'myvalue'
-                }
+                })
             end
         end
     end
@@ -375,11 +375,11 @@ describe Arachni::Parser do
 
             it "returns a #{Arachni::Element::LinkTemplate}" do
                 link = subject.link_templates.first
-                link.action.should == response.url + 'test2/param/myvalue'
-                link.url.should == response.url
-                link.inputs.should == {
+                expect(link.action).to eq(response.url + 'test2/param/myvalue')
+                expect(link.url).to eq(response.url)
+                expect(link.inputs).to eq({
                     'param'  => 'myvalue'
-                }
+                })
             end
         end
     end
@@ -387,8 +387,8 @@ describe Arachni::Parser do
     describe '#paths' do
         context 'when an error occurs' do
             it 'returns an empty array' do
-                described_class.stub(:extractors){ raise }
-                described_class.new( @response ).paths.should == []
+                allow(described_class).to receive(:extractors){ raise }
+                expect(described_class.new( @response ).paths).to eq([])
             end
         end
     end
@@ -396,33 +396,34 @@ describe Arachni::Parser do
     context 'without base' do
         describe '#base' do
             it 'returns nil' do
-                subject.base.should == nil
+                expect(subject.base).to eq(nil)
             end
         end
 
         describe '#to_absolute' do
             it 'converts a relative path to absolute' do
-                subject.to_absolute( 'relative/path' ).should ==
+                expect(subject.to_absolute( 'relative/path' )).to eq(
                     @utils.normalize_url( "#{@opts.url}/relative/path" )
+                )
             end
         end
 
         describe '#links' do
             it 'returns an array of links' do
                 links = subject.links
-                links.size.should == 2
+                expect(links.size).to eq(2)
 
                 link = links.first
-                link.action.should == @opts.url
-                link.inputs.should == { 'query_var_input' => 'query_var_val' }
-                link.method.should == :get
-                link.url.should == @url
+                expect(link.action).to eq(@opts.url)
+                expect(link.inputs).to eq({ 'query_var_input' => 'query_var_val' })
+                expect(link.method).to eq(:get)
+                expect(link.url).to eq(@url)
 
                 link = links.last
-                link.action.should == @utils.normalize_url( @opts.url + '/link' )
-                link.inputs.should == { 'link_input' => 'link_val' }
-                link.method.should == :get
-                link.url.should == @url
+                expect(link.action).to eq(@utils.normalize_url( @opts.url + '/link' ))
+                expect(link.inputs).to eq({ 'link_input' => 'link_val' })
+                expect(link.method).to eq(:get)
+                expect(link.url).to eq(@url)
             end
         end
 
@@ -434,7 +435,7 @@ describe Arachni::Parser do
                     "form_2",
                 ].map { |p| @utils.normalize_url( @opts.url.to_s + '/' + p ) }
 
-                (subject.paths & paths).sort.should == paths.sort
+                expect((subject.paths & paths).sort).to eq(paths.sort)
             end
         end
     end
@@ -449,33 +450,34 @@ describe Arachni::Parser do
 
         describe '#base' do
             it 'returns the base href attr' do
-                subject.base.should == @utils.normalize_url( "#{@opts.url.to_s}/this_is_the_base/" )
+                expect(subject.base).to eq(@utils.normalize_url( "#{@opts.url.to_s}/this_is_the_base/" ))
             end
         end
 
         describe '#to_absolute' do
             it 'converts a relative path to absolute' do
-                subject.to_absolute( 'relative/path' ).should ==
+                expect(subject.to_absolute( 'relative/path' )).to eq(
                     @utils.normalize_url( "#{subject.base}relative/path" )
+                )
             end
         end
 
         describe '#links' do
             it 'returns an array of links' do
                 links = subject.links
-                links.size.should == 2
+                expect(links.size).to eq(2)
 
                 link = links.first
-                link.action.should == @opts.url + 'with_base'
-                link.inputs.should ==  { 'stuff' => 'ha' }
-                link.method.should == :get
-                link.url.should == url
+                expect(link.action).to eq(@opts.url + 'with_base')
+                expect(link.inputs).to eq({ 'stuff' => 'ha' })
+                expect(link.method).to eq(:get)
+                expect(link.url).to eq(url)
 
                 link = links.last
-                link.action.should == subject.base + 'link_with_base'
-                link.inputs.should == { 'link_input' => 'link_val' }
-                link.method.should == :get
-                link.url.should == url
+                expect(link.action).to eq(subject.base + 'link_with_base')
+                expect(link.inputs).to eq({ 'link_input' => 'link_val' })
+                expect(link.method).to eq(:get)
+                expect(link.url).to eq(url)
             end
         end
 
@@ -486,25 +488,25 @@ describe Arachni::Parser do
                     'link_with_base?link_input=link_val'
                 ].map { |p| subject.base + '' + p }
 
-                (subject.paths & paths).sort.should == paths.sort
+                expect((subject.paths & paths).sort).to eq(paths.sort)
             end
         end
     end
 
     describe '#headers' do
         it 'returns an array of headers' do
-            subject.headers.each { |h| h.class.should == Arachni::Element::Header }
+            subject.headers.each { |h| expect(h.class).to eq(Arachni::Element::Header) }
         end
 
         it 'includes headers from the HTTP request' do
             subject.response.request.headers['X-Custom-Header'] = 'My-stuff'
-            subject.headers.find { |h| h.name == 'X-Custom-Header' }.should be_true
+            expect(subject.headers.find { |h| h.name == 'X-Custom-Header' }).to be_truthy
         end
     end
 
     describe '#link_vars' do
         it 'returns a hash of link query inputs' do
-            subject.link_vars.should == { 'query_var_input' => 'query_var_val' }
+            expect(subject.link_vars).to eq({ 'query_var_input' => 'query_var_val' })
         end
 
         context "when there are #{Arachni::OptionGroups::Scope}#url_rewrites" do
@@ -519,14 +521,14 @@ describe Arachni::Parser do
             end
 
             it 'rewrites the url' do
-                subject.link_vars.should == { 'id' => '13' }
+                expect(subject.link_vars).to eq({ 'id' => '13' })
             end
         end
 
         context 'when the URL cannot be parsed' do
             it 'returns an empty array' do
                 subject.url = nil
-                subject.link_vars.should == {}
+                expect(subject.link_vars).to eq({})
             end
         end
     end

@@ -15,18 +15,18 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
         has_event_triggers = false
 
         @cluster.queue( job ) do |result|
-            result.should be_kind_of described_class::Result
+            expect(result).to be_kind_of described_class::Result
 
             if result.job.is_a? described_class::EventTrigger
                 has_event_triggers = true
-                result.job.forwarder.should be_kind_of described_class
+                expect(result.job.forwarder).to be_kind_of described_class
             end
 
             pages << result.page
         end
         @cluster.wait
 
-        has_event_triggers.should be_true
+        expect(has_event_triggers).to be_truthy
         browser_explore_check_pages pages
     end
 
@@ -55,7 +55,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
                 q << subject
 
                 restored = q.pop
-                restored.should == subject
+                expect(restored).to eq(subject)
             end
         end
 
@@ -73,7 +73,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
                 q << subject
 
                 restored = q.pop
-                restored.should == subject
+                expect(restored).to eq(subject)
             end
         end
     end

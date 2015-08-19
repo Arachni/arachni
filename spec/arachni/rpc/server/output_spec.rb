@@ -29,7 +29,7 @@ describe Arachni::UI::Output do
 
         it 'sends output to the logfile' do
             @out.print_line( 'blah' )
-            IO.read( @logfile ).split( "\n" ).size == 1
+            expect(IO.read( @logfile ).split( "\n" ).size).to eq(1)
         end
     end
 end

@@ -12,11 +12,11 @@ describe Arachni::Framework::Parts::Scope do
                         f.options.audit.elements :links
                         f.options.scope.page_limit = 10
 
-                        f.page_limit_reached?.should be_false
+                        expect(f.page_limit_reached?).to be_falsey
                         f.run
-                        f.page_limit_reached?.should be_true
+                        expect(f.page_limit_reached?).to be_truthy
 
-                        f.sitemap.size.should == 10
+                        expect(f.sitemap.size).to eq(10)
                     end
                 end
             end
@@ -30,9 +30,9 @@ describe Arachni::Framework::Parts::Scope do
 
                         f.checks.load :taint
 
-                        f.page_limit_reached?.should be_false
+                        expect(f.page_limit_reached?).to be_falsey
                         f.run
-                        f.page_limit_reached?.should be_false
+                        expect(f.page_limit_reached?).to be_falsey
                     end
                 end
             end
@@ -45,9 +45,9 @@ describe Arachni::Framework::Parts::Scope do
 
                         f.checks.load :taint
 
-                        f.page_limit_reached?.should be_false
+                        expect(f.page_limit_reached?).to be_falsey
                         f.run
-                        f.page_limit_reached?.should be_false
+                        expect(f.page_limit_reached?).to be_falsey
                     end
                 end
             end
@@ -57,18 +57,18 @@ describe Arachni::Framework::Parts::Scope do
     describe '#accepts_more_pages?' do
         context 'when #page_limit_reached? and #crawl?' do
             it 'return true' do
-                subject.stub(:page_limit_reached?) { false }
-                subject.stub(:crawl?) { true }
+                allow(subject).to receive(:page_limit_reached?) { false }
+                allow(subject).to receive(:crawl?) { true }
 
-                subject.accepts_more_pages?.should be_true
+                expect(subject.accepts_more_pages?).to be_truthy
             end
         end
 
         context 'when #page_limit_reached?' do
             context true do
                 it 'returns false' do
-                    subject.stub(:page_limit_reached?) { true }
-                    subject.accepts_more_pages?.should be_false
+                    allow(subject).to receive(:page_limit_reached?) { true }
+                    expect(subject.accepts_more_pages?).to be_falsey
                 end
             end
         end
@@ -76,8 +76,8 @@ describe Arachni::Framework::Parts::Scope do
         context 'when #crawl?' do
             context false do
                 it 'returns false' do
-                    subject.stub(:crawl?) { false }
-                    subject.accepts_more_pages?.should be_false
+                    allow(subject).to receive(:crawl?) { false }
+                    expect(subject.accepts_more_pages?).to be_falsey
                 end
             end
         end

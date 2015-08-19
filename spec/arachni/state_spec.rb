@@ -15,37 +15,37 @@ describe Arachni::State do
 
     describe '#audit' do
         it "returns an instance of #{described_class::Audit}" do
-            subject.audit.should be_kind_of described_class::Audit
+            expect(subject.audit).to be_kind_of described_class::Audit
         end
     end
 
     describe '#element_filter' do
         it "returns an instance of #{described_class::ElementFilter}" do
-            subject.element_filter.should be_kind_of described_class::ElementFilter
+            expect(subject.element_filter).to be_kind_of described_class::ElementFilter
         end
     end
 
     describe '#framework' do
         it "returns an instance of #{described_class::Framework}" do
-            subject.framework.should be_kind_of described_class::Framework
+            expect(subject.framework).to be_kind_of described_class::Framework
         end
     end
 
     describe '#options' do
         it "returns an instance of #{described_class::Options}" do
-            subject.options.should be_kind_of described_class::Options
+            expect(subject.options).to be_kind_of described_class::Options
         end
     end
 
     describe '#http' do
         it "returns an instance of #{described_class::HTTP}" do
-            subject.http.should be_kind_of described_class::HTTP
+            expect(subject.http).to be_kind_of described_class::HTTP
         end
     end
 
     describe '#plugins' do
         it "returns an instance of #{described_class::Plugins}" do
-            subject.plugins.should be_kind_of described_class::Plugins
+            expect(subject.plugins).to be_kind_of described_class::Plugins
         end
     end
 
@@ -56,7 +56,7 @@ describe Arachni::State do
     describe '#statistics' do
         %w(options audit element_filter framework http plugins).each do |name|
             it "includes :#{name} statistics" do
-                subject.statistics[name.to_sym].should == subject.send(name).statistics
+                expect(subject.statistics[name.to_sym]).to eq(subject.send(name).statistics)
             end
         end
     end
@@ -70,8 +70,8 @@ describe Arachni::State do
 
                 new_instance = subject.load( dump_directory ).send(name)
 
-                new_instance.should be_kind_of subject.send(name).class
-                new_instance.object_id.should_not == previous_instance.object_id
+                expect(new_instance).to be_kind_of subject.send(name).class
+                expect(new_instance.object_id).not_to eq(previous_instance.object_id)
             end
         end
     end
@@ -79,7 +79,7 @@ describe Arachni::State do
     describe '#clear' do
         %w(options audit element_filter framework http plugins).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end

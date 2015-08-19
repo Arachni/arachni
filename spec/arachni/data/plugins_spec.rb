@@ -23,13 +23,13 @@ describe Arachni::Data::Plugins do
 
             subject.store( plugins.create(:distributable), result )
 
-            subject.statistics[:names].should == [:distributable]
+            expect(subject.statistics[:names]).to eq([:distributable])
         end
     end
 
     describe '#results' do
         it 'returns a Hash' do
-            subject.results.should be_kind_of Hash
+            expect(subject.results).to be_kind_of Hash
         end
     end
 
@@ -39,7 +39,7 @@ describe Arachni::Data::Plugins do
             result = { stuff: 1 }
 
             subject.store( plugins.create(:distributable), result )
-            subject.results[:distributable][:results].should == result
+            expect(subject.results[:distributable][:results]).to eq(result)
         end
     end
 
@@ -51,7 +51,7 @@ describe Arachni::Data::Plugins do
             subject.store( plugins.create(:distributable), 'stuff' => 1 )
 
             subject.merge_results( plugins, results )
-            subject.results[:distributable][:results]['stuff'].should == 3
+            expect(subject.results[:distributable][:results]['stuff']).to eq(3)
         end
 
         context 'when a merge error occurs' do
@@ -61,10 +61,10 @@ describe Arachni::Data::Plugins do
                 results = [ distributable: { results: { 'stuff' => 2 } } ]
                 subject.store( plugins.create(:distributable), 'stuff' => 1 )
 
-                plugins[:distributable].stub(:merge) { raise }
+                allow(plugins[:distributable]).to receive(:merge) { raise }
 
                 subject.merge_results( plugins, results )
-                subject.results[:distributable][:results]['stuff'].should == 1
+                expect(subject.results[:distributable][:results]['stuff']).to eq(1)
             end
         end
     end
@@ -75,10 +75,10 @@ describe Arachni::Data::Plugins do
             subject.dump( dump_directory )
 
             results_file = "#{dump_directory}/results/distributable"
-            File.exists?( results_file ).should be_true
-            subject.results.should == {
+            expect(File.exists?( results_file )).to be_truthy
+            expect(subject.results).to eq({
                 distributable: Marshal.load( IO.read( results_file ) )
-            }
+            })
         end
     end
 
@@ -87,14 +87,14 @@ describe Arachni::Data::Plugins do
             subject.store( plugins.create(:distributable), stuff: 1 )
             subject.dump( dump_directory )
 
-            subject.results.should == described_class.load( dump_directory ).results
+            expect(subject.results).to eq(described_class.load( dump_directory ).results)
         end
     end
 
     describe '#clear' do
         %w(results).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end

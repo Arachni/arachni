@@ -102,9 +102,9 @@ describe 'WAVSEP SQL Injection' do
             # Timing attack issues can be marked as untrusted sometimes to
             # indicate the possibility of a false positive, make sure we've only
             # got trusted issues.
-            issue.should be_trusted
+            expect(issue).to be_trusted
 
-            issue.variations.each { |v| v.should be_trusted }
+            issue.variations.each { |v| expect(v).to be_trusted }
         end
     end
 end

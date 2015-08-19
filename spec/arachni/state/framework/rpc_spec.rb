@@ -15,13 +15,13 @@ describe Arachni::State::Framework::RPC do
 
     describe '#distributed_pages' do
         it "returns an instance of #{Arachni::Support::LookUp::HashSet}" do
-            subject.distributed_pages.should be_kind_of Arachni::Support::LookUp::HashSet
+            expect(subject.distributed_pages).to be_kind_of Arachni::Support::LookUp::HashSet
         end
     end
 
     describe '#distributed_elements' do
         it "returns an instance of #{Set}" do
-            subject.distributed_elements.should be_kind_of Set
+            expect(subject.distributed_elements).to be_kind_of Set
         end
     end
 
@@ -30,12 +30,12 @@ describe Arachni::State::Framework::RPC do
 
         it 'includes the size of #distributed_pages' do
             subject.distributed_pages << url
-            statistics[:distributed_pages].should == subject.distributed_pages.size
+            expect(statistics[:distributed_pages]).to eq(subject.distributed_pages.size)
         end
 
         it 'includes the size of #distributed_elements' do
             subject.distributed_elements << url.persistent_hash
-            statistics[:distributed_elements].should == subject.distributed_elements.size
+            expect(statistics[:distributed_elements]).to eq(subject.distributed_elements.size)
         end
     end
 
@@ -44,15 +44,15 @@ describe Arachni::State::Framework::RPC do
             subject.distributed_pages << url
             subject.dump( dump_directory )
 
-            Marshal.load( IO.read( "#{dump_directory}/distributed_pages" ) ).
-                collection.should == Set.new([url.persistent_hash])
+            expect(Marshal.load( IO.read( "#{dump_directory}/distributed_pages" ) ).
+                collection).to eq(Set.new([url.persistent_hash]))
         end
 
         it 'stores #distributed_elements to disk' do
             subject.distributed_elements << url.persistent_hash
             subject.dump( dump_directory )
 
-            Marshal.load( IO.read( "#{dump_directory}/distributed_elements" ) ).should == Set.new([url.persistent_hash])
+            expect(Marshal.load( IO.read( "#{dump_directory}/distributed_elements" ) )).to eq(Set.new([url.persistent_hash]))
         end
     end
 
@@ -61,23 +61,23 @@ describe Arachni::State::Framework::RPC do
             subject.distributed_pages << url
             subject.dump( dump_directory )
 
-            described_class.load( dump_directory ).distributed_pages.
-                collection.should == Set.new([url.persistent_hash])
+            expect(described_class.load( dump_directory ).distributed_pages.
+                collection).to eq(Set.new([url.persistent_hash]))
         end
 
         it 'loads #distributed_elements from disk' do
             subject.distributed_elements << url.persistent_hash
             subject.dump( dump_directory )
 
-            described_class.load( dump_directory ).distributed_elements.
-                should == Set.new([url.persistent_hash])
+            expect(described_class.load( dump_directory ).distributed_elements).
+                to eq(Set.new([url.persistent_hash]))
         end
     end
 
     describe '#clear' do
         %w(distributed_pages distributed_elements).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end

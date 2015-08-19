@@ -7,13 +7,13 @@ shared_examples_for 'fingerprinter' do
 
     def check_platforms( page )
         platforms.each do |p|
-            platforms_for( page ).should include p
+            expect(platforms_for( page )).to include p
         end
     end
 
     def platforms_for( page )
         Arachni::Platform::Manager.reset
-        page.platforms.should be_empty
+        expect(page.platforms).to be_empty
 
         described_class.new( page ).run
         page.platforms

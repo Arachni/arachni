@@ -15,32 +15,32 @@ describe Arachni::Data do
 
     describe '#framework' do
         it "returns an instance of #{described_class::Framework}" do
-            subject.framework.should be_kind_of described_class::Framework
+            expect(subject.framework).to be_kind_of described_class::Framework
         end
     end
 
     describe '#session' do
         it "returns an instance of #{described_class::Session}" do
-            subject.session.should be_kind_of described_class::Session
+            expect(subject.session).to be_kind_of described_class::Session
         end
     end
 
     describe '#issues' do
         it "returns an instance of #{described_class::Issues}" do
-            subject.issues.should be_kind_of described_class::Issues
+            expect(subject.issues).to be_kind_of described_class::Issues
         end
     end
 
     describe '#plugins' do
         it "returns an instance of #{described_class::Plugins}" do
-            subject.plugins.should be_kind_of described_class::Plugins
+            expect(subject.plugins).to be_kind_of described_class::Plugins
         end
     end
 
     describe '#statistics' do
         %w(framework issues plugins).each do |name|
             it "includes :#{name} statistics" do
-                subject.statistics[name.to_sym].should == subject.send(name).statistics
+                expect(subject.statistics[name.to_sym]).to eq(subject.send(name).statistics)
             end
         end
     end
@@ -54,8 +54,8 @@ describe Arachni::Data do
 
                 new_instance = subject.load( dump_directory ).send(name)
 
-                new_instance.should be_kind_of subject.send(name).class
-                new_instance.object_id.should_not == previous_instance.object_id
+                expect(new_instance).to be_kind_of subject.send(name).class
+                expect(new_instance.object_id).not_to eq(previous_instance.object_id)
             end
         end
     end
@@ -63,7 +63,7 @@ describe Arachni::Data do
     describe '#clear' do
         %w(framework issues plugins session).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end

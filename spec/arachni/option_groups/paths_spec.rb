@@ -21,29 +21,29 @@ describe Arachni::OptionGroups::Paths do
 
         describe "##{method}" do
             it 'points to an existing directory' do
-                File.exists?( subject.send method ).should be_true
+                expect(File.exists?( subject.send method )).to be_truthy
             end
         end
 
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     describe '#logs' do
         it 'returns the default location' do
-            subject.logs.should == "#{subject.root}logs/"
+            expect(subject.logs).to eq("#{subject.root}logs/")
         end
 
         context 'when the ARACHNI_FRAMEWORK_LOGDIR environment variable' do
             it 'returns its value' do
                 ENV['ARACHNI_FRAMEWORK_LOGDIR'] = 'test'
-                subject.logs.should == 'test/'
+                expect(subject.logs).to eq('test/')
             end
         end
 
         context "when #{described_class}.config['framework']['logs']" do
             it 'returns its value' do
-                described_class.stub(:config) do
+                allow(described_class).to receive(:config) do
                     {
                         'framework' => {
                             'logs' => 'logs-stuff/'
@@ -51,19 +51,19 @@ describe Arachni::OptionGroups::Paths do
                     }
                 end
 
-                described_class.new.logs.should == 'logs-stuff/'
+                expect(described_class.new.logs).to eq('logs-stuff/')
             end
         end
     end
 
     describe '#snapshots' do
         it 'returns the default location' do
-            subject.snapshots.should == "#{subject.root}snapshots/"
+            expect(subject.snapshots).to eq("#{subject.root}snapshots/")
         end
 
         context "when #{described_class}.config['framework']['snapshots']" do
             it 'returns its value' do
-                described_class.stub(:config) do
+                allow(described_class).to receive(:config) do
                     {
                         'framework' => {
                             'snapshots' => 'snapshots-stuff/'
@@ -71,7 +71,7 @@ describe Arachni::OptionGroups::Paths do
                     }
                 end
 
-                described_class.new.snapshots.should == 'snapshots-stuff/'
+                expect(described_class.new.snapshots).to eq('snapshots-stuff/')
             end
         end
     end
@@ -86,13 +86,13 @@ describe Arachni::OptionGroups::Paths do
                 }
             }.to_yaml
 
-            described_class.stub(:paths_config_file) { paths_config_file }
+            allow(described_class).to receive(:paths_config_file) { paths_config_file }
             IO.write( described_class.paths_config_file, yaml )
             described_class.clear_config_cache
 
             @created_resources << described_class.config['stuff']['blah']
 
-            described_class.config['stuff']['blah'].should == "#{ENV['HOME']}/foo-#{Process.pid}/"
+            expect(described_class.config['stuff']['blah']).to eq("#{ENV['HOME']}/foo-#{Process.pid}/")
         end
 
         it 'appends / to paths' do
@@ -103,13 +103,13 @@ describe Arachni::OptionGroups::Paths do
                 }
             }.to_yaml
 
-            described_class.stub(:paths_config_file) { paths_config_file }
+            allow(described_class).to receive(:paths_config_file) { paths_config_file }
             IO.write( described_class.paths_config_file, yaml )
             described_class.clear_config_cache
 
             @created_resources << described_class.config['stuff']['blah']
 
-            described_class.config['stuff']['blah'].should == "#{dir}/"
+            expect(described_class.config['stuff']['blah']).to eq("#{dir}/")
         end
 
         it 'creates the given directories' do
@@ -120,15 +120,15 @@ describe Arachni::OptionGroups::Paths do
                 }
             }.to_yaml
 
-            described_class.stub(:paths_config_file) { paths_config_file }
+            allow(described_class).to receive(:paths_config_file) { paths_config_file }
             IO.write( described_class.paths_config_file, yaml )
             described_class.clear_config_cache
 
             @created_resources << dir
 
-            File.exist?( dir ).should be_false
+            expect(File.exist?( dir )).to be_falsey
             described_class.config
-            File.exist?( dir ).should be_true
+            expect(File.exist?( dir )).to be_truthy
         end
     end
 

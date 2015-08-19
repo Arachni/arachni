@@ -30,7 +30,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                     url: 'http://stuff.com/',
                     inputs: { 'input' => '' }
                 )
-                auditable.taint_analysis( @seed ).should be_false
+                expect(auditable.taint_analysis( @seed )).to be_falsey
             end
         end
 
@@ -38,7 +38,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
             it 'uses the defaults' do
                 @positive.taint_analysis( @seed )
                 @auditor.http.run
-                issues.size.should == 1
+                expect(issues.size).to eq(1)
             end
         end
 
@@ -51,10 +51,10 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                 @positive.taint_analysis( payloads, substring: @seed )
                 @auditor.http.run
-                issues.size.should == 1
+                expect(issues.size).to eq(1)
                 issue = issues.first
-                issue.platform_name.should == :php
-                issue.platform_type.should == :languages
+                expect(issue.platform_name).to eq(:php)
+                expect(issue.platform_type).to eq(:languages)
             end
         end
 
@@ -62,7 +62,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
             it 'does not log an issue' do
                 @negative.taint_analysis( @seed )
                 @auditor.http.run
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 
@@ -75,8 +75,8 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
                     end
                 end
 
@@ -87,8 +87,8 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
                     end
                 end
 
@@ -107,9 +107,9 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                         @auditor.http.run
 
-                        issues.size.should == 1
-                        issues[0].platform_name.should == :windows
-                        issues[0].signature.should == regexps[:windows].source
+                        expect(issues.size).to eq(1)
+                        expect(issues[0].platform_name).to eq(:windows)
+                        expect(issues[0].signature).to eq(regexps[:windows].source)
                     end
 
                     context 'when the payloads are per platform' do
@@ -142,13 +142,13 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                             @auditor.http.run
 
-                            issues.size.should == 3
+                            expect(issues.size).to eq(3)
                             payloads.keys.each do |platform|
                                 issue = issues.find{ |i| i.platform_name == platform }
 
-                                issue.vector.seed.should == payloads[platform]
-                                issue.platform_name.should == platform
-                                issue.signature.should == regexps[platform].source
+                                expect(issue.vector.seed).to eq(payloads[platform])
+                                expect(issue.platform_name).to eq(platform)
+                                expect(issue.signature).to eq(regexps[platform].source)
                             end
                         end
 
@@ -173,11 +173,11 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                                 @auditor.http.run
 
-                                issues.size.should == 1
+                                expect(issues.size).to eq(1)
                                 issue = issues.first
 
-                                issue.platform_name.should == :asp
-                                issue.signature.should == regexps[:asp].source
+                                expect(issue.platform_name).to eq(:asp)
+                                expect(issue.signature).to eq(regexps[:asp].source)
                             end
                         end
                     end
@@ -190,7 +190,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.should be_empty
+                        expect(issues).to be_empty
                     end
                 end
             end
@@ -203,9 +203,9 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
-                        issues.first.should be_trusted
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
+                        expect(issues.first).to be_trusted
                     end
                 end
 
@@ -216,9 +216,9 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
-                        issues.first.should be_trusted
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
+                        expect(issues.first).to be_trusted
                     end
                 end
 
@@ -237,10 +237,10 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                         @auditor.http.run
 
-                        issues.size.should == 1
-                        issues[0].platform_name.should == :windows
-                        issues[0].signature.should == substrings[:windows].to_s
-                        issues[0].should be_trusted
+                        expect(issues.size).to eq(1)
+                        expect(issues[0].platform_name).to eq(:windows)
+                        expect(issues[0].signature).to eq(substrings[:windows].to_s)
+                        expect(issues[0]).to be_trusted
                     end
 
                     context 'when the payloads are per platform' do
@@ -273,14 +273,14 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                             @auditor.http.run
 
-                            issues.size.should == 3
+                            expect(issues.size).to eq(3)
                             payloads.keys.each do |platform|
                                 issue = issues.find{ |i| i.platform_name == platform }
 
-                                issue.vector.seed.should == payloads[platform]
-                                issue.platform_name.should == platform
-                                issue.signature.should == substrings[platform].to_s
-                                issue.should be_trusted
+                                expect(issue.vector.seed).to eq(payloads[platform])
+                                expect(issue.platform_name).to eq(platform)
+                                expect(issue.signature).to eq(substrings[platform].to_s)
+                                expect(issue).to be_trusted
                             end
                         end
                     end
@@ -293,7 +293,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.should be_empty
+                        expect(issues).to be_empty
                     end
                 end
 
@@ -318,12 +318,12 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                         @auditor.http.run
 
-                        issues.size.should == 1
+                        expect(issues.size).to eq(1)
                         issue = issues.first
 
-                        issue.platform_name.should == :asp
-                        issue.signature.should == substrings[:asp].to_s
-                        issue.should be_trusted
+                        expect(issue.platform_name).to eq(:asp)
+                        expect(issue.signature).to eq(substrings[:asp].to_s)
+                        expect(issue).to be_trusted
                     end
                 end
             end
@@ -336,7 +336,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                         ignore: @seed
                     )
                     @auditor.http.run
-                    issues.should be_empty
+                    expect(issues).to be_empty
                 end
             end
 
@@ -348,7 +348,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                         longest_word_optimization: true
                     )
                     @auditor.http.run
-                    issues.should be_any
+                    expect(issues).to be_any
                 end
             end
         end

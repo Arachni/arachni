@@ -75,13 +75,13 @@ EOXML
     let(:utilities) { Arachni::Utilities }
 
     it 'is assigned to Arachni::Link for easy access' do
-        Arachni::XML.should == described_class
+        expect(Arachni::XML).to eq(described_class)
     end
 
     describe '#initialize' do
         describe ':source' do
             it 'parses it into #inputs' do
-                subject.inputs.should == described_class.parse_inputs( source )
+                expect(subject.inputs).to eq(described_class.parse_inputs( source ))
             end
 
             context 'when missing' do
@@ -96,7 +96,7 @@ EOXML
 
     describe '#simple' do
         it 'should return a simplified version as a hash' do
-            subject.simple.should == { subject.action => subject.inputs }
+            expect(subject.simple).to eq({ subject.action => subject.inputs })
         end
     end
 
@@ -105,26 +105,26 @@ EOXML
             subject.inputs.each do |name, _|
                 s = subject.dup
                 s[name] = "#{name} value"
-                Nokogiri::XML(s.to_xml).css(name).first.content.should == "#{name} value"
+                expect(Nokogiri::XML(s.to_xml).css(name).first.content).to eq("#{name} value")
             end
         end
     end
 
     describe '#to_s' do
         it 'returns #to_xml' do
-            subject.to_s.should == subject.to_xml
+            expect(subject.to_s).to eq(subject.to_xml)
         end
     end
 
     describe '#type' do
         it 'should be "link"' do
-            subject.type.should == :xml
+            expect(subject.type).to eq(:xml)
         end
     end
 
     describe '#to_rpc_data' do
         it "includes 'source'" do
-            subject.to_rpc_data['source'].should == source
+            expect(subject.to_rpc_data['source']).to eq(source)
         end
     end
 
@@ -141,10 +141,10 @@ EOXML
             end
 
             it 'parses a request into an element' do
-                subject.url.should    == url
-                subject.action.should == request.url
-                subject.source.should == request.body
-                subject.method.should == request.method
+                expect(subject.url).to    eq(url)
+                expect(subject.action).to eq(request.url)
+                expect(subject.source).to eq(request.body)
+                expect(subject.method).to eq(request.method)
             end
         end
 
@@ -157,7 +157,7 @@ EOXML
             end
 
             it 'returns nil' do
-                subject.should be_nil
+                expect(subject).to be_nil
             end
         end
 
@@ -171,7 +171,7 @@ EOXML
             end
 
             it 'returns nil' do
-                subject.should be_nil
+                expect(subject).to be_nil
             end
         end
 
@@ -198,7 +198,7 @@ EOXML
 
     describe '.parse_inputs' do
         it 'parses an XML document into a hash of inputs' do
-            described_class.parse_inputs( source ).should == {
+            expect(described_class.parse_inputs( source )).to eq({
                 'bookstore > book:nth-of-type(1) > title > text()' => 'Everyday Italian',
                 'bookstore > book:nth-of-type(1) > title > @lang' => 'en',
                 'bookstore > book:nth-of-type(1) > author > text()' => 'Giada De Laurentiis',
@@ -227,40 +227,40 @@ EOXML
                 'bookstore > book:nth-of-type(4) > year > text()' => '2003',
                 'bookstore > book:nth-of-type(4) > price > text()' => '39.95',
                 'bookstore > book:nth-of-type(4) > @category' => 'WEB'
-            }
+            })
         end
     end
 
     describe '#transform_xml' do
         it 'assigns a callback to process the resulting XML' do
             subject.transform_xml do |xml|
-                xml.should == Nokogiri::XML( subject.source ).to_xml
+                expect(xml).to eq(Nokogiri::XML( subject.source ).to_xml)
                 'stuff'
             end
 
-            subject.to_xml.should == 'stuff'
+            expect(subject.to_xml).to eq('stuff')
         end
     end
 
     describe '.encode' do
         it 'returns the string as is' do
-            described_class.encode( 'stuff' ).should == 'stuff'
+            expect(described_class.encode( 'stuff' )).to eq('stuff')
         end
     end
     describe '#encode' do
         it 'returns the string as is' do
-            subject.encode( 'stuff' ).should == 'stuff'
+            expect(subject.encode( 'stuff' )).to eq('stuff')
         end
     end
 
     describe '.decode' do
         it 'returns the string as is' do
-            described_class.decode( 'stuff' ).should == 'stuff'
+            expect(described_class.decode( 'stuff' )).to eq('stuff')
         end
     end
     describe '#decode' do
         it 'returns the string as is' do
-            subject.decode( 'stuff' ).should == 'stuff'
+            expect(subject.decode( 'stuff' )).to eq('stuff')
         end
     end
 

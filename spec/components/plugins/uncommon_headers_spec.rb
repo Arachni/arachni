@@ -50,7 +50,7 @@ describe name_from_filename do
                 },
             ]
 
-            framework.plugins[component_name].merge( results ).should == {
+            expect(framework.plugins[component_name].merge( results )).to eq({
                 "#{url}" => {
                     "Name" => "Value",
                     "Name2" => "Value2"
@@ -58,7 +58,7 @@ describe name_from_filename do
                 "#{url}2" => {
                     "Name22" => "Value22"
                 }
-            }
+            })
         end
     end
 end

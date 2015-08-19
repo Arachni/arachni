@@ -18,7 +18,7 @@ describe name_from_filename do
         it 'logins successfully' do
             options.url = web_server_url_for( name_from_filename )
             run
-            results.should == { 'username' => 'admin', 'password' => 'pass' }
+            expect(results).to eq({ 'username' => 'admin', 'password' => 'pass' })
         end
     end
 
@@ -26,7 +26,7 @@ describe name_from_filename do
         it 'logs nothing' do
             options.url = web_server_url_for( "#{name_from_filename}_secure" )
             run
-            results.should be_nil
+            expect(results).to be_nil
         end
     end
 
@@ -34,7 +34,7 @@ describe name_from_filename do
         it 'logs nothing' do
             options.url = web_server_url_for( "#{name_from_filename}_unprotected" )
             run
-            results.should be_nil
+            expect(results).to be_nil
         end
     end
 end

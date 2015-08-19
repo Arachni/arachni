@@ -44,13 +44,13 @@ describe Arachni::RPC::Server::Dispatcher::Node do
                 options.dispatcher.neighbour = nil
                 sleep 4
 
-                c.grid_member?.should be_true
+                expect(c.grid_member?).to be_truthy
             end
         end
 
         context 'when the dispatcher is not a grid member' do
             it 'should return false' do
-                @node.grid_member?.should be_false
+                expect(@node.grid_member?).to be_falsey
             end
         end
     end
@@ -71,13 +71,13 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             n.add_neighbour( '127.0.0.1:' + port.to_s )
 
             sleep 4
-            n.neighbours.should be_empty
+            expect(n.neighbours).to be_empty
 
             c = @get_node.call( port )
 
             sleep 4
-            n.neighbours.should == [c.url]
-            c.neighbours.should == [n.url]
+            expect(n.neighbours).to eq([c.url])
+            expect(c.neighbours).to eq([n.url])
 
             options.dispatcher.neighbour = nil
         end
@@ -99,14 +99,14 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             n.add_neighbour( c.url )
             sleep 1
 
-            c.neighbours.should == [n.url]
-            n.neighbours.should == [c.url]
+            expect(c.neighbours).to eq([n.url])
+            expect(n.neighbours).to eq([c.url])
 
             n.shutdown rescue Arachni::RPC::Exceptions::ConnectionError
 
             sleep 4
 
-            c.neighbours.should be_empty
+            expect(c.neighbours).to be_empty
         end
     end
 
@@ -117,22 +117,22 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             options.dispatcher.neighbour = n.url
             c = @get_node.call
             sleep 4
-            c.neighbours.should == [n.url]
-            n.neighbours.should == [c.url]
+            expect(c.neighbours).to eq([n.url])
+            expect(n.neighbours).to eq([c.url])
 
             d = @get_node.call
             sleep 4
-            d.neighbours.sort.should == [n.url, c.url].sort
-            c.neighbours.sort.should == [n.url, d.url].sort
-            n.neighbours.sort.should == [c.url, d.url].sort
+            expect(d.neighbours.sort).to eq([n.url, c.url].sort)
+            expect(c.neighbours.sort).to eq([n.url, d.url].sort)
+            expect(n.neighbours.sort).to eq([c.url, d.url].sort)
 
             options.dispatcher.neighbour = d.url
             e = @get_node.call
             sleep 4
-            e.neighbours.sort.should == [n.url, c.url, d.url].sort
-            d.neighbours.sort.should == [n.url, c.url, e.url].sort
-            c.neighbours.sort.should == [n.url, d.url, e.url].sort
-            n.neighbours.sort.should == [c.url, d.url, e.url].sort
+            expect(e.neighbours.sort).to eq([n.url, c.url, d.url].sort)
+            expect(d.neighbours.sort).to eq([n.url, c.url, e.url].sort)
+            expect(c.neighbours.sort).to eq([n.url, d.url, e.url].sort)
+            expect(n.neighbours.sort).to eq([c.url, d.url, e.url].sort)
 
             options.dispatcher.neighbour = nil
         end
@@ -145,8 +145,8 @@ describe Arachni::RPC::Server::Dispatcher::Node do
         it 'adds a neighbour' do
             @node.add_neighbour( @n.url )
             sleep 0.5
-            @node.neighbours.should == [@n.url]
-            @n.neighbours.should == [@node.url]
+            expect(@node.neighbours).to eq([@n.url])
+            expect(@n.neighbours).to eq([@node.url])
         end
         context 'when propagate is set to true' do
             it 'announces the new neighbour to the existing neighbours' do
@@ -154,32 +154,32 @@ describe Arachni::RPC::Server::Dispatcher::Node do
                 @node.add_neighbour( n.url, true )
                 sleep 0.5
 
-                @node.neighbours.sort.should == [@n.url, n.url].sort
-                @n.neighbours.sort.should == [@node.url, n.url].sort
+                expect(@node.neighbours.sort).to eq([@n.url, n.url].sort)
+                expect(@n.neighbours.sort).to eq([@node.url, n.url].sort)
 
                 c = @get_node.call
                 n.add_neighbour( c.url, true )
                 sleep 0.5
 
-                @node.neighbours.sort.should == [@n.url, n.url, c.url].sort
-                @n.neighbours.sort.should == [@node.url, n.url, c.url].sort
-                c.neighbours.sort.should == [@node.url, n.url, @n.url].sort
+                expect(@node.neighbours.sort).to eq([@n.url, n.url, c.url].sort)
+                expect(@n.neighbours.sort).to eq([@node.url, n.url, c.url].sort)
+                expect(c.neighbours.sort).to eq([@node.url, n.url, @n.url].sort)
 
                 d = @get_node.call
                 d.add_neighbour( c.url, true )
                 sleep 0.5
 
-                @node.neighbours.sort.should == [d.url, @n.url, n.url, c.url].sort
-                @n.neighbours.sort.should == [d.url, @node.url, n.url, c.url].sort
-                c.neighbours.sort.should == [d.url, @node.url, n.url, @n.url].sort
-                d.neighbours.sort.should == [c.url, @node.url, n.url, @n.url].sort
+                expect(@node.neighbours.sort).to eq([d.url, @n.url, n.url, c.url].sort)
+                expect(@n.neighbours.sort).to eq([d.url, @node.url, n.url, c.url].sort)
+                expect(c.neighbours.sort).to eq([d.url, @node.url, n.url, @n.url].sort)
+                expect(d.neighbours.sort).to eq([c.url, @node.url, n.url, @n.url].sort)
             end
         end
     end
 
     describe '#neighbours' do
         it 'returns an array of neighbours' do
-            @node.neighbours.is_a?( Array ).should be_true
+            expect(@node.neighbours.is_a?( Array )).to be_truthy
         end
     end
 
@@ -188,7 +188,7 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             @node.neighbours_with_info.size == @node.neighbours.size
             keys = @node.info.keys.sort
             @node.neighbours_with_info.each do |i|
-                i.keys.sort.should == keys
+                expect(i.keys.sort).to eq(keys)
             end
         end
     end
@@ -203,24 +203,24 @@ describe Arachni::RPC::Server::Dispatcher::Node do
             n = @get_node.call
             info = n.info
 
-            info['url'].should == n.url
-            info['pipe_id'].should == options.dispatcher.node_pipe_id
-            info['weight'].should == options.dispatcher.node_weight
-            info['nickname'].should == options.dispatcher.node_nickname
-            info['cost'].should == options.dispatcher.node_cost
+            expect(info['url']).to eq(n.url)
+            expect(info['pipe_id']).to eq(options.dispatcher.node_pipe_id)
+            expect(info['weight']).to eq(options.dispatcher.node_weight)
+            expect(info['nickname']).to eq(options.dispatcher.node_nickname)
+            expect(info['cost']).to eq(options.dispatcher.node_cost)
         end
 
         context 'when Options#dispatcher_external_address has been set' do
             it 'advertises that address' do
                 options.dispatcher.external_address = '9.9.9.9'
-                @get_node.call.info['url'].should start_with options.dispatcher.external_address
+                expect(@get_node.call.info['url']).to start_with options.dispatcher.external_address
             end
         end
     end
 
     describe '#alive?' do
         it 'returns true' do
-            @get_node.call.alive?.should be_true
+            expect(@get_node.call.alive?).to be_truthy
         end
     end
 end

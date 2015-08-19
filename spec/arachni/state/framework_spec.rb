@@ -19,12 +19,12 @@ describe Arachni::State::Framework do
         it 'returns the assigned status messages' do
             message = 'Hey!'
             subject.set_status_message message
-            subject.status_messages.should == [message]
+            expect(subject.status_messages).to eq([message])
         end
 
         context 'by defaults' do
             it 'returns an empty array' do
-                subject.status_messages.should == []
+                expect(subject.status_messages).to eq([])
             end
         end
     end
@@ -34,7 +34,7 @@ describe Arachni::State::Framework do
             message = 'Hey!'
             subject.set_status_message message
             subject.set_status_message message
-            subject.status_messages.should == [message]
+            expect(subject.status_messages).to eq([message])
         end
     end
 
@@ -45,7 +45,7 @@ describe Arachni::State::Framework do
                     message = 'Hey!'
                     subject.add_status_message message
                     subject.add_status_message message
-                    subject.status_messages.should == [message, message]
+                    expect(subject.status_messages).to eq([message, message])
                 end
             end
 
@@ -53,7 +53,7 @@ describe Arachni::State::Framework do
                 context 'and it exists in #available_status_messages' do
                     it 'pushes the associated message to #status_messages' do
                         subject.add_status_message :suspending
-                        subject.status_messages.should == [subject.available_status_messages[:suspending]]
+                        expect(subject.status_messages).to eq([subject.available_status_messages[:suspending]])
                     end
                 end
 
@@ -69,7 +69,7 @@ describe Arachni::State::Framework do
                     it 'uses them to fill in the placeholders' do
                         location = '/blah/stuff.afs'
                         subject.add_status_message :snapshot_location, location
-                        subject.status_messages.should == [subject.available_status_messages[:snapshot_location] % location]
+                        expect(subject.status_messages).to eq([subject.available_status_messages[:snapshot_location] % location])
                     end
                 end
             end
@@ -80,12 +80,12 @@ describe Arachni::State::Framework do
         let(:statistics) { subject.statistics }
 
         it 'includes #rpc statistics' do
-            statistics[:rpc].should == subject.rpc.statistics
+            expect(statistics[:rpc]).to eq(subject.rpc.statistics)
         end
 
         it 'includes #audited_page_count' do
             subject.audited_page_count += 1
-            statistics[:audited_page_count].should == subject.audited_page_count
+            expect(statistics[:audited_page_count]).to eq(subject.audited_page_count)
         end
 
         it 'includes amount of #browser_skip_states' do
@@ -93,25 +93,25 @@ describe Arachni::State::Framework do
             set << 1 << 2 << 3
             subject.update_browser_skip_states( set )
 
-            statistics[:browser_states].should == subject.browser_skip_states.size
+            expect(statistics[:browser_states]).to eq(subject.browser_skip_states.size)
         end
     end
 
     describe '#page_queue_filter' do
         it "returns an instance of #{Arachni::Support::LookUp::HashSet}" do
-            subject.page_queue_filter.should be_kind_of Arachni::Support::LookUp::HashSet
+            expect(subject.page_queue_filter).to be_kind_of Arachni::Support::LookUp::HashSet
         end
     end
 
     describe '#url_queue_filter' do
         it "returns an instance of #{Arachni::Support::LookUp::HashSet}" do
-            subject.url_queue_filter.should be_kind_of Arachni::Support::LookUp::HashSet
+            expect(subject.url_queue_filter).to be_kind_of Arachni::Support::LookUp::HashSet
         end
     end
 
     describe '#rpc' do
         it "returns an instance of #{described_class::RPC}" do
-            subject.rpc.should be_kind_of described_class::RPC
+            expect(subject.rpc).to be_kind_of described_class::RPC
         end
     end
 
@@ -119,13 +119,13 @@ describe Arachni::State::Framework do
         context 'when an element has already been checked' do
             it 'returns true' do
                 subject.element_pre_check_filter << element
-                subject.element_checked?( element ).should be_true
+                expect(subject.element_checked?( element )).to be_truthy
             end
         end
 
         context 'when an element has not been checked' do
             it 'returns false' do
-                subject.element_checked?( element ).should be_false
+                expect(subject.element_checked?( element )).to be_falsey
             end
         end
     end
@@ -133,7 +133,7 @@ describe Arachni::State::Framework do
     describe '#element_checked' do
         it 'marks an element as checked' do
             subject.element_checked element
-            subject.element_checked?( element ).should be_true
+            expect(subject.element_checked?( element )).to be_truthy
         end
     end
 
@@ -141,13 +141,13 @@ describe Arachni::State::Framework do
         context 'when a page has already been seen' do
             it 'returns true' do
                 subject.page_queue_filter << page
-                subject.page_seen?( page ).should be_true
+                expect(subject.page_seen?( page )).to be_truthy
             end
         end
 
         context 'when a page has not been seen' do
             it 'returns false' do
-                subject.page_seen?( page ).should be_false
+                expect(subject.page_seen?( page )).to be_falsey
             end
         end
     end
@@ -156,13 +156,13 @@ describe Arachni::State::Framework do
         context 'when the given page has been marked as seen' do
             it 'returns true' do
                 subject.page_seen page
-                subject.page_seen?( page ).should be_true
+                expect(subject.page_seen?( page )).to be_truthy
             end
         end
 
         context 'when the given page has not been marked as seen' do
             it 'returns false' do
-                subject.page_seen?( page ).should be_false
+                expect(subject.page_seen?( page )).to be_falsey
             end
         end
     end
@@ -171,13 +171,13 @@ describe Arachni::State::Framework do
         context 'when a URL has already been seen' do
             it 'returns true' do
                 subject.url_queue_filter << url
-                subject.url_seen?( url ).should be_true
+                expect(subject.url_seen?( url )).to be_truthy
             end
         end
 
         context 'when a page has not been seen' do
             it 'returns false' do
-                subject.url_seen?( url ).should be_false
+                expect(subject.url_seen?( url )).to be_falsey
             end
         end
     end
@@ -186,23 +186,23 @@ describe Arachni::State::Framework do
         context 'when the given URL has been marked as seen' do
             it 'returns true' do
                 subject.url_seen url
-                subject.url_seen?( url ).should be_true
+                expect(subject.url_seen?( url )).to be_truthy
             end
         end
 
         context 'when the given URL has not been marked as seen' do
             it 'returns false' do
-                subject.url_seen?( url ).should be_false
+                expect(subject.url_seen?( url )).to be_falsey
             end
         end
     end
 
     describe '#running=' do
         it 'sets #running' do
-            subject.running.should be_false
+            expect(subject.running).to be_falsey
 
             subject.running = true
-            subject.running.should be_true
+            expect(subject.running).to be_truthy
         end
     end
 
@@ -210,14 +210,14 @@ describe Arachni::State::Framework do
         context 'when #running is true' do
             it 'returns true' do
                 subject.running = true
-                subject.should be_running
+                expect(subject).to be_running
             end
         end
 
         context 'when #running is false' do
             it 'returns false' do
                 subject.running = false
-                subject.should_not be_running
+                expect(subject).not_to be_running
             end
         end
     end
@@ -226,13 +226,13 @@ describe Arachni::State::Framework do
         context 'when the status is set to :scanning' do
             it 'returns true' do
                 subject.status = :scanning
-                subject.should be_scanning
+                expect(subject).to be_scanning
             end
         end
 
         context 'when the status is not set to :scanning' do
             it 'returns false' do
-                subject.should_not be_scanning
+                expect(subject).not_to be_scanning
             end
         end
     end
@@ -250,7 +250,7 @@ describe Arachni::State::Framework do
 
                     time = Time.now
                     subject.suspend
-                    (Time.now - time).should > 1
+                    expect(Time.now - time).to be > 1
                     t.join
                 end
 
@@ -262,7 +262,7 @@ describe Arachni::State::Framework do
                     subject.suspend
                     t.join
 
-                    subject.status.should == :suspended
+                    expect(subject.status).to eq(:suspended)
                 end
 
                 it 'sets the status message to :suspending' do
@@ -273,8 +273,9 @@ describe Arachni::State::Framework do
                     subject.suspend
                     t.join
 
-                    subject.status_messages.should ==
+                    expect(subject.status_messages).to eq(
                         [subject.available_status_messages[:suspending]]
+                    )
                 end
 
                 it 'returns true' do
@@ -282,45 +283,46 @@ describe Arachni::State::Framework do
                         sleep 1
                         subject.suspended
                     end
-                    subject.suspend.should be_true
+                    expect(subject.suspend).to be_truthy
                     t.join
 
-                    subject.status.should == :suspended
+                    expect(subject.status).to eq(:suspended)
                 end
             end
 
             context 'when non-blocking' do
                 it 'sets the #status to :suspending' do
                     subject.suspend( false )
-                    subject.status.should == :suspending
+                    expect(subject.status).to eq(:suspending)
                 end
 
                 it 'sets the status message to :suspending' do
                     subject.suspend( false )
-                    subject.status_messages.should ==
+                    expect(subject.status_messages).to eq(
                         [subject.available_status_messages[:suspending]]
+                    )
                 end
 
                 it 'returns true' do
-                    subject.suspend( false ).should be_true
+                    expect(subject.suspend( false )).to be_truthy
                 end
             end
 
             context 'when already #suspending?' do
                 it 'returns false' do
-                    subject.suspend( false ).should be_true
-                    subject.should be_suspending
-                    subject.suspend.should be_false
+                    expect(subject.suspend( false )).to be_truthy
+                    expect(subject).to be_suspending
+                    expect(subject.suspend).to be_falsey
                 end
             end
 
             context 'when already #suspended?' do
                 it 'returns false' do
-                    subject.suspend( false ).should be_true
+                    expect(subject.suspend( false )).to be_truthy
                     subject.suspended
-                    subject.should be_suspended
+                    expect(subject).to be_suspended
 
-                    subject.suspend.should be_false
+                    expect(subject.suspend).to be_falsey
                 end
             end
 
@@ -352,7 +354,7 @@ describe Arachni::State::Framework do
     describe '#suspended' do
         it 'sets the #status to :suspended' do
             subject.suspended
-            subject.status.should == :suspended
+            expect(subject.status).to eq(:suspended)
         end
     end
 
@@ -360,13 +362,13 @@ describe Arachni::State::Framework do
         context 'when #suspended' do
             it 'returns true' do
                 subject.suspended
-                subject.should be_suspended
+                expect(subject).to be_suspended
             end
         end
 
         context 'when not #suspended' do
             it 'returns false' do
-                subject.should_not be_suspended
+                expect(subject).not_to be_suspended
             end
         end
     end
@@ -377,17 +379,17 @@ describe Arachni::State::Framework do
         context 'while suspending' do
             it 'returns true' do
                 subject.suspend( false )
-                subject.should be_suspending
+                expect(subject).to be_suspending
             end
         end
 
         context 'while not suspending' do
             it 'returns false' do
-                subject.should_not be_suspending
+                expect(subject).not_to be_suspending
 
                 subject.suspend( false )
                 subject.suspended
-                subject.should_not be_suspending
+                expect(subject).not_to be_suspending
             end
         end
     end
@@ -398,17 +400,17 @@ describe Arachni::State::Framework do
         context 'when a #suspend signal is in place' do
             it 'returns true' do
                 subject.suspend( false )
-                subject.should be_suspend
+                expect(subject).to be_suspend
             end
         end
 
         context 'when a #suspend signal is not in place' do
             it 'returns false' do
-                subject.should_not be_suspend
+                expect(subject).not_to be_suspend
 
                 subject.suspend( false )
                 subject.suspended
-                subject.should_not be_suspend
+                expect(subject).not_to be_suspend
             end
         end
     end
@@ -426,7 +428,7 @@ describe Arachni::State::Framework do
 
                     time = Time.now
                     subject.abort
-                    (Time.now - time).should > 1
+                    expect(Time.now - time).to be > 1
                     t.join
                 end
 
@@ -438,7 +440,7 @@ describe Arachni::State::Framework do
                     subject.abort
                     t.join
 
-                    subject.status.should == :aborted
+                    expect(subject.status).to eq(:aborted)
                 end
 
                 it 'sets the status message to :aborting' do
@@ -449,8 +451,9 @@ describe Arachni::State::Framework do
                     subject.abort
                     t.join
 
-                    subject.status_messages.should ==
+                    expect(subject.status_messages).to eq(
                         [subject.available_status_messages[:aborting]]
+                    )
                 end
 
                 it 'returns true' do
@@ -458,45 +461,46 @@ describe Arachni::State::Framework do
                         sleep 1
                         subject.aborted
                     end
-                    subject.abort.should be_true
+                    expect(subject.abort).to be_truthy
                     t.join
 
-                    subject.status.should == :aborted
+                    expect(subject.status).to eq(:aborted)
                 end
             end
 
             context 'when non-blocking' do
                 it 'sets the #status to :aborting' do
                     subject.abort( false )
-                    subject.status.should == :aborting
+                    expect(subject.status).to eq(:aborting)
                 end
 
                 it 'sets the status message to :aborting' do
                     subject.abort( false )
-                    subject.status_messages.should ==
+                    expect(subject.status_messages).to eq(
                         [subject.available_status_messages[:aborting]]
+                    )
                 end
 
                 it 'returns true' do
-                    subject.abort( false ).should be_true
+                    expect(subject.abort( false )).to be_truthy
                 end
             end
 
             context 'when already #aborting?' do
                 it 'returns false' do
-                    subject.abort( false ).should be_true
-                    subject.should be_aborting
-                    subject.abort.should be_false
+                    expect(subject.abort( false )).to be_truthy
+                    expect(subject).to be_aborting
+                    expect(subject.abort).to be_falsey
                 end
             end
 
             context 'when already #aborted?' do
                 it 'returns false' do
-                    subject.abort( false ).should be_true
+                    expect(subject.abort( false )).to be_truthy
                     subject.aborted
-                    subject.should be_aborted
+                    expect(subject).to be_aborted
 
-                    subject.abort.should be_false
+                    expect(subject.abort).to be_falsey
                 end
             end
         end
@@ -512,13 +516,13 @@ describe Arachni::State::Framework do
         context 'when #status is :done' do
             it 'returns true' do
                 subject.status = :done
-                subject.should be_done
+                expect(subject).to be_done
             end
         end
 
         context 'when not done' do
             it 'returns false' do
-                subject.should_not be_done
+                expect(subject).not_to be_done
             end
         end
     end
@@ -526,7 +530,7 @@ describe Arachni::State::Framework do
     describe '#aborted' do
         it 'sets the #status to :aborted' do
             subject.aborted
-            subject.status.should == :aborted
+            expect(subject.status).to eq(:aborted)
         end
     end
 
@@ -534,13 +538,13 @@ describe Arachni::State::Framework do
         context 'when #aborted' do
             it 'returns true' do
                 subject.aborted
-                subject.should be_aborted
+                expect(subject).to be_aborted
             end
         end
 
         context 'when not #aborted' do
             it 'returns false' do
-                subject.should_not be_aborted
+                expect(subject).not_to be_aborted
             end
         end
     end
@@ -551,17 +555,17 @@ describe Arachni::State::Framework do
         context 'while aborting' do
             it 'returns true' do
                 subject.abort( false )
-                subject.should be_aborting
+                expect(subject).to be_aborting
             end
         end
 
         context 'while not aborting' do
             it 'returns false' do
-                subject.should_not be_aborting
+                expect(subject).not_to be_aborting
 
                 subject.abort( false )
                 subject.aborted
-                subject.should_not be_aborting
+                expect(subject).not_to be_aborting
             end
         end
     end
@@ -572,17 +576,17 @@ describe Arachni::State::Framework do
         context 'when a #abort signal is in place' do
             it 'returns true' do
                 subject.abort( false )
-                subject.should be_abort
+                expect(subject).to be_abort
             end
         end
 
         context 'when a #abort signal is not in place' do
             it 'returns false' do
-                subject.should_not be_abort
+                expect(subject).not_to be_abort
 
                 subject.abort( false )
                 subject.aborted
-                subject.should_not be_abort
+                expect(subject).not_to be_abort
             end
         end
     end
@@ -600,7 +604,7 @@ describe Arachni::State::Framework do
 
                     time = Time.now
                     subject.pause :a_caller
-                    (Time.now - time).should > 1
+                    expect(Time.now - time).to be > 1
                     t.join
                 end
 
@@ -612,7 +616,7 @@ describe Arachni::State::Framework do
                     subject.pause :a_caller
                     t.join
 
-                    subject.status.should == :paused
+                    expect(subject.status).to eq(:paused)
                 end
 
                 it 'returns true' do
@@ -620,21 +624,21 @@ describe Arachni::State::Framework do
                         sleep 1
                         subject.paused
                     end
-                    subject.pause( :a_caller ).should be_true
+                    expect(subject.pause( :a_caller )).to be_truthy
                     t.join
 
-                    subject.status.should == :paused
+                    expect(subject.status).to eq(:paused)
                 end
             end
 
             context 'when non-blocking' do
                 it 'sets the #status to :pausing' do
                     subject.pause( :a_caller, false )
-                    subject.status.should == :pausing
+                    expect(subject.status).to eq(:pausing)
                 end
 
                 it 'returns true' do
-                    subject.pause( :a_caller, false ).should be_true
+                    expect(subject.pause( :a_caller, false )).to be_truthy
                 end
             end
         end
@@ -650,8 +654,8 @@ describe Arachni::State::Framework do
 
                 time = Time.now
                 subject.pause :a_caller, false
-                subject.status.should == :paused
-                (Time.now - time).should < 1
+                expect(subject.status).to eq(:paused)
+                expect(Time.now - time).to be < 1
                 t.join
             end
         end
@@ -660,7 +664,7 @@ describe Arachni::State::Framework do
     describe '#paused' do
         it 'sets the #status to :paused' do
             subject.paused
-            subject.status.should == :paused
+            expect(subject.status).to eq(:paused)
         end
     end
 
@@ -670,17 +674,17 @@ describe Arachni::State::Framework do
         context 'while pausing' do
             it 'returns true' do
                 subject.pause( :caller, false )
-                subject.should be_pausing
+                expect(subject).to be_pausing
             end
         end
 
         context 'while not pausing' do
             it 'returns false' do
-                subject.should_not be_pausing
+                expect(subject).not_to be_pausing
 
                 subject.pause( :caller, false )
                 subject.paused
-                subject.should_not be_pausing
+                expect(subject).not_to be_pausing
             end
         end
     end
@@ -689,18 +693,18 @@ describe Arachni::State::Framework do
         context 'when a #pause signal is in place' do
             it 'returns true' do
                 subject.pause( :caller, false )
-                subject.should be_pause
+                expect(subject).to be_pause
             end
         end
 
         context 'when a #pause signal is not in place' do
             it 'returns false' do
-                subject.should_not be_pause
+                expect(subject).not_to be_pause
 
                 subject.pause( :caller, false )
                 subject.paused
                 subject.resume( :caller )
-                subject.should_not be_pause
+                expect(subject).not_to be_pause
             end
         end
     end
@@ -710,12 +714,12 @@ describe Arachni::State::Framework do
 
         it 'removes a #pause signal' do
             subject.pause( :caller, false )
-            subject.pause_signals.should include :caller
+            expect(subject.pause_signals).to include :caller
 
             subject.resume( :caller )
 
-            subject.pause_signals.should_not include :caller
-            subject.should_not be_paused
+            expect(subject.pause_signals).not_to include :caller
+            expect(subject).not_to be_paused
         end
 
         it 'operates on a per-caller basis' do
@@ -726,10 +730,10 @@ describe Arachni::State::Framework do
             subject.pause( :caller2, false )
 
             subject.resume( :caller )
-            subject.should be_paused
+            expect(subject).to be_paused
 
             subject.resume( :caller2 )
-            subject.should_not be_paused
+            expect(subject).not_to be_paused
         end
 
         it 'restores the previous #status' do
@@ -747,13 +751,13 @@ describe Arachni::State::Framework do
             it '#pause? returns false' do
                 subject.pause( :caller, false )
                 subject.resume( :caller )
-                subject.should_not be_pause
+                expect(subject).not_to be_pause
             end
 
             it '#paused? returns false' do
                 subject.pause( :caller, false )
                 subject.resume( :caller )
-                subject.should_not be_paused
+                expect(subject).not_to be_paused
             end
         end
 
@@ -762,7 +766,7 @@ describe Arachni::State::Framework do
                 subject.pause( :caller, false )
                 subject.paused
 
-                subject.resume( :caller ).should be_true
+                expect(subject.resume( :caller )).to be_truthy
             end
         end
 
@@ -772,32 +776,32 @@ describe Arachni::State::Framework do
                 subject.pause( :caller2, false )
                 subject.paused
 
-                subject.resume( :caller ).should be_false
+                expect(subject.resume( :caller )).to be_falsey
             end
         end
     end
 
     describe '#browser_skip_states' do
         it "returns a #{Arachni::Support::LookUp::HashSet}" do
-            subject.browser_skip_states.should be_kind_of Arachni::Support::LookUp::HashSet
+            expect(subject.browser_skip_states).to be_kind_of Arachni::Support::LookUp::HashSet
         end
     end
 
     describe '#update_browser_skip_states' do
         it 'updates #browser_skip_states' do
-            subject.browser_skip_states.should be_empty
+            expect(subject.browser_skip_states).to be_empty
 
             set = Arachni::Support::LookUp::HashSet.new
             set << 1 << 2 << 3
             subject.update_browser_skip_states( set )
-            subject.browser_skip_states.should == set
+            expect(subject.browser_skip_states).to eq(set)
         end
     end
 
     describe '#dump' do
         it 'stores #rpc to disk' do
             subject.dump( dump_directory )
-            described_class::RPC.load( "#{dump_directory}/rpc" ).should be_kind_of described_class::RPC
+            expect(described_class::RPC.load( "#{dump_directory}/rpc" )).to be_kind_of described_class::RPC
         end
 
         it 'stores #page_queue_filter to disk' do
@@ -805,8 +809,8 @@ describe Arachni::State::Framework do
 
             subject.dump( dump_directory )
 
-            Marshal.load( IO.read( "#{dump_directory}/page_queue_filter" ) ).
-                collection.should == Set.new([page.persistent_hash])
+            expect(Marshal.load( IO.read( "#{dump_directory}/page_queue_filter" ) ).
+                collection).to eq(Set.new([page.persistent_hash]))
         end
 
         it 'stores #url_queue_filter to disk' do
@@ -814,8 +818,8 @@ describe Arachni::State::Framework do
 
             subject.dump( dump_directory )
 
-            Marshal.load( IO.read( "#{dump_directory}/url_queue_filter" ) ).
-                collection.should == Set.new([url.persistent_hash])
+            expect(Marshal.load( IO.read( "#{dump_directory}/url_queue_filter" ) ).
+                collection).to eq(Set.new([url.persistent_hash]))
         end
 
         it 'stores #browser_skip_states to disk' do
@@ -827,14 +831,14 @@ describe Arachni::State::Framework do
             set = Arachni::Support::LookUp::HashSet.new( hasher: :persistent_hash)
             set << stuff
 
-            Marshal.load( IO.read( "#{dump_directory}/browser_skip_states" ) ).should == set
+            expect(Marshal.load( IO.read( "#{dump_directory}/browser_skip_states" ) )).to eq(set)
         end
     end
 
     describe '.load' do
         it 'loads #rpc from disk' do
             subject.dump( dump_directory )
-            described_class.load( dump_directory ).rpc.should be_kind_of described_class::RPC
+            expect(described_class.load( dump_directory ).rpc).to be_kind_of described_class::RPC
         end
 
         it 'loads #element_pre_check_filter from disk' do
@@ -842,8 +846,8 @@ describe Arachni::State::Framework do
 
             subject.dump( dump_directory )
 
-            described_class.load( dump_directory ).element_pre_check_filter.
-                collection.should == Set.new([element.coverage_hash])
+            expect(described_class.load( dump_directory ).element_pre_check_filter.
+                collection).to eq(Set.new([element.coverage_hash]))
         end
 
         it 'loads #page_queue_filter from disk' do
@@ -851,18 +855,18 @@ describe Arachni::State::Framework do
 
             subject.dump( dump_directory )
 
-            described_class.load( dump_directory ).page_queue_filter.
-                collection.should == Set.new([page.persistent_hash])
+            expect(described_class.load( dump_directory ).page_queue_filter.
+                collection).to eq(Set.new([page.persistent_hash]))
         end
 
         it 'loads #url_queue_filter from disk' do
             subject.url_queue_filter << url
-            subject.url_queue_filter.should be_any
+            expect(subject.url_queue_filter).to be_any
 
             subject.dump( dump_directory )
 
-            described_class.load( dump_directory ).url_queue_filter.
-                collection.should == Set.new([url.persistent_hash])
+            expect(described_class.load( dump_directory ).url_queue_filter.
+                collection).to eq(Set.new([url.persistent_hash]))
         end
 
         it 'loads #browser_skip_states from disk' do
@@ -873,7 +877,7 @@ describe Arachni::State::Framework do
 
             set = Arachni::Support::LookUp::HashSet.new( hasher: :persistent_hash)
             set << stuff
-            described_class.load( dump_directory ).browser_skip_states.should == set
+            expect(described_class.load( dump_directory ).browser_skip_states).to eq(set)
         end
     end
 
@@ -881,7 +885,7 @@ describe Arachni::State::Framework do
         %w(rpc element_pre_check_filter browser_skip_states page_queue_filter
             url_queue_filter).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end
@@ -889,7 +893,7 @@ describe Arachni::State::Framework do
         it 'sets #running to false' do
             subject.running = true
             subject.clear
-            subject.should_not be_running
+            expect(subject).not_to be_running
         end
     end
 end

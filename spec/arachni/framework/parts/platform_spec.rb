@@ -5,7 +5,7 @@ describe Arachni::Framework::Parts::Platform do
 
     describe '#list_platforms' do
         it 'returns information about all valid platforms' do
-            subject.list_platforms.should == {
+            expect(subject.list_platforms).to eq({
                 'Operating systems' => {
                     unix:    'Generic Unix family',
                     linux:   'Linux',
@@ -63,7 +63,7 @@ describe Arachni::Framework::Parts::Platform do
                     symfony:  'Symfony',
                     nette:    'Nette'
                 }
-            }
+            })
         end
     end
 

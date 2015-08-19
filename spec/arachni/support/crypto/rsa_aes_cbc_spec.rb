@@ -23,7 +23,7 @@ describe Arachni::Support::Crypto::RSA_AES_CBC do
     end
 
     it 'generates matching encrypted and decrypted data' do
-        @crypto.decrypt( @crypto.encrypt( SEED ) ).should == SEED
+        expect(@crypto.decrypt( @crypto.encrypt( SEED ) )).to eq(SEED)
     end
 
 end

@@ -12,25 +12,25 @@ shared_examples_for 'Arachni::HTTP::Message' do
                 }
             }
             r = described_class.new(options)
-            r.headers.should == options[:headers]
+            expect(r.headers).to eq(options[:headers])
         end
     end
 
     describe '#scope' do
         it "returns #{described_class::Scope}" do
-            subject.scope.should be_kind_of described_class::Scope
+            expect(subject.scope).to be_kind_of described_class::Scope
         end
     end
 
     describe '#url=' do
         it 'sets the #url' do
             subject.url = "#{url}/2"
-            subject.url.should == "#{url}/2"
+            expect(subject.url).to eq("#{url}/2")
         end
 
         it 'forces it to a string' do
             subject.url = nil
-            subject.url.should == ''
+            expect(subject.url).to eq('')
         end
 
         it 'it freezes it' do
@@ -38,34 +38,34 @@ shared_examples_for 'Arachni::HTTP::Message' do
 
             r = described_class.new( url: url )
             r.url = url
-            r.url.should be_frozen
+            expect(r.url).to be_frozen
         end
 
         it 'normalizes it' do
             url = 'HttP://Stuff.Com/'
             r = described_class.new( url: url )
             r.url = url
-            r.url.should == url.downcase
+            expect(r.url).to eq(url.downcase)
         end
     end
 
     describe '#headers' do
         context 'when not configured' do
             it 'defaults to an empty Hash' do
-                subject.headers.should == {}
+                expect(subject.headers).to eq({})
             end
         end
 
         it 'returns the configured value' do
             headers = { 'Content-Type' => 'text/plain' }
-            described_class.new(url: url, headers: headers).headers.should == headers
+            expect(described_class.new(url: url, headers: headers).headers).to eq(headers)
         end
     end
 
     describe '#body' do
         it 'returns the configured body' do
             body = 'Stuff...'
-            described_class.new(url: url, body: body).body.should == body
+            expect(described_class.new(url: url, body: body).body).to eq(body)
         end
     end
 

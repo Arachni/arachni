@@ -17,134 +17,135 @@ describe Arachni::Support::Database::Hash do
     it 'implements #empty?' do
         h = described_class.new
 
-        h.empty?.should == {}.empty?
+        expect(h.empty?).to eq({}.empty?)
 
         nh = { :k => 'v' }
         h[:k] = 'v'
 
-        h.empty?.should == nh.empty?
+        expect(h.empty?).to eq(nh.empty?)
         h.clear
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-5B-5D-3D
     it 'implements #[]=( k, v ) (and store( k, v ))' do
         @seeds.each do |k, v|
-            (@hash[k] = v).should == v
+            expect(@hash[k] = v).to eq(v)
         end
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-5B-5D
     it 'implements #[]' do
         @seeds.each do |k, v|
-            @hash[k].should == v
+            expect(@hash[k]).to eq(v)
         end
 
-        @hash[@non_existent].should == @seeds[@non_existent]
+        expect(@hash[@non_existent]).to eq(@seeds[@non_existent])
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-assoc
     it 'implements #assoc( k )' do
         @seeds.each do |k, v|
-            @hash.assoc( k ).should == @seeds.assoc( k )
+            expect(@hash.assoc( k )).to eq(@seeds.assoc( k ))
         end
 
-        @hash.assoc( @non_existent ).should == @seeds.assoc( @non_existent )
+        expect(@hash.assoc( @non_existent )).to eq(@seeds.assoc( @non_existent ))
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-rassoc
     it 'implements #rassoc( k )' do
         @seeds.each do |k, v|
-            @hash.rassoc( v ).should == @seeds.rassoc( v )
+            expect(@hash.rassoc( v )).to eq(@seeds.rassoc( v ))
         end
 
-        @hash.rassoc( @non_existent ).should == @seeds.rassoc( @non_existent )
+        expect(@hash.rassoc( @non_existent )).to eq(@seeds.rassoc( @non_existent ))
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-delete
     it 'implements #delete( k, &block )' do
-        @hash.delete( @non_existent ).should == @seeds.delete( @non_existent )
+        expect(@hash.delete( @non_existent )).to eq(@seeds.delete( @non_existent ))
         @seeds[@non_existent] = @hash[@non_existent] = 'foo'
-        @hash.delete( @non_existent ).should == @seeds.delete( @non_existent )
+        expect(@hash.delete( @non_existent )).to eq(@seeds.delete( @non_existent ))
 
-        @hash.delete( @non_existent ) { |k| k }.should ==
+        expect(@hash.delete( @non_existent ) { |k| k }).to eq(
             @seeds.delete( @non_existent ) { |k| k }
+        )
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-shift
     it 'implements #shift' do
-        @hash.shift.should == @seeds.shift
+        expect(@hash.shift).to eq(@seeds.shift)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-each
     it 'implements #each() (and #each_pair())' do
         @hash.each do |k, v|
-            @seeds[k].should == v
+            expect(@seeds[k]).to eq(v)
         end
 
         # they must both return enumerators
-        @hash.each.class.should == @seeds.each.class
+        expect(@hash.each.class).to eq(@seeds.each.class)
 
         @hash.each_pair do |k, v|
-            @seeds[k].should == v
+            expect(@seeds[k]).to eq(v)
         end
 
         # they must both return enumerators
-        @hash.each_pair.class.should == @seeds.each_pair.class
+        expect(@hash.each_pair.class).to eq(@seeds.each_pair.class)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-each_key
     it 'implements #each_key' do
         @hash.each_key do |k|
-            @seeds[k].should == @hash[k]
+            expect(@seeds[k]).to eq(@hash[k])
         end
 
         # they must both return enumerators
-        @hash.each_key.class.should == @seeds.each_key.class
+        expect(@hash.each_key.class).to eq(@seeds.each_key.class)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-each_value
     it 'implements #each_value' do
         @hash.each_value do |v|
-            @seeds[ @seeds.key( v )].should == v
+            expect(@seeds[ @seeds.key( v )]).to eq(v)
         end
 
         # they must both return enumerators
-        @hash.each_value.class.should == @seeds.each_value.class
+        expect(@hash.each_value.class).to eq(@seeds.each_value.class)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-keys
     it 'implements #keys' do
-        @hash.keys.should == @seeds.keys
+        expect(@hash.keys).to eq(@seeds.keys)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-key
     it 'implement #key' do
         @hash.each_key do |k|
-            @seeds.key( k ).should == @hash.key( k )
+            expect(@seeds.key( k )).to eq(@hash.key( k ))
         end
 
-        @hash.key( @non_existent ).should == @seeds.key( @non_existent )
+        expect(@hash.key( @non_existent )).to eq(@seeds.key( @non_existent ))
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-values
     it 'implements #values' do
-        @hash.values.should == @seeds.values
+        expect(@hash.values).to eq(@seeds.values)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-include?
     it 'implements #include? (and #member?, #key?, #has_key?)' do
         @hash.each_key {
             |k|
-            @seeds.include?( k ).should == @hash.include?( k )
-            @seeds.member?( k ).should == @hash.member?( k )
-            @seeds.key?( k ).should == @hash.key?( k )
-            @seeds.has_key?( k ).should == @hash.has_key?( k )
+            expect(@seeds.include?( k )).to eq(@hash.include?( k ))
+            expect(@seeds.member?( k )).to eq(@hash.member?( k ))
+            expect(@seeds.key?( k )).to eq(@hash.key?( k ))
+            expect(@seeds.has_key?( k )).to eq(@hash.has_key?( k ))
         }
 
-        @hash.include?( @non_existent ).should == @seeds.include?( @non_existent )
-        @hash.member?( @non_existent ).should == @seeds.member?( @non_existent )
-        @hash.key?( @non_existent ).should == @seeds.key?( @non_existent )
-        @hash.has_key?( @non_existent ).should == @seeds.has_key?( @non_existent )
+        expect(@hash.include?( @non_existent )).to eq(@seeds.include?( @non_existent ))
+        expect(@hash.member?( @non_existent )).to eq(@seeds.member?( @non_existent ))
+        expect(@hash.key?( @non_existent )).to eq(@seeds.key?( @non_existent ))
+        expect(@hash.has_key?( @non_existent )).to eq(@seeds.has_key?( @non_existent ))
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-merge
@@ -152,8 +153,8 @@ describe Arachni::Support::Database::Hash do
         mh = { :another_key => 'another value' }
 
         nh = @hash.merge( mh )
-        nh.keys.should == @seeds.merge( mh ).keys
-        nh.values.should == @seeds.merge( mh ).values
+        expect(nh.keys).to eq(@seeds.merge( mh ).keys)
+        expect(nh.values).to eq(@seeds.merge( mh ).values)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-merge!
@@ -167,36 +168,36 @@ describe Arachni::Support::Database::Hash do
         @hash.update( mh2 )
         @seeds.update( mh2 )
 
-        @hash.keys.should == @seeds.keys
-        @hash.values.should == @seeds.values
+        expect(@hash.keys).to eq(@seeds.keys)
+        expect(@hash.values).to eq(@seeds.values)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-to_hash
     it 'implements #to_hash' do
-        @hash.to_hash.should == @seeds.to_hash
+        expect(@hash.to_hash).to eq(@seeds.to_hash)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-to_a
     it 'implements #to_a' do
-        @hash.to_a.should == @seeds.to_a
+        expect(@hash.to_a).to eq(@seeds.to_a)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-size
     it 'implements #size' do
-        @hash.size.should == @seeds.size
+        expect(@hash.size).to eq(@seeds.size)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-3D-3D
     it 'implements #== (and #eql?)' do
-        (@hash == @hash.merge( {} )).should == true
-        (@hash == @seeds).should == true
+        expect(@hash == @hash.merge( {} )).to eq(true)
+        expect(@hash == @seeds).to eq(true)
     end
 
     # http://www.ruby-doc.org/core-1.9.3/Hash.html#method-i-clear
     it 'implements #clear' do
         @hash.clear
         @seeds.clear
-        @hash.size.should == @seeds.size
+        expect(@hash.size).to eq(@seeds.size)
     end
 
     after :all do

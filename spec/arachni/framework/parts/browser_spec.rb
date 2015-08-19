@@ -7,21 +7,21 @@ describe Arachni::Framework::Parts::Browser do
         context 'when #use_browsers? is' do
             context true do
                 before do
-                    subject.stub(:use_browsers?) { true }
+                    allow(subject).to receive(:use_browsers?) { true }
                 end
 
                 it "returns #{Arachni::BrowserCluster}" do
-                    subject.browser_cluster.should be_kind_of Arachni::BrowserCluster
+                    expect(subject.browser_cluster).to be_kind_of Arachni::BrowserCluster
                 end
             end
 
             context false do
                 before do
-                    subject.stub(:use_browsers?) { false }
+                    allow(subject).to receive(:use_browsers?) { false }
                 end
 
                 it 'returns nil' do
-                    subject.browser_cluster.should be_nil
+                    expect(subject.browser_cluster).to be_nil
                 end
             end
         end
@@ -35,7 +35,7 @@ describe Arachni::Framework::Parts::Browser do
                 end
 
                 it 'returns false' do
-                    subject.use_browsers?.should be_false
+                    expect(subject.use_browsers?).to be_falsey
                 end
             end
 
@@ -45,7 +45,7 @@ describe Arachni::Framework::Parts::Browser do
                 end
 
                 it 'returns true' do
-                    subject.use_browsers?.should be_true
+                    expect(subject.use_browsers?).to be_truthy
                 end
             end
         end
@@ -57,7 +57,7 @@ describe Arachni::Framework::Parts::Browser do
                 end
 
                 it 'returns false' do
-                    subject.use_browsers?.should be_false
+                    expect(subject.use_browsers?).to be_falsey
                 end
             end
 
@@ -67,7 +67,7 @@ describe Arachni::Framework::Parts::Browser do
                 end
 
                 it 'returns true' do
-                    subject.use_browsers?.should be_true
+                    expect(subject.use_browsers?).to be_truthy
                 end
             end
         end
@@ -75,21 +75,21 @@ describe Arachni::Framework::Parts::Browser do
         context 'when #host_has_browser? is' do
             context true do
                 before do
-                    subject.stub(:use_browsers?) { true }
+                    allow(subject).to receive(:use_browsers?) { true }
                 end
 
                 it 'returns true' do
-                    subject.use_browsers?.should be_true
+                    expect(subject.use_browsers?).to be_truthy
                 end
             end
 
             context false do
                 before do
-                    subject.stub(:host_has_browser?) { false }
+                    allow(subject).to receive(:host_has_browser?) { false }
                 end
 
                 it 'returns false' do
-                    subject.use_browsers?.should be_false
+                    expect(subject.use_browsers?).to be_falsey
                 end
             end
         end
@@ -99,21 +99,21 @@ describe Arachni::Framework::Parts::Browser do
         context "when #{Arachni::Browser}.has_executable? is" do
             context true do
                 before do
-                    Arachni::Browser.stub(:has_executable?) { true }
+                    allow(Arachni::Browser).to receive(:has_executable?) { true }
                 end
 
                 it 'returns true' do
-                    subject.host_has_browser?.should be_true
+                    expect(subject.host_has_browser?).to be_truthy
                 end
             end
 
             context false do
                 before do
-                    Arachni::Browser.stub(:has_executable?) { false }
+                    allow(Arachni::Browser).to receive(:has_executable?) { false }
                 end
 
                 it 'returns false' do
-                    subject.host_has_browser?.should be_false
+                    expect(subject.host_has_browser?).to be_falsey
                 end
             end
         end

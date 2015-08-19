@@ -27,10 +27,10 @@ describe Arachni::Platform::Fingerprinters::Apache do
 
     context 'when there is an Server header that includes Coyote' do
         it 'does not identify it as Apache' do
-            platforms_for( Arachni::Page.from_data(
+            expect(platforms_for( Arachni::Page.from_data(
                 url:     'http://stuff.com/blah',
                 response: { headers:  { 'Server' => 'Apache-Coyote/1.1' } }
-            )).to_a.should be_empty
+            )).to_a).to be_empty
         end
     end
 

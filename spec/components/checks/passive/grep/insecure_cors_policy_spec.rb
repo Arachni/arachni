@@ -14,12 +14,12 @@ describe name_from_filename do
     it 'logs hosts with a wildcard Access-Control-Allow-Origin' do
         options.url = "#{url}/vulnerable"
         run
-        issues.should be_any
+        expect(issues).to be_any
     end
 
     it 'does not log hosts without a wildcard Access-Control-Allow-Origin' do
         options.url = "#{url}/safe"
         run
-        issues.should be_empty
+        expect(issues).to be_empty
     end
 end

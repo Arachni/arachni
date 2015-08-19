@@ -13,7 +13,7 @@ describe Arachni::RPC::Server::ActiveOptions do
 
     describe '#set' do
         it 'sets options by hash' do
-            @instance.service.cookies.should be_empty
+            expect(@instance.service.cookies).to be_empty
 
             opts = {
                 'url'   =>  'http://blah.com',
@@ -35,23 +35,26 @@ describe Arachni::RPC::Server::ActiveOptions do
             @instance.options.set( opts )
             h = @instance.options.to_h
 
-            h['url'].to_s.should == @utils.normalize_url( opts['url'] )
-            h['scope']['exclude_path_patterns'].should ==
+            expect(h['url'].to_s).to eq(@utils.normalize_url( opts['url'] ))
+            expect(h['scope']['exclude_path_patterns']).to eq(
                 opts['scope']['exclude_path_patterns'].map { |s| Regexp.new(s).to_s }
-            h['scope']['include_path_patterns'].should ==
+            )
+            expect(h['scope']['include_path_patterns']).to eq(
                 opts['scope']['include_path_patterns'].map { |s| Regexp.new(s).to_s }
-            h['scope']['redundant_path_patterns'].should ==
+            )
+            expect(h['scope']['redundant_path_patterns']).to eq(
                 opts['scope']['redundant_path_patterns'].
                     inject({}) { |hh, (k, v)| hh[Regexp.new(k).to_s] = v.to_s; hh }
+            )
 
-            h['datastore'].should == opts['datastore']
+            expect(h['datastore']).to eq(opts['datastore'])
 
-            @instance.service.cookies.map { |c| Arachni::Cookie.from_rpc_data c }.should == [
+            expect(@instance.service.cookies.map { |c| Arachni::Cookie.from_rpc_data c }).to eq([
                 Arachni::Cookie.new( url: opts['url'], inputs: { 'name'  => 'value' } ),
                 Arachni::Cookie.new( url: opts['url'], inputs: { 'name2'  => 'value2' } ),
                 Arachni::Cookie.new( url: opts['url'], inputs: { 'name3'  => 'value3' } ),
                 Arachni::Cookie.new( url: opts['url'], inputs: { 'name4'  => 'value4' } )
-            ]
+            ])
         end
     end
 end

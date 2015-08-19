@@ -18,13 +18,13 @@ describe Arachni::Utilities do
 
     describe '#caller_name' do
         it 'returns the filename of the caller' do
-            subject.caller_name.should == 'instance_eval_with_args'
+            expect(subject.caller_name).to eq('instance_eval_with_args')
         end
     end
 
     describe '#caller_path' do
         it 'returns the filepath of the caller' do
-            subject.caller_path.should == Kernel.caller.first.match( /^(.+):\d/ )[1]
+            expect(subject.caller_path).to eq(Kernel.caller.first.match( /^(.+):\d/ )[1])
         end
     end
 
@@ -61,15 +61,15 @@ describe Arachni::Utilities do
             it "delegates to #{klass}.#{delegated}" do
                 ret = :blah
 
-                klass.stub(delegated){ ret }
-                subject.send( m, 'stuff' ).should == ret
+                allow(klass).to receive(delegated){ ret }
+                expect(subject.send( m, 'stuff' )).to eq(ret)
             end
         end
     end
 
     describe '#uri_parser' do
         it 'returns a URI::Parser' do
-            subject.uri_parser.class.should == ::URI::Parser
+            expect(subject.uri_parser.class).to eq(::URI::Parser)
         end
     end
 
@@ -78,8 +78,8 @@ describe Arachni::Utilities do
     }.each do |k, v|
         describe "##{k}" do
             it "delegates to #{Arachni::URI}##{v}" do
-                Arachni::URI.any_instance.stub(v) { :stuff }
-                subject.send( k, 'http://url/' ).should == :stuff
+                allow_any_instance_of(Arachni::URI).to receive(v) { :stuff }
+                expect(subject.send( k, 'http://url/' )).to eq(:stuff)
             end
         end
     end
@@ -94,8 +94,8 @@ describe Arachni::Utilities do
     }.each do |k, v|
         describe "##{k}" do
             it "delegates to #{Arachni::URI::Scope}##{v}" do
-                Arachni::URI::Scope.any_instance.stub(v) { :stuff }
-                subject.send( k, 'http://url/' ).should == :stuff
+                allow_any_instance_of(Arachni::URI::Scope).to receive(v) { :stuff }
+                expect(subject.send( k, 'http://url/' )).to eq(:stuff)
             end
         end
     end
@@ -103,14 +103,14 @@ describe Arachni::Utilities do
     describe '#port_available?' do
         context 'when a port is available' do
             it 'returns true' do
-                subject.port_available?( 7777 ).should be_true
+                expect(subject.port_available?( 7777 )).to be_truthy
             end
         end
 
         context 'when a port is not available' do
             it 'returns true' do
                 s = TCPServer.new( 7777 )
-                subject.port_available?( 7777 ).should be_false
+                expect(subject.port_available?( 7777 )).to be_falsey
                 s.close
             end
         end
@@ -118,15 +118,15 @@ describe Arachni::Utilities do
 
     describe '#skip_page?' do
         it "delegates to #{Arachni::Page::Scope}#out?" do
-            Arachni::Page::Scope.any_instance.stub(:out?) { :stuff }
-            subject.skip_page?( page ).should == :stuff
+            allow_any_instance_of(Arachni::Page::Scope).to receive(:out?) { :stuff }
+            expect(subject.skip_page?( page )).to eq(:stuff)
         end
     end
 
     describe '#skip_response?' do
         it "delegates to #{Arachni::HTTP::Response::Scope}#out?" do
-            Arachni::HTTP::Response::Scope.any_instance.stub(:out?) { :stuff }
-            subject.skip_response?( response ).should == :stuff
+            allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:out?) { :stuff }
+            expect(subject.skip_response?( response )).to eq(:stuff)
         end
     end
 
@@ -136,15 +136,15 @@ describe Arachni::Utilities do
                 context 'and #skip_response? returns' do
                     context 'true' do
                         it 'returns true' do
-                            subject.stub(:skip_response?){ true }
-                            subject.skip_resource?( response ).should be_true
+                            allow(subject).to receive(:skip_response?){ true }
+                            expect(subject.skip_resource?( response )).to be_truthy
                         end
                     end
 
                     context 'false' do
                         it 'returns false' do
-                            subject.stub(:skip_response?){ false }
-                            subject.skip_resource?( response ).should be_false
+                            allow(subject).to receive(:skip_response?){ false }
+                            expect(subject.skip_resource?( response )).to be_falsey
                         end
                     end
                 end
@@ -154,15 +154,15 @@ describe Arachni::Utilities do
                 context 'and #skip_page? returns' do
                     context 'true' do
                         it 'returns true' do
-                            subject.stub(:skip_page?){ true }
-                            subject.skip_resource?( page ).should be_true
+                            allow(subject).to receive(:skip_page?){ true }
+                            expect(subject.skip_resource?( page )).to be_truthy
                         end
                     end
 
                     context 'false' do
                         it 'returns false' do
-                            subject.stub(:skip_page?){ false }
-                            subject.skip_resource?( page ).should be_false
+                            allow(subject).to receive(:skip_page?){ false }
+                            expect(subject.skip_resource?( page )).to be_falsey
                         end
                     end
                 end
@@ -172,15 +172,15 @@ describe Arachni::Utilities do
                 context 'and #skip_path? returns' do
                     context 'true' do
                         it 'returns true' do
-                            subject.stub(:skip_path?){ true }
-                            subject.skip_resource?( 'stuff' ).should be_true
+                            allow(subject).to receive(:skip_path?){ true }
+                            expect(subject.skip_resource?( 'stuff' )).to be_truthy
                         end
                     end
 
                     context 'false' do
                         it 'returns false' do
-                            subject.stub(:skip_path?){ false }
-                            subject.skip_resource?( 'stuff' ).should be_false
+                            allow(subject).to receive(:skip_path?){ false }
+                            expect(subject.skip_resource?( 'stuff' )).to be_falsey
                         end
                     end
                 end
@@ -190,34 +190,34 @@ describe Arachni::Utilities do
 
     describe '#random_seed' do
         it 'returns a random string' do
-            subject.random_seed.should be_kind_of String
+            expect(subject.random_seed).to be_kind_of String
         end
     end
 
     describe '#seconds_to_hms' do
         it 'converts seconds to HOURS:MINUTES:SECONDS' do
-            subject.seconds_to_hms( 0 ).should == '00:00:00'
-            subject.seconds_to_hms( 1 ).should == '00:00:01'
-            subject.seconds_to_hms( 60 ).should == '00:01:00'
-            subject.seconds_to_hms( 60*60 ).should == '01:00:00'
-            subject.seconds_to_hms( 60*60 + 60 + 1 ).should == '01:01:01'
+            expect(subject.seconds_to_hms( 0 )).to eq('00:00:00')
+            expect(subject.seconds_to_hms( 1 )).to eq('00:00:01')
+            expect(subject.seconds_to_hms( 60 )).to eq('00:01:00')
+            expect(subject.seconds_to_hms( 60*60 )).to eq('01:00:00')
+            expect(subject.seconds_to_hms( 60*60 + 60 + 1 )).to eq('01:01:01')
         end
     end
 
     describe '#hms_to_seconds' do
         it 'converts seconds to HOURS:MINUTES:SECONDS' do
-            subject.hms_to_seconds( '00:00:00' ).should == 0
-            subject.hms_to_seconds( '00:00:01' ).should == 1
-            subject.hms_to_seconds( '00:01:00' ).should == 60
-            subject.hms_to_seconds( '01:00:00' ).should == 60*60
-            subject.hms_to_seconds( '01:01:01').should == 60 * 60 + 60 + 1
+            expect(subject.hms_to_seconds( '00:00:00' )).to eq(0)
+            expect(subject.hms_to_seconds( '00:00:01' )).to eq(1)
+            expect(subject.hms_to_seconds( '00:01:00' )).to eq(60)
+            expect(subject.hms_to_seconds( '01:00:00' )).to eq(60*60)
+            expect(subject.hms_to_seconds( '01:01:01')).to eq(60 * 60 + 60 + 1)
         end
     end
 
     describe '#exception_jail' do
         context 'when no error occurs' do
             it 'returns the return value of the block' do
-                subject.exception_jail { :stuff }.should == :stuff
+                expect(subject.exception_jail { :stuff }).to eq(:stuff)
             end
         end
 
@@ -241,7 +241,7 @@ describe Arachni::Utilities do
 
                 context false do
                     it 'returns nil' do
-                        subject.exception_jail( false ) { raise }.should be_nil
+                        expect(subject.exception_jail( false ) { raise }).to be_nil
                     end
                 end
             end

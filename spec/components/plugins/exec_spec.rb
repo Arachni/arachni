@@ -21,36 +21,36 @@ describe name_from_filename do
         port   = parsed_url.port
 
         pre = actual_results['pre']
-        pre.delete('runtime').should be_kind_of Float
-        pre.delete('pid').should be_kind_of Integer
+        expect(pre.delete('runtime')).to be_kind_of Float
+        expect(pre.delete('pid')).to be_kind_of Integer
 
-        pre.should == {
+        expect(pre).to eq({
             "status"     => 0,
             "executable" => "echo \"#{options.url} #{scheme} #{host} #{port} pre 0 0 preparing\"",
             "stdout"     => "#{options.url} #{scheme} #{host} #{port} pre 0 0 preparing\n",
             "stderr"     => ""
-        }
+        })
 
         during = actual_results['during']
-        during.delete('runtime').should be_kind_of Float
-        during.delete('pid').should be_kind_of Integer
+        expect(during.delete('runtime')).to be_kind_of Float
+        expect(during.delete('pid')).to be_kind_of Integer
 
-        during.should == {
+        expect(during).to eq({
             "status"     => 0,
             "executable" => "echo \"#{options.url} #{scheme} #{host} #{port} during 0 0 preparing\"",
             "stdout"     => "#{options.url} #{scheme} #{host} #{port} during 0 0 preparing\n",
             "stderr"     => ""
-        }
+        })
 
         post = actual_results['post']
-        post.delete('runtime').should be_kind_of Float
-        post.delete('pid').should be_kind_of Integer
+        expect(post.delete('runtime')).to be_kind_of Float
+        expect(post.delete('pid')).to be_kind_of Integer
 
-        post.should == {
+        expect(post).to eq({
             "status"     => 0,
             "executable" => "echo \"#{options.url} #{scheme} #{host} #{port} post 0 2 cleanup\"",
             "stdout"     => "#{options.url} #{scheme} #{host} #{port} post 0 2 cleanup\n",
             "stderr"     => ""
-        }
+        })
     end
 end

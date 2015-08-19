@@ -59,35 +59,35 @@ describe Arachni::Data::Issues do
         end
 
         it 'includes the amount of total issues' do
-            statistics[:total].should == subject.size
+            expect(statistics[:total]).to eq(subject.size)
         end
 
         it 'includes the amount of issues by severity' do
-            statistics[:by_severity].should == {
+            expect(statistics[:by_severity]).to eq({
                 low:           1,
                 informational: 1,
                 high:          1,
                 medium:        1
-            }
+            })
         end
 
         it 'includes the amount of issues by type' do
-            statistics[:by_type].should == {
+            expect(statistics[:by_type]).to eq({
                 issue.name => 4
-            }
+            })
         end
 
         it 'includes the amount of issues by check' do
-            statistics[:by_check].should == {
+            expect(statistics[:by_check]).to eq({
                 issue.check[:shortname] => 4
-            }
+            })
         end
     end
 
     describe '#<<' do
         it 'registers an array of issues' do
             subject << issue
-            subject.any?.should be_true
+            expect(subject.any?).to be_truthy
         end
 
         context 'when an issue was discovered by manipulating an input' do
@@ -96,14 +96,14 @@ describe Arachni::Data::Issues do
                 i.vector.affected_input_name = 'some input'
                 20.times { subject << i }
 
-                subject.size.should == 1
+                expect(subject.size).to eq(1)
             end
         end
 
         context 'when an issue was not discovered by manipulating an input' do
             it 'registers it multiple times' do
                 20.times { subject << issue }
-                subject.flatten.size.should == 20
+                expect(subject.flatten.size).to eq(20)
             end
         end
     end
@@ -113,7 +113,7 @@ describe Arachni::Data::Issues do
             callback_called = 0
             subject.on_new { callback_called += 1 }
             10.times { subject << active_issue }
-            callback_called.should == 1
+            expect(callback_called).to eq(1)
         end
     end
 
@@ -122,7 +122,7 @@ describe Arachni::Data::Issues do
             callback_called = 0
             subject.on_new_pre_deduplication { callback_called += 1 }
             10.times { subject << issue }
-            callback_called.should == 10
+            expect(callback_called).to eq(10)
         end
     end
 
@@ -130,14 +130,14 @@ describe Arachni::Data::Issues do
         it 'does not store results' do
             subject.do_not_store
             subject << issue
-            subject.empty?.should be_true
+            expect(subject.empty?).to be_truthy
         end
     end
 
     describe '#all' do
         it 'returns all issues' do
             subject << issue
-            subject.all.should == [issue]
+            expect(subject.all).to eq([issue])
         end
 
         it 'groups issues as variations' do
@@ -146,40 +146,40 @@ describe Arachni::Data::Issues do
             all   = subject.all
             first = all.first
 
-            all.should == [issue]
-            first.variations.size.should == 20
-            first.variations.first.should == issue
+            expect(all).to eq([issue])
+            expect(first.variations.size).to eq(20)
+            expect(first.variations.first).to eq(issue)
         end
     end
 
     describe '#summary' do
         it 'returns first variation of all issues as solo versions' do
             unsorted_issues.each { |i| subject << i }
-            subject.summary.should == sorted_issues
-            subject.summary.map(&:solo?).uniq.should == [true]
+            expect(subject.summary).to eq(sorted_issues)
+            expect(subject.summary.map(&:solo?).uniq).to eq([true])
         end
     end
 
     describe '#flatten' do
         it 'returns all issues as solo versions' do
             20.times { subject << issue }
-            subject.flatten.size.should == 20
-            subject.flatten.first.should == issue
-            subject.flatten.map(&:solo?).uniq.should == [true]
+            expect(subject.flatten.size).to eq(20)
+            expect(subject.flatten.first).to eq(issue)
+            expect(subject.flatten.map(&:solo?).uniq).to eq([true])
         end
     end
 
     describe '#[]' do
         it 'provides access to issues by their #digest' do
             subject << issue
-            subject[issue.digest].should == issue
+            expect(subject[issue.digest]).to eq(issue)
         end
     end
 
     describe '#sort'do
         it 'returns a sorted array of Issues' do
             unsorted_issues.each { |i| subject << i }
-            subject.sort.should == sorted_issues
+            expect(subject.sort).to eq(sorted_issues)
         end
     end
 
@@ -188,14 +188,14 @@ describe Arachni::Data::Issues do
             subject << issue
             issues = []
             subject.each { |i| issues << i }
-            issues.should == [issue]
+            expect(issues).to eq([issue])
         end
     end
 
     describe '#map' do
         it 'passes each issue to the given block' do
             subject << issue
-            subject.map { |i| i.severity }.should == [issue.severity]
+            expect(subject.map { |i| i.severity }).to eq([issue.severity])
         end
     end
 
@@ -203,7 +203,7 @@ describe Arachni::Data::Issues do
         it 'returns the first issue' do
             subject << issue_low_severity
             subject << issue_high_severity
-            subject.first.should == issue_low_severity
+            expect(subject.first).to eq(issue_low_severity)
         end
     end
 
@@ -211,7 +211,7 @@ describe Arachni::Data::Issues do
         it 'returns the last issue' do
             subject << issue_low_severity
             subject << issue_high_severity
-            subject.last.should == issue_high_severity
+            expect(subject.last).to eq(issue_high_severity)
         end
     end
 
@@ -222,7 +222,7 @@ describe Arachni::Data::Issues do
             context 'and it includes the given issue' do
                 it 'returns true' do
                     subject << issue
-                    subject.should include issue
+                    expect(subject).to include issue
                 end
             end
         end
@@ -230,14 +230,14 @@ describe Arachni::Data::Issues do
         context 'when it includes the given issue' do
             it 'returns true' do
                 subject << issue
-                subject.should include issue
+                expect(subject).to include issue
             end
         end
 
         context 'when it does not includes the given issue' do
             it 'returns true' do
                 subject << active_issue
-                subject.should_not include issue
+                expect(subject).not_to include issue
             end
         end
     end
@@ -246,13 +246,13 @@ describe Arachni::Data::Issues do
         context 'when there are issues' do
             it 'returns true' do
                 subject << issue
-                subject.should be_any
+                expect(subject).to be_any
             end
         end
 
         context 'when there are no issues' do
             it 'returns false' do
-                subject.should_not be_any
+                expect(subject).not_to be_any
             end
         end
     end
@@ -260,14 +260,14 @@ describe Arachni::Data::Issues do
     describe '#empty?' do
         context 'when there are no issues' do
             it 'returns true' do
-                subject.should be_empty
+                expect(subject).to be_empty
             end
         end
 
         context 'when there are issues' do
             it 'returns false' do
                 subject << issue
-                subject.should_not be_empty
+                expect(subject).not_to be_empty
             end
         end
     end
@@ -276,7 +276,7 @@ describe Arachni::Data::Issues do
         it 'returns the amount of issues' do
             subject << issue
             subject << active_issue
-            subject.size.should == 2
+            expect(subject.size).to eq(2)
         end
     end
 
@@ -287,11 +287,11 @@ describe Arachni::Data::Issues do
 
             subject.each do |issue|
                 issue_path = "#{dump_directory}/issue_#{issue.digest}"
-                File.exists?( issue_path ).should be_true
+                expect(File.exists?( issue_path )).to be_truthy
 
                 loaded_issue = Marshal.load( IO.read( issue_path ) )
-                issue.should == loaded_issue
-                issue.variations.should == loaded_issue.variations
+                expect(issue).to eq(loaded_issue)
+                expect(issue.variations).to eq(loaded_issue.variations)
             end
         end
 
@@ -299,7 +299,7 @@ describe Arachni::Data::Issues do
             unsorted_issues.each { |i| subject << i }
             subject.dump( dump_directory )
 
-            subject.digests.should == Marshal.load( IO.read( "#{dump_directory}/digests" ) )
+            expect(subject.digests).to eq(Marshal.load( IO.read( "#{dump_directory}/digests" ) ))
         end
     end
 
@@ -308,14 +308,14 @@ describe Arachni::Data::Issues do
             unsorted_issues.each { |i| subject << i }
             subject.dump( dump_directory )
 
-            subject.should == described_class.load( dump_directory )
+            expect(subject).to eq(described_class.load( dump_directory ))
         end
 
         it 'restores digests from disk' do
             unsorted_issues.each { |i| subject << i }
             subject.dump( dump_directory )
 
-            subject.digests.should == described_class.load( dump_directory ).digests
+            expect(subject.digests).to eq(described_class.load( dump_directory ).digests)
         end
     end
 
@@ -323,7 +323,7 @@ describe Arachni::Data::Issues do
         it 'clears the collection' do
             subject << issue
             subject.clear
-            subject.should be_empty
+            expect(subject).to be_empty
         end
 
         it 'clears #on_new callbacks' do
@@ -332,7 +332,7 @@ describe Arachni::Data::Issues do
             subject.clear
 
             10.times { subject << active_issue }
-            callback_called.should == 0
+            expect(callback_called).to eq(0)
         end
 
         it 'clears #on_new_pre_deduplication callbacks' do
@@ -341,7 +341,7 @@ describe Arachni::Data::Issues do
             subject.clear
 
             10.times { subject << active_issue }
-            callback_called.should == 0
+            expect(callback_called).to eq(0)
         end
     end
 end

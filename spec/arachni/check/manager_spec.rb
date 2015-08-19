@@ -20,8 +20,8 @@ describe Arachni::Check::Manager do
     describe '#load' do
         it 'loads all checks' do
             all = checks.load_all
-            all.size.should equal 3
-            all.sort.should == checks.keys.sort
+            expect(all.size).to equal 3
+            expect(all.sort).to eq(checks.keys.sort)
         end
     end
 
@@ -35,7 +35,7 @@ describe Arachni::Check::Manager do
                 checks = Arachni::Framework.new.checks
 
                 expect { checks[:with_invalid_platforms] }.to raise_error described_class::Error::InvalidPlatforms
-                checks.include?(:with_invalid_platforms).should be_false
+                expect(checks.include?(:with_invalid_platforms)).to be_falsey
             end
         end
     end
@@ -46,36 +46,36 @@ describe Arachni::Check::Manager do
             checks.load :test2
             checks.load :test3
             checks.load :test
-            checks.schedule.should == [checks[:test], checks[:test2], checks[:test3]]
+            expect(checks.schedule).to eq([checks[:test], checks[:test2], checks[:test3]])
 
             checks.clear
 
             checks.load :test2
-            checks.schedule.should == [checks[:test2]]
+            expect(checks.schedule).to eq([checks[:test2]])
 
             checks.clear
 
             checks.load :test
-            checks.schedule.should == [checks[:test]]
+            expect(checks.schedule).to eq([checks[:test]])
 
             checks.clear
 
             checks.load :test, :test3
-            checks.schedule.should == [checks[:test], checks[:test3]]
+            expect(checks.schedule).to eq([checks[:test], checks[:test3]])
         end
     end
 
     describe '#with_platforms' do
         it 'returns checks which target specific platforms' do
             checks.load_all
-            checks.with_platforms.keys.should == ['test2']
+            expect(checks.with_platforms.keys).to eq(['test2'])
         end
     end
 
     describe '#without_platforms' do
         it 'returns checks which do not target specific platforms' do
             checks.load_all
-            checks.without_platforms.keys.sort.should == %w(test test3).sort
+            expect(checks.without_platforms.keys.sort).to eq(%w(test test3).sort)
         end
     end
 
@@ -83,8 +83,8 @@ describe Arachni::Check::Manager do
         it 'runs all checks' do
             checks.load_all
             checks.run( page )
-            issues.size.should equal 1
-            issues.first.name.should == checks['test'].info[:issue][:name]
+            expect(issues.size).to equal 1
+            expect(issues.first.name).to eq(checks['test'].info[:issue][:name])
         end
     end
 
@@ -92,14 +92,14 @@ describe Arachni::Check::Manager do
         it 'runs a single check' do
             checks.load :test
             checks.run_one( checks.values.first, page )
-            issues.size.should equal 1
-            issues.first.name.should == checks['test'].info[:issue][:name]
+            expect(issues.size).to equal 1
+            expect(issues.first.name).to eq(checks['test'].info[:issue][:name])
         end
 
         context 'when the check was ran' do
             it 'returns true' do
                 checks.load :test
-                checks.run_one( checks.values.first, page ).should be_true
+                expect(checks.run_one( checks.values.first, page )).to be_truthy
             end
         end
 
@@ -109,7 +109,7 @@ describe Arachni::Check::Manager do
 
                 allow(Arachni::Checks::Test).to receive(:check?).and_return(false)
 
-                checks.run_one( checks.values.first, page ).should be_false
+                expect(checks.run_one( checks.values.first, page )).to be_falsey
             end
         end
     end

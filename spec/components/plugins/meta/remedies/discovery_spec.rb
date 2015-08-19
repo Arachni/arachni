@@ -15,7 +15,7 @@ describe name_from_filename do
             run
             framework.report.issues.each do |issue|
                 issue.variations.map( &:untrusted? ).uniq == [true]
-                issue.variations.first.remarks[:meta_analysis].should be_true
+                expect(issue.variations.first.remarks[:meta_analysis]).to be_truthy
             end
         end
     end

@@ -10,12 +10,12 @@ describe Arachni::Support::Cache::LeastCostReplacement do
         subject.store( :k2, '2', :high )
         subject.store( :k3, '3', :medium )
         subject.store( :k4, '4', :low )
-        subject.size.should == 3
+        expect(subject.size).to eq(3)
 
-        subject[:k4].should be_true
-        subject[:k3].should be_nil
-        subject[:k2].should be_true
-        subject[:k].should be_true
+        expect(subject[:k4]).to be_truthy
+        expect(subject[:k3]).to be_nil
+        expect(subject[:k2]).to be_truthy
+        expect(subject[:k]).to be_truthy
 
         subject.clear
 
@@ -25,37 +25,37 @@ describe Arachni::Support::Cache::LeastCostReplacement do
         subject.store( :k2, '2', :low )
         subject.store( :k3, '3', :low )
         subject.store( :k4, '4', :low )
-        subject.size.should == 1
+        expect(subject.size).to eq(1)
 
-        subject[:k4].should be_true
-        subject[:k3].should be_nil
-        subject[:k2].should be_nil
-        subject[:k].should be_nil
+        expect(subject[:k4]).to be_truthy
+        expect(subject[:k3]).to be_nil
+        expect(subject[:k2]).to be_nil
+        expect(subject[:k]).to be_nil
     end
 
     describe '#store' do
         it 'stores an object by key' do
             v = 'val'
-            subject.store( :key, v, :low ).should == v
-            subject[:key].should == v
+            expect(subject.store( :key, v, :low )).to eq(v)
+            expect(subject[:key]).to eq(v)
         end
         it 'assigns cost to object' do
             v = 'val'
-            subject.store( :key, v, :low ).should == v
-            subject[:key].should == v
+            expect(subject.store( :key, v, :low )).to eq(v)
+            expect(subject[:key]).to eq(v)
         end
     end
 
     describe '#[]=' do
         it 'stores an object' do
             v = 'val'
-            (subject[:key] = v).should == v
-            subject[:key].should == v
+            expect(subject[:key] = v).to eq(v)
+            expect(subject[:key]).to eq(v)
         end
         it 'alias of #store' do
             v = 'val2'
-            subject.store( :key2, v ).should == v
-            subject[:key2].should == v
+            expect(subject.store( :key2, v )).to eq(v)
+            expect(subject[:key2]).to eq(v)
         end
     end
 end

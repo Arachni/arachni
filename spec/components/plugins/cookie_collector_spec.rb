@@ -10,7 +10,7 @@ describe name_from_filename do
     it 'logs the expected results' do
         run
 
-        actual_results.size.should == 3
+        expect(actual_results.size).to eq(3)
 
         oks = 0
         actual_results.each do |result|
@@ -24,7 +24,7 @@ describe name_from_filename do
             end
         end
 
-        oks.should == 3
+        expect(oks).to eq(3)
     end
 
     context 'when a filter has been specified' do
@@ -33,9 +33,9 @@ describe name_from_filename do
 
             run
 
-            actual_results.size.should == 2
-            actual_results.map { |r| r['cookies'].keys }.flatten.
-                uniq.sort.should == %w(link_followed)
+            expect(actual_results.size).to eq(2)
+            expect(actual_results.map { |r| r['cookies'].keys }.flatten.
+                uniq.sort).to eq(%w(link_followed))
         end
     end
 end

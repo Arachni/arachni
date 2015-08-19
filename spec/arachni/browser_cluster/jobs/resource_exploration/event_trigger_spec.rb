@@ -25,17 +25,18 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
         pages = []
 
         @cluster.queue( job ) do |result|
-            result.should be_kind_of described_class::Result
+            expect(result).to be_kind_of described_class::Result
             pages << result.page
         end
         @cluster.wait
 
-        pages.size.should == 2
+        expect(pages.size).to eq(2)
 
         page = pages.last
-        page.dom.transitions.last.event.should == event
-        Nokogiri::HTML( page.body ).xpath("//div[@id='my-div']").first.to_s.should ==
+        expect(page.dom.transitions.last.event).to eq(event)
+        expect(Nokogiri::HTML( page.body ).xpath("//div[@id='my-div']").first.to_s).to eq(
             '<div id="my-div"><a href="#3">My link</a></div>'
+        )
     end
 
     context 'when the resource is a' do

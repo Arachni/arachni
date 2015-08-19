@@ -22,42 +22,42 @@ shared_examples_for 'with_auditor' do
         let(:data) { auditable.to_rpc_data }
 
         it "does not include 'auditor'" do
-            data.should_not include 'auditor'
+            expect(data).not_to include 'auditor'
         end
     end
 
     describe '#prepare_for_report' do
         it 'removes the #auditor' do
-            auditable.auditor.should be_true
+            expect(auditable.auditor).to be_truthy
             auditable.prepare_for_report
-            auditable.auditor.should be_nil
+            expect(auditable.auditor).to be_nil
         end
     end
 
     describe '#marshal_dump' do
         it 'excludes @auditor' do
-            auditable.marshal_dump.should_not include :@auditor
+            expect(auditable.marshal_dump).not_to include :@auditor
         end
     end
 
     describe '#remove_auditor' do
         it 'removes the auditor' do
             auditable.auditor = :some_auditor
-            auditable.auditor.should == :some_auditor
+            expect(auditable.auditor).to eq(:some_auditor)
             auditable.remove_auditor
-            auditable.auditor.should be_nil
+            expect(auditable.auditor).to be_nil
         end
     end
 
     describe '#orphan?' do
         context 'when it has no auditor' do
             it 'returns true' do
-                orphan.orphan?.should be_true
+                expect(orphan.orphan?).to be_truthy
             end
         end
         context 'when it has an auditor' do
             it 'returns true' do
-                auditable.orphan?.should be_false
+                expect(auditable.orphan?).to be_falsey
             end
         end
     end
@@ -66,10 +66,10 @@ shared_examples_for 'with_auditor' do
         let(:dupped) { auditable.dup }
 
         it 'preserves the #auditor' do
-            dupped.auditor.should == auditable.auditor
+            expect(dupped.auditor).to eq(auditable.auditor)
 
             subject.remove_auditor
-            dup.auditor.should be_true
+            expect(dup.auditor).to be_truthy
         end
     end
 end

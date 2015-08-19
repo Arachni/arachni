@@ -6,7 +6,7 @@ describe Arachni::Scope do
 
     describe '#options' do
         it "returns #{Arachni::OptionGroups::Scope}" do
-            subject.options.should be_kind_of Arachni::OptionGroups::Scope
+            expect(subject.options).to be_kind_of Arachni::OptionGroups::Scope
         end
     end
 

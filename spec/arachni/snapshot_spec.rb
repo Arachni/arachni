@@ -15,11 +15,11 @@ describe Arachni::Snapshot do
         let(:summary) { subject.summary }
 
         it 'includes :data' do
-            summary[:data].should == Arachni::Data.statistics
+            expect(summary[:data]).to eq(Arachni::Data.statistics)
         end
 
         it 'includes :state' do
-            summary[:state].should == Arachni::State.statistics
+            expect(summary[:state]).to eq(Arachni::State.statistics)
         end
     end
 
@@ -29,13 +29,13 @@ describe Arachni::Snapshot do
                 subject.dump( dump_archive )
                 subject.load( dump_archive )
 
-                subject.metadata.should == subject.read_metadata( dump_archive )
+                expect(subject.metadata).to eq(subject.read_metadata( dump_archive ))
             end
         end
 
         context 'when not dealing with a restored snapshot' do
             it 'returns nil' do
-                subject.metadata.should be_nil
+                expect(subject.metadata).to be_nil
             end
         end
     end
@@ -46,13 +46,13 @@ describe Arachni::Snapshot do
                 subject.dump( dump_archive )
                 subject.load( dump_archive )
 
-                subject.should be_restored
+                expect(subject).to be_restored
             end
         end
 
         context 'when not dealing with a restored snapshot' do
             it 'returns false' do
-                subject.should_not be_restored
+                expect(subject).not_to be_restored
             end
         end
     end
@@ -63,13 +63,13 @@ describe Arachni::Snapshot do
                 subject.dump( dump_archive )
                 subject.load( dump_archive )
 
-                subject.location.should == dump_archive
+                expect(subject.location).to eq(dump_archive)
             end
         end
 
         context 'when not dealing with a restored snapshot' do
             it 'returns nil' do
-                subject.location.should be_nil
+                expect(subject.location).to be_nil
             end
         end
     end
@@ -81,15 +81,15 @@ describe Arachni::Snapshot do
         end
 
         it 'includes a :timestamp' do
-            metadata[:timestamp].should be_kind_of Time
+            expect(metadata[:timestamp]).to be_kind_of Time
         end
 
         it 'includes a :version' do
-            metadata[:version].should == Arachni::VERSION
+            expect(metadata[:version]).to eq(Arachni::VERSION)
         end
 
         it 'includes a #summary' do
-            metadata[:summary].should == subject.summary
+            expect(metadata[:summary]).to eq(subject.summary)
         end
 
         context 'when trying to read an invalid file' do
@@ -101,8 +101,8 @@ describe Arachni::Snapshot do
 
     describe '.dump' do
         it "stores #{Arachni::State} to disk" do
-            Arachni::State.should receive(:dump)
-            Arachni::Data.should receive(:dump)
+            expect(Arachni::State).to receive(:dump)
+            expect(Arachni::Data).to receive(:dump)
 
             subject.dump( dump_archive )
         end
@@ -112,8 +112,8 @@ describe Arachni::Snapshot do
         it "stores #{Arachni::State} to disk" do
             subject.dump( dump_archive )
 
-            Arachni::State.should receive(:load)
-            Arachni::Data.should receive(:load)
+            expect(Arachni::State).to receive(:load)
+            expect(Arachni::Data).to receive(:load)
 
             subject.load( dump_archive )
         end

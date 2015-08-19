@@ -7,12 +7,12 @@ shared_examples_for 'cache' do
         describe 'max_size' do
             describe 'nil' do
                 it 'leaves the cache uncapped' do
-                    described_class.new.capped?.should be_false
+                    expect(described_class.new.capped?).to be_falsey
                 end
             end
             describe Integer do
                 it 'imposes a limit to the size of the cache' do
-                    described_class.new( 10 ).capped?.should be_true
+                    expect(described_class.new( 10 ).capped?).to be_truthy
                 end
             end
         end
@@ -21,13 +21,13 @@ shared_examples_for 'cache' do
     describe '#max_size' do
         context 'when just initialized' do
             it 'returns nil (unlimited)' do
-                subject.max_size.should be_nil
+                expect(subject.max_size).to be_nil
             end
         end
         context 'when set' do
             it 'returns the set value' do
-                (subject.max_size = 50).should == 50
-                subject.max_size.should == 50
+                expect(subject.max_size = 50).to eq(50)
+                expect(subject.max_size).to eq(50)
             end
         end
     end
@@ -44,14 +44,14 @@ shared_examples_for 'cache' do
         context 'when the cache has no size limit' do
             it 'returns false' do
                 subject.uncap
-                subject.capped?.should be_false
-                subject.max_size.should be_nil
+                expect(subject.capped?).to be_falsey
+                expect(subject.max_size).to be_nil
             end
         end
         context 'when the cache has a size limit' do
             it 'returns true' do
                 subject.max_size = 1
-                subject.capped?.should be_true
+                expect(subject.capped?).to be_truthy
             end
         end
     end
@@ -60,15 +60,15 @@ shared_examples_for 'cache' do
         context 'when the cache has no size limit' do
             it 'returns true' do
                 subject.uncap
-                subject.uncapped?.should be_true
-                subject.max_size.should be_nil
+                expect(subject.uncapped?).to be_truthy
+                expect(subject.max_size).to be_nil
             end
         end
         context 'when the cache has a size limit' do
             it 'returns false' do
                 subject.max_size = 1
-                subject.max_size.should == 1
-                subject.uncapped?.should be_false
+                expect(subject.max_size).to eq(1)
+                expect(subject.uncapped?).to be_falsey
             end
         end
     end
@@ -76,19 +76,19 @@ shared_examples_for 'cache' do
     describe '#uncap' do
         it 'removes the size limit' do
             subject.max_size = 1
-            subject.uncapped?.should be_false
-            subject.max_size.should == 1
+            expect(subject.uncapped?).to be_falsey
+            expect(subject.max_size).to eq(1)
 
             subject.uncap
-            subject.uncapped?.should be_true
-            subject.max_size.should be_nil
+            expect(subject.uncapped?).to be_truthy
+            expect(subject.max_size).to be_nil
         end
     end
 
     describe '#max_size=' do
         it 'sets the maximum size for the cache' do
-            (subject.max_size = 100).should == 100
-            subject.max_size.should == 100
+            expect(subject.max_size = 100).to eq(100)
+            expect(subject.max_size).to eq(100)
         end
 
         context 'when passed < 0' do
@@ -99,7 +99,7 @@ shared_examples_for 'cache' do
                 rescue
                     raised = true
                 end
-                raised.should be_true
+                expect(raised).to be_truthy
             end
         end
     end
@@ -107,14 +107,14 @@ shared_examples_for 'cache' do
     describe '#size' do
         context 'when the cache is empty' do
             it 'returns 0' do
-                subject.size.should == 0
+                expect(subject.size).to eq(0)
             end
         end
 
         context 'when the cache is not empty' do
             it 'returns a value > 0' do
                 subject['stuff'] = [ 'ff ' ]
-                subject.size.should > 0
+                expect(subject.size).to be > 0
             end
         end
     end
@@ -122,13 +122,13 @@ shared_examples_for 'cache' do
     describe '#empty?' do
         context 'when the cache is empty' do
             it 'returns true' do
-                subject.empty?.should be_true
+                expect(subject.empty?).to be_truthy
             end
         end
         context 'when the cache is not empty' do
             it 'returns false' do
                 subject['stuff2'] = 'ff'
-                subject.empty?.should be_false
+                expect(subject.empty?).to be_falsey
             end
         end
     end
@@ -136,13 +136,13 @@ shared_examples_for 'cache' do
     describe '#any?' do
         context 'when the cache is empty' do
             it 'returns true' do
-                subject.any?.should be_false
+                expect(subject.any?).to be_falsey
             end
         end
         context 'when the cache is not empty' do
             it 'returns false' do
                 subject['stuff3'] = [ 'ff ' ]
-                subject.any?.should be_true
+                expect(subject.any?).to be_truthy
             end
         end
     end
@@ -150,13 +150,13 @@ shared_examples_for 'cache' do
     describe '#[]=' do
         it 'stores an object' do
             v = 'val'
-            (subject[:key] = v).should == v
-            subject[:key].should == v
+            expect(subject[:key] = v).to eq(v)
+            expect(subject[:key]).to eq(v)
         end
         it 'is alias of #store' do
             v = 'val2'
-            subject.store( :key2, v ).should == v
-            subject[:key2].should == v
+            expect(subject.store( :key2, v )).to eq(v)
+            expect(subject[:key2]).to eq(v)
         end
     end
 
@@ -164,13 +164,13 @@ shared_examples_for 'cache' do
         it 'retrieves an object by key' do
             v = 'val2'
             subject[:key] = v
-            subject[:key].should == v
-            subject.empty?.should be_false
+            expect(subject[:key]).to eq(v)
+            expect(subject.empty?).to be_falsey
         end
 
         context 'when the key does not exist' do
             it 'returns nil' do
-                subject[:some_key].should be_nil
+                expect(subject[:some_key]).to be_nil
             end
         end
     end
@@ -185,7 +185,7 @@ shared_examples_for 'cache' do
                 cache[:my_key] = old_val
                 cache.fetch_or_store( :my_key ) { new_val }
 
-                cache[:my_key].should == old_val
+                expect(cache[:my_key]).to eq(old_val)
             end
         end
 
@@ -195,7 +195,7 @@ shared_examples_for 'cache' do
                 cache = described_class.new
                 cache.fetch_or_store( :my_key ) { new_val }
 
-                cache[:my_key].should == new_val
+                expect(cache[:my_key]).to eq(new_val)
             end
         end
     end
@@ -204,12 +204,12 @@ shared_examples_for 'cache' do
         context 'when the key exists' do
             it 'returns true' do
                 subject[:key1] = 'v'
-                subject.include?( :key1 ).should be_true
+                expect(subject.include?( :key1 )).to be_truthy
             end
         end
         context 'when the key does not exist' do
             it 'returns false' do
-                subject.include?( :key2 ).should be_false
+                expect(subject.include?( :key2 )).to be_falsey
             end
         end
     end
@@ -219,21 +219,21 @@ shared_examples_for 'cache' do
             it 'deletes a key' do
                 v = 'my_val'
                 subject[:my_key] = v
-                subject.delete( :my_key ).should == v
-                subject[:my_key].should be_nil
-                subject.include?( :my_key ).should be_false
+                expect(subject.delete( :my_key )).to eq(v)
+                expect(subject[:my_key]).to be_nil
+                expect(subject.include?( :my_key )).to be_falsey
             end
             it 'returns its value' do
                 v = 'my_val'
                 subject[:my_key] = v
-                subject.delete( :my_key ).should == v
-                subject[:my_key].should be_nil
-                subject.include?( :my_key ).should be_false
+                expect(subject.delete( :my_key )).to eq(v)
+                expect(subject[:my_key]).to be_nil
+                expect(subject.include?( :my_key )).to be_falsey
             end
         end
         context 'when the key does not exist' do
             it 'should return nil' do
-                subject.delete( :my_key2 ).should be_nil
+                expect(subject.delete( :my_key2 )).to be_nil
             end
         end
     end
@@ -241,13 +241,13 @@ shared_examples_for 'cache' do
     describe '#empty?' do
         context 'when cache is empty' do
             it 'returns true' do
-                subject.empty?.should be_true
+                expect(subject.empty?).to be_truthy
             end
         end
         context 'when cache is not empty' do
             it 'returns false' do
                 subject['ee'] = 'rr'
-                subject.empty?.should be_false
+                expect(subject.empty?).to be_falsey
             end
         end
     end
@@ -255,13 +255,13 @@ shared_examples_for 'cache' do
     describe '#any?' do
         context 'when cache is empty' do
             it 'returns false' do
-                subject.any?.should be_false
+                expect(subject.any?).to be_falsey
             end
         end
         context 'when cache is not empty' do
             it 'returns true' do
                 subject['ee'] = 'rr'
-                subject.any?.should be_true
+                expect(subject.any?).to be_truthy
             end
         end
     end
@@ -269,12 +269,12 @@ shared_examples_for 'cache' do
     describe '#clear' do
         it 'empties the cache' do
             subject[:my_key2] = 'v'
-            subject.size.should > 0
-            subject.empty?.should be_false
+            expect(subject.size).to be > 0
+            expect(subject.empty?).to be_falsey
             subject.clear
 
-            subject.size.should == 0
-            subject.empty?.should be_true
+            expect(subject.size).to eq(0)
+            expect(subject.empty?).to be_truthy
         end
     end
 
@@ -286,7 +286,7 @@ shared_examples_for 'cache' do
                 subject[:test_key] = 'test_val'
                 new[:test_key]     = 'test_val'
 
-                subject.should == new
+                expect(subject).to eq(new)
             end
         end
 
@@ -297,7 +297,7 @@ shared_examples_for 'cache' do
                 subject[:test_key] = 'test_val'
                 new[:test_key]     = 'test_val2'
 
-                subject.should_not == new
+                expect(subject).not_to eq(new)
             end
         end
     end
@@ -310,7 +310,7 @@ shared_examples_for 'cache' do
                 subject[:test_key] = 'test_val'
                 new[:test_key]     = 'test_val'
 
-                subject.hash.should == new.hash
+                expect(subject.hash).to eq(new.hash)
             end
         end
 
@@ -321,7 +321,7 @@ shared_examples_for 'cache' do
                 subject[:test_key] = 'test_val'
                 new[:test_key]     = 'test_val2'
 
-                subject.hash.should_not == new.hash
+                expect(subject.hash).not_to eq(new.hash)
             end
         end
     end
@@ -331,11 +331,11 @@ shared_examples_for 'cache' do
             subject[:test_key] = 'test_val'
             copy = subject.dup
 
-            copy.should == subject
+            expect(copy).to eq(subject)
 
             copy[:test_key] = 'test_val2'
 
-            copy.should_not == subject
+            expect(copy).not_to eq(subject)
         end
     end
 end

@@ -29,7 +29,7 @@ describe Arachni::HTTP::ProxyServer do
     end
 
     def test_proxy( proxy )
-        via_proxy( proxy, @url ).body.should == 'GET'
+        expect(via_proxy( proxy, @url ).body).to eq('GET')
     end
 
     it 'supports SSL interception' do
@@ -38,7 +38,7 @@ describe Arachni::HTTP::ProxyServer do
         proxy = described_class.new
         proxy.start_async
 
-        via_proxy( proxy, url ).body.should == 'HTTPS GET'
+        expect(via_proxy( proxy, url ).body).to eq('HTTPS GET')
     end
 
     it 'removes any size limits on the HTTP responses' do
@@ -57,7 +57,7 @@ describe Arachni::HTTP::ProxyServer do
                 proxy = described_class.new( address: address )
                 proxy.start_async
 
-                proxy.address.split( ':' ).first.should == address
+                expect(proxy.address.split( ':' ).first).to eq(address)
                 test_proxy proxy
             end
         end
@@ -69,7 +69,7 @@ describe Arachni::HTTP::ProxyServer do
                 proxy = described_class.new( port: port )
                 proxy.start_async
 
-                proxy.address.split( ':' ).last.should == port.to_s
+                expect(proxy.address.split( ':' ).last).to eq(port.to_s)
                 test_proxy proxy
             end
         end
@@ -81,8 +81,8 @@ describe Arachni::HTTP::ProxyServer do
 
                 sleep_url = @url + 'sleep'
 
-                Typhoeus::Request.get( sleep_url ).code.should_not == 0
-                via_proxy( proxy, sleep_url ).code.should == 0
+                expect(Typhoeus::Request.get( sleep_url ).code).not_to eq(0)
+                expect(via_proxy( proxy, sleep_url ).code).to eq(0)
             end
         end
 
@@ -98,7 +98,7 @@ describe Arachni::HTTP::ProxyServer do
                     threads << Thread.new { via_proxy( proxy, sleep_url ) }
                 end
                 threads.each(&:join)
-                (Time.now - time).to_i.should == 5
+                expect((Time.now - time).to_i).to eq(5)
 
                 proxy = described_class.new( concurrency: 1 )
                 proxy.start_async
@@ -108,7 +108,7 @@ describe Arachni::HTTP::ProxyServer do
                     threads << Thread.new { via_proxy( proxy, sleep_url ) }
                 end
                 threads.each(&:join)
-                (Time.now - time).to_i.should == 10
+                expect((Time.now - time).to_i).to eq(10)
             end
         end
 
@@ -117,42 +117,42 @@ describe Arachni::HTTP::ProxyServer do
                 called = false
                 proxy = described_class.new(
                     request_handler: proc do |request, _|
-                        request.should be_kind_of Arachni::HTTP::Request
+                        expect(request).to be_kind_of Arachni::HTTP::Request
                         called = true
                     end
                 )
                 proxy.start_async
                 test_proxy proxy
 
-                called.should be_true
+                expect(called).to be_truthy
             end
 
             it 'sets a block to handle each HTTP response before the request is forwarded to the origin server' do
                 called = false
                 proxy = described_class.new(
                     request_handler: proc do |_, response|
-                        response.should be_kind_of Arachni::HTTP::Response
+                        expect(response).to be_kind_of Arachni::HTTP::Response
                         called = true
                     end
                 )
                 proxy.start_async
                 test_proxy proxy
 
-                called.should be_true
+                expect(called).to be_truthy
             end
 
             it 'assigns the request to the response' do
                 called = false
                 proxy = described_class.new(
                     request_handler: proc do |_, response|
-                        response.request.should be_kind_of Arachni::HTTP::Request
+                        expect(response.request).to be_kind_of Arachni::HTTP::Request
                         called = true
                     end
                 )
                 proxy.start_async
                 test_proxy proxy
 
-                called.should be_true
+                expect(called).to be_truthy
             end
 
             it 'fills in raw request data' do
@@ -166,7 +166,7 @@ describe Arachni::HTTP::ProxyServer do
                 proxy.start_async
                 post_via_proxy( proxy, @url )
 
-                request.headers_string.should ==
+                expect(request.headers_string).to eq(
                     "POST / HTTP/1.1\r\n" <<
                     "Accept-Encoding: gzip, deflate\r\n" <<
                     "User-Agent: Typhoeus - https://github.com/typhoeus/typhoeus\r\n" <<
@@ -175,8 +175,9 @@ describe Arachni::HTTP::ProxyServer do
                         "Proxy-Connection: Keep-Alive\r\n" <<
                         "Content-Type: application/x-www-form-urlencoded\r\n" <<
                         "Content-Length: 7\r\n\r\n"
+                )
 
-                request.effective_body.should == '1=2&3=4'
+                expect(request.effective_body).to eq('1=2&3=4')
             end
 
             context 'if the block returns false' do
@@ -184,8 +185,8 @@ describe Arachni::HTTP::ProxyServer do
                     called = false
                     proxy = described_class.new(
                         request_handler: proc do |request, response|
-                            request.should be_kind_of Arachni::HTTP::Request
-                            response.should be_kind_of Arachni::HTTP::Response
+                            expect(request).to be_kind_of Arachni::HTTP::Request
+                            expect(response).to be_kind_of Arachni::HTTP::Response
                             called = true
 
                             response.code = 200
@@ -196,9 +197,9 @@ describe Arachni::HTTP::ProxyServer do
                     )
                     proxy.start_async
 
-                    via_proxy( proxy, @url ).body.should == 'stuff'
+                    expect(via_proxy( proxy, @url ).body).to eq('stuff')
 
-                    called.should be_true
+                    expect(called).to be_truthy
                 end
             end
         end
@@ -208,7 +209,7 @@ describe Arachni::HTTP::ProxyServer do
                 called = false
                 proxy = described_class.new(
                     response_handler: proc do |request, _|
-                        request.should be_kind_of Arachni::HTTP::Request
+                        expect(request).to be_kind_of Arachni::HTTP::Request
                         called = true
                     end
                 )
@@ -216,14 +217,14 @@ describe Arachni::HTTP::ProxyServer do
 
                 test_proxy proxy
 
-                called.should be_true
+                expect(called).to be_truthy
             end
 
             it 'sets a block to handle each HTTP response once the origin server has responded' do
                 called = false
                 proxy = described_class.new(
                     response_handler: proc do |_, response|
-                        response.should be_kind_of Arachni::HTTP::Response
+                        expect(response).to be_kind_of Arachni::HTTP::Response
                         called = true
                     end
                 )
@@ -231,29 +232,29 @@ describe Arachni::HTTP::ProxyServer do
 
                 test_proxy proxy
 
-                called.should be_true
+                expect(called).to be_truthy
             end
 
             it 'assigns the request to the response' do
                 called = false
                 proxy = described_class.new(
                     response_handler: proc do |_, response|
-                        response.request.should be_kind_of Arachni::HTTP::Request
+                        expect(response.request).to be_kind_of Arachni::HTTP::Request
                         called = true
                     end
                 )
                 proxy.start_async
                 test_proxy proxy
 
-                called.should be_true
+                expect(called).to be_truthy
             end
 
             it 'can manipulate the response' do
                 called = false
                 proxy = described_class.new(
                     response_handler: proc do |request, response|
-                        request.should be_kind_of Arachni::HTTP::Request
-                        response.should be_kind_of Arachni::HTTP::Response
+                        expect(request).to be_kind_of Arachni::HTTP::Request
+                        expect(response).to be_kind_of Arachni::HTTP::Response
                         called = true
 
                         response.body = 'stuff'
@@ -263,10 +264,10 @@ describe Arachni::HTTP::ProxyServer do
 
                 response = via_proxy( proxy, @url )
 
-                response.code.should == 200
-                response.body.should == 'stuff'
+                expect(response.code).to eq(200)
+                expect(response.body).to eq('stuff')
 
-                called.should be_true
+                expect(called).to be_truthy
             end
         end
     end
@@ -283,7 +284,7 @@ describe Arachni::HTTP::ProxyServer do
         context 'when the server is not running' do
             it 'returns false' do
                 proxy = described_class.new
-                proxy.running?.should be_false
+                expect(proxy.running?).to be_falsey
             end
         end
 
@@ -291,7 +292,7 @@ describe Arachni::HTTP::ProxyServer do
             it 'returns true' do
                 proxy = described_class.new
                 proxy.start_async
-                proxy.running?.should be_true
+                expect(proxy.running?).to be_truthy
             end
         end
     end
@@ -302,7 +303,7 @@ describe Arachni::HTTP::ProxyServer do
             port    = Arachni::Utilities.available_port
 
             proxy = described_class.new( address: address, port: port )
-            proxy.address.should == "#{address}:#{port}"
+            expect(proxy.address).to eq("#{address}:#{port}")
             proxy.start_async
             test_proxy proxy
         end
@@ -314,10 +315,10 @@ describe Arachni::HTTP::ProxyServer do
                 proxy = described_class.new
                 proxy.start_async
 
-                proxy.has_connections?.should be_false
+                expect(proxy.has_connections?).to be_falsey
                 Thread.new { via_proxy( proxy, @url + 'sleep' ) }
                 sleep 1
-                proxy.has_connections?.should be_true
+                expect(proxy.has_connections?).to be_truthy
             end
         end
 
@@ -326,9 +327,9 @@ describe Arachni::HTTP::ProxyServer do
                 proxy = described_class.new
                 proxy.start_async
 
-                proxy.has_connections?.should be_false
+                expect(proxy.has_connections?).to be_falsey
                 via_proxy( proxy, @url + 'sleep' )
-                proxy.has_connections?.should be_false
+                expect(proxy.has_connections?).to be_falsey
             end
         end
     end
@@ -339,12 +340,12 @@ describe Arachni::HTTP::ProxyServer do
                 proxy = described_class.new
                 proxy.start_async
 
-                proxy.active_connections.should == 0
+                expect(proxy.active_connections).to eq(0)
                 3.times do
                     Thread.new { via_proxy( proxy, @url + 'sleep' ) }
                 end
                 sleep 1
-                proxy.active_connections.should == 3
+                expect(proxy.active_connections).to eq(3)
             end
         end
 
@@ -353,9 +354,9 @@ describe Arachni::HTTP::ProxyServer do
                 proxy = described_class.new
                 proxy.start_async
 
-                proxy.active_connections.should == 0
+                expect(proxy.active_connections).to eq(0)
                 via_proxy( proxy, @url + 'sleep' )
-                proxy.active_connections.should == 0
+                expect(proxy.active_connections).to eq(0)
             end
         end
     end

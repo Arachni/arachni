@@ -5,14 +5,14 @@ describe Arachni::OptionGroups::Snapshot do
     subject { described_class.new }
 
     %w(save_path).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     describe '.save_path' do
         context "when #{Arachni::OptionGroups::Paths}.config['framework']['snapshots']" do
             it 'returns it' do
-                Arachni::OptionGroups::Paths.stub(:config) do
+                allow(Arachni::OptionGroups::Paths).to receive(:config) do
                     {
                         'framework' => {
                             'snapshots' => 'stuff/'
@@ -20,7 +20,7 @@ describe Arachni::OptionGroups::Snapshot do
                     }
                 end
 
-                subject.save_path.should == 'stuff/'
+                expect(subject.save_path).to eq('stuff/')
             end
         end
     end

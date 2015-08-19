@@ -28,35 +28,35 @@ describe Arachni::Element::GenericDOM do
 
     describe '#initialize' do
         it "sets #source form the #{Arachni::Browser::ElementLocator}" do
-            subject.source.should == element.to_s
+            expect(subject.source).to eq(element.to_s)
         end
     end
 
     describe '#transition' do
         it 'returns the associated transition' do
-            subject.transition.should == transition
+            expect(subject.transition).to eq(transition)
         end
     end
 
     describe '#event' do
         it 'returns the associated event' do
-            subject.event.should == transition.event
+            expect(subject.event).to eq(transition.event)
         end
 
         it 'is aliased to #method' do
-            subject.method.should == transition.event
+            expect(subject.method).to eq(transition.event)
         end
     end
 
     describe '#element' do
         it 'returns the associated element locator' do
-            subject.element.should == transition.element
+            expect(subject.element).to eq(transition.element)
         end
     end
 
     describe '#attributes' do
         it 'returns the associated element attributes' do
-            subject.attributes.should == transition.element.attributes
+            expect(subject.attributes).to eq(transition.element.attributes)
         end
     end
 
@@ -68,7 +68,7 @@ describe Arachni::Element::GenericDOM do
         end
 
         it 'returns the element name from the its attributes' do
-            subject.name.should == 'my-name'
+            expect(subject.name).to eq('my-name')
         end
 
         context 'when an id is set instead of a name' do
@@ -79,12 +79,12 @@ describe Arachni::Element::GenericDOM do
             end
 
             it 'returns the id' do
-                subject.name.should == 'my-id'
+                expect(subject.name).to eq('my-id')
             end
         end
 
         it 'is aliased to #affected_input_name' do
-            subject.affected_input_name.should == subject.name
+            expect(subject.affected_input_name).to eq(subject.name)
         end
     end
 
@@ -96,25 +96,25 @@ describe Arachni::Element::GenericDOM do
         end
 
         it 'returns the value for the element' do
-            subject.value.should == 'my-val'
+            expect(subject.value).to eq('my-val')
         end
 
         it 'is aliased to #affected_input_value' do
-            subject.affected_input_value.should == subject.value
+            expect(subject.affected_input_value).to eq(subject.value)
         end
     end
 
     describe '#type' do
         it 'returns the #element tag name' do
-            subject.type.should == element.tag_name
+            expect(subject.type).to eq(element.tag_name)
         end
     end
 
     describe '#to_h' do
         it 'includes the #transition' do
-            subject.to_h[:transition].should == transition.to_h.tap do |h|
+            expect(subject.to_h[:transition]).to eq(transition.to_h.tap do |h|
                 h[:element] = h[:element].to_h
-            end
+            end)
         end
     end
 end

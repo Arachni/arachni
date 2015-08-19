@@ -18,13 +18,13 @@ describe Arachni::Data::Session do
 
     describe '#statistics' do
         it 'returns an empty Hash' do
-            subject.statistics.should == {}
+            expect(subject.statistics).to eq({})
         end
     end
 
     describe '#configuration' do
         it 'returns an empty Hash' do
-            subject.configuration.should == {}
+            expect(subject.configuration).to eq({})
         end
     end
 
@@ -34,8 +34,8 @@ describe Arachni::Data::Session do
             subject.dump( dump_directory )
 
             results_file = "#{dump_directory}/configuration"
-            File.exists?( results_file ).should be_true
-            subject.configuration.should == { stuff: [1] }
+            expect(File.exists?( results_file )).to be_truthy
+            expect(subject.configuration).to eq({ stuff: [1] })
         end
     end
 
@@ -44,14 +44,14 @@ describe Arachni::Data::Session do
             subject.configuration[:stuff] = [1]
             subject.dump( dump_directory )
 
-            subject.configuration.should == described_class.load( dump_directory ).configuration
+            expect(subject.configuration).to eq(described_class.load( dump_directory ).configuration)
         end
     end
 
     describe '#clear' do
         %w(configuration).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end

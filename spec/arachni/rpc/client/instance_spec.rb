@@ -12,7 +12,7 @@ describe Arachni::RPC::Client::Instance do
         context 'which requires a token' do
             context 'with a valid token' do
                 it 'connects successfully' do
-                    @instance.service.alive?.should be_true
+                    expect(@instance.service.alive?).to be_truthy
                 end
             end
 
@@ -35,8 +35,8 @@ describe Arachni::RPC::Client::Instance do
         describe '#set' do
             it 'allows batch assigning using a hash' do
                 val = @foo_url + '3'
-                @rpc_opts.set( url: val ).should be_true
-                @rpc_opts.url.to_s.should == val
+                expect(@rpc_opts.set( url: val )).to be_truthy
+                expect(@rpc_opts.url.to_s).to eq(val)
             end
         end
     end
@@ -44,21 +44,21 @@ describe Arachni::RPC::Client::Instance do
     describe '#framework' do
         before { @framework = @instance.framework }
         it 'provides access to framework methods' do
-            @framework.status.should be_true
+            expect(@framework.status).to be_truthy
         end
     end
 
     describe '#checks' do
         before { @checks = @instance.checks }
         it 'provides access to checks manager methods' do
-            @checks.available.should be_true
+            expect(@checks.available).to be_truthy
         end
     end
 
     describe '#plugins' do
         before { @plugins = @instance.plugins }
         it 'provides access to plugin manager methods' do
-            @plugins.available.should be_true
+            expect(@plugins.available).to be_truthy
         end
     end
 

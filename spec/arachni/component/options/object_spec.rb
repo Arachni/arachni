@@ -9,7 +9,7 @@ describe Arachni::Component::Options::Object do
             it 'returns the value as is' do
                 [1, 'test', :stuff, [:blah]].each do |value|
                     subject.value = value
-                    subject.send(m).should == value
+                    expect(subject.send(m)).to eq(value)
                 end
             end
         end
@@ -17,7 +17,7 @@ describe Arachni::Component::Options::Object do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == :object
+            expect(subject.type).to eq(:object)
         end
     end
 

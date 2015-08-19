@@ -35,7 +35,7 @@ EOSCRIPT
                 it "exposes a Watir::Browser interface via the 'browser' variable" do
                     run
 
-                    options.datastore.browser.should be_kind_of Watir::Browser
+                    expect(options.datastore.browser).to be_kind_of Watir::Browser
                 end
             end
 
@@ -50,8 +50,8 @@ EOSCRIPT
                 it 'runs the code' do
                     run
 
-                    framework.http.cookies.
-                        find { |c| c.name == 'mycookie' }.value.should == 'myvalue'
+                    expect(framework.http.cookies.
+                        find { |c| c.name == 'mycookie' }.value).to eq('myvalue')
                 end
             end
         end
@@ -71,7 +71,7 @@ EOSCRIPT
                 it "sets 'browser' to 'nil'" do
                     run
 
-                    options.datastore.browser.should be_nil
+                    expect(options.datastore.browser).to be_nil
                 end
             end
 
@@ -86,19 +86,19 @@ EOSCRIPT
                 it 'sets the status' do
                     run
 
-                    actual_results['status'].should  == 'missing_browser'
+                    expect(actual_results['status']).to  eq('missing_browser')
                 end
 
                 it 'sets the message' do
                     run
 
-                    actual_results['message'].should == plugin::STATUSES[:missing_browser]
+                    expect(actual_results['message']).to eq(plugin::STATUSES[:missing_browser])
                 end
 
                 it 'aborts the scan' do
                     run
 
-                    framework.status.should == :aborted
+                    expect(framework.status).to eq(:aborted)
                 end
             end
 
@@ -120,19 +120,19 @@ EOSCRIPT
         it 'sets the status' do
             run
 
-            actual_results['status'].should  == 'success'
+            expect(actual_results['status']).to  eq('success')
         end
 
         it 'sets the message' do
             run
 
-            actual_results['message'].should == plugin::STATUSES[:success]
+            expect(actual_results['message']).to eq(plugin::STATUSES[:success])
         end
 
         it 'sets the cookies' do
             run
 
-            actual_results['cookies'].should == { 'success' => 'true' }
+            expect(actual_results['cookies']).to eq({ 'success' => 'true' })
         end
     end
 
@@ -146,19 +146,19 @@ EOSCRIPT
         it 'sets the status' do
             run
 
-            actual_results['status'].should  == 'missing_check'
+            expect(actual_results['status']).to  eq('missing_check')
         end
 
         it 'sets the message' do
             run
 
-            actual_results['message'].should == plugin::STATUSES[:missing_check]
+            expect(actual_results['message']).to eq(plugin::STATUSES[:missing_check])
         end
 
         it 'aborts the scan' do
             run
 
-            framework.status.should == :aborted
+            expect(framework.status).to eq(:aborted)
         end
     end
 
@@ -171,19 +171,19 @@ EOSCRIPT
         it 'sets the status' do
             run
 
-            actual_results['status'].should  == 'failure'
+            expect(actual_results['status']).to  eq('failure')
         end
 
         it 'sets the message' do
             run
 
-            actual_results['message'].should == plugin::STATUSES[:failure]
+            expect(actual_results['message']).to eq(plugin::STATUSES[:failure])
         end
 
         it 'aborts the scan' do
             run
 
-            framework.status.should == :aborted
+            expect(framework.status).to eq(:aborted)
         end
     end
 
@@ -198,19 +198,19 @@ EOSCRIPT
             it 'sets the status' do
                 run
 
-                actual_results['status'].should  == 'error'
+                expect(actual_results['status']).to  eq('error')
             end
 
             it 'sets the message' do
                 run
 
-                actual_results['message'].should == plugin::STATUSES[:error]
+                expect(actual_results['message']).to eq(plugin::STATUSES[:error])
             end
 
             it 'aborts the scan' do
                 run
 
-                framework.status.should == :aborted
+                expect(framework.status).to eq(:aborted)
             end
         end
 
@@ -225,19 +225,19 @@ EOSCRIPT
             it 'sets the status' do
                 run
 
-                actual_results['status'].should  == 'error'
+                expect(actual_results['status']).to  eq('error')
             end
 
             it 'sets the message' do
                 run
 
-                actual_results['message'].should == plugin::STATUSES[:error]
+                expect(actual_results['message']).to eq(plugin::STATUSES[:error])
             end
 
             it 'aborts the scan' do
                 run
 
-                framework.status.should == :aborted
+                expect(framework.status).to eq(:aborted)
             end
         end
     end

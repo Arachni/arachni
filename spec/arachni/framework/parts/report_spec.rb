@@ -5,28 +5,28 @@ describe Arachni::Framework::Parts::Report do
 
     describe '#reporters' do
         it 'provides access to the reporter manager' do
-            subject.reporters.is_a?( Arachni::Reporter::Manager ).should be_true
-            subject.reporters.available.sort.should == %w(afr foo error).sort
+            expect(subject.reporters.is_a?( Arachni::Reporter::Manager )).to be_truthy
+            expect(subject.reporters.available.sort).to eq(%w(afr foo error).sort)
         end
     end
 
     describe '#list_reporters' do
         it 'returns info on all reporters' do
-            subject.list_reporters.size.should == subject.reporters.available.size
+            expect(subject.list_reporters.size).to eq(subject.reporters.available.size)
 
             info   = subject.list_reporters.find { |p| p[:options].any? }
             report = subject.reporters[info[:shortname]]
 
             report.info.each do |k, v|
                 if k == :author
-                    info[k].should == [v].flatten
+                    expect(info[k]).to eq([v].flatten)
                     next
                 end
 
-                info[k].should == v
+                expect(info[k]).to eq(v)
             end
 
-            info[:shortname].should == report.shortname
+            expect(info[:shortname]).to eq(report.shortname)
         end
 
         context 'when a pattern is given' do
@@ -46,7 +46,7 @@ describe Arachni::Framework::Parts::Report do
         context 'when passed a valid reporter name' do
             it 'returns the reporter as a string' do
                 json = @new_framework.report_as( :json )
-                JSON.load( json )['issues'].size.should == @new_framework.report.issues.size
+                expect(JSON.load( json )['issues'].size).to eq(@new_framework.report.issues.size)
             end
 
             context 'which does not support the \'outfile\' option' do

@@ -25,41 +25,41 @@ describe name_from_filename do
             case issue.vector
 
                 when Element::Form::DOM
-                    transition.element.tag_name.should == :form
-                    transition.event.should == :submit
+                    expect(transition.element.tag_name).to eq :form
+                    expect(transition.event).to eq :submit
 
-                    data_flow_sinks.should be_empty
+                    expect(data_flow_sinks).to be_empty
 
                 when Element::LinkTemplate::DOM
-                    transition.element.should == :page
-                    transition.event.should == :load
+                    expect(transition.element).to eq :page
+                    expect(transition.event).to eq :load
 
-                    data_flow_sinks.size.should == 1
+                    expect(data_flow_sinks.size).to eq 1
                     data_flow_sink = data_flow_sinks.first
 
-                    data_flow_sink.function.source.should start_with 'function decodeURI()'
-                    data_flow_sink.function.name.should == 'decodeURI'
-                    data_flow_sink.object.should == 'DOMWindow'
-                    data_flow_sink.tainted_value.should include Arachni::URI(issue.vector.seed).to_s
-                    data_flow_sink.function.arguments.should == [data_flow_sink.tainted_value]
+                    expect(data_flow_sink.function.source).to start_with 'function decodeURI()'
+                    expect(data_flow_sink.function.name).to eq 'decodeURI'
+                    expect(data_flow_sink.object).to eq 'DOMWindow'
+                    expect(data_flow_sink.tainted_value).to include Arachni::URI(issue.vector.seed).to_s
+                    expect(data_flow_sink.function.arguments).to eq [data_flow_sink.tainted_value]
 
                 when Element::Link::DOM
-                    transition.element.should == :page
-                    transition.event.should == :load
+                    expect(transition.element).to eq :page
+                    expect(transition.event).to eq :load
 
-                    data_flow_sinks.size.should == 1
+                    expect(data_flow_sinks.size).to eq 1
                     data_flow_sink = data_flow_sinks.first
 
-                    data_flow_sink.function.source.should start_with 'function decodeURIComponent()'
-                    data_flow_sink.function.name.should == 'decodeURIComponent'
-                    data_flow_sink.object.should == 'DOMWindow'
-                    data_flow_sink.tainted_value.should include Arachni::URI(issue.vector.seed).to_s
-                    data_flow_sink.function.arguments.should == [data_flow_sink.tainted_value]
+                    expect(data_flow_sink.function.source).to start_with 'function decodeURIComponent()'
+                    expect(data_flow_sink.function.name).to eq 'decodeURIComponent'
+                    expect(data_flow_sink.object).to eq 'DOMWindow'
+                    expect(data_flow_sink.tainted_value).to include Arachni::URI(issue.vector.seed).to_s
+                    expect(data_flow_sink.function.arguments).to eq [data_flow_sink.tainted_value]
 
                 when Element::Cookie::DOM
-                    transition.element.should == :page
-                    transition.event.should == :load
-                    transition.options[:cookies].should == issue.vector.inputs
+                    expect(transition.element).to eq :page
+                    expect(transition.event).to eq :load
+                    expect(transition.options[:cookies]).to eq issue.vector.inputs
             end
 
         end

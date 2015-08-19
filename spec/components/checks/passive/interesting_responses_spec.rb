@@ -18,7 +18,7 @@ describe name_from_filename do
         http.run
 
         max_issues = current_check.max_issues
-        issues.size.should == max_issues
+        expect(issues.size).to eq(max_issues)
     end
 
     it 'skips HTTP responses which are out of scope' do
@@ -31,6 +31,6 @@ describe name_from_filename do
         end
         http.run
 
-        issues.should be_empty
+        expect(issues).to be_empty
     end
 end

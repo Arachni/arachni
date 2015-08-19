@@ -37,7 +37,7 @@ describe Arachni::Session do
         describe '#has_login_check?' do
             context 'when #check_url and #check_pattern have not been configured' do
                 it 'returns false' do
-                    subject.has_login_check?.should be_false
+                    expect(subject.has_login_check?).to be_falsey
                 end
             end
 
@@ -46,7 +46,7 @@ describe Arachni::Session do
                     @opts.session.check_url     = @url
                     @opts.session.check_pattern = 'logged-in user'
 
-                    subject.has_login_check?.should be_true
+                    expect(subject.has_login_check?).to be_truthy
                 end
             end
         end
@@ -56,53 +56,54 @@ describe Arachni::Session do
         context "when #{Arachni::OptionGroups::Scope}#dom_depth_limit is 0" do
             it 'returns false' do
                 Arachni::Options.scope.dom_depth_limit = 0
-                subject.has_browser?.should be_false
+                expect(subject.has_browser?).to be_falsey
             end
         end
 
         context "when not #{Arachni::Browser}.has_executable?" do
             it 'returns false' do
-                Arachni::Browser.stub(:has_executable?) { false }
-                subject.has_browser?.should be_false
+                allow(Arachni::Browser).to receive(:has_executable?) { false }
+                expect(subject.has_browser?).to be_falsey
             end
         end
     end
 
     describe '#configuration' do
         it "returns #{Arachni::Data::Session}#configuration" do
-            subject.configuration.object_id.should ==
+            expect(subject.configuration.object_id).to eq(
                 Arachni::Data.session.configuration.object_id
+            )
         end
     end
 
     describe '#clean_up' do
         it 'shuts down the #browser' do
             configured.login
-            configured.should be_logged_in
+            expect(configured).to be_logged_in
 
             browser = configured.browser
             configured.clean_up
-            browser.should be_nil
+            expect(browser).to be_nil
         end
 
         it 'clears the #configuration' do
-            configured.should be_configured
+            expect(configured).to be_configured
             configured.clean_up
-            configured.should_not be_configured
+            expect(configured).not_to be_configured
         end
     end
 
     describe '#browser' do
         context 'before calling #login' do
             it 'returns nil' do
-                configured.browser.should be_nil
+                expect(configured.browser).to be_nil
             end
         end
 
         context 'after #login' do
             it 'kills the browser' do
                 configured.login
-                configured.browser.should be_nil
+                expect(configured.browser).to be_nil
             end
         end
     end
@@ -118,7 +119,7 @@ describe Arachni::Session do
 
                     subject.login
 
-                    b.should be_kind_of Arachni::Browser
+                    expect(b).to be_kind_of Arachni::Browser
                 end
 
                 it 'updates the system cookies from the browser' do
@@ -129,12 +130,12 @@ describe Arachni::Session do
 
                     subject.login
 
-                    Arachni::HTTP::Client.cookies.find { |c| c.name == 'foo' }.should be_true
+                    expect(Arachni::HTTP::Client.cookies.find { |c| c.name == 'foo' }).to be_truthy
                 end
             end
 
             context 'when a browser is not available' do
-                before { subject.stub(:has_browser?) { false } }
+                before { allow(subject).to receive(:has_browser?) { false } }
 
                 it 'does not pass a browser instance' do
                     b = true
@@ -144,7 +145,7 @@ describe Arachni::Session do
 
                     subject.login
 
-                    b.should be_nil
+                    expect(b).to be_nil
                 end
             end
         end
@@ -152,16 +153,16 @@ describe Arachni::Session do
         context 'when given login form info' do
             it 'finds and submits the login form with the given credentials' do
                 configured.login
-                configured.should be_logged_in
+                expect(configured).to be_logged_in
             end
 
             context 'when a browser is not available' do
-                before { subject.stub(:has_browser?) { false } }
+                before { allow(subject).to receive(:has_browser?) { false } }
 
                 it 'uses the framework Page helpers' do
-                    configured.should_not be_logged_in
-                    configured.login.should be_kind_of Arachni::Page
-                    configured.should be_logged_in
+                    expect(configured).not_to be_logged_in
+                    expect(configured.login).to be_kind_of Arachni::Page
+                    expect(configured).to be_logged_in
                 end
             end
 
@@ -180,26 +181,28 @@ describe Arachni::Session do
 
                     subject.login
 
-                    subject.should be_logged_in
+                    expect(subject).to be_logged_in
                 end
 
                 it 'returns the resulting browser evaluated page' do
-                    configured.login.should be_kind_of Arachni::Page
+                    expect(configured.login).to be_kind_of Arachni::Page
 
                     transition = configured.login.dom.transitions.first
-                    transition.event.should == :load
-                    transition.element.should == :page
-                    transition.options[:url].should == configured.configuration[:url]
+                    expect(transition.event).to eq(:load)
+                    expect(transition.element).to eq(:page)
+                    expect(transition.options[:url]).to eq(configured.configuration[:url])
 
                     transition = configured.login.dom.transitions.last
-                    transition.event.should == :submit
-                    transition.element.tag_name.should == :form
+                    expect(transition.event).to eq(:submit)
+                    expect(transition.element.tag_name).to eq(:form)
 
-                    transition.options[:inputs]['username'].should ==
+                    expect(transition.options[:inputs]['username']).to eq(
                         configured.configuration[:inputs][:username]
+                    )
 
-                    transition.options[:inputs]['password'].should ==
+                    expect(transition.options[:inputs]['password']).to eq(
                         configured.configuration[:inputs][:password]
+                    )
                 end
             end
         end
@@ -222,7 +225,7 @@ describe Arachni::Session do
             context 'and a valid session is available' do
                 it 'returns true' do
                     configured.login
-                    configured.should be_logged_in
+                    expect(configured).to be_logged_in
                 end
             end
 
@@ -231,7 +234,7 @@ describe Arachni::Session do
                     @opts.session.check_url     = @url
                     @opts.session.check_pattern = 'logged-in user'
 
-                    subject.should_not be_logged_in
+                    expect(subject).not_to be_logged_in
                 end
             end
 
@@ -242,12 +245,12 @@ describe Arachni::Session do
                     bool = false
                     configured.logged_in? { |b| bool = b }
                     configured.http.run
-                    bool.should be_true
+                    expect(bool).to be_truthy
 
                     not_bool = true
                     configured.logged_in?( no_cookie_jar: true ) { |b| not_bool = b }
                     configured.http.run
-                    not_bool.should be_false
+                    expect(not_bool).to be_falsey
                 end
             end
         end
@@ -256,13 +259,13 @@ describe Arachni::Session do
     describe '#configured?' do
         context 'when login instructions have been provided' do
             it 'returns true' do
-                configured.configured?.should be_true
+                expect(configured.configured?).to be_truthy
             end
         end
 
         context 'when login instructions have not been provided' do
             it 'returns false' do
-                subject.configured?.should be_false
+                expect(subject.configured?).to be_falsey
             end
         end
     end
@@ -271,7 +274,7 @@ describe Arachni::Session do
         it 'returns session cookies' do
             subject.http.get @url + '/with_nonce', mode: :sync, update_cookies: true
 
-            subject.cookies.map(&:name).sort.should == %w(rack.session session_cookie).sort
+            expect(subject.cookies.map(&:name).sort).to eq(%w(rack.session session_cookie).sort)
         end
     end
 
@@ -289,7 +292,7 @@ describe Arachni::Session do
             # (to make sure that it will be refreshed before logging in)
             subject.http.get @url + '/nonce_login', mode: :sync
 
-            subject.configured?.should be_true
+            expect(subject.configured?).to be_truthy
 
             @opts.session.check_url     = @url + '/with_nonce'
             @opts.session.check_pattern = 'logged-in user'
@@ -300,9 +303,9 @@ describe Arachni::Session do
             subject.cookie { |c| cookie = c }
             subject.http.run
 
-            cookie.name.should == 'rack.session'
+            expect(cookie.name).to eq('rack.session')
 
-            subject.can_login?.should be_true
+            expect(subject.can_login?).to be_truthy
         end
 
         context 'when called without having configured a login check' do
@@ -317,29 +320,29 @@ describe Arachni::Session do
         context 'when passed an array of :pages' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )
-                subject.find_login_form( pages: [ p, p ] ).coverage_id.should == @id
+                expect(subject.find_login_form( pages: [ p, p ] ).coverage_id).to eq(@id)
             end
         end
         context 'when passed an array of :forms' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )
-                subject.find_login_form( forms: p.forms ).coverage_id.should == @id
+                expect(subject.find_login_form( forms: p.forms ).coverage_id).to eq(@id)
             end
         end
         context 'when passed a url' do
             it 'store the cookies set by that url' do
-                Arachni::HTTP::Client.cookies.should be_empty
+                expect(Arachni::HTTP::Client.cookies).to be_empty
 
-                subject.find_login_form( url: @url + '/login' ).coverage_id.should == @id
+                expect(subject.find_login_form( url: @url + '/login' ).coverage_id).to eq(@id)
 
-                Arachni::HTTP::Client.cookies.find do |c|
+                expect(Arachni::HTTP::Client.cookies.find do |c|
                     c.name == 'you_need_to' && c.value == 'preserve this'
-                end.should be_kind_of Arachni::Cookie
+                end).to be_kind_of Arachni::Cookie
             end
 
             context 'and called without a block' do
                 it 'should operate in blocking mode, go through its forms and locate the login one' do
-                    subject.find_login_form( url: @url + '/login' ).coverage_id.should == @id
+                    expect(subject.find_login_form( url: @url + '/login' ).coverage_id).to eq(@id)
                 end
             end
             context 'and called with a block' do
@@ -349,33 +352,33 @@ describe Arachni::Session do
                     subject.find_login_form( url: @url + '/login' ) { |f| form = f }
                     subject.http.run
 
-                    form.coverage_id.should == @id
+                    expect(form.coverage_id).to eq(@id)
                 end
             end
         end
         context 'when passed an array of :inputs' do
             it 'should use them to narrow down the list' do
-                subject.find_login_form(
+                expect(subject.find_login_form(
                     url:    @url + '/multiple',
                     inputs: :token
-                ).coverage_id.should == @id
+                ).coverage_id).to eq(@id)
             end
         end
         context 'when passed an :action' do
             context Regexp do
                 it 'should use it to match against form actions' do
-                    subject.find_login_form(
+                    expect(subject.find_login_form(
                         url:    @url + '/multiple',
                         action: /login/
-                    ).coverage_id.should == @id
+                    ).coverage_id).to eq(@id)
                 end
             end
             context String do
                 it 'should use it to match against form actions' do
-                    subject.find_login_form(
+                    expect(subject.find_login_form(
                         url:    @url + '/multiple',
                         action: "#{@url}/login"
-                    ).coverage_id.should == @id
+                    ).coverage_id).to eq(@id)
                 end
             end
         end
@@ -384,13 +387,13 @@ describe Arachni::Session do
     describe '#can_login?' do
         context 'when there are no login sequences' do
             it 'returns false' do
-                subject.can_login?.should be_false
+                expect(subject.can_login?).to be_falsey
             end
         end
 
         context 'when there are login sequences' do
             it 'returns true' do
-                configured.can_login?.should be_true
+                expect(configured.can_login?).to be_truthy
             end
         end
     end
@@ -409,9 +412,9 @@ describe Arachni::Session do
                     }
                 )
 
-                subject.logged_in?.should be_false
+                expect(subject.logged_in?).to be_falsey
                 subject.ensure_logged_in
-                subject.logged_in?.should be_true
+                expect(subject.logged_in?).to be_truthy
             end
         end
 
@@ -427,9 +430,9 @@ describe Arachni::Session do
                     }
                 )
 
-                subject.logged_in?.should be_false
+                expect(subject.logged_in?).to be_falsey
                 subject.ensure_logged_in
-                subject.logged_in?.should be_false
+                expect(subject.logged_in?).to be_falsey
             end
         end
 
@@ -446,16 +449,16 @@ describe Arachni::Session do
                     }
                 )
 
-                subject.logged_in?.should be_false
+                expect(subject.logged_in?).to be_falsey
                 subject.ensure_logged_in
-                subject.logged_in?.should be_true
+                expect(subject.logged_in?).to be_truthy
             end
         end
 
         context 'when there is no login capability' do
             it 'returns nil' do
-                subject.can_login?.should be_false
-                subject.ensure_logged_in.should be_nil
+                expect(subject.can_login?).to be_falsey
+                expect(subject.ensure_logged_in).to be_nil
             end
         end
     end

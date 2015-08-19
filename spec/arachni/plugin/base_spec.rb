@@ -20,13 +20,13 @@ describe Arachni::Plugin::Base do
 
     describe '.distributable?' do
         it 'returns false' do
-            described_class.should_not be_distributable
+            expect(described_class).not_to be_distributable
         end
 
         context 'when the distributable flag has been set' do
             it 'returns true' do
                 described_class.distributable
-                described_class.should be_distributable
+                expect(described_class).to be_distributable
             end
         end
     end
@@ -34,31 +34,31 @@ describe Arachni::Plugin::Base do
     describe '.is_distributable' do
         it 'sets the distributable? flag' do
             described_class.is_distributable
-            described_class.should be_distributable
+            expect(described_class).to be_distributable
         end
     end
 
     describe '#info' do
         it 'returns .info' do
-            subject.info.should == described_class.info
+            expect(subject.info).to eq(described_class.info)
         end
     end
 
     describe '#session' do
         it "returns #{Arachni::Framework}#session" do
-            subject.session.should == framework.session
+            expect(subject.session).to eq(framework.session)
         end
     end
 
     describe '#http' do
         it "returns #{Arachni::Framework}#http" do
-            subject.http.should == framework.http
+            expect(subject.http).to eq(framework.http)
         end
     end
 
     describe '#framework_pause' do
         it 'pauses the framework' do
-            framework.should receive(:pause)
+            expect(framework).to receive(:pause)
             subject.framework_pause
         end
     end
@@ -69,14 +69,14 @@ describe Arachni::Plugin::Base do
 
             subject.framework_pause
 
-            framework.should receive(:resume)
+            expect(framework).to receive(:resume)
             subject.framework_resume
         end
     end
 
     describe '#wait_while_framework_running' do
         it 'blocks while the framework runs' do
-            framework.should be_running
+            expect(framework).to be_running
 
             q = Queue.new
             Thread.new do
@@ -90,7 +90,7 @@ describe Arachni::Plugin::Base do
                 q.pop
             end
 
-            framework.should_not be_running
+            expect(framework).not_to be_running
         end
     end
 

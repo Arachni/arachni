@@ -5,12 +5,12 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction do
     subject { Factory[:called_function] }
 
     %w(source name arguments).each do |m|
-        it { should respond_to m }
-        it { should respond_to "#{m}=" }
+        it { is_expected.to respond_to m }
+        it { is_expected.to respond_to "#{m}=" }
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+        expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
     describe '#to_rpc_data' do
@@ -18,7 +18,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction do
 
         %w(source name arguments).each do |attribute|
             it "includes '#{attribute}'" do
-                data[attribute.to_sym].should == subject.send( attribute )
+                expect(data[attribute.to_sym]).to eq(subject.send( attribute ))
             end
         end
     end
@@ -29,7 +29,7 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction do
 
         %w(source name arguments).each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == subject.send( attribute )
+                expect(restored.send( attribute )).to eq(subject.send( attribute ))
             end
         end
     end
@@ -37,14 +37,14 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction do
     describe '#signature' do
         context 'when #source is available' do
             it 'returns the function signature' do
-                subject.signature.should == 'stuff(blah, blooh)'
+                expect(subject.signature).to eq('stuff(blah, blooh)')
             end
         end
 
         context 'when #source is not available' do
             it 'returns nil' do
                 subject.source = nil
-                subject.signature.should be_nil
+                expect(subject.signature).to be_nil
             end
         end
     end
@@ -52,21 +52,21 @@ describe Arachni::Browser::Javascript::TaintTracer::Frame::CalledFunction do
     describe '#signature_arguments' do
         context 'when #signature is available' do
             it 'returns the function arguments' do
-                subject.signature_arguments.should == %w(blah blooh)
+                expect(subject.signature_arguments).to eq(%w(blah blooh))
             end
         end
 
         context 'when #source is not available' do
             it 'returns nil' do
-                subject.stub(:signature){ nil }
-                subject.signature_arguments.should be_nil
+                allow(subject).to receive(:signature){ nil }
+                expect(subject.signature_arguments).to be_nil
             end
         end
     end
 
     describe '#to_h' do
         it 'converts self to a hash' do
-            subject.to_h.should == Factory[:called_function_data]
+            expect(subject.to_h).to eq(Factory[:called_function_data])
         end
     end
 end

@@ -46,37 +46,37 @@ describe Arachni::Element::Cookie::DOM do
 
     describe '#name' do
         it 'returns the cookie name' do
-            subject.name.should == parent.name
+            expect(subject.name).to eq(parent.name)
         end
     end
 
     describe '#value' do
         it 'returns the cookie value' do
-            subject.value.should == parent.value
+            expect(subject.value).to eq(parent.value)
         end
     end
 
     describe '#to_set_cookie' do
         it 'returns a string in a Set-Cookie response header format' do
-            subject.to_set_cookie.should == parent.to_set_cookie
+            expect(subject.to_set_cookie).to eq(parent.to_set_cookie)
         end
     end
 
     describe '#type' do
         it 'returns :cookie_dom' do
-            subject.type.should == :cookie_dom
+            expect(subject.type).to eq(:cookie_dom)
         end
     end
 
     describe '.type' do
         it 'returns :cookie_dom' do
-            described_class.type.should == :cookie_dom
+            expect(described_class.type).to eq(:cookie_dom)
         end
     end
 
     describe '#parent' do
         it 'returns the parent element' do
-            subject.parent.should be_kind_of Arachni::Element::Cookie
+            expect(subject.parent).to be_kind_of Arachni::Element::Cookie
         end
     end
 
@@ -91,12 +91,12 @@ describe Arachni::Element::Cookie::DOM do
 
                 subject.trigger
 
-                subject.inputs.should == auditable_extract_parameters( browser.to_page )
+                expect(subject.inputs).to eq(auditable_extract_parameters( browser.to_page ))
                 called = true
             end
 
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
 
         it 'returns a playable transition' do
@@ -113,23 +113,23 @@ describe Arachni::Element::Cookie::DOM do
 
                 page = browser.to_page
 
-                subject.inputs.should == auditable_extract_parameters( page )
+                expect(subject.inputs).to eq(auditable_extract_parameters( page ))
                 called = true
             end
 
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
 
             called = false
             auditor.with_browser do |browser|
                 browser.load subject.page
 
                 transition.play browser
-                auditable_extract_parameters( browser.to_page ).should == inputs
+                expect(auditable_extract_parameters( browser.to_page )).to eq(inputs)
                 called = true
             end
             auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
     end
 

@@ -102,8 +102,8 @@ describe Arachni::URI do
         it 'parses and normalize the give string' do
             @urls.each do |url|
                 uri = Arachni::URI( url )
-                uri.is_a?( Arachni::URI ).should be_true
-                uri.to_s.should == @ref_normalizer.call( url )
+                expect(uri.is_a?( Arachni::URI )).to be_truthy
+                expect(uri.to_s).to eq(@ref_normalizer.call( url ))
             end
         end
     end
@@ -112,16 +112,18 @@ describe Arachni::URI do
         let(:url) { 'http://test.com/articles/some-stuff/23' }
 
         it 'rewrites a URL based on the given rules' do
-            described_class.rewrite( url, rewrite_rules ).should ==
+            expect(described_class.rewrite( url, rewrite_rules )).to eq(
                 'http://test.com/articles.php?id=23'
+            )
         end
 
         context 'when no rules are provided' do
             it "uses the ones in #{Arachni::OptionGroups::Scope}#url_rewrites" do
                 Arachni::Options.scope.url_rewrites = rewrite_rules
 
-                described_class.rewrite( url ).should ==
+                expect(described_class.rewrite( url )).to eq(
                     'http://test.com/articles.php?id=23'
+                )
             end
         end
     end
@@ -129,29 +131,29 @@ describe Arachni::URI do
     describe '.parse_query' do
         it 'returns the query parameters as a Hash' do
             url = 'http://test/?param_one=value_one&param_two=value_two'
-            described_class.parse_query( url ).should == {
+            expect(described_class.parse_query( url )).to eq({
                 'param_one' => 'value_one',
                 'param_two' => 'value_two'
-            }
+            })
         end
 
         it 'decodes the parameters' do
             url = 'http://test/?stuff%20here=bl%20ah'
-            described_class.parse_query( url ).should == {
+            expect(described_class.parse_query( url )).to eq({
                 'stuff here' => 'bl ah'
-            }
+            })
         end
 
         context 'when passed' do
             describe 'nil' do
                 it 'returns an empty Hash' do
-                    described_class.parse_query( nil ).should == {}
+                    expect(described_class.parse_query( nil )).to eq({})
                 end
             end
             describe 'an unparsable URL' do
                 it 'returns an empty Hash' do
                     url = '$#%^$6#5436#$%^'
-                    described_class.parse_query( url ).should == {}
+                    expect(described_class.parse_query( url )).to eq({})
                 end
             end
         end
@@ -160,20 +162,20 @@ describe Arachni::URI do
     describe '.encode' do
         it 'decodes a URI' do
             uri = "my test.asp?name=ståle&car=saab"
-            described_class.encode( uri ).should == 'my%20test.asp?name=st%C3%A5le&car=saab'
+            expect(described_class.encode( uri )).to eq('my%20test.asp?name=st%C3%A5le&car=saab')
         end
     end
 
     describe '.decode' do
         it 'decodes a URI' do
             uri = 'my%20test.asp?name=st%C3%A5le&car=saab'
-            described_class.decode( uri ).should == "my test.asp?name=ståle&car=saab"
+            expect(described_class.decode( uri )).to eq("my test.asp?name=ståle&car=saab")
         end
     end
 
     describe '.parser' do
         it 'returns a URI::Parser' do
-            described_class.parser.class.should == ::URI::Parser
+            expect(described_class.parser.class).to eq(::URI::Parser)
         end
     end
 
@@ -190,40 +192,40 @@ describe Arachni::URI do
 
             parsed_uri = described_class.parse( uri )
 
-            parsed_uri.to_s.should == uri
+            expect(parsed_uri.to_s).to eq(uri)
 
-            parsed_uri.scheme.should == scheme
-            parsed_uri.user.should == user
-            parsed_uri.password.should == password
-            parsed_uri.host.should == host
-            parsed_uri.path.should == path
-            parsed_uri.query.should == query
+            expect(parsed_uri.scheme).to eq(scheme)
+            expect(parsed_uri.user).to eq(user)
+            expect(parsed_uri.password).to eq(password)
+            expect(parsed_uri.host).to eq(host)
+            expect(parsed_uri.path).to eq(path)
+            expect(parsed_uri.query).to eq(query)
         end
 
         it 'ignores javascript: URLs' do
-            described_class.parse( 'javascript:stuff()' ).should be_nil
-            described_class.parse( 'jAvaScRipT:stuff()' ).should be_nil
+            expect(described_class.parse( 'javascript:stuff()' )).to be_nil
+            expect(described_class.parse( 'jAvaScRipT:stuff()' )).to be_nil
         end
     end
 
     describe '.ruby_parse' do
         it 'cleans the URL' do
             @urls.each do |url|
-                described_class.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
+                expect(described_class.ruby_parse( url ).to_s).to eq(@ref_normalizer.call( url ))
             end
         end
 
         it 'ignores javascript: URLs' do
-            described_class.ruby_parse( 'javascript:stuff()' ).should be_nil
-            described_class.ruby_parse( 'jAvaScRipT:stuff()' ).should be_nil
+            expect(described_class.ruby_parse( 'javascript:stuff()' )).to be_nil
+            expect(described_class.ruby_parse( 'jAvaScRipT:stuff()' )).to be_nil
         end
 
         context 'when an error occurs' do
             it 'returns nil' do
-                described_class.stub(:fast_parse){ raise }
-                described_class.stub(:normalize){ raise }
+                allow(described_class).to receive(:fast_parse){ raise }
+                allow(described_class).to receive(:normalize){ raise }
 
-                described_class.ruby_parse( 'http://test.com/222' ).should be_nil
+                expect(described_class.ruby_parse( 'http://test.com/222' )).to be_nil
             end
         end
     end
@@ -241,19 +243,19 @@ describe Arachni::URI do
 
             parsed_uri = described_class.fast_parse( uri )
 
-            parsed_uri[:scheme].should == scheme
-            parsed_uri[:userinfo].should == user + ':' + password
-            parsed_uri[:host].should == host
-            parsed_uri[:path].should == path
-            parsed_uri[:query].should == query
+            expect(parsed_uri[:scheme]).to eq(scheme)
+            expect(parsed_uri[:userinfo]).to eq(user + ':' + password)
+            expect(parsed_uri[:host]).to eq(host)
+            expect(parsed_uri[:path]).to eq(path)
+            expect(parsed_uri[:query]).to eq(query)
 
             parsed_uri = described_class.fast_parse( "//#{user}:#{password}@#{host}/#{path}?#{query}" )
 
-            parsed_uri[:scheme].should be_nil
-            parsed_uri[:userinfo].should == user + ':' + password
-            parsed_uri[:host].should == host
-            parsed_uri[:path].should == path
-            parsed_uri[:query].should == query
+            expect(parsed_uri[:scheme]).to be_nil
+            expect(parsed_uri[:userinfo]).to eq(user + ':' + password)
+            expect(parsed_uri[:host]).to eq(host)
+            expect(parsed_uri[:path]).to eq(path)
+            expect(parsed_uri[:query]).to eq(query)
         end
 
         it 'returns a frozen hash (with frozen values)' do
@@ -264,7 +266,7 @@ describe Arachni::URI do
         end
 
         it 'ignores javascript: URLs' do
-            described_class.fast_parse( 'javascript:stuff()' ).should be_nil
+            expect(described_class.fast_parse( 'javascript:stuff()' )).to be_nil
         end
     end
 
@@ -273,41 +275,41 @@ describe Arachni::URI do
             abs  = 'http://test.com/blah/ha'
             rel  = '/test'
             rel2 = 'test2'
-            described_class.to_absolute( rel, abs ).should == "http://test.com" + rel
-            described_class.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
-            described_class.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+            expect(described_class.to_absolute( rel, abs )).to eq("http://test.com" + rel)
+            expect(described_class.to_absolute( rel2, abs )).to eq("http://test.com/blah/" + rel2)
+            expect(described_class.to_absolute( rel2, abs + '/' )).to eq("http://test.com/blah/ha/" + rel2)
 
             rel = '//domain-name.com/stuff'
-            described_class.to_absolute( rel, abs ).should == "http:" + rel
+            expect(described_class.to_absolute( rel, abs )).to eq("http:" + rel)
         end
     end
 
     describe '.normalize' do
         it 'cleans the URL' do
             @urls.each do |url|
-                described_class.normalize( url ).should == @ref_normalizer.call( url )
+                expect(described_class.normalize( url )).to eq(@ref_normalizer.call( url ))
             end
             with_whitespace = 'http://test.com/stuff '
-            described_class.normalize( with_whitespace ).to_s.should == with_whitespace.strip
+            expect(described_class.normalize( with_whitespace ).to_s).to eq(with_whitespace.strip)
         end
     end
 
     describe '.full_and_absolute?' do
         context 'when given a nil URL' do
             it 'returns false' do
-                described_class.full_and_absolute?( nil ).should be_false
+                expect(described_class.full_and_absolute?( nil )).to be_falsey
             end
         end
 
         context 'when given an non absolute URL' do
             it 'returns false' do
-                described_class.full_and_absolute?( '433' ).should be_false
+                expect(described_class.full_and_absolute?( '433' )).to be_falsey
             end
         end
 
         context 'when given an absolute URL' do
             it 'returns true' do
-                described_class.full_and_absolute?( 'http://stuff/' ).should be_true
+                expect(described_class.full_and_absolute?( 'http://stuff/' )).to be_truthy
             end
         end
     end
@@ -317,8 +319,8 @@ describe Arachni::URI do
             it 'normalizes and parse the string' do
                 @urls.each do |url|
                     uri = described_class.new( url )
-                    uri.is_a?( Arachni::URI ).should be_true
-                    uri.to_s.should == @ref_normalizer.call( url )
+                    expect(uri.is_a?( Arachni::URI )).to be_truthy
+                    expect(uri.to_s).to eq(@ref_normalizer.call( url ))
                 end
             end
         end
@@ -327,8 +329,8 @@ describe Arachni::URI do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = described_class.new( described_class.fast_parse( url ) )
-                    uri.is_a?( Arachni::URI ).should be_true
-                    uri.to_s.should == @ref_normalizer.call( url )
+                    expect(uri.is_a?( Arachni::URI )).to be_truthy
+                    expect(uri.to_s).to eq(@ref_normalizer.call( url ))
                 end
             end
         end
@@ -337,11 +339,11 @@ describe Arachni::URI do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = ::URI.parse( described_class.normalize( url ) )
-                    uri.is_a?( ::URI ).should be_true
+                    expect(uri.is_a?( ::URI )).to be_truthy
 
                     a_uri = described_class.new( url )
-                    a_uri.is_a?( Arachni::URI ).should be_true
-                    a_uri.to_s.should == @ref_normalizer.call( url )
+                    expect(a_uri.is_a?( Arachni::URI )).to be_truthy
+                    expect(a_uri.to_s).to eq(@ref_normalizer.call( url ))
                 end
             end
         end
@@ -351,8 +353,8 @@ describe Arachni::URI do
                 @urls.each do |url|
                     uri = described_class.new( url )
                     a_uri = described_class.new( uri )
-                    a_uri.is_a?( Arachni::URI ).should be_true
-                    a_uri.should == uri
+                    expect(a_uri.is_a?( Arachni::URI )).to be_truthy
+                    expect(a_uri).to eq(uri)
                 end
             end
         end
@@ -369,14 +371,14 @@ describe Arachni::URI do
             @urls.each do |url|
                 normalized_str = described_class.normalize( url )
                 uri = ::URI.parse( normalized_str )
-                uri.is_a?( ::URI ).should be_true
+                expect(uri.is_a?( ::URI )).to be_truthy
 
                 a_uri = described_class.new( url )
-                a_uri.is_a?( Arachni::URI ).should be_true
+                expect(a_uri.is_a?( Arachni::URI )).to be_truthy
 
-                a_uri.should == uri
-                a_uri.should == normalized_str
-                a_uri.should == a_uri
+                expect(a_uri).to eq(uri)
+                expect(a_uri).to eq(normalized_str)
+                expect(a_uri).to eq(a_uri)
             end
         end
     end
@@ -386,20 +388,20 @@ describe Arachni::URI do
 
         it 'sets the URL query' do
             subject.query = 'my2=val2'
-            subject.query.should == 'my2=val2'
+            expect(subject.query).to eq('my2=val2')
         end
 
         context 'when given an empty string' do
             it 'removes the query' do
                 subject.query = ''
-                subject.query.should be_nil
+                expect(subject.query).to be_nil
             end
         end
 
         context 'when given nil' do
             it 'removes the query' do
                 subject.query = ''
-                subject.query.should be_nil
+                expect(subject.query).to be_nil
             end
         end
     end
@@ -410,15 +412,15 @@ describe Arachni::URI do
         it 'return a duplicate object' do
             dupped = subject.dup
 
-            subject.should == dupped
-            subject.object_id.should_not == dupped.object_id
+            expect(subject).to eq(dupped)
+            expect(subject.object_id).not_to eq(dupped.object_id)
         end
     end
 
     describe '#_dump' do
         it 'returns the URL as a string' do
             uri = 'http://test.com/?my=val'
-            described_class.new( uri )._dump(nil).should == uri
+            expect(described_class.new( uri )._dump(nil)).to eq(uri)
         end
     end
 
@@ -427,7 +429,7 @@ describe Arachni::URI do
             uri    = 'http://test.com/?my=val'
             parsed = described_class.new( uri )
 
-            described_class._load( parsed._dump(nil) ).should == parsed
+            expect(described_class._load( parsed._dump(nil) )).to eq(parsed)
         end
     end
 
@@ -436,50 +438,50 @@ describe Arachni::URI do
             abs  = 'http://test.com/blah/ha'
             rel  = '/test'
             rel2 = 'test2'
-            described_class.parse( rel ).to_absolute( abs ).should == "http://test.com" + rel
-            described_class.parse( rel2 ).to_absolute( abs ).should == "http://test.com/blah/" + rel2
-            described_class.parse( rel2 ).to_absolute( abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+            expect(described_class.parse( rel ).to_absolute( abs )).to eq("http://test.com" + rel)
+            expect(described_class.parse( rel2 ).to_absolute( abs )).to eq("http://test.com/blah/" + rel2)
+            expect(described_class.parse( rel2 ).to_absolute( abs + '/' )).to eq("http://test.com/blah/ha/" + rel2)
         end
     end
 
     describe '#up_to_path' do
         it 'returns the URL up to its path component (no resource name, query, fragment, etc)' do
             url = 'http://test.com/path/goes/here.php?query=goes&here=.!#frag'
-            described_class.parse( url ).up_to_path.should == 'http://test.com/path/goes/'
+            expect(described_class.parse( url ).up_to_path).to eq('http://test.com/path/goes/')
 
             url = 'http://test.com/path/goes/here/?query=goes&here=.!#frag'
-            described_class.parse( url ).up_to_path.should == 'http://test.com/path/goes/here/'
+            expect(described_class.parse( url ).up_to_path).to eq('http://test.com/path/goes/here/')
 
             url = 'http://test.com/path/goes/here?query=goes&here=.!#frag'
-            described_class.parse( url ).up_to_path.should == 'http://test.com/path/goes/here/'
+            expect(described_class.parse( url ).up_to_path).to eq('http://test.com/path/goes/here/')
 
             url = 'http://test.com'
-            described_class.parse( url ).up_to_path.should == 'http://test.com/'
+            expect(described_class.parse( url ).up_to_path).to eq('http://test.com/')
 
             url = 'http://test.com/'
-            described_class.parse( url ).up_to_path.should == 'http://test.com/'
+            expect(described_class.parse( url ).up_to_path).to eq('http://test.com/')
         end
     end
 
     describe '#domain' do
         it 'removes the deepest subdomain from the host' do
             url = 'http://test.com/'
-            described_class.parse( url ).domain.should == 'test.com'
+            expect(described_class.parse( url ).domain).to eq('test.com')
 
             url = 'http://test/'
-            described_class.parse( url ).domain.should == 'test'
+            expect(described_class.parse( url ).domain).to eq('test')
 
             url = 'http://subdomain.test.com/'
-            described_class.parse( url ).domain.should == 'test.com'
+            expect(described_class.parse( url ).domain).to eq('test.com')
 
             url = 'http://deep.subdomain.test.com/'
-            described_class.parse( url ).domain.should == 'subdomain.test.com'
+            expect(described_class.parse( url ).domain).to eq('subdomain.test.com')
         end
 
         context 'when no host is available' do
             it 'returns nil' do
                 url = '/stuff/'
-                described_class.parse( url ).domain.should be_nil
+                expect(described_class.parse( url ).domain).to be_nil
             end
         end
     end
@@ -488,13 +490,13 @@ describe Arachni::URI do
         context 'when passed a URL with' do
             context 'a domain name' do
                 it 'returns false' do
-                    described_class.parse( 'http://stuff.com/blah' ).ip_address?.should be_false
+                    expect(described_class.parse( 'http://stuff.com/blah' ).ip_address?).to be_falsey
                 end
             end
 
             context 'an IP address' do
                 it 'returns the IP address' do
-                    described_class.parse( 'http://127.0.0.1/blah/' ).ip_address?.should be_true
+                    expect(described_class.parse( 'http://127.0.0.1/blah/' ).ip_address?).to be_truthy
                 end
             end
         end
@@ -503,7 +505,7 @@ describe Arachni::URI do
     describe '#without_query' do
         it 'returns the URI up to its resource component without the query' do
             expected = 'http://test.com/directory/resource.php'
-            described_class.new( "#{expected}?param=1&param2=2" ).without_query.should == expected
+            expect(described_class.new( "#{expected}?param=1&param2=2" ).without_query).to eq(expected)
         end
     end
 
@@ -512,14 +514,14 @@ describe Arachni::URI do
         let(:rewritten) { described_class.new( 'http://test.com/articles.php?id=23' ) }
 
         it 'rewrites a URL based on the given rules' do
-            url.rewrite( rewrite_rules ).should == rewritten
+            expect(url.rewrite( rewrite_rules )).to eq(rewritten)
         end
 
         context 'when no rules are provided' do
             it "uses the ones in #{Arachni::OptionGroups::Scope}#url_rewrites" do
                 Arachni::Options.scope.url_rewrites = rewrite_rules
 
-                url.rewrite.should == rewritten
+                expect(url.rewrite).to eq(rewritten)
             end
         end
 
@@ -527,8 +529,8 @@ describe Arachni::URI do
             let(:url) { described_class.new( 'http://blahblah/more.blah' ) }
 
             it 'returns a copy of self' do
-                url.rewrite.should == url
-                url.rewrite.object_id.should_not == url.object_id
+                expect(url.rewrite).to eq(url)
+                expect(url.rewrite.object_id).not_to eq(url.object_id)
             end
         end
     end
@@ -536,45 +538,45 @@ describe Arachni::URI do
     describe '#resource_name' do
         context 'when there is no file name' do
             it 'returns nil' do
-                described_class.new( 'http://stuff.com/' ).resource_name.should be_nil
+                expect(described_class.new( 'http://stuff.com/' ).resource_name).to be_nil
             end
         end
 
         it 'returns the file name of the resource' do
             uri = 'http://test.com/direct.ory/resource.php?param=1&param2=2'
-            described_class.new( uri ).resource_name.should == 'resource.php'
-            described_class.new( 'http://stuff.com/test/' ).resource_name.should == 'test'
+            expect(described_class.new( uri ).resource_name).to eq('resource.php')
+            expect(described_class.new( 'http://stuff.com/test/' ).resource_name).to eq('test')
         end
     end
 
     describe '#resource_extension' do
         context 'when there is no extension' do
             it 'returns nil' do
-                described_class.new( 'http://stuff.com/test' ).resource_extension.should be_nil
+                expect(described_class.new( 'http://stuff.com/test' ).resource_extension).to be_nil
             end
         end
 
         context 'when there are multiple periods' do
             it 'returns the last one' do
-                described_class.new( 'http://stuff.com/test.1.2' ).resource_extension.should == '2'
+                expect(described_class.new( 'http://stuff.com/test.1.2' ).resource_extension).to eq('2')
             end
         end
 
         it 'returns the extension of the resource' do
             uri = "http://test.com/direct.ory/resource.php?param=1&param2=2"
-            described_class.new( uri ).resource_extension.should == 'php'
+            expect(described_class.new( uri ).resource_extension).to eq('php')
         end
     end
 
     describe '#mailto?' do
         context 'when the URI has a mailto scheme' do
             it 'returns true' do
-                described_class.new( 'mailto:stuff@blah.com' ).mailto?.should be_true
+                expect(described_class.new( 'mailto:stuff@blah.com' ).mailto?).to be_truthy
             end
         end
         context 'when the URI does not have a mailto scheme' do
             it 'returns false' do
-                described_class.new( 'blah.com' ).mailto?.should be_false
+                expect(described_class.new( 'blah.com' ).mailto?).to be_falsey
             end
         end
     end
@@ -582,30 +584,30 @@ describe Arachni::URI do
     describe '#hash' do
         it 'returns a hash uniquely identifying the URI' do
             uri = described_class.new( 'http://stuff/' )
-            uri.hash.should be_kind_of Integer
-            uri.hash.should == uri.hash
+            expect(uri.hash).to be_kind_of Integer
+            expect(uri.hash).to eq(uri.hash)
 
             uri2 = described_class.new( 'http://stuff2/' )
-            uri.hash.should_not == uri2.hash
+            expect(uri.hash).not_to eq(uri2.hash)
         end
 
         it 'is an integer' do
-            described_class.new( 'http://stuff/' ).hash.should be_kind_of Integer
+            expect(described_class.new( 'http://stuff/' ).hash).to be_kind_of Integer
         end
     end
 
     describe '#persistent_hash' do
         it 'returns a hash uniquely identifying the URI' do
             uri = described_class.new( 'http://stuff/' )
-            uri.persistent_hash.should be_kind_of Integer
-            uri.persistent_hash.should == uri.persistent_hash
+            expect(uri.persistent_hash).to be_kind_of Integer
+            expect(uri.persistent_hash).to eq(uri.persistent_hash)
 
             uri2 = described_class.new( 'http://stuff2/' )
-            uri.persistent_hash.should_not == uri2.persistent_hash
+            expect(uri.persistent_hash).not_to eq(uri2.persistent_hash)
         end
 
         it 'is an integer' do
-            described_class.new( 'http://stuff/' ).persistent_hash.should be_kind_of Integer
+            expect(described_class.new( 'http://stuff/' ).persistent_hash).to be_kind_of Integer
         end
     end
 end

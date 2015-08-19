@@ -14,11 +14,11 @@ describe Arachni::Support::Buffer::AutoFlush do
 
                     20.times { |i| b << i }
 
-                    buffers.size.should == 2
-                    buffers.shift.should == (0..9).to_a
-                    buffers.shift.should == (10...20).to_a
+                    expect(buffers.size).to eq(2)
+                    expect(buffers.shift).to eq((0..9).to_a)
+                    expect(buffers.shift).to eq((10...20).to_a)
 
-                    b.should be_empty
+                    expect(b).to be_empty
                 end
             end
         end
@@ -35,10 +35,10 @@ describe Arachni::Support::Buffer::AutoFlush do
 
                     20.times { |i| b << i }
 
-                    buffers.size.should == 2
-                    buffers.shift.should == (0..9).to_a
-                    buffers.shift.should == (10...20).to_a
-                    b.should be_empty
+                    expect(buffers.size).to eq(2)
+                    expect(buffers.shift).to eq((0..9).to_a)
+                    expect(buffers.shift).to eq((10...20).to_a)
+                    expect(b).to be_empty
 
                     b = described_class.new( 99999, 10 )
 
@@ -49,10 +49,10 @@ describe Arachni::Support::Buffer::AutoFlush do
 
                     20.times { |i| b.batch_push (0..1000).to_a }
 
-                    buffers.size.should == 2
-                    buffers.shift.should == (0..1000).to_a
-                    buffers.shift.should == (0..1000).to_a
-                    b.should be_empty
+                    expect(buffers.size).to eq(2)
+                    expect(buffers.shift).to eq((0..1000).to_a)
+                    expect(buffers.shift).to eq((0..1000).to_a)
+                    expect(b).to be_empty
                 end
             end
         end
@@ -62,15 +62,15 @@ describe Arachni::Support::Buffer::AutoFlush do
                 b = described_class.new( 10, 999, Set )
                 b << 'test'
                 b << 'test'
-                b.size.should == 1
-                b.flush.class.should == Set
+                expect(b.size).to eq(1)
+                expect(b.flush.class).to eq(Set)
 
                 b = described_class.new
                 b << 'test'
                 b << 'test'
-                b.size.should == 2
+                expect(b.size).to eq(2)
 
-                b.flush.class.should == Array
+                expect(b.flush.class).to eq(Array)
             end
         end
     end

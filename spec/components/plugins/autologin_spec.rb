@@ -22,11 +22,11 @@ describe name_from_filename do
 
             run
 
-            actual_results['status'].should  == 'ok'
-            actual_results['message'].should == plugin::STATUSES[:ok]
-            actual_results['cookies']['success'].should == 'true'
+            expect(actual_results['status']).to  eq('ok')
+            expect(actual_results['message']).to eq(plugin::STATUSES[:ok])
+            expect(actual_results['cookies']['success']).to eq('true')
 
-            framework.sitemap.include?( url + 'congrats' ).should be_true
+            expect(framework.sitemap.include?( url + 'congrats' )).to be_truthy
         end
 
         it 'provides a login sequence and login check to the framework' do
@@ -39,17 +39,17 @@ describe name_from_filename do
             # The framework will call #clean_up which nil out the session...
             session = framework.session
             # ...in addition to removing its configuration.
-            session.stub(:clean_up)
+            allow(session).to receive(:clean_up)
 
             run
 
-            session.logged_in?.should be_true
+            expect(session.logged_in?).to be_truthy
 
             http.cookie_jar.clear
 
-            session.logged_in?.should be_false
-            session.login.should be_true
-            session.logged_in?.should be_true
+            expect(session.logged_in?).to be_falsey
+            expect(session.login).to be_truthy
+            expect(session.logged_in?).to be_truthy
         end
     end
 
@@ -65,14 +65,14 @@ describe name_from_filename do
         it 'complains about not being able to find the form' do
             run
 
-            actual_results['status'].should  == 'form_not_found'
-            actual_results['message'].should == plugin::STATUSES[:form_not_found]
+            expect(actual_results['status']).to  eq('form_not_found')
+            expect(actual_results['message']).to eq(plugin::STATUSES[:form_not_found])
         end
 
         it 'aborts the scan' do
             run
 
-            framework.status.should == :aborted
+            expect(framework.status).to eq(:aborted)
         end
     end
 
@@ -88,14 +88,14 @@ describe name_from_filename do
         it 'complains about not the form being invisible' do
             run
 
-            actual_results['status'].should  == 'form_not_visible'
-            actual_results['message'].should == plugin::STATUSES[:form_not_visible]
+            expect(actual_results['status']).to  eq('form_not_visible')
+            expect(actual_results['message']).to eq(plugin::STATUSES[:form_not_visible])
         end
 
         it 'aborts the scan' do
             run
 
-            framework.status.should == :aborted
+            expect(framework.status).to eq(:aborted)
         end
     end
 
@@ -111,14 +111,14 @@ describe name_from_filename do
         it 'complains about not being able to verify the login' do
             run
 
-            actual_results['status'].should  == 'check_failed'
-            actual_results['message'].should == plugin::STATUSES[:check_failed]
+            expect(actual_results['status']).to  eq('check_failed')
+            expect(actual_results['message']).to eq(plugin::STATUSES[:check_failed])
         end
 
         it 'aborts the scan' do
             run
 
-            framework.status.should == :aborted
+            expect(framework.status).to eq(:aborted)
         end
     end
 
@@ -135,7 +135,7 @@ describe name_from_filename do
             it 'sets it to the login response URL' do
                 framework.options.session.check_url = nil
                 run
-                framework.options.session.check_url.should == url
+                expect(framework.options.session.check_url).to eq(url)
             end
         end
 
@@ -144,7 +144,7 @@ describe name_from_filename do
                 option_url = url + '/stuff'
                 framework.options.session.check_url = option_url
                 run
-                framework.options.session.check_url.should == option_url
+                expect(framework.options.session.check_url).to eq(option_url)
             end
         end
     end
@@ -162,7 +162,7 @@ describe name_from_filename do
             it 'sets it to the plugin pattern' do
                 framework.options.session.check_pattern = nil
                 run
-                framework.options.session.check_pattern.should == /Hi there logged-in user/
+                expect(framework.options.session.check_pattern).to eq(/Hi there logged-in user/)
             end
         end
 
@@ -170,7 +170,7 @@ describe name_from_filename do
             it 'does not change it' do
                 framework.options.session.check_pattern = /stuff/
                 run
-                framework.options.session.check_pattern.should == /stuff/
+                expect(framework.options.session.check_pattern).to eq(/stuff/)
             end
         end
     end

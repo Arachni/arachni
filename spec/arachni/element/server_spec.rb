@@ -52,13 +52,13 @@ describe Arachni::Element::Server do
 
         context 'when given an invalid URL' do
             it 'returns false' do
-                auditable.log_remote_file_if_exists( '433' ).should be_false
+                expect(auditable.log_remote_file_if_exists( '433' )).to be_falsey
             end
         end
 
         context 'when given a valid URL' do
             it 'returns true' do
-                auditable.log_remote_file_if_exists( @base_url ).should be_true
+                expect(auditable.log_remote_file_if_exists( @base_url )).to be_truthy
             end
         end
 
@@ -69,24 +69,25 @@ describe Arachni::Element::Server do
                 @framework.http.run
 
                 logged_issue = Arachni::Data.issues.first
-                logged_issue.vector.url.split( '?' ).first.should == file
-                logged_issue.vector.class.should == Arachni::Element::Server
-                logged_issue.check.should == {
+                expect(logged_issue.vector.url.split( '?' ).first).to eq(file)
+                expect(logged_issue.vector.class).to eq(Arachni::Element::Server)
+                expect(logged_issue.check).to eq({
                     name:      'Auditor',
                     shortname: 'auditor_test'
-                }
-                logged_issue.variations.first.proof.should ==
+                })
+                expect(logged_issue.variations.first.proof).to eq(
                     logged_issue.variations.first.page.response.status_line
+                )
 
-                logged_issue.name.should == @auditor.class.info[:issue][:name]
-                logged_issue.trusted.should be_true
+                expect(logged_issue.name).to eq(@auditor.class.info[:issue][:name])
+                expect(logged_issue.trusted).to be_truthy
             end
 
             context 'when one issue is logged' do
                 it "does not push the response to the #{Arachni::Trainer}" do
                     auditable.log_remote_file_if_exists( @base_url + 'true' )
 
-                    @framework.trainer.should_not receive(:push)
+                    expect(@framework.trainer).not_to receive(:push)
                     @framework.http.run
                 end
             end
@@ -96,7 +97,7 @@ describe Arachni::Element::Server do
                     auditable.log_remote_file_if_exists( @base_url + 'true' )
                     auditable.log_remote_file_if_exists( "#{url}/each_candidate_dom_element" )
 
-                    @framework.trainer.should receive(:push).twice
+                    expect(@framework.trainer).to receive(:push).twice
                     @framework.http.run
                 end
             end
@@ -106,13 +107,13 @@ describe Arachni::Element::Server do
             it 'does not log an issue' do
                 auditable.log_remote_file_if_exists( @base_url + 'false' )
                 @framework.http.run
-                Arachni::Data.issues.should be_empty
+                expect(Arachni::Data.issues).to be_empty
             end
 
             it "does not push the responses to the #{Arachni::Trainer}" do
                 auditable.log_remote_file_if_exists( @base_url + 'false' )
 
-                @framework.trainer.should_not receive(:push)
+                expect(@framework.trainer).not_to receive(:push)
                 @framework.http.run
             end
         end
@@ -124,9 +125,9 @@ describe Arachni::Element::Server do
                 10.times { auditable.log_remote_file_if_exists( check_url ) }
                 @framework.http.run
 
-                issues.should be_any
+                expect(issues).to be_any
                 issues.each do |issue|
-                    issue.should be_untrusted
+                    expect(issue).to be_untrusted
                 end
             end
 
@@ -134,17 +135,17 @@ describe Arachni::Element::Server do
                 10.times { auditable.log_remote_file_if_exists( check_url ) }
                 @framework.http.run
 
-                issues.should be_any
+                expect(issues).to be_any
 
                 issues.each do |issue|
-                    issue.remarks[:meta_analysis].should == [described_class::REMARK]
+                    expect(issue.remarks[:meta_analysis]).to eq([described_class::REMARK])
                 end
             end
 
             it "does not push the responses to the #{Arachni::Trainer}" do
                 10.times { auditable.log_remote_file_if_exists( url ) }
 
-                @framework.trainer.should_not receive(:push)
+                expect(@framework.trainer).not_to receive(:push)
                 @framework.http.run
             end
         end
@@ -157,13 +158,13 @@ describe Arachni::Element::Server do
 
         context 'when given an invalid URL' do
             it 'returns false' do
-                auditable.remote_file_exist?( '433' ).should be_false
+                expect(auditable.remote_file_exist?( '433' )).to be_falsey
             end
         end
 
         context 'when given a valid URL' do
             it 'returns true' do
-                auditable.remote_file_exist?( @base_url ).should be_true
+                expect(auditable.remote_file_exist?( @base_url )).to be_truthy
             end
         end
 
@@ -186,7 +187,7 @@ describe Arachni::Element::Server do
                 auditable.remote_file_exist?( url ) {}
                 @framework.http.run
 
-                request.fingerprint?.should be_true
+                expect(request.fingerprint?).to be_truthy
             end
 
             context 'when a remote file exists' do
@@ -194,7 +195,7 @@ describe Arachni::Element::Server do
                     exists = false
                     auditable.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
                     @framework.http.run
-                    exists.should be_true
+                    expect(exists).to be_truthy
                 end
 
                 context 'on subsequent calls' do
@@ -203,10 +204,10 @@ describe Arachni::Element::Server do
                         @framework.http.run
 
                         exists = false
-                        @framework.http.should_not receive(:custom_404?)
+                        expect(@framework.http).not_to receive(:custom_404?)
                         auditable.remote_file_exist?( @base_url + 'true' ) { |bool| exists = bool }
                         @framework.http.run
-                        exists.should be_true
+                        expect(exists).to be_truthy
                     end
                 end
             end
@@ -216,7 +217,7 @@ describe Arachni::Element::Server do
                     exists = true
                     auditable.remote_file_exist?( @base_url + 'false' ) { |bool| exists = bool }
                     @framework.http.run
-                    exists.should be_false
+                    expect(exists).to be_falsey
                 end
             end
 
@@ -225,7 +226,7 @@ describe Arachni::Element::Server do
                     exists = true
                     auditable.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
                     @framework.http.run
-                    exists.should be_false
+                    expect(exists).to be_falsey
                 end
             end
         end
@@ -251,7 +252,7 @@ describe Arachni::Element::Server do
                 auditable.remote_file_exist?( url ) {}
                 @framework.http.run
 
-                request.fingerprint?.should be_false
+                expect(request.fingerprint?).to be_falsey
             end
 
             context 'and the response' do
@@ -261,7 +262,7 @@ describe Arachni::Element::Server do
                         url = @_404_url + 'static/this_does_not_exist'
                         auditable.remote_file_exist?( url ) { |bool| exists = bool }
                         @framework.http.run
-                        exists.should be_false
+                        expect(exists).to be_falsey
                     end
                 end
 
@@ -272,7 +273,7 @@ describe Arachni::Element::Server do
                             url = @_404_url + 'invalid/this_does_not_exist'
                             auditable.remote_file_exist?( url ) { |bool| exists = bool }
                             @framework.http.run
-                            exists.should be_false
+                            expect(exists).to be_falsey
                         end
                     end
 
@@ -282,7 +283,7 @@ describe Arachni::Element::Server do
                             url = @_404_url + 'dynamic/this_does_not_exist'
                             auditable.remote_file_exist?( url ) { |bool| exists = bool }
                             @framework.http.run
-                            exists.should be_false
+                            expect(exists).to be_falsey
                         end
                     end
 
@@ -294,7 +295,7 @@ describe Arachni::Element::Server do
                                 auditable.remote_file_exist?( url ) { |bool| exist << bool }
                             }
                             @framework.http.run
-                            exist.include?( true ).should be_false
+                            expect(exist.include?( true )).to be_falsey
                         end
                     end
                 end

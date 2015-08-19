@@ -9,7 +9,7 @@ shared_examples_for 'element' do
     let(:page) { Factory[:page].dup }
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+        expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
     rpc_attributes = if described_class.ancestors.include? Arachni::Element::Capabilities::Auditable::DOM
@@ -22,7 +22,7 @@ shared_examples_for 'element' do
         let(:data) { subject.to_rpc_data }
 
         it "includes 'url'" do
-            data['url'].should == subject.url
+            expect(data['url']).to eq(subject.url)
         end
 
         if rpc_attributes.include? 'initialization_options'
@@ -45,16 +45,16 @@ shared_examples_for 'element' do
                     end
                 end
 
-                data['initialization_options'].should == init
+                expect(data['initialization_options']).to eq(init)
             end
         end
 
         it "includes 'class'" do
-            data['class'].should == subject.class.to_s
+            expect(data['class']).to eq(subject.class.to_s)
         end
 
         it 'excludes #page' do
-            data.should_not include 'page'
+            expect(data).not_to include 'page'
         end
     end
 
@@ -69,15 +69,15 @@ shared_examples_for 'element' do
 
                 if attribute == 'initialization_options' && v1.is_a?( Hash )
                     if v1.include? :expires
-                        v1.delete(:expires).to_s.should == v2.delete(:expires).to_s
+                        expect(v1.delete(:expires).to_s).to eq(v2.delete(:expires).to_s)
                     end
 
                     if v1.include? :template
-                        v1.delete(:template).source.should == v2.delete(:template).source
+                        expect(v1.delete(:template).source).to eq(v2.delete(:template).source)
                     end
                 end
 
-                v1.should == v2
+                expect(v1).to eq(v2)
             end
         end
     end
@@ -86,19 +86,19 @@ shared_examples_for 'element' do
         context 'when passed an Numeric' do
             context "equal to #{described_class::MAX_SIZE}" do
                 it 'returns true' do
-                    described_class.too_big?( described_class::MAX_SIZE ).should be_true
+                    expect(described_class.too_big?( described_class::MAX_SIZE )).to be_truthy
                 end
             end
 
             context "larger than #{described_class::MAX_SIZE}" do
                 it 'returns true' do
-                    described_class.too_big?( described_class::MAX_SIZE + 1 ).should be_true
+                    expect(described_class.too_big?( described_class::MAX_SIZE + 1 )).to be_truthy
                 end
             end
 
             context "smaller than #{described_class::MAX_SIZE}" do
                 it 'returns false' do
-                    described_class.too_big?( described_class::MAX_SIZE - 1 ).should be_false
+                    expect(described_class.too_big?( described_class::MAX_SIZE - 1 )).to be_falsey
                 end
             end
         end
@@ -106,19 +106,19 @@ shared_examples_for 'element' do
         context 'when passed a String' do
             context "whose size is equal to #{described_class::MAX_SIZE}" do
                 it 'returns true' do
-                    described_class.too_big?( 'a' * described_class::MAX_SIZE ).should be_true
+                    expect(described_class.too_big?( 'a' * described_class::MAX_SIZE )).to be_truthy
                 end
             end
 
             context "whose size is larger than #{described_class::MAX_SIZE}" do
                 it 'returns true' do
-                    described_class.too_big?( 'a' * (described_class::MAX_SIZE + 1) ).should be_true
+                    expect(described_class.too_big?( 'a' * (described_class::MAX_SIZE + 1) )).to be_truthy
                 end
             end
 
             context "whose size is smaller than #{described_class::MAX_SIZE}" do
                 it 'returns false' do
-                    described_class.too_big?( 'a' * (described_class::MAX_SIZE - 1) ).should be_false
+                    expect(described_class.too_big?( 'a' * (described_class::MAX_SIZE - 1) )).to be_falsey
                 end
             end
         end
@@ -127,7 +127,7 @@ shared_examples_for 'element' do
     describe '#marshal_dump' do
         it 'excludes #page' do
             subject.page = page
-            subject.marshal_dump.should_not include :page
+            expect(subject.marshal_dump).not_to include :page
         end
     end
 
@@ -136,25 +136,25 @@ shared_examples_for 'element' do
         it 'normalizes the passed URL' do
             url = 'http://test.com/some stuff#frag!'
             subject.url = url
-            subject.url.should == Arachni::Utilities.normalize_url( url )
+            expect(subject.url).to eq(Arachni::Utilities.normalize_url( url ))
         end
     end
 
     describe '#page=' do
         it 'sets the associated page' do
             subject.page = page
-            subject.page.should == page
+            expect(subject.page).to eq(page)
         end
     end
 
     describe '#dup' do
         it 'returns a copy of self' do
-            subject.dup.should == subject
+            expect(subject.dup).to eq(subject)
         end
 
         it 'copies #page' do
             subject.page = page
-            subject.dup.page.should == page
+            expect(subject.dup.page).to eq(page)
         end
     end
 
@@ -162,19 +162,19 @@ shared_examples_for 'element' do
         let(:hash) { subject.to_h }
 
         it 'includes the #type' do
-            hash[:type].should == subject.type
+            expect(hash[:type]).to eq(subject.type)
         end
 
         it 'includes the #url' do
-            hash[:url].should == subject.url
+            expect(hash[:url]).to eq(subject.url)
         end
 
         it 'includes the element class as a string' do
-            hash[:class].should == described_class.to_s
+            expect(hash[:class]).to eq(described_class.to_s)
         end
 
         it 'is aliased to #to_hash' do
-            hash.should == subject.to_hash
+            expect(hash).to eq(subject.to_hash)
         end
     end
 end

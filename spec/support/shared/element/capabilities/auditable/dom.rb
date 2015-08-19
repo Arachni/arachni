@@ -14,7 +14,7 @@ shared_examples_for 'element_dom' do |options = {}|
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+        expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
     describe '#to_rpc_data' do
@@ -25,12 +25,12 @@ shared_examples_for 'element_dom' do |options = {}|
                 # We do this inside a #submit handler to make sure the associations
                 # which are added during a submit are handled successfully.
                 subject.submit do
-                    subject.to_rpc_data.should_not include attribute
+                    expect(subject.to_rpc_data).not_to include attribute
                     called = true
                 end
                 run
 
-                called.should be_true
+                expect(called).to be_truthy
             end
         end
     end
@@ -43,40 +43,40 @@ shared_examples_for 'element_dom' do |options = {}|
                 # We do this inside a #submit handler to make sure the associations
                 # which are added during a submit are handled successfully.
                 subject.submit do
-                    subject.marshal_dump.should_not include ivar
+                    expect(subject.marshal_dump).not_to include ivar
                     called = true
                 end
                 run
 
-                called.should be_true
+                expect(called).to be_truthy
             end
         end
     end
 
     describe '#prepare_for_report' do
         it 'removes #page' do
-            subject.page.should be_true
+            expect(subject.page).to be_truthy
             subject.prepare_for_report
-            subject.page.should be_nil
+            expect(subject.page).to be_nil
         end
         it 'removes #parent' do
-            subject.parent.should be_true
+            expect(subject.parent).to be_truthy
             subject.prepare_for_report
-            subject.parent.should be_nil
+            expect(subject.parent).to be_nil
         end
         it 'removes #browser' do
             called = false
             subject.with_browser do |browser|
                 subject.browser = browser
 
-                subject.browser.should be_true
+                expect(subject.browser).to be_truthy
                 subject.prepare_for_report
-                subject.browser.should be_nil
+                expect(subject.browser).to be_nil
 
                 called = true
             end
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
     end
 
@@ -90,7 +90,7 @@ shared_examples_for 'element_dom' do |options = {}|
                         worker = cluster
                     end
 
-                    worker.should == subject.auditor.browser_cluster
+                    expect(worker).to eq(subject.auditor.browser_cluster)
                 end
             end
         end
@@ -102,12 +102,12 @@ shared_examples_for 'element_dom' do |options = {}|
                 it 'passes a BrowserCluster::Worker to the given block' do
                     worker = nil
 
-                    subject.with_browser do |browser|
+                    expect(subject.with_browser do |browser|
                         worker = browser
-                    end.should be_true
+                    end).to be_truthy
                     subject.auditor.browser_cluster.wait
 
-                    worker.should be_kind_of Arachni::BrowserCluster::Worker
+                    expect(worker).to be_kind_of Arachni::BrowserCluster::Worker
                 end
             end
         end
@@ -127,7 +127,7 @@ shared_examples_for 'element_dom' do |options = {}|
             end
 
             subject.auditor.browser_cluster.wait
-            page.dom.transitions.should == pre_transitions
+            expect(page.dom.transitions).to eq(pre_transitions)
         end
     end
 
@@ -138,45 +138,45 @@ shared_examples_for 'element_dom' do |options = {}|
 
             called = false
             subject.submit do |page|
-                inputs.should == auditable_extract_parameters( page )
+                expect(inputs).to eq(auditable_extract_parameters( page ))
                 called = true
             end
 
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
 
         it 'sets the #performer on the returned page' do
             called = false
             subject.submit do |page|
-                page.performer.should be_kind_of described_class
+                expect(page.performer).to be_kind_of described_class
                 called = true
             end
 
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
 
         it 'sets the #browser on the #performer' do
             called = false
             subject.submit do |page|
-                page.performer.browser.should be_kind_of Arachni::BrowserCluster::Worker
+                expect(page.performer.browser).to be_kind_of Arachni::BrowserCluster::Worker
                 called = true
             end
 
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
 
         it 'sets the #element on the #performer', if: !options[:without_node] do
             called = false
             subject.submit do |page|
-                page.performer.element.should be_kind_of Watir::HTMLElement
+                expect(page.performer.element).to be_kind_of Watir::HTMLElement
                 called = true
             end
 
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
 
         it 'adds the submission transition to the Page::DOM#transitions' do
@@ -194,20 +194,20 @@ shared_examples_for 'element_dom' do |options = {}|
             end
             subject.auditor.browser_cluster.wait
 
-            subject.page.dom.transitions.should_not include transition
-            submitted_page.dom.transitions.should include transition
+            expect(subject.page.dom.transitions).not_to include transition
+            expect(submitted_page.dom.transitions).to include transition
         end
 
         context 'when the element could not be submitted' do
             it 'does not call the block' do
-                subject.stub( :trigger ) { false }
+                allow(subject).to receive( :trigger ) { false }
 
                 called = false
                 subject.submit do
                     called = true
                 end
                 subject.auditor.browser_cluster.wait
-                called.should be_false
+                expect(called).to be_falsey
             end
         end
 
@@ -218,12 +218,12 @@ shared_examples_for 'element_dom' do |options = {}|
                     title = 'Injected title'
 
                     subject.submit custom_code: "document.title = #{title.inspect}" do |page|
-                        page.document.css('title').text.should == title
+                        expect(page.document.css('title').text).to eq(title)
                         called = true
                     end
 
                     subject.auditor.browser_cluster.wait
-                    called.should be_true
+                    expect(called).to be_truthy
                 end
             end
 
@@ -237,7 +237,7 @@ shared_examples_for 'element_dom' do |options = {}|
                     end
 
                     subject.auditor.browser_cluster.wait
-                    set_taint.should == taint
+                    expect(set_taint).to eq(taint)
                 end
             end
         end
@@ -247,24 +247,24 @@ shared_examples_for 'element_dom' do |options = {}|
         it 'submits all element mutations' do
             called = false
             subject.audit 'seed' do |page, element|
-                auditable_extract_parameters( page ).should == element.inputs
+                expect(auditable_extract_parameters( page )).to eq(element.inputs)
                 called = true
             end
 
             subject.auditor.browser_cluster.wait
-            called.should be_true
+            expect(called).to be_truthy
         end
     end
 
     describe '#valid_input_data?' do
         it 'returns true' do
-            subject.valid_input_data?( 'stuff' ).should be_true
+            expect(subject.valid_input_data?( 'stuff' )).to be_truthy
         end
 
         described_class::INVALID_INPUT_DATA.each do |invalid_data|
             context "when the value contains #{invalid_data.inspect}" do
                 it 'returns false' do
-                    subject.valid_input_data?( "stuff #{invalid_data}" ).should be_false
+                    expect(subject.valid_input_data?( "stuff #{invalid_data}" )).to be_falsey
                 end
             end
         end
@@ -272,51 +272,51 @@ shared_examples_for 'element_dom' do |options = {}|
 
     describe '#page' do
         it 'returns the page containing the element' do
-            subject.page.should be_kind_of Arachni::Page
+            expect(subject.page).to be_kind_of Arachni::Page
         end
     end
 
     describe '#node', if: !options[:without_node] do
         it 'returns the Nokogiri node of the element' do
-            subject.node.is_a?( Nokogiri::XML::Element ).should be_true
+            expect(subject.node.is_a?( Nokogiri::XML::Element )).to be_truthy
         end
     end
 
     describe '#auditor' do
         it 'returns the assigned auditor' do
-            subject.auditor.should be_kind_of Arachni::Check::Auditor
+            expect(subject.auditor).to be_kind_of Arachni::Check::Auditor
         end
     end
 
     describe '#encode' do
         it 'returns the string as is' do
             v = 'blah'
-            subject.encode( v ).object_id.should == v.object_id
+            expect(subject.encode( v ).object_id).to eq(v.object_id)
         end
     end
     describe '.encode' do
         it 'returns the string as is' do
             v = 'blah'
-            subject.class.encode( v ).object_id.should == v.object_id
+            expect(subject.class.encode( v ).object_id).to eq(v.object_id)
         end
     end
 
     describe '#decode' do
         it 'returns the string as is' do
             v = 'blah'
-            subject.decode( v ).object_id.should == v.object_id
+            expect(subject.decode( v ).object_id).to eq(v.object_id)
         end
     end
     describe '.decode' do
         it 'returns the string as is' do
             v = 'blah'
-            subject.class.decode( v ).object_id.should == v.object_id
+            expect(subject.class.decode( v ).object_id).to eq(v.object_id)
         end
     end
 
     describe '#dup' do
         it 'preserves the #parent' do
-            subject.dup.parent.should == subject.parent
+            expect(subject.dup.parent).to eq(subject.parent)
         end
     end
 end
