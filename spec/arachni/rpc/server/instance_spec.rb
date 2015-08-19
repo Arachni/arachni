@@ -613,8 +613,15 @@ describe 'Arachni::RPC::Server::Instance' do
                         stats1 = instance.service.progress( with: :instances )[:instances]
                         stats2 = instance.framework.progress[:instances]
 
-                        stats1.each { |h| h[:statistics].delete :runtime }
-                        stats2.each { |h| h[:statistics].delete :runtime }
+                        stats1.each do |h|
+                            h[:statistics][:http].delete :burst_responses_per_second
+                            h[:statistics].delete :runtime
+                        end
+
+                        stats2.each do |h|
+                            h[:statistics][:http].delete :burst_responses_per_second
+                            h[:statistics].delete :runtime
+                        end
 
                         stats1.size.should == 2
                         stats1.should == stats2
@@ -747,8 +754,15 @@ describe 'Arachni::RPC::Server::Instance' do
                         stats1 = instance.service.native_progress( with: :instances )[:instances]
                         stats2 = instance.framework.progress[:instances]
 
-                        stats1.each { |h| h[:statistics].delete :runtime }
-                        stats2.each { |h| h[:statistics].delete :runtime }
+                        stats1.each do |h|
+                            h[:statistics][:http].delete :burst_responses_per_second
+                            h[:statistics].delete :runtime
+                        end
+
+                        stats2.each do |h|
+                            h[:statistics][:http].delete :burst_responses_per_second
+                            h[:statistics].delete :runtime
+                        end
 
                         stats1.size.should == 2
                         stats1.should == stats2
