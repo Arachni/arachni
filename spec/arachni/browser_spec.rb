@@ -1075,113 +1075,241 @@ describe Arachni::Browser do
             expect(event['type']).to eq('submit')
         end
 
-        context "when the page has #{Arachni::Element::Form::DOM} elements" do
-            context "and #{Arachni::OptionGroups::Audit}#forms is" do
-                context true do
-                    before do
-                        Arachni::Options.audit.elements :forms
-                    end
+        context 'when the page has' do
+            context "#{Arachni::Element::UIForm} elements" do
+                context "and #{Arachni::OptionGroups::Audit}#inputs is" do
+                    context true do
+                        before do
+                            Arachni::Options.audit.elements :ui_forms
+                        end
 
-                    context 'a JavaScript action' do
-                        it 'does not set #skip_dom' do
-                            @browser.load "#{@url}/each_element_with_events/form/action/javascript"
-                            expect(@browser.to_page.forms.first.skip_dom).to be_nil
+                        context '<input> button' do
+                            context 'with DOM events' do
+                                it 'parses it' do
+                                    @browser.load "#{@url}/to_page/input/button/with_events"
+
+                                    input = @browser.to_page.ui_forms.first
+
+                                    expect(input.action).to eq @browser.url
+                                    expect(input.source).to eq '<input type="button" id="insert">'
+                                    expect(input.method).to eq :click
+                                end
+                            end
+
+                            context 'without DOM events' do
+                                it 'ignores it' do
+                                    @browser.load "#{@url}/to_page/input/button/without_events"
+                                    expect(@browser.to_page.ui_forms).to be_empty
+                                end
+                            end
+                        end
+
+                        context '<button>' do
+                            context 'with DOM events' do
+                                it 'parses it' do
+                                    @browser.load "#{@url}/to_page/button/with_events"
+
+                                    input = @browser.to_page.ui_forms.first
+
+                                    expect(input.action).to eq @browser.url
+                                    expect(input.source).to eq '<button id="insert">'
+                                    expect(input.method).to eq :click
+                                end
+                            end
+
+                            context 'without DOM events' do
+                                it 'ignores it' do
+                                    @browser.load "#{@url}to_page/button/without_events"
+                                    expect(@browser.to_page.ui_forms).to be_empty
+                                end
+                            end
                         end
                     end
 
-                    context 'with DOM events' do
-                        it 'does not set #skip_dom' do
-                            @browser.load "#{@url}/fire_event/form/onsubmit"
-                            expect(@browser.to_page.forms.first.skip_dom).to be_nil
+                    context false do
+                        before do
+                            Arachni::Options.audit.skip_elements :ui_forms
                         end
-                    end
 
-                    context 'without DOM events' do
-                        it 'sets #skip_dom to true' do
-                            @browser.load "#{@url}/each_element_with_events/form/action/regular"
-                            expect(@browser.to_page.forms.first.skip_dom).to be_truthy
+                        it 'ignores them' do
+                            @browser.load "#{@url}/to_page/button/with_events"
+                            expect(@browser.to_page.ui_forms).to be_empty
                         end
-                    end
-                end
-
-                context false do
-                    before do
-                        Arachni::Options.audit.skip_elements :forms
-                    end
-
-                    it 'does not set #skip_dom' do
-                        @browser.load "#{@url}/each_element_with_events/form/action/regular"
-                        expect(@browser.to_page.forms.first.skip_dom).to be_nil
                     end
                 end
             end
-        end
 
-        context "when the page has #{Arachni::Element::Cookie::DOM} elements" do
-            let(:cookies) { @browser.to_page.cookies }
+            context "#{Arachni::Element::Input} elements" do
+                context "and #{Arachni::OptionGroups::Audit}#inputs is" do
+                    context true do
+                        before do
+                            Arachni::Options.audit.elements :inputs
+                        end
 
-            context "and #{Arachni::OptionGroups::Audit}#cookies is" do
-                context true do
-                    before do
-                        Arachni::Options.audit.elements :cookies
+                        context '<input>' do
+                            context 'with DOM events' do
+                                it 'parses it' do
+                                    @browser.load "#{@url}/to_page/input/with_events"
 
-                        @browser.load "#{@url}/#{page}"
-                        @browser.load "#{@url}/#{page}"
+                                    input = @browser.to_page.inputs.first
+
+                                    expect(input.action).to eq @browser.url
+                                    expect(input.source).to eq '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1">'
+                                    expect(input.method).to eq :oninput
+                                end
+                            end
+
+                            context 'without DOM events' do
+                                it 'ignores it' do
+                                    @browser.load "#{@url}/to_page/input/without_events"
+                                    expect(@browser.to_page.inputs).to be_empty
+                                end
+                            end
+                        end
+
+                        context '<textarea>' do
+                            context 'with DOM events' do
+                                it 'parses it' do
+                                    @browser.load "#{@url}/to_page/textarea/with_events"
+
+                                    input = @browser.to_page.inputs.first
+
+                                    expect(input.action).to eq @browser.url
+                                    expect(input.source).to eq '<textarea oninput="handleOnInput();" id="my-input" name="my-input">'
+                                    expect(input.method).to eq :oninput
+                                end
+                            end
+
+                            context 'without DOM events' do
+                                it 'ignores it' do
+                                    @browser.load "#{@url}/to_page/textarea/without_events"
+                                    expect(@browser.to_page.inputs).to be_empty
+                                end
+                            end
+                        end
                     end
 
-                    context 'with DOM processing of cookie' do
-                        context 'names' do
-                            let(:page) { 'dom-cookies-names' }
-
-                            it 'does not set #skip_dom' do
-                                expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
-                                expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
-                            end
+                    context false do
+                        before do
+                            Arachni::Options.audit.skip_elements :inputs
                         end
 
-                        context 'values' do
-                            let(:page) { 'dom-cookies-values' }
-
-                            it 'does not set #skip_dom' do
-                                expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
-                                expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
-                            end
-                        end
-                    end
-
-                    context 'without DOM processing of cookie' do
-                        context 'names' do
-                            let(:page) { 'dom-cookies-names' }
-
-                            it 'does not set #skip_dom' do
-                                expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
-                            end
-                        end
-
-                        context 'values' do
-                            let(:page) { 'dom-cookies-values' }
-
-                            it 'does not set #skip_dom' do
-                                expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
-                            end
+                        it 'ignores them' do
+                            @browser.load "#{@url}/to_page/input/with_events"
+                            expect(@browser.to_page.inputs).to be_empty
                         end
                     end
                 end
+            end
 
-                context false do
-                    before do
-                        Arachni::Options.audit.skip_elements :cookies
+            context "#{Arachni::Element::Form::DOM} elements" do
+                context "and #{Arachni::OptionGroups::Audit}#forms is" do
+                    context true do
+                        before do
+                            Arachni::Options.audit.elements :forms
+                        end
 
-                        @browser.load "#{@url}/#{page}"
-                        @browser.load "#{@url}/#{page}"
+                        context 'and JavaScript action' do
+                            it 'does not set #skip_dom' do
+                                @browser.load "#{@url}/each_element_with_events/form/action/javascript"
+                                expect(@browser.to_page.forms.first.skip_dom).to be_nil
+                            end
+                        end
+
+                        context 'with DOM events' do
+                            it 'does not set #skip_dom' do
+                                @browser.load "#{@url}/fire_event/form/onsubmit"
+                                expect(@browser.to_page.forms.first.skip_dom).to be_nil
+                            end
+                        end
+
+                        context 'without DOM events' do
+                            it 'sets #skip_dom to true' do
+                                @browser.load "#{@url}/each_element_with_events/form/action/regular"
+                                expect(@browser.to_page.forms.first.skip_dom).to be_truthy
+                            end
+                        end
                     end
 
-                    let(:page) { 'dom-cookies-names' }
+                    context false do
+                        before do
+                            Arachni::Options.audit.skip_elements :forms
+                        end
 
-                    it 'does not set #skip_dom' do
-                        expect(cookies).to be_any
-                        cookies.each do |cookie|
-                            expect(cookie.skip_dom).to be_nil
+                        it 'does not set #skip_dom' do
+                            @browser.load "#{@url}/each_element_with_events/form/action/regular"
+                            expect(@browser.to_page.forms.first.skip_dom).to be_nil
+                        end
+                    end
+                end
+            end
+
+            context "#{Arachni::Element::Cookie::DOM} elements" do
+                let(:cookies) { @browser.to_page.cookies }
+
+                context "and #{Arachni::OptionGroups::Audit}#cookies is" do
+                    context true do
+                        before do
+                            Arachni::Options.audit.elements :cookies
+
+                            @browser.load "#{@url}/#{page}"
+                            @browser.load "#{@url}/#{page}"
+                        end
+
+                        context 'with DOM processing of cookie' do
+                            context 'names' do
+                                let(:page) { 'dom-cookies-names' }
+
+                                it 'does not set #skip_dom' do
+                                    expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
+                                end
+                            end
+
+                            context 'values' do
+                                let(:page) { 'dom-cookies-values' }
+
+                                it 'does not set #skip_dom' do
+                                    expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
+                                end
+                            end
+                        end
+
+                        context 'without DOM processing of cookie' do
+                            context 'names' do
+                                let(:page) { 'dom-cookies-names' }
+
+                                it 'does not set #skip_dom' do
+                                    expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
+                                end
+                            end
+
+                            context 'values' do
+                                let(:page) { 'dom-cookies-values' }
+
+                                it 'does not set #skip_dom' do
+                                    expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
+                                end
+                            end
+                        end
+                    end
+
+                    context false do
+                        before do
+                            Arachni::Options.audit.skip_elements :cookies
+
+                            @browser.load "#{@url}/#{page}"
+                            @browser.load "#{@url}/#{page}"
+                        end
+
+                        let(:page) { 'dom-cookies-names' }
+
+                        it 'does not set #skip_dom' do
+                            expect(cookies).to be_any
+                            cookies.each do |cookie|
+                                expect(cookie.skip_dom).to be_nil
+                            end
                         end
                     end
                 end

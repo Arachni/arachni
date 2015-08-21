@@ -244,6 +244,16 @@ class Parser
         @link_vars ||= parsed.rewrite.query_parameters.freeze
     end
 
+    # Dummy method, only the {Browser#to_page browser} can fill this in.
+    def inputs
+        []
+    end
+
+    # Dummy method, only the {Browser#to_page browser} can fill this in.
+    def ui_forms
+        []
+    end
+
     # @return   [Array<Element::Cookie>]
     #   Cookies from HTTP headers and response body.
     def cookies

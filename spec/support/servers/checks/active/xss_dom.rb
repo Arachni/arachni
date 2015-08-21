@@ -7,6 +7,8 @@ get '/' do
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
         <a href="/link-template">Link template</a>
+        <a href="/input">Input</a>
+        <a href="/ui_form">UI Form</a>
     EOHTML
 end
 
@@ -129,5 +131,53 @@ get '/cookie/straight' do
                 document.getElementById('container').innerHTML = getCookie('input');
             </script>
         </body>
+    EOHTML
+end
+
+get '/input' do
+    <<-EOHTML
+        <a href="/input/straight">Form</a>
+    EOHTML
+end
+
+get '/input/straight' do
+    <<-EOHTML
+        <script>
+            function handleOnInput() {
+                document.getElementById("container").innerHTML =
+                    document.getElementById("my-input").value;
+            }
+        </script>
+
+        <div id="container"></div>
+
+        <input oninput="handleOnInput()" id='my-input' value='default' />
+    EOHTML
+end
+
+get '/ui_form' do
+    <<-EOHTML
+        <a href="/ui_form/straight">Form</a>
+    EOHTML
+end
+
+get '/ui_form/straight' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text">
+            <button id="insert">Insert into DOM</button>
+
+            <div id="container">
+            </div>
+
+            <script>
+               document.getElementById('insert').addEventListener('click', function() {
+                    document.getElementById("container").innerHTML =
+                        document.getElementById("my-input").value;
+               });
+            </script>
+        </body>
+    </html>
     EOHTML
 end

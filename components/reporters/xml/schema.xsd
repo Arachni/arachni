@@ -801,6 +801,8 @@
             <xs:enumeration value="Arachni::Element::GenericDOM" />
             <xs:enumeration value="Arachni::Element::JSON" />
             <xs:enumeration value="Arachni::Element::XML" />
+            <xs:enumeration value="Arachni::Element::UIForm::DOM" />
+            <xs:enumeration value="Arachni::Element::Input::DOM" />
         </xs:restriction>
     </xs:simpleType>
 

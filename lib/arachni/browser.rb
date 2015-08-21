@@ -350,11 +350,21 @@ class Browser
             url:     url,
             cookies: extra_cookies
         ) do
+            print_debug_level_2 "Loading: #{url}"
             watir.goto url
+            print_debug_level_2 'Done'
 
+            print_debug_level_2 'Waiting for custom JS...'
             @javascript.wait_till_ready
+            print_debug_level_2 'Done'
+
+            print_debug_level_2 "Waiting for #{@proxy.active_connections} connections to close.."
             wait_for_pending_requests
+            print_debug_level_2 'Done'
+
+            print_debug_level_2 'Waiting for timers...'
             wait_for_timers
+            print_debug_level_2 'Done'
 
             url = watir.url
             Options.browser_cluster.css_to_wait_for( url ).each do |css|
@@ -704,6 +714,13 @@ class Browser
                     # Some of these need an explicit event triggers.
                     had_special_trigger = true if ![:change, :blur, :focus, :select].include? event
 
+                    # Send keys will append to the existing value, so we need to
+                    # clear it first. The receiving input may support values
+                    # though, so watch out.
+                    if (subtype = element.to_subtype).respond_to?( :value= )
+                        subtype.value = ''
+                    end
+
                     element.send_keys( (options[:value] || value_for( element )).to_s )
                 end
 
@@ -807,6 +824,9 @@ class Browser
         page.dom.data_flow_sinks      = @javascript.data_flow_sinks
         page.dom.transitions          = @transitions.dup
         page.dom.skip_states          = skip_states.dup
+
+        assign_input_elements( page )
+        assign_ui_form_elements( page )
 
         # Go through auditable DOM forms and cookies and remove the DOM from
         # them if no events are associated with it.
@@ -1013,6 +1033,67 @@ class Browser
     end
 
     private
+
+    def assign_ui_form_elements( page )
+        ui_forms = []
+
+        return ui_forms if !Options.audit.element? :ui_form
+
+        supported_types = Set.new([:input, :button])
+
+        if !@javascript.supported? || !page.has_elements?( supported_types.to_a )
+            return page
+        end
+
+        each_element_with_events false do |locator, events|
+            next if !supported_types.include?( locator.tag_name )
+            next if locator.tag_name == :input && locator.attributes['type'] != 'button'
+
+            filter_events( locator.tag_name, events ).each do |event, _|
+                ui_forms << Element::UIForm.new(
+                    action: response.url,
+                    source: locator.to_s,
+                    method: event
+                )
+            end
+        end
+
+        page.ui_forms |= ui_forms
+        page
+    end
+
+    def assign_input_elements( page )
+        inputs = []
+
+        return inputs if !Options.audit.element? :input
+
+        supported_types = Set.new([:input, :textarea])
+
+        if !@javascript.supported? || !page.has_elements?( supported_types.to_a )
+            return page
+        end
+
+        each_element_with_events false do |locator, events|
+            next if !supported_types.include?( locator.tag_name )
+            next if locator.attributes['type'] && locator.attributes['type'] != 'text'
+
+            filter_events( locator.tag_name, events ).each do |event, _|
+                inputs << Element::Input.new(
+                    action: response.url,
+                    source: locator.to_s,
+                    method: event
+                )
+            end
+        end
+
+        page.inputs |= inputs
+        page
+    end
+
+    def filter_events( element, events )
+        supported = Set.new( Arachni::Browser::Javascript.events_for( element ) )
+        events.reject { |name, _| !supported.include? ('on' + name.to_s.gsub( /^on/, '' )).to_sym }
+    end
 
     def fill_in_form_inputs( form, inputs = nil )
         form.text_fields.each do |input|

@@ -54,7 +54,10 @@ class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
             description: %q{
 Injects URLs and checks the browser URL to determine whether the attack was successful.
 },
-            elements:    DOM_ELEMENTS_WITH_INPUTS - [Element::LinkTemplate::DOM],
+            elements:    DOM_ELEMENTS_WITH_INPUTS - [
+                Element::LinkTemplate::DOM,
+                Element::Input::DOM
+            ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.2',
 

@@ -29,7 +29,7 @@ class DOM < Base
 
     # Submits the form using the configured {#inputs}.
     def trigger
-        browser.fire_event element, :submit, inputs: inputs.dup
+        [ browser.fire_event( element, :submit, inputs: inputs.dup ) ]
     end
 
     def valid_input_name?( name )

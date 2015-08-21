@@ -7,6 +7,8 @@ get '/' do
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
         <a href="/link-template">Link template</a>
+        <a href="/input">Input</a>
+        <a href="/ui_form">UI Form</a>
     EOHTML
 end
 
@@ -135,5 +137,56 @@ get '/cookie/straight' do
                 pre_eval( getCookie('input') );
             </script>
         </body>
+    EOHTML
+end
+
+get '/input' do
+    <<-EOHTML
+        <a href="/input/straight">Form</a>
+    EOHTML
+end
+
+get '/input/straight' do
+    <<-EOHTML
+        <script>
+            function handleOnInput() {
+                pre_eval( document.getElementById('my-input').value );
+            }
+
+            function pre_eval( code ) {
+                eval( code );
+            }
+        </script>
+
+        <div id="container"></div>
+
+        <input oninput="handleOnInput()" id='my-input' value='default' />
+    EOHTML
+end
+
+get '/ui_form' do
+    <<-EOHTML
+        <a href="/ui_form/straight">Form</a>
+    EOHTML
+end
+
+get '/ui_form/straight' do
+    <<-EOHTML
+    <html>
+        <body>
+            <script>
+                function handleOnClick() {
+                    pre_eval( document.getElementById('my-input').value );
+                }
+
+                function pre_eval( code ) {
+                    eval( code );
+                }
+            </script>
+
+            <input id="my-input" type="text">
+            <button onclick="handleOnClick()" id="insert">Insert into DOM</button>
+        </body>
+    </html>
     EOHTML
 end

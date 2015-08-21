@@ -5,7 +5,7 @@ describe name_from_filename do
 
     def self.elements
         [ Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM,
-          Element::LinkTemplate::DOM]
+          Element::LinkTemplate::DOM, Element::Input::DOM, Element::UIForm::DOM ]
     end
 
     def issue_count_per_element
@@ -13,7 +13,9 @@ describe name_from_filename do
             Element::Form::DOM         => 2,
             Element::Link::DOM         => 2,
             Element::Cookie::DOM       => 2,
-            Element::LinkTemplate::DOM => 2
+            Element::LinkTemplate::DOM => 2,
+            Element::Input::DOM        => 2,
+            Element::UIForm::DOM       => 2
         }
     end
 
@@ -22,8 +24,18 @@ describe name_from_filename do
             expect(issue.page.dom.execution_flow_sinks).to be_any
             data_flow_sinks = issue.page.dom.data_flow_sinks
 
-            if [Element::Link::DOM, Element::LinkTemplate::DOM].include? issue.vector.class
+            if [
+                Element::Cookie::DOM,
+                Element::Link::DOM,
+                Element::LinkTemplate::DOM
+            ].include?( issue.vector.class )
+
                 expect(data_flow_sinks.size).to eq 2
+
+            elsif issue.vector.class == Element::Input::DOM
+
+                expect(data_flow_sinks.size).to eq 3
+
             else
                 expect(data_flow_sinks.size).to eq 1
             end
@@ -54,8 +66,26 @@ describe name_from_filename do
                     expect(trace.first.url).to eq issue.page.dom.url
 
                 when Element::Cookie::DOM
-                    expect(trace.size).to eq 1
+                    expect(trace.size).to eq 2
                     expect(trace.first.url).to eq issue.page.dom.url
+
+                when Element::Input::DOM
+                    transition = issue.page.dom.transitions.last
+
+                    expect(transition.element.tag_name).to eq :input
+                    expect(transition.event).to eq :input
+
+                when Element::UIForm::DOM
+                    transitions = [
+                        issue.page.dom.transitions.pop,
+                        issue.page.dom.transitions.pop
+                    ].reverse
+
+                    expect(transitions[0].element.tag_name).to eq :input
+                    expect(transitions[0].event).to eq :input
+
+                    expect(transitions[1].element.tag_name).to eq :button
+                    expect(transitions[1].event).to eq :click
             end
 
         end

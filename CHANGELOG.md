@@ -12,6 +12,10 @@
         - `.decode` -- Handle broken encodings.
     - `Form`
         - `.decode` -- Handle broken encodings.
+    - `UIForm` -- Audits `<input>` and `<button>` groups which don't belong to
+        a `<form>` parent. Also covers cases of `<form>` submissions that occur
+        via elements other than a submit button.
+    - `Input` -- Audits individual `<input>` elements which have associated DOM events.
 - `Browser`
     - `Javascript`
         - `TaintTracer`
@@ -21,16 +25,20 @@
     - Path etxractors
         - `script`
             -- Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
+    - Reporters
+        - `xml` -- Updated schema to include the new `Element::UIForm::DOM` and
+            `Element::Input::DOM` elements.
     - Plugins
         - `proxy` -- Fixed bug causing the plugin to hang after proxy server shutdown.
     - Checks
         - `Active`
+            - Removed
+                `xss_dom_inputs` -- No longer necessary, covered by new DOM
+                    element abstractions and `xss_dom`.
             - `unvalidated_redirect` -- Updated to use `Utilities.random_seed`
                 in the injected URL.
             - `unvalidated_redirect_dom` -- Updated to use `Utilities.random_seed`
                 in the injected URL.
-            - `xss_dom_inputs` -- Updated to include `input` buttons instead of
-                just `buttons`.
 
 ## 1.2.1 _(July 25, 2015)_
 

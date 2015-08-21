@@ -23,7 +23,9 @@ module WithDOM
     def dom
         return if skip_dom?
         @dom ||= self.class::DOM.new( parent: self )
-    rescue Inputtable::Error
+    rescue Inputtable::Error => e
+        print_debug_exception e
+        nil
     end
 
     def skip_dom=( bool )

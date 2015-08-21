@@ -37,7 +37,7 @@ class DOM < Base
 
     # Loads {#to_s}.
     def trigger
-        browser.goto to_s, take_snapshot: false, update_transitions: false
+        [ browser.goto( to_s, take_snapshot: false, update_transitions: false ) ]
     end
 
     # @param    [String]    name

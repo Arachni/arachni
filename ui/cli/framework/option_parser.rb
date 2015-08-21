@@ -208,6 +208,14 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.xmls = true
         end
 
+        on( '--audit-inputs', 'Audit DOM input elements.' ) do
+            options.audit.inputs = true
+        end
+
+        on( '--audit-ui-forms', 'Audit DOM UI forms.' ) do
+            options.audit.ui_forms = true
+        end
+
         on( '--audit-parameter-names',
             'Inject payloads into parameter names.'
         ) do

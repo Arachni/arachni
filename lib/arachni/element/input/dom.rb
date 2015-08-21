@@ -7,29 +7,34 @@
 =end
 
 module Arachni::Element
-class Cookie
+class Input
 
-# Provides access to DOM operations for {Cookie cookies}.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < Base
+    include Arachni::Element::Capabilities::WithNode
     include Arachni::Element::Capabilities::Auditable::DOM
 
     def initialize( options )
         super
 
-        self.inputs     = (options[:inputs] || self.parent.inputs).dup
+        self.method = options[:method] || self.parent.method
+
+        if options[:inputs]
+            @valid_input_name = options[:inputs].keys.first.to_s
+            self.inputs       = options[:inputs]
+        else
+            @valid_input_name = (locator.attributes['name'] || locator.attributes['id']).to_s
+            self.inputs       = {
+                @valid_input_name => locator.attributes['value']
+            }
+        end
+
         @default_inputs = self.inputs.dup.freeze
     end
 
-    # Submits the cookie using the configured {#inputs}.
+    # Submits the form using the configured {#inputs}.
     def trigger
-        [ browser.goto(
-            action,
-            take_snapshot: false,
-            cookies: self.inputs,
-            update_transitions: false
-        ) ]
+        [ browser.fire_event( element, @method, value: value ) ]
     end
 
     def name
@@ -40,24 +45,21 @@ class DOM < Base
         inputs.values.first
     end
 
-    def to_set_cookie
-        p = parent.dup
-        p.inputs = inputs
-        p.to_set_cookie
+    def valid_input_name?( name )
+        @valid_input_name == name.to_s
     end
 
     def type
         self.class.type
     end
     def self.type
-        :cookie_dom
+        :input_dom
     end
 
     def initialization_options
-        super.merge( inputs: inputs.dup )
+        super.merge( inputs: inputs.dup, method: @method )
     end
 
 end
-
 end
 end

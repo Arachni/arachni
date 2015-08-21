@@ -119,6 +119,12 @@ module Auditor
                         proc { audit.jsons? && page.jsons.find { |e| e.inputs.any? } },
                     Element::XML               =>
                         proc { audit.xmls? && page.xmls.find { |e| e.inputs.any? } },
+                    Element::Input             => false,
+                    Element::Input::DOM        =>
+                        proc { audit.inputs? && page.inputs.any? },
+                    Element::UIForm            => false,
+                    Element::UIForm::DOM       =>
+                        proc { audit.ui_forms? && page.ui_forms.any? },
                     Element::Body              => !page.body.empty?,
                     Element::GenericDOM        => page.has_script?,
                     Element::Path              => true,
@@ -189,7 +195,7 @@ module Auditor
     # Auditable DOM elements.
     DOM_ELEMENTS_WITH_INPUTS = [
         Element::Link::DOM, Element::Form::DOM, Element::Cookie::DOM,
-        Element::LinkTemplate::DOM
+        Element::LinkTemplate::DOM, Element::Input::DOM, Element::UIForm::DOM
     ]
 
     # Default audit options.
@@ -522,6 +528,12 @@ module Auditor
 
                 when Element::LinkTemplate::DOM.type
                     prepare_each_dom_element( page.link_templates, &block )
+
+                when Element::Input::DOM.type
+                    prepare_each_dom_element( page.inputs, &block )
+
+                when Element::UIForm::DOM.type
+                    prepare_each_dom_element( page.ui_forms, &block )
 
                 else
                     fail ArgumentError, "Unknown DOM element: #{elem}"

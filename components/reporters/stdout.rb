@@ -10,7 +10,6 @@
 # All UIs must have a default report.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.3.1
 class Arachni::Reporters::Stdout < Arachni::Reporter::Base
 
     def run
@@ -48,6 +47,8 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
         print_info '* Headers'  if report.options[:audit][:headers]
         print_info '* XMLs'     if report.options[:audit][:xmls]
         print_info '* JSONs'    if report.options[:audit][:jsons]
+        print_info '* Inputs'   if report.options[:audit][:inputs]
+        print_info '* UI forms' if report.options[:audit][:ui_forms]
         print_line
         print_status "Checks: #{report.options[:checks].join( ', ' )}"
 
@@ -225,7 +226,7 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
             name:        'Stdout',
             description: %q{Prints the results to standard output.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.1'
+            version:     '0.3.2'
         }
     end
 

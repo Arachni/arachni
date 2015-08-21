@@ -5,6 +5,7 @@ get '/' do
     <<-EOHTML
         <a href="/link">Link</a>
         <a href="/form">Form</a>
+        <a href="/ui_form">UI Form</a>
         <a href="/cookie">Cookie</a>
     EOHTML
 end
@@ -45,12 +46,6 @@ get '/link/straight' do
     EOHTML
 end
 
-get '/link-template' do
-    <<-EOHTML
-        <a href="/link-template/straight#|input|default">Link</a>
-    EOHTML
-end
-
 get '/form' do
     <<-EOHTML
         <a href="/form/straight">Form</a>
@@ -73,6 +68,27 @@ get '/form/straight' do
         <form action="javascript:handleSubmit()">
             <input id='my-input' value='default' />
         </form>
+    EOHTML
+end
+
+get '/ui_form' do
+    <<-EOHTML
+        <a href="/ui_form/straight">Form</a>
+    EOHTML
+end
+
+get '/ui_form/straight' do
+    <<-EOHTML
+        <script>
+            function handleSubmit() {
+                url = document.getElementById("my-input").value;
+                if( url.indexOf( 'http' ) != 0 ) url = 'http://' + url;
+                window.location = url;
+            }
+        </script>
+
+        <input id='my-input' value='default' />
+        <button onclick="handleSubmit()">Submit</button>
     EOHTML
 end
 

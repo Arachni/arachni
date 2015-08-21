@@ -103,13 +103,13 @@ describe Arachni::Element::Cookie::DOM do
             inputs = { 'param'  => 'The.Dude' }
             subject.update inputs
 
-            transition = nil
+            transitions = []
             called = false
             subject.with_browser do |browser|
                 subject.browser = browser
                 browser.load subject.page
 
-                transition = subject.trigger
+                transitions = subject.trigger
 
                 page = browser.to_page
 
@@ -124,7 +124,10 @@ describe Arachni::Element::Cookie::DOM do
             auditor.with_browser do |browser|
                 browser.load subject.page
 
-                transition.play browser
+                transitions.each do |transition|
+                    transition.play browser
+                end
+
                 expect(auditable_extract_parameters( browser.to_page )).to eq(inputs)
                 called = true
             end

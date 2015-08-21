@@ -46,7 +46,7 @@ class DOM < Base
 
     # Loads the page with the {#inputs} in the {#fragment}.
     def trigger
-        browser.goto to_s, take_snapshot: false, update_transitions: false
+        [ browser.goto( to_s, take_snapshot: false, update_transitions: false ) ]
     end
 
     def valid_input_name?( name )

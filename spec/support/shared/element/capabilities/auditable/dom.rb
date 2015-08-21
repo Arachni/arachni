@@ -133,7 +133,7 @@ shared_examples_for 'element_dom' do |options = {}|
 
     describe '#submit' do
         it 'submits the element' do
-            inputs = { 'param' => 'stuff' }
+            inputs = { subject.inputs.keys.first => subject.inputs.values.first + '1' }
             subject.inputs = inputs
 
             called = false
@@ -179,12 +179,12 @@ shared_examples_for 'element_dom' do |options = {}|
             expect(called).to be_truthy
         end
 
-        it 'adds the submission transition to the Page::DOM#transitions' do
-            transition = nil
+        it 'adds the submission transitions to the Page::DOM#transitions' do
+            transitions = []
             subject.with_browser do |browser|
                 subject.browser = browser
                 browser.load subject.page
-                transition = subject.trigger
+                transitions = subject.trigger
             end
             subject.auditor.browser_cluster.wait
 
@@ -194,8 +194,10 @@ shared_examples_for 'element_dom' do |options = {}|
             end
             subject.auditor.browser_cluster.wait
 
-            expect(subject.page.dom.transitions).not_to include transition
-            expect(submitted_page.dom.transitions).to include transition
+            transitions.each do |transition|
+                expect(subject.page.dom.transitions).not_to include transition
+                expect(submitted_page.dom.transitions).to include transition
+            end
         end
 
         context 'when the element could not be submitted' do

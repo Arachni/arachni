@@ -1,19 +1,33 @@
 require 'spec_helper'
 
-describe Arachni::Element::Form::DOM do
-    it_should_behave_like 'element_dom', inputs: { 'param' => '1' }
+describe Arachni::Element::UIForm::DOM do
+    inputs = { 'insert' => 'stuff' }
+
+    it_should_behave_like 'element_dom', inputs: inputs, single_input: true
+
+    def run
+        auditor.browser_cluster.wait
+    end
 
     def auditable_extract_parameters( page )
-        YAML.load( page.document.css( 'body' ).text )
+        { 'insert' => page.document.css('#container').text.strip }
+    end
+
+    def element
+        e = Arachni::Element::UIForm.new(
+            method: 'click',
+            action: @page.url,
+            source: '<button id="insert">Insert into DOM</button>'
+        ).dom
+        e.page    = @page
+        e.auditor = @auditor
+        e
     end
 
     before :each do
         @framework = Arachni::Framework.new
-        @page      = Arachni::Page.from_url( "#{url}/form" )
+        @page      = Arachni::Page.from_url( url )
         @auditor   = Auditor.new( @page, @framework )
-
-        @form = @page.forms.first.dom
-        @form.auditor = auditor
     end
 
     after :each do
@@ -21,37 +35,33 @@ describe Arachni::Element::Form::DOM do
         @framework.reset
     end
 
-    subject { @form }
-    let(:parent) { @form.parent }
-    let(:url) { web_server_url_for( :form_dom ) }
+    subject { element }
+    let(:parent) { subject.parent }
+    let(:url) { web_server_url_for( :ui_form_dom ) }
     let(:auditor) { @auditor }
-    let(:inputtable) do
-        f = Arachni::Page.from_url( "#{url}/form/inputtable" ).forms.first.dom
-        f.auditor = auditor
-        f
-    end
+    let(:inputtable) { element }
 
     describe '#type' do
-        it 'returns :form_dom' do
-            expect(subject.type).to eq(:form_dom)
+        it 'returns :ui_form_dom' do
+            expect(subject.type).to eq(:ui_form_dom)
         end
     end
 
     describe '.type' do
-        it 'returns :form_dom' do
-            expect(described_class.type).to eq(:form_dom)
+        it 'returns :ui_form_dom' do
+            expect(described_class.type).to eq(:ui_form_dom)
         end
     end
 
     describe '#parent' do
         it 'returns the parent element' do
-            expect(subject.parent).to be_kind_of Arachni::Element::Form
+            expect(subject.parent).to be_kind_of Arachni::Element::UIForm
         end
     end
 
     describe '#inputs' do
-        it 'uses the parent\'s inputs' do
-            expect(subject.inputs).to eq(parent.inputs)
+        it 'uses the node attribute data' do
+            expect(subject.inputs).to eq( 'insert'=> '' )
         end
     end
 
@@ -65,9 +75,9 @@ describe Arachni::Element::Form::DOM do
                 element = subject.locate
                 expect(element).to be_kind_of Watir::HTMLElement
 
-                expect(parent.class.from_document(
-                    parent.url, Nokogiri::HTML(element.html)
-                ).first).to eq(parent)
+                expect(Arachni::Browser::ElementLocator.
+                           from_html( element.opening_tag ).attributes
+                ).to eq(subject.locator.attributes)
 
                 called = true
             end
@@ -78,9 +88,10 @@ describe Arachni::Element::Form::DOM do
     end
 
     describe '#trigger' do
+        let(:new_inputs) { { subject.inputs.keys.first  => 'The.Dude' } }
+
         it 'triggers the event required to submit the element' do
-            inputs = { 'param'  => 'The.Dude' }
-            subject.update inputs
+            subject.update new_inputs
 
             called = false
             subject.with_browser do |browser|
@@ -100,8 +111,7 @@ describe Arachni::Element::Form::DOM do
         end
 
         it 'returns a playable transition' do
-            inputs = { 'param'  => 'The.Dude' }
-            subject.update inputs
+            subject.update new_inputs
 
             transitions = []
             called = false
@@ -123,13 +133,13 @@ describe Arachni::Element::Form::DOM do
             called = false
             auditor.with_browser do |browser|
                 browser.load subject.page
-                expect(auditable_extract_parameters( browser.to_page )).to be_falsey
+                expect(auditable_extract_parameters( browser.to_page ).values.first).to eq ''
 
                 transitions.each do |transition|
                     transition.play browser
                 end
 
-                expect(auditable_extract_parameters( browser.to_page )).to eq(inputs)
+                expect(auditable_extract_parameters( browser.to_page )).to eq(new_inputs)
                 called = true
             end
             auditor.browser_cluster.wait

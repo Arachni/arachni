@@ -243,6 +243,11 @@ Arachni is able to extract and audit the following elements and their inputs:
 
  - Forms
     - Along with ones that require interaction with a real browser due to DOM events.
+ - User-interface forms
+    - Input and button groups which don't belong to an HTML form element but
+        are instead associated via JS code.
+ - Inputs
+    - Orphan input elements with associated DOM events.
  - Links
     - Along with ones that have client-side parameters in their fragment, i.e.:
         `http://example.com/#/?param=val&param2=val2`
@@ -253,7 +258,7 @@ Arachni is able to extract and audit the following elements and their inputs:
             `http://example.com/#/param/val/param2/val2`
  - Cookies
  - Headers
- - Generic client-side elements like `input`s which have associated DOM events.
+ - Generic client-side elements which have associated DOM events.
  - AJAX-request parameters.
  - JSON request data.
  - XML request data.
@@ -309,6 +314,11 @@ Arachni is able to extract and audit the following elements and their inputs:
     - Forms
         - Can automatically refresh nonce tokens.
         - Can submit them via the integrated browser environment.
+     - User-interface forms
+        - Input and button groups which don't belong to an HTML form element but
+            are instead associated via JS code.
+    - Inputs
+        - Orphan input elements with associated DOM events.
     - Links
         - Can load them via the integrated browser environment.
     - LinkTemplates
@@ -316,7 +326,7 @@ Arachni is able to extract and audit the following elements and their inputs:
     - Cookies
         - Can load them via the integrated browser environment.
     - Headers
-    - Generic client-side DOM elements like `input`s.
+    - Generic client-side DOM elements.
     - JSON request data.
     - XML request data.
  - Can ignore binary/non-text pages.

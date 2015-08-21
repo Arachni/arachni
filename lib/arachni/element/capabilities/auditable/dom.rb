@@ -99,9 +99,9 @@ module DOM
 
             # If we've wondered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
-            if (transition = trigger)
+            if (transitions = self.trigger)
                 page = browser.to_page
-                page.dom.transitions << transition
+                page.dom.transitions += transitions
                 block.call page.tap { |p| p.request.performer = self }
             end
 
@@ -121,6 +121,8 @@ module DOM
     end
 
     # Triggers the event on the subject {#element}.
+    #
+    # @return   [Array<Page::DOM::Transition>]
     #
     # @abstract
     def trigger
