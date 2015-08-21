@@ -24,12 +24,14 @@
 - `Components`
     - Path etxractors
         - `script`
-            -- Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
+            - Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
     - Reporters
         - `xml` -- Updated schema to include the new `Element::UIForm::DOM` and
             `Element::Input::DOM` elements.
     - Plugins
         - `proxy` -- Fixed bug causing the plugin to hang after proxy server shutdown.
+        - `login_script` -- Updated to wait for the page to settle when using
+            a JS login script.
     - Checks
         - `Active`
             - Removed

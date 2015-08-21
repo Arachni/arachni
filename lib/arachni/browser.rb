@@ -354,17 +354,7 @@ class Browser
             watir.goto url
             print_debug_level_2 'Done'
 
-            print_debug_level_2 'Waiting for custom JS...'
-            @javascript.wait_till_ready
-            print_debug_level_2 'Done'
-
-            print_debug_level_2 "Waiting for #{@proxy.active_connections} connections to close.."
-            wait_for_pending_requests
-            print_debug_level_2 'Done'
-
-            print_debug_level_2 'Waiting for timers...'
-            wait_for_timers
-            print_debug_level_2 'Done'
+            wait_till_ready
 
             url = watir.url
             Options.browser_cluster.css_to_wait_for( url ).each do |css|
@@ -396,6 +386,20 @@ class Browser
         capture_snapshot if take_snapshot
 
         transition
+    end
+
+    def wait_till_ready
+        print_debug_level_2 'Waiting for custom JS...'
+        @javascript.wait_till_ready
+        print_debug_level_2 'Done'
+
+        print_debug_level_2 "Waiting for #{@proxy.active_connections} connections to close.."
+        wait_for_pending_requests
+        print_debug_level_2 'Done'
+
+        print_debug_level_2 'Waiting for timers...'
+        wait_for_timers
+        print_debug_level_2 'Done'
     end
 
     def shutdown
