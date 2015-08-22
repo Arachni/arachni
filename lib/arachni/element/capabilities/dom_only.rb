@@ -15,15 +15,19 @@ module Element::Capabilities
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module DOMOnly
+    include Arachni::Element::Capabilities::Inputtable
     include Arachni::Element::Capabilities::WithNode
     include Arachni::Element::Capabilities::WithDOM
 
-    attr_reader :method
+    attr_accessor :method
 
     def initialize( options )
         super options
 
-        @method = options[:method]
+        @method   = options[:method]
+
+        self.inputs = options[:inputs]
+        @default_inputs = self.inputs.dup.freeze
     end
 
     def mutation?
@@ -40,6 +44,12 @@ module DOMOnly
 
     def id
         dom.id
+    end
+
+    def dup
+        super.tap do |o|
+            o.method = self.method
+        end
     end
 
     def type

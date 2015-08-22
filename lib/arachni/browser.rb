@@ -829,8 +829,13 @@ class Browser
         page.dom.transitions          = @transitions.dup
         page.dom.skip_states          = skip_states.dup
 
-        assign_input_elements( page )
-        assign_ui_form_elements( page )
+        if Options.audit.element? :inputs
+            page.inputs = Element::Input.from_browser( self, page )
+        end
+
+        if Options.audit.element? :ui_form
+            page.ui_forms = Element::UIForm.from_browser( self, page )
+        end
 
         # Go through auditable DOM forms and cookies and remove the DOM from
         # them if no events are associated with it.
@@ -1036,68 +1041,12 @@ class Browser
         s << '>'
     end
 
-    private
-
-    def assign_ui_form_elements( page )
-        ui_forms = []
-
-        return ui_forms if !Options.audit.element? :ui_form
-
-        supported_types = Set.new([:input, :button])
-
-        if !@javascript.supported? || !page.has_elements?( supported_types.to_a )
-            return page
-        end
-
-        each_element_with_events false do |locator, events|
-            next if !supported_types.include?( locator.tag_name )
-            next if locator.tag_name == :input && locator.attributes['type'] != 'button'
-
-            filter_events( locator.tag_name, events ).each do |event, _|
-                ui_forms << Element::UIForm.new(
-                    action: response.url,
-                    source: locator.to_s,
-                    method: event
-                )
-            end
-        end
-
-        page.ui_forms |= ui_forms
-        page
-    end
-
-    def assign_input_elements( page )
-        inputs = []
-
-        return inputs if !Options.audit.element? :input
-
-        supported_types = Set.new([:input, :textarea])
-
-        if !@javascript.supported? || !page.has_elements?( supported_types.to_a )
-            return page
-        end
-
-        each_element_with_events false do |locator, events|
-            next if !supported_types.include?( locator.tag_name )
-            next if locator.attributes['type'] && locator.attributes['type'] != 'text'
-
-            filter_events( locator.tag_name, events ).each do |event, _|
-                inputs << Element::Input.new(
-                    action: response.url,
-                    source: locator.to_s,
-                    method: event
-                )
-            end
-        end
-
-        page.inputs |= inputs
-        page
-    end
-
     def filter_events( element, events )
         supported = Set.new( Arachni::Browser::Javascript.events_for( element ) )
         events.reject { |name, _| !supported.include? ('on' + name.to_s.gsub( /^on/, '' )).to_sym }
     end
+
+    private
 
     def fill_in_form_inputs( form, inputs = nil )
         form.text_fields.each do |input|

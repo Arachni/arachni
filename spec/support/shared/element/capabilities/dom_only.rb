@@ -1,5 +1,6 @@
 shared_examples_for 'dom_only' do |source|
     it_should_behave_like 'element'
+    it_should_behave_like 'inputtable'
     it_should_behave_like 'with_node', source
     it_should_behave_like 'with_dom', source
 

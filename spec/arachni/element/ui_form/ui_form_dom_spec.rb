@@ -1,23 +1,29 @@
 require 'spec_helper'
 
 describe Arachni::Element::UIForm::DOM do
-    inputs = { 'insert' => 'stuff' }
+    inputs = { 'my-input' => 'stuff' }
 
-    it_should_behave_like 'element_dom', inputs: inputs, single_input: true
+    it_should_behave_like 'element_dom', inputs: inputs
 
     def run
         auditor.browser_cluster.wait
     end
 
     def auditable_extract_parameters( page )
-        { 'insert' => page.document.css('#container').text.strip }
+        {
+            'my-input' => page.document.css('#container').text.strip
+        }
     end
 
-    def element
+    def element( inputs )
         e = Arachni::Element::UIForm.new(
-            method: 'click',
-            action: @page.url,
-            source: '<button id="insert">Insert into DOM</button>'
+            method:       'click',
+            action:       @page.url,
+            source:       '<button id="insert">Insert into DOM</button>',
+            inputs:       inputs,
+            opening_tags: {
+                'my-input' => "<input id=\"my-input\" type=\"text\" value=\"stuff\">"
+            }
         ).dom
         e.page    = @page
         e.auditor = @auditor
@@ -35,11 +41,11 @@ describe Arachni::Element::UIForm::DOM do
         @framework.reset
     end
 
-    subject { element }
+    subject { element( inputs ) }
     let(:parent) { subject.parent }
     let(:url) { web_server_url_for( :ui_form_dom ) }
     let(:auditor) { @auditor }
-    let(:inputtable) { element }
+    let(:inputtable) { element( inputs ) }
 
     describe '#type' do
         it 'returns :ui_form_dom' do
@@ -60,8 +66,8 @@ describe Arachni::Element::UIForm::DOM do
     end
 
     describe '#inputs' do
-        it 'uses the node attribute data' do
-            expect(subject.inputs).to eq( 'insert'=> '' )
+        it 'returns the parent inputs' do
+            expect(subject.inputs).to eq subject.parent.inputs
         end
     end
 

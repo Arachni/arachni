@@ -77,27 +77,12 @@ shared_examples_for 'inputtable' do |options = {}|
             k, v = orig.inputs.keys.first, 'value'
 
             subject.update( k => v )
-            subject.affected_input_name = k
-            subject.affected_input_value = v
-            subject.seed = v
 
             expect(subject.inputs).not_to eq(orig.inputs)
-            expect(subject.affected_input_name).not_to eq(orig.affected_input_name)
-            expect(subject.affected_input_value).not_to eq(orig.affected_input_value)
-            expect(subject.seed).not_to eq(orig.seed)
 
             subject.reset
 
             expect(subject.inputs).to eq(orig.inputs)
-
-            expect(subject.affected_input_name).to eq(orig.affected_input_name)
-            expect(subject.affected_input_name).to be_nil
-
-            expect(subject.affected_input_value).to eq(orig.affected_input_value)
-            expect(subject.affected_input_value).to be_nil
-
-            expect(subject.seed).to eq(orig.seed)
-            expect(subject.seed).to be_nil
         end
     end
 

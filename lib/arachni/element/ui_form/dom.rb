@@ -19,17 +19,14 @@ class DOM < Base
     def initialize( options )
         super
 
+        @opening_tags = (options[:opening_tags] || parent.opening_tags).dup
+
         self.method = options[:method] || self.parent.method
 
-        if options[:inputs]
-            @valid_input_name = options[:inputs].keys.first.to_s
-            self.inputs       = options[:inputs]
-        else
-            @valid_input_name = (locator.attributes['name'] || locator.attributes['id']).to_s
-            self.inputs       = {
-                @valid_input_name => locator.attributes['value']
-            }
-        end
+        inputs = (options[:inputs] || self.parent.inputs ).dup
+
+        @valid_input_names = Set.new(inputs.keys)
+        self.inputs        = inputs
 
         @default_inputs = self.inputs.dup.freeze
     end
@@ -38,22 +35,17 @@ class DOM < Base
     def trigger
         transitions = fill_in_inputs
 
-        main_transition = browser.fire_event( element, @method, value: value )
-        return if !main_transition
+        print_debug "Submitting: #{self.source}"
+        submission_transition = browser.fire_event( element, @method )
+        print_debug "Submitted: #{self.source}"
 
-        transitions + [main_transition]
-    end
+        return if !submission_transition
 
-    def name
-        inputs.keys.first
-    end
-
-    def value
-        inputs.values.first
+        transitions + [submission_transition]
     end
 
     def valid_input_name?( name )
-        @valid_input_name == name.to_s
+        @valid_input_names.include? name.to_s
     end
 
     def type
@@ -64,7 +56,15 @@ class DOM < Base
     end
 
     def initialization_options
-        super.merge( inputs: inputs.dup, method: @method )
+        super.merge(
+            inputs:       inputs.dup,
+            method:       @method,
+            opening_tags: @opening_tags.dup
+        )
+    end
+
+    def marshal_dump
+        super.tap { |h| h.delete :@valid_input_names }
     end
 
     private
@@ -72,26 +72,28 @@ class DOM < Base
     def fill_in_inputs
         transitions = []
 
-        INPUTS.each do |tag|
-            next if !page.has_elements?( tag )
+        @inputs.each do |name, value|
+            locator     = locator_for_input( name )
+            opening_tag = @opening_tags[name]
 
-            browser.watir.send("#{tag}s").each do |locator|
-                attrs = Arachni::Browser::ElementLocator.
-                    from_html( locator.opening_tag ).attributes
+            print_debug "Filling in: #{name} => #{value} [#{opening_tag}]"
 
-                next if attrs['type'] && attrs['type'] != 'text'
+            t = browser.fire_event( locator, :input, value: value )
 
-                print_status "Filling in '#{locator.opening_tag}'"
-
-                transitions << fill_in_input( browser, locator )
+            if !t
+                print_debug "Could not fill in: #{name} => #{value} [#{opening_tag}]"
+                next
             end
+            print_debug "Filled in: #{name} => #{value} [#{opening_tag}]"
+
+            transitions << t
         end
 
         transitions
     end
 
-    def fill_in_input( browser, locator )
-        browser.fire_event( locator, :input, value: value )
+    def locator_for_input( name )
+        Arachni::Browser::ElementLocator.from_html @opening_tags[name]
     end
 
 end
