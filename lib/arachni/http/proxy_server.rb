@@ -20,6 +20,8 @@ module HTTP
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ProxyServer < WEBrick::HTTPProxyServer
+    include Arachni::UI::Output
+    personalize_output
 
     CACHE = {
         format_field_name: Support::Cache::LeastRecentlyPushed.new( 100 )
@@ -59,9 +61,9 @@ class ProxyServer < WEBrick::HTTPProxyServer
             ssl_certificate_name: [ [ 'CN', 'Arachni' ] ]
         }.merge( options )
 
-        @logger = WEBrick::Log.new( Arachni.null_device, 7 )
+        @logger = WEBrick::Log.new( $stderr, 5 )
         # Will force the proxy to stfu.
-        @logger.close
+        @logger.close if !Arachni::UI::Output.debug?( 2 )
 
         @interceptor_ports = {}
         @interceptors      = {}
@@ -86,8 +88,12 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # Starts the server without blocking, it'll only block until the server is
     # up and running and ready to accept connections.
     def start_async
+        print_debug_level_2 'Starting'
+
         Thread.new { start }
         sleep 0.1 while !running?
+
+        print_debug_level_2 'Started'
         nil
     end
 
@@ -115,11 +121,17 @@ class ProxyServer < WEBrick::HTTPProxyServer
     end
 
     def shutdown
+        print_debug_level_2 'Shutting down..'
+
+        print_debug_level_2 "-- Interceptors: #{@interceptors.size}"
         @interceptors.each do |_, interceptor|
+            print_debug_level_2 "---- Interceptor: #{interceptor}"
             interceptor.shutdown
         end
 
         super
+
+        print_debug_level_2 'Shutdown.'
     end
 
     private
@@ -185,13 +197,20 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # @see #service
     # @see Webrick::HTTPProxyServer#service
     def do_CONNECT( req, res )
+        print_debug_level_2 "[#{__method__}] Start: #{req.unparsed_uri}"
+
         host = req.unparsed_uri.split(':').first
 
         req.instance_variable_set( :@unparsed_uri, "127.0.0.1:#{interceptor_port( host )}" )
 
+        print_debug_level_2 "[#{__method__}] Intercepting via: #{req.unparsed_uri}"
         start_ssl_interceptor( host )
 
-        super( req, res )
+        r = super( req, res )
+
+        print_debug_level_2 "[#{__method__}] Done: #{req.unparsed_uri}"
+
+        r
     end
 
     # @param    [Hash]  options
@@ -222,7 +241,24 @@ class ProxyServer < WEBrick::HTTPProxyServer
     #
     # The interceptor will listen on {#interceptor_port}.
     def start_ssl_interceptor( host )
-        return @interceptors[host] if @interceptors[host]
+        if @interceptors[host]
+            print_debug_level_2 "[#{__method__}] [#{host}] Already started."
+            return @interceptors[host]
+        end
+
+        if @interceptors[host] == :pending
+            print_debug_level_2 "[#{__method__}] [#{host}] Another is already starting, waiting."
+
+            sleep 0.1 while @interceptors[host] == :pending
+
+            print_debug_level_2 "[#{__method__}] [#{host}] Started."
+
+            return @interceptors[host]
+        end
+
+        print_debug_level_2 "[#{__method__}] [#{host}] No interceptor available, starting new one."
+
+        @interceptors[host] = :pending
 
         ca     = OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CA_CERTIFICATE ) )
         ca_key = OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_CA_KEY ) )
@@ -264,7 +300,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
         # The interceptor is only used for SSL decryption/encryption, the actual
         # proxy functionality is forwarded to the plain proxy server.
-        @interceptors[host] = interceptor = self.class.new(
+        interceptor = self.class.new(
             address:        '127.0.0.1',
             port:            interceptor_port( host ),
             ssl_certificate: cert,
@@ -277,6 +313,9 @@ class ProxyServer < WEBrick::HTTPProxyServer
         end
 
         interceptor.start_async
+
+        @interceptors[host] = interceptor
+        print_debug_level_2 "[#{__method__}] [#{host}] Started."
     end
 
     # @return    [Integer]
@@ -288,6 +327,8 @@ class ProxyServer < WEBrick::HTTPProxyServer
     # Communicates with the endpoint webapp and forwards its responses to the
     # proxy which then sends it to the browser.
     def perform_proxy_request( req, res )
+        print_debug_level_2 "[#{__method__}] Starting:  #{req.request_line.strip}"
+
         request  = yield( req.request_uri.to_s, setup_proxy_header( req, res ) )
         response = nil
 
@@ -316,6 +357,8 @@ class ProxyServer < WEBrick::HTTPProxyServer
         if @options[:response_handler]
             @options[:response_handler].call( request, response )
         end
+
+        print_debug_level_2 "[#{__method__}] Completed: #{req.request_line.strip}"
 
         # Disable persistent connections since they're not supported by the
         # server.
