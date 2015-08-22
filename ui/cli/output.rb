@@ -203,7 +203,8 @@ module Output
     # @see #debug?
     def print_debug( str = '', level = 1 )
         return if !debug?( level )
-        print_color( '[!]', 36, str, $stderr )
+
+        print_color( "[#{'!' * level}]", 36, str, $stderr )
     end
 
     def print_debug_level_1( str = '' )
