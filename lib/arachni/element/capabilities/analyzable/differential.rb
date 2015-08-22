@@ -196,13 +196,15 @@ module Differential
                     @data_gathering[:controls][altered_hash] = true
                 end
 
+                body = res.body.gsub( elem.seed, '' )
+
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
                 signatures[:controls][altered_hash] =
                     signatures[:controls][altered_hash] ?
-                        signatures[:controls][altered_hash].refine!(res.body) :
-                        Support::Signature.new(res.body)
+                        signatures[:controls][altered_hash].refine!(body) :
+                        Support::Signature.new(body)
 
                 increase_received_responses( opts, signatures )
             end
@@ -264,13 +266,15 @@ module Differential
 
                     signatures[pair_hash][altered_hash][:injected_string] ||= expr
 
+                    body = res.body.gsub( elem.seed, '' )
+
                     # Create a signature from the response body and refine it with
                     # subsequent ones to remove noise (like context-irrelevant dynamic
                     # content such as banners etc.).
                     signatures[pair_hash][altered_hash][bool] =
                         signatures[pair_hash][altered_hash][bool] ?
-                            signatures[pair_hash][altered_hash][bool].refine!(res.body) :
-                            Support::Signature.new(res.body)
+                            signatures[pair_hash][altered_hash][bool].refine!(body) :
+                            Support::Signature.new(body)
 
                     signature_sieve( altered_hash, signatures, pair_hash )
 
@@ -326,13 +330,15 @@ module Differential
                         " action '#{elem.action}'."
                 end
 
+                body = res.body.gsub( elem.seed, '' )
+
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
                 signatures[:controls_verification][altered_hash] =
                     signatures[:controls_verification][altered_hash] ?
-                        signatures[:controls_verification][altered_hash].refine!(res.body) :
-                        Support::Signature.new(res.body)
+                        signatures[:controls_verification][altered_hash].refine!(body) :
+                        Support::Signature.new(body)
 
                 received_responses += 1
                 next if received_responses != @data_gathering[:mutations_size]

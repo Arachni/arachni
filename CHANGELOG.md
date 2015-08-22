@@ -16,6 +16,10 @@
         a `<form>` parent. Also covers cases of `<form>` submissions that occur
         via elements other than a submit button.
     - `Input` -- Audits individual `<input>` elements which have associated DOM events.
+    - `Capabilities`
+        - `Analyzable`
+            - `Differential` -- Updated to remove the injected seed from the response
+                bodies, echoed payloads can compromise the analysis.
 - `Browser`
     - `Javascript`
         - `TaintTracer`
