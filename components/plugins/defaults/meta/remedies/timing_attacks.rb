@@ -10,8 +10,6 @@
 # pages returned unusually high response times to begin with.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.3
 class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
 
     is_distributable
@@ -61,16 +59,14 @@ class Arachni::Plugins::TimingAttacks < Arachni::Plugin::Base
         @times.each_pair { |url, time| avg[url] = time / @counter[url] }
 
         Data.issues.each do |issue|
-            issue.variations.each do |variation|
-                response_time = avg[uri_parse( variation.vector.action ).up_to_path.persistent_hash]
-                next if !issue.tags.includes_tags?( TAG ) || !response_time ||
-                    response_time < TIME_THRESHOLD
+            response_time = avg[uri_parse( issue.vector.action ).up_to_path.persistent_hash]
+            next if !issue.tags.includes_tags?( TAG ) || !response_time ||
+                response_time < TIME_THRESHOLD
 
-                variation.add_remark :meta_analysis, REMARK
+            issue.add_remark :meta_analysis, REMARK
 
-                # Requires manual verification.
-                variation.trusted = false
-            end
+            # Requires manual verification.
+            issue.trusted = false
         end
     end
 
@@ -90,7 +86,7 @@ Pages with high response times usually include heavy-duty processing which makes
 them prime targets for Denial-of-Service attacks.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3',
+            version:     '0.3.1',
             tags:        %w(anomaly timing attacks meta)
         }
     end

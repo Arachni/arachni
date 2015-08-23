@@ -103,8 +103,6 @@ describe 'WAVSEP SQL Injection' do
             # indicate the possibility of a false positive, make sure we've only
             # got trusted issues.
             expect(issue).to be_trusted
-
-            issue.variations.each { |v| expect(v).to be_trusted }
         end
     end
 end

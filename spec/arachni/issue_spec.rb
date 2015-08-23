@@ -16,13 +16,10 @@ describe Arachni::Issue do
     let( :active_issue ) { Factory[:active_issue] }
     let( :trusted_issue ) { Factory[:trusted_issue] }
     let( :untrusted_issue ) { Factory[:untrusted_issue] }
-    let( :issue_with_variations ) { Factory[:issue_with_variations] }
 
     it "supports #{Arachni::RPC::Serializer}" do
-        duped = Arachni::RPC::Serializer.deep_clone( issue_with_variations )
-        expect(issue_with_variations).to eq(duped)
-
-        expect(duped.variations).to eq(issue_with_variations.variations)
+        duped = Arachni::RPC::Serializer.deep_clone( issue )
+        expect(issue).to eq(duped)
     end
 
     it 'recodes string data to UTF8' do
@@ -40,7 +37,7 @@ describe Arachni::Issue do
                 f.checks.load :taint
 
                 f.run
-                issue = f.report.issues.first.variations.first
+                issue = f.report.issues.first
             end
 
             expect(issue.recheck).to eq(issue)
@@ -48,7 +45,6 @@ describe Arachni::Issue do
     end
 
     describe '#to_rpc_data' do
-        let(:issue) { issue_with_variations }
         let(:data) { issue.to_rpc_data }
 
         %w(name description platform_name platform_type references cwe
@@ -59,13 +55,9 @@ describe Arachni::Issue do
             end
         end
 
-        it "includes 'variations'" do
+        it "includes 'check'" do
             check = issue.check.dup
             expect(data['check']).to eq(check.merge(elements: check[:elements].map(&:to_s)))
-        end
-
-        it "includes 'variations'" do
-            expect(data['variations']).to eq(issue.variations.map(&:to_rpc_data))
         end
 
         it "includes 'vector'" do
@@ -75,32 +67,17 @@ describe Arachni::Issue do
         it "includes 'severity'" do
             expect(data['severity']).to eq(issue.severity.to_s)
         end
-
-        it "includes 'variation'" do
-            expect(data['variation']).to eq(issue.variation?)
-        end
     end
 
     describe '.from_rpc_data' do
-        let(:issue) { issue_with_variations }
         let(:restored_issue) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( issue ) }
 
         %w(name description vector platform_name platform_type references cwe
-            remedy_guidance remedy_code tags check trusted variations unique_id
+            remedy_guidance remedy_code tags check trusted unique_id
             digest digest severity).each do |attribute|
             it "restores '#{attribute}'" do
                 expect(restored_issue.send( attribute )).to eq(issue.send( attribute ))
-            end
-        end
-
-        it "restores 'variation'" do
-            expect(restored_issue.variation?).to eq(issue.variation?)
-        end
-
-        it 'restores variation parent' do
-            restored_issue.variations.each do |v|
-                expect(v.parent).to eq(restored_issue)
             end
         end
     end
@@ -145,11 +122,6 @@ describe Arachni::Issue do
         context 'when the issue was logged passively' do
             it 'returns false' do
                 expect(passive_issue.active?).to be_falsey
-            end
-        end
-        context 'when the issue has active variations' do
-            it 'returns true' do
-                expect(issue_with_variations.active?).to be_truthy
             end
         end
     end
@@ -391,7 +363,9 @@ describe Arachni::Issue do
             expect(issue_h).to eq({
                 name:            "Check name \u2713",
                 description:     'Issue description',
-                vector:          issue.vector.to_h,
+                vector:          issue.vector.to_h.merge(
+                                     affected_input_name: issue.affected_input_name
+                                 ),
                 referring_page:  {
                     body: issue.referring_page.body,
                     dom:  referring_page_dom_h
@@ -423,127 +397,11 @@ describe Arachni::Issue do
                     shortname:   'test'
                 },
                 trusted:         true,
-                digest:          3311937213,
+                digest:          issue.digest,
                 request:         issue.request.to_h,
                 cwe:             1,
-                variations:      [],
                 cwe_url:         'http://cwe.mitre.org/data/definitions/1.html'
             })
-        end
-
-        context 'when the issue has variations' do
-            it 'includes those variations' do
-                page = Factory[:page].dup
-                page.body = "#{page.body}stuff"
-
-                issue_with_variations.variations.each { |v| v.referring_page = page }
-
-                issue_h    = issue_with_variations.to_h
-                variations = issue_h.delete( :variations )
-
-                expect(issue_h).to eq({
-                    name:            "Check name \u2713",
-                    description:     'Issue description',
-                    platform_name:   :unix,
-                    platform_type:   :os,
-                    references:      { 'Title' => 'http://some/url' },
-                    severity:        :high,
-                    remedy_guidance: 'How to fix the issue.',
-                    remedy_code:     'Sample code on how to fix the issue',
-                    tags:            %w(these are a few tags),
-                    check:           {
-                        name:        'Test check',
-                        description: 'Test description',
-                        author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-                        version:     '0.1',
-                        targets:     {
-                            'Generic' => 'all'
-                        },
-                        elements:    [:link, :form_dom],
-                        shortname:   'test'
-                    },
-                    digest:          58999149,
-                    cwe:             1,
-                    variation:       false,
-                    trusted:         true,
-                    vector:          {
-                        method: :get,
-                        type:   :form,
-                        class:   'Arachni::Element::Form',
-                        url:    'http://test.com/',
-                        action: 'http://test.com/',
-                        inputs:  { 'stuff' => '1' },
-                        affected_input_name:  'stuff',
-                        source: nil
-                    },
-                    cwe_url:         'http://cwe.mitre.org/data/definitions/1.html'
-                })
-
-                variations.each_with_index do |variation, i|
-                    dom_h = issue.page.dom.to_h
-                    dom_h.delete(:skip_states)
-                    dom_h[:transitions] = dom_h[:transitions].map do |t|
-                        h = t.to_hash
-                        h.delete(:time)
-                        h
-                    end
-
-                    referring_page_dom_h = variation[:referring_page][:dom]
-                    referring_page_dom_h.delete(:skip_states)
-                    referring_page_dom_h[:transitions] =
-                        referring_page_dom_h[:transitions].map do |t|
-                            h = t.to_hash
-                            h.delete(:time)
-                            h
-                        end
-
-
-                    variation[:page][:dom][:transitions] =
-                        variation[:page][:dom][:transitions].map do |h|
-                            h.delete(:time)
-                            h
-                        end
-                    variation[:page][:dom][:data_flow_sinks] =
-                        variation[:page][:dom][:data_flow_sinks].map(&:to_h)
-                    variation[:page][:dom][:execution_flow_sinks] =
-                        variation[:page][:dom][:execution_flow_sinks].map(&:to_h)
-
-                    variation[:referring_page][:dom][:transitions] =
-                        variation[:page][:dom][:transitions].map do |h|
-                            h.delete(:time)
-                            h
-                        end
-                    variation[:referring_page][:dom][:data_flow_sinks] =
-                        variation[:referring_page][:dom][:data_flow_sinks].map(&:to_h)
-                    variation[:referring_page][:dom][:execution_flow_sinks] =
-                        variation[:referring_page][:dom][:execution_flow_sinks].map(&:to_h)
-
-                    expect(variation).to eq({
-                        vector:    {
-                            method:               :get,
-                            inputs:               { 'stuff' => i.to_s },
-                            affected_input_value: i.to_s,
-                            seed:                 i.to_s,
-                            class:                Arachni::Element::Form.to_s,
-                        },
-                        referring_page:  {
-                            body: page.body,
-                            dom:  referring_page_dom_h
-                        },
-                        page:            {
-                            body: issue.page.body,
-                            dom:  dom_h
-                        },
-                        response:  issue.response.to_h,
-                        remarks:   { the_dude: %w(Hey!) },
-                        signature: 'some regexp',
-                        proof:     "string matched by '/some regexp/'",
-                        trusted:   true,
-                        request:   issue.request.to_h,
-                        variation: true
-                    })
-                end
-            end
         end
     end
 
@@ -555,7 +413,7 @@ describe Arachni::Issue do
             )
 
             i = passive_issue
-            expect(i.unique_id).to eq("#{i.name}:#{i.vector.url}")
+            expect(i.unique_id).to eq("#{i.name}:#{i.proof}:#{i.vector.url}")
         end
     end
 
@@ -594,165 +452,6 @@ describe Arachni::Issue do
                         i.vector.method = :post
                         expect(issue.eql?( i )).to be_truthy
                     end
-                end
-            end
-        end
-    end
-
-    describe '#with_variations' do
-        it 'returns a copy of the issue with variation data removed' do
-            variation_data = [ :response, :proof, :signature, :remarks ]
-
-            variation_data.each do |k|
-                expect(issue.send(k)).to be_truthy
-            end
-
-            root = issue.with_variations
-            variation_data.each do |k|
-                expect(root.send(k)).to be_nil
-            end
-            expect(root.variations).to eq([])
-        end
-
-        it 'removes specific issue data from the vector' do
-            vector = active_issue.vector
-            expect(vector.affected_input_name).to be_truthy
-            expect(vector.affected_input_value).to be_truthy
-            expect(vector.seed).to be_truthy
-
-            vector = active_issue.with_variations.vector
-            expect(vector.affected_input_name).to be_nil
-            expect(vector.affected_input_value).to be_nil
-            expect(vector.seed).to be_nil
-        end
-    end
-
-    describe '#as_variation' do
-        it 'returns a copy of the issue with generic data removed' do
-            variation_data = [
-                :name, :description, :platform_name, :platform_type, :references,
-                :cwe, :severity, :remedy_guidance, :remedy_code, :tags, :check,
-                :cwe_url
-            ]
-
-            variation_data.each do |k|
-                expect(issue.send(k)).to be_truthy
-            end
-
-            root = issue.as_variation
-            variation_data.each do |k|
-                expect(root.send(k)).to be_nil
-            end
-            expect(root.variations).to be_nil
-        end
-
-        it 'has a #parent' do
-            expect(issue.as_variation.parent).to eq(issue)
-        end
-    end
-
-    describe '#to_solo!' do
-        it 'converts a variation to a solo issue in place, using a parent as a reference' do
-            original_solo  = issue
-            parent         = issue.with_variations
-            variation      = issue.as_variation
-
-            expect(original_solo).to be_solo
-            expect(parent).not_to    be_variation
-            expect(variation).to     be_variation
-
-            solo = variation.to_solo!( parent )
-            expect(solo).to be_solo
-
-            expect(solo.to_h).to eq(original_solo.to_h)
-            expect(solo.to_h).to eq(variation.to_h)
-            expect(solo.object_id).to eq(variation.object_id)
-        end
-
-        it 'skips #variations' do
-            parent    = issue.with_variations
-            variation = issue.as_variation
-
-            parent.variations << variation
-
-            expect(parent.variations).to be_any
-            expect(variation.to_solo!( parent ).variations).to be_empty
-        end
-
-        it 'skips #vector' do
-            parent    = active_issue.with_variations
-            variation = active_issue.as_variation
-
-            expect(parent.vector.affected_input_name).to be_nil
-            expect(variation.vector.affected_input_name).to be_truthy
-            expect(variation.to_solo!( parent ).vector.affected_input_name).to be_truthy
-        end
-
-        it 'skips #parent' do
-            parent    = issue.with_variations
-            variation = issue.as_variation
-
-            expect(variation.to_solo!( parent ).parent).to be_nil
-        end
-    end
-
-    describe '#to_solo' do
-        it 'returns a solo issue using a parent as a reference' do
-            original_solo  = issue
-            parent         = issue.with_variations
-            variation      = issue.as_variation
-
-            expect(original_solo).to be_solo
-            expect(parent).not_to    be_variation
-            expect(variation).to     be_variation
-
-            solo = variation.to_solo( parent )
-            expect(solo).to be_solo
-
-            expect(solo.to_h).to eq(original_solo.to_h)
-            expect(solo.object_id).not_to eq(variation.object_id)
-        end
-    end
-
-    describe '#variation?' do
-        context 'when the issue is' do
-            context 'variation' do
-                it 'returns true' do
-                    expect(issue.as_variation).to be_variation
-                end
-            end
-
-            context 'parent' do
-                it 'returns false' do
-                    expect(issue.with_variations).not_to be_variation
-                end
-            end
-
-            context 'solo' do
-                it 'returns false' do
-                    expect(issue).not_to be_variation
-                end
-            end
-        end
-    end
-
-    describe '#solo?' do
-        context 'when the issue is' do
-            context 'variation' do
-                it 'returns false' do
-                    expect(issue.as_variation).not_to be_solo
-                end
-            end
-
-            context 'parent' do
-                it 'returns false' do
-                    expect(issue.with_variations).not_to be_solo
-                end
-            end
-
-            context 'solo' do
-                it 'returns true' do
-                    expect(issue).to be_solo
                 end
             end
         end

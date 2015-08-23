@@ -3,7 +3,7 @@
 %>
 
 <%= erb 'issue/remarks.erb', issue: issue %>
-<%= erb 'issue/platform.erb', issue: parent_issue %>
+<%= erb 'issue/platform.erb', issue: issue %>
 
 <% if (issue.vector.respond_to?(:seed) && issue.vector.seed) || issue.signature || issue.proof %>
 <table class="table table-condensed table-fixed">

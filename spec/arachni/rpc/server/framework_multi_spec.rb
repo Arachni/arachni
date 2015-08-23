@@ -319,23 +319,22 @@
 #     end
 #
 #     describe '#issues' do
-#         it 'returns an array of issues without variations' do
+#         it 'returns an array of issues' do
 #             issues = @instance_clean.framework.issues
 #             expect(issues).to be_any
 #
 #             issue = issues.first
 #             expect(issue.is_a?( Arachni::Issue )).to be_truthy
-#             expect(issue.variations).to be_empty
 #         end
 #     end
+#
 #     describe '#issues_as_hash' do
-#         it 'returns an array of issues (as hash) without variations' do
+#         it 'returns an array of issues as hash' do
 #             issues = @instance_clean.framework.issues_as_hash
 #             expect(issues).to be_any
 #
 #             issue = issues.first
 #             expect(issue.is_a?( Hash )).to be_truthy
-#             expect(issue['variations']).to be_empty
 #         end
 #     end
 # end

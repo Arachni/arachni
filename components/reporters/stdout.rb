@@ -98,33 +98,20 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
         print_line
 
         report.issues.each_with_index do |issue, i|
-            print_ok "[#{i+1}] #{issue.name}"
+            trusted = issue.trusted? ? 'Trusted' : 'Untrusted'
+
+            print_ok "[#{i+1}] #{issue.name} (#{trusted})"
             print_info '~~~~~~~~~~~~~~~~~~~~'
 
             print_info "Digest:     #{issue.digest}"
             print_info "Severity:   #{issue.severity.to_s.capitalize}"
-            print_line
-            print_info "URL:        #{issue.vector.action}"
-            print_info "Element:    #{issue.vector.type}"
-
-            if issue.active?
-                print_info "Method:     #{issue.vector.method.to_s.upcase}"
-                print_info "Input name: #{issue.affected_input_name}"
-            end
-
-            if issue.vector.respond_to? :inputs
-                print_info "All inputs: #{issue.vector.inputs.keys.join(', ')}"
-            end
-
-            print_line
-            print_info "Tags: #{issue.tags.join(', ')}" if issue.tags.is_a?( Array )
-            print_line
             print_info 'Description: '
             print_info issue.description
+            print_info "Tags: #{issue.tags.join(', ')}" if issue.tags.is_a?( Array )
 
             if issue.cwe_url
                 print_line
-                print_info issue.cwe_url
+                print_info "CWE: #{issue.cwe_url}"
             end
 
             if issue.references
@@ -132,7 +119,20 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
                 issue.references.each{ |ref| print_info "  #{ref[0]} - #{ref[1]}" }
             end
 
-            print_info_variations issue
+            print_line
+            print_info "URL:        #{issue.vector.action}"
+            print_info "Element:    #{issue.vector.type}"
+
+            if issue.vector.respond_to? :inputs
+                print_info "All inputs: #{issue.vector.inputs.keys.join(', ')}"
+            end
+
+            if issue.active?
+                print_info "Method:     #{issue.vector.method.to_s.upcase}"
+                print_info "Input name: #{issue.affected_input_name}"
+            end
+
+            print_info_issue_details issue
             print_line
         end
 
@@ -155,61 +155,51 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
         end
     end
 
-    def print_info_variations( issue )
+    def print_info_issue_details( issue )
         print_line
-        print_status 'Variations'
-        print_info '----------'
-
-        issue.variations.each_with_index do |var, i|
-            print_line
-            trusted = var.trusted? ? 'Trusted' : 'Untrusted'
-
-            print_info "Variation #{i+1} (#{trusted}):"
-
-            if var.active?
-                if var.vector.respond_to? :seed
-                    print_info "Seed:      #{var.vector.seed.inspect}"
-                end
-
-                print_info "Injected:  #{var.vector.affected_input_value.inspect}"
+        if issue.active?
+            if issue.vector.respond_to? :seed
+                print_info "Seed:      #{issue.vector.seed.inspect}"
             end
 
-            print_info "Signature: #{var.signature}"     if var.signature
-            print_info "Proof:     #{var.proof.inspect}" if var.proof
-
-            print_line
-            print_info "Referring page: #{var.referring_page.dom.url}"
-            if var.referring_page.dom.transitions.any?
-                print_info 'DOM transitions:'
-                var.referring_page.dom.print_transitions( method(:print_info), '    ' )
-            end
-
-            print_line
-            print_info "Affected page:  #{var.page.dom.url}"
-
-            if !var.request.to_s.empty?
-                print_info "HTTP request\n#{var.request}"
-            end
-
-            if var.page.dom.transitions.any?
-                print_info 'DOM transitions:'
-                var.page.dom.print_transitions( method(:print_info), '    ' )
-            end
-
-            next if var.remarks.empty?
-
-            print_line
-            print_info 'Remarks'
-            print_info '-------'
-            var.remarks.each do |logger, remarks|
-                print_info "  By #{logger}:"
-                remarks.each do |remark|
-                    print_info "    *  #{word_wrap remark}"
-                end
-            end
-
-            print_line
+            print_info "Injected:  #{issue.vector.affected_input_value.inspect}"
         end
+
+        print_info "Signature: #{issue.signature}"     if issue.signature
+        print_info "Proof:     #{issue.proof.inspect}" if issue.proof
+
+        print_line
+        print_info "Referring page: #{issue.referring_page.dom.url}"
+        if issue.referring_page.dom.transitions.any?
+            print_info 'DOM transitions:'
+            issue.referring_page.dom.print_transitions( method(:print_info), '    ' )
+        end
+
+        print_line
+        print_info "Affected page:  #{issue.page.dom.url}"
+
+        if !issue.request.to_s.empty?
+            print_info "HTTP request\n#{issue.request}"
+        end
+
+        if issue.page.dom.transitions.any?
+            print_info 'DOM transitions:'
+            issue.page.dom.print_transitions( method(:print_info), '    ' )
+        end
+
+        return if issue.remarks.empty?
+
+        print_line
+        print_info 'Remarks'
+        print_info '-------'
+        issue.remarks.each do |logger, remarks|
+            print_info "  By #{logger}:"
+            remarks.each do |remark|
+                print_info "    *  #{word_wrap remark}"
+            end
+        end
+
+        print_line
     end
 
     # Stolen from Rails.

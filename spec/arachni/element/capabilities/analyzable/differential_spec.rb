@@ -75,7 +75,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                results = Arachni::Data.issues.flatten
+                results = Arachni::Data.issues
                 expect(results).to be_any
                 expect(results.first.vector.affected_input_name).to eq('input')
             end
@@ -84,7 +84,7 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 subject.differential_analysis( @opts )
                 auditor.http.run
 
-                expect(Arachni::Data.issues.first.variations.first.remarks[:differential_analysis].size).to eq(3)
+                expect(Arachni::Data.issues.first.remarks[:differential_analysis].size).to eq(3)
             end
         end
 

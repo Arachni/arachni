@@ -15,12 +15,6 @@ require Options.paths.lib + 'issue/severity'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Issue
 
-    # Attributes removed from a parent issue (i.e. an issue with variations)
-    # and solely populating variations.
-    VARIATION_ATTRIBUTES = Set.new([
-        :@page, :@referring_page, :@proof, :@signature, :@remarks, :@trusted
-    ])
-
     # @return    [String]
     #   Name.
     attr_accessor :name
@@ -108,10 +102,6 @@ class Issue
     #   made the remark, value is an `Array` of remarks.
     attr_accessor :remarks
 
-    # @return   [Array<Issue>]
-    #   Variations of this issue.
-    attr_accessor :variations
-
     # @return   [Issue,nil]
     #   Parent of variation.
     attr_accessor :parent
@@ -132,9 +122,6 @@ class Issue
         @trusted      = true if @trusted.nil?
         @references ||= {}
         @tags       ||= []
-        @variations ||= []
-        @variation    = nil
-        @parent       = nil
     end
 
     # @note The whole environment needs to be fresh.
@@ -213,10 +200,6 @@ class Issue
     #
     # @see #passive?
     def active?
-        if variations && variations.any?
-            return variations.first.active?
-        end
-
         !!(vector.respond_to?( :affected_input_name ) && vector.affected_input_name)
     end
 
@@ -226,11 +209,6 @@ class Issue
     # @see #passive?
     def affected_input_name
         return if !active?
-
-        if variations && variations.any?
-            return variations.first.vector.affected_input_name
-        end
-
         vector.affected_input_name
     end
 
@@ -314,59 +292,39 @@ class Issue
         h[:vector] = vector.to_h
         h.delete( :unique_id )
 
-        if solo?
-            h.delete( :variation )
-        else
-            if variation?
-                h[:vector].delete :source
-                h[:vector].delete :type
-                h[:vector].delete :url
-                h[:vector].delete :action
-                h[:vector].delete :default_inputs
-                h[:vector].delete :affected_input_name
-            else
-                h[:vector][:inputs] = h[:vector].delete( :default_inputs )
-                h[:vector][:affected_input_name] = affected_input_name
-            end
+        h[:vector][:affected_input_name] = affected_input_name
+
+        h[:digest]   = digest
+        h[:severity] = severity.to_sym
+        h[:cwe_url]  = cwe_url if cwe_url
+
+        # Since we're doing the whole cross-platform hash thing better switch
+        # the Element classes in the check's info data to symbols.
+        h[:check][:elements] ||= []
+        h[:check][:elements]   = h[:check][:elements].map(&:type)
+
+        if page
+            dom_h = page.dom.to_h
+            dom_h.delete(:skip_states)
+
+            h[:page] = {
+                body: page.body,
+                dom:  dom_h
+            }
         end
 
-        if !variation? || solo?
-            h[:digest]   = digest
-            h[:severity] = severity.to_sym
-            h[:cwe_url]  = cwe_url if cwe_url
+        if referring_page
+            referring_page_dom_h = referring_page.dom.to_h
+            referring_page_dom_h.delete(:skip_states)
 
-            # Since we're doing the whole cross-platform hash thing better switch
-            # the Element classes in the check's info data to symbols.
-            h[:check][:elements] ||= []
-            h[:check][:elements]   = h[:check][:elements].map(&:type)
-
-            h[:variations] = @variations.map(&:to_h)
+            h[:referring_page] = {
+                body: referring_page.body,
+                dom:  referring_page_dom_h
+            }
         end
 
-        if variation? || solo?
-            if page
-                dom_h = page.dom.to_h
-                dom_h.delete(:skip_states)
-
-                h[:page] = {
-                    body: page.body,
-                    dom:  dom_h
-                }
-            end
-
-            if referring_page
-                referring_page_dom_h = referring_page.dom.to_h
-                referring_page_dom_h.delete(:skip_states)
-
-                h[:referring_page] = {
-                    body: referring_page.body,
-                    dom:  referring_page_dom_h
-                }
-            end
-
-            h[:response] = response.to_h if response
-            h[:request]  = request.to_h  if request
-        end
+        h[:response] = response.to_h if response
+        h[:request]  = request.to_h  if request
 
         h.delete :parent
 
@@ -378,7 +336,11 @@ class Issue
     #   A string uniquely identifying this issue.
     def unique_id
         return @unique_id if @unique_id
-        vector_info = active? ? "#{vector.method}:#{vector.affected_input_name}:" : nil
+
+        vector_info = active? ?
+            "#{vector.method}:#{vector.affected_input_name}:" :
+            "#{proof}:"
+
         "#{name}:#{vector_info}#{vector.action.split( '?' ).first}"
     end
 
@@ -388,90 +350,6 @@ class Issue
     # @see #unique_id
     def digest
         unique_id.persistent_hash
-    end
-
-    # @return   [Bool]
-    #   `true` if the issue neither has nor is a variation, `false` otherwise.
-    def solo?
-        @variation.nil?
-    end
-
-    # @return   [Bool]
-    #   `true` if `self` is a variation.
-    def variation?
-        !!@variation
-    end
-
-    # @return   [Issue]
-    #   A copy of `self` **without** {VARIATION_ATTRIBUTES specific} details
-    #   and an empty array of {#variations} to be populated.
-    #
-    #   Also, the {#vector} attribute will hold the original, non-mutated vector.
-    def with_variations
-        issue = self.deep_clone
-
-        instance_variables.each do |k|
-            next if k == :@trusted || !VARIATION_ATTRIBUTES.include?( k ) ||
-                !issue.instance_variable_defined?( k )
-
-            issue.remove_instance_variable k
-        end
-
-        issue.vector.reset
-
-        issue.unique_id = unique_id
-        issue.variation = false
-        issue.parent    = nil
-        issue
-    end
-
-    # @return   [Issue]
-    #   A copy of `self` with {VARIATION_ATTRIBUTES specific} details **only**
-    #   and the mutated {#vector}.
-    def as_variation
-        issue = self.deep_clone
-
-        instance_variables.each do |k|
-            next if k == :@vector || VARIATION_ATTRIBUTES.include?( k ) ||
-                !issue.instance_variable_defined?( k )
-
-            issue.remove_instance_variable k
-        end
-
-        issue.unique_id = unique_id
-        issue.variation = true
-        issue.parent    = self
-        issue
-    end
-
-    # Converts `self` to a solo issue, in place.
-    #
-    # @param    [Issue] issue
-    #   Parent issue.
-    # @return   [Issue]
-    #   Solo issue, with generic vulnerability data filled in from `issue`.
-    def to_solo!( issue )
-        issue.instance_variables.each do |k|
-            next if k == :@variations || k == :@vector || k == :@trusted
-            next if (val = issue.instance_variable_get(k)).nil?
-            instance_variable_set( k, val )
-        end
-
-        @variations = []
-        @variation  = nil
-        @parent     = nil
-
-        self
-    end
-
-    # Copy of `self` as a solo issue.
-    #
-    # @param    [Issue] issue
-    #   Parent issue.
-    # @return   [Issue]
-    #   Solo issue, with generic vulnerability data filled in from `issue`.
-    def to_solo( issue )
-        deep_clone.to_solo!( issue )
     end
 
     def ==( other )
@@ -491,8 +369,6 @@ class Issue
     def to_rpc_data
         data = {}
         instance_variables.each do |ivar|
-            next if ivar == :@parent
-
             data[ivar.to_s.gsub('@','')] =
                 instance_variable_get( ivar ).to_rpc_data_or_self
         end
@@ -502,15 +378,9 @@ class Issue
             data['check'][:elements] = data['check'][:elements].map(&:to_s)
         end
 
-        if data['variations']
-            data['variations'] = data['variations'].map(&:to_rpc_data)
-        end
-
-        if !variation?
-            data['digest'] = digest
-        end
-
-        data['severity'] = data['severity'].to_s
+        data['unique_id'] = unique_id
+        data['digest']    = digest
+        data['severity']  = data['severity'].to_s
 
         data
     end
@@ -535,9 +405,6 @@ class Issue
 
                             value.my_symbolize_keys(false)
 
-                        when 'variations'
-                            value.map { |i| from_rpc_data i }
-
                         when 'remarks'
                             value.my_symbolize_keys
 
@@ -559,12 +426,6 @@ class Issue
             instance.instance_variable_set( "@#{name}", value )
         end
 
-        if instance.variations
-            instance.variations.each do |v|
-                v.parent = instance
-            end
-        end
-
         instance
     end
 
@@ -582,10 +443,6 @@ class Issue
         @unique_id = id
     end
 
-    def variation=( bool )
-        @variation = bool
-    end
-
     private
 
     def normalize_name( name )
@@ -599,5 +456,3 @@ class Issue
     protected :remove_instance_variable
 end
 end
-
-Arachni::Severity = Arachni::Issue::Severity

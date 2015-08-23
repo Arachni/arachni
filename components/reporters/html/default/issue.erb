@@ -17,9 +17,9 @@
                                 <% end.join( ', ') %>
                             <% end %>
 
-                            <% if issue.variations.first.request %>
+                            <% if issue.request %>
                                 using
-                                <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                                <code><%= issue.request.method.to_s.upcase %></code>
                             <% end %>
                         </a>
 
@@ -37,45 +37,20 @@
                 </div>
 
                 <div class="panel-body">
-                    <% if issue.variations.size == 1 %>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <%=
-                                        erb 'issue/info.erb',
-                                            issue: issue.variations.first,
-                                            parent_issue: issue,
-                                            id:    issue_id( issue )
-                                    %>
-                                </div>
-                            </div>
-                    <% else %>
-                        <% issue.variations.each.with_index do |v, i| %>
-                                <div class="row">
-                                    <div class="col-md-12">
-                                        <strong>
-                                            <a
-                                            id="<%= issue_id(issue) %>-variation-<%= i %>"
-                                            href="<%= issue_location(issue) %>/variation/<%= i %>">
-                                                Variation <%= i %>
-                                            </a>
-                                        </strong>
-
-                                        <%=
-                                            erb 'issue/info.erb',
-                                                issue: v,
-                                                parent_issue: issue,
-                                                id:    issue_id( v )
-                                        %>
-                                    </div>
-                                </div>
-                        <% end %>
-                    <% end %>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <%=
+                                erb 'issue/info.erb',
+                                    issue: issue,
+                                    id:    issue_id( issue )
+                            %>
+                        </div>
+                    </div>
 
                     <%=
                         erb 'issue/details.erb',
-                            issue:        issue.variations.first,
-                            parent_issue: issue,
-                            id:           issue_id( issue )
+                            issue: issue,
+                            id:    issue_id( issue )
                     %>
                 </div>
             </div>

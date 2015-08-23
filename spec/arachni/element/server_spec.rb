@@ -75,8 +75,8 @@ describe Arachni::Element::Server do
                     name:      'Auditor',
                     shortname: 'auditor_test'
                 })
-                expect(logged_issue.variations.first.proof).to eq(
-                    logged_issue.variations.first.page.response.status_line
+                expect(logged_issue.proof).to eq(
+                    logged_issue.page.response.status_line
                 )
 
                 expect(logged_issue.name).to eq(@auditor.class.info[:issue][:name])

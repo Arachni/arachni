@@ -103,9 +103,11 @@ describe Arachni::Framework do
                 f.checks.load :taint
                 f.run
 
-                expect(f.report.issues.
-                    map { |i| i.variations.first.vector.affected_input_name }.
-                    uniq.sort).to eq(%w(link_input form_input cookie_input).sort)
+                expect(
+                    f.report.issues.
+                        map { |i| i.vector.affected_input_name }.
+                        uniq.sort
+                ).to eq(%w(link_input form_input cookie_input).sort)
             end
         end
 
@@ -117,9 +119,11 @@ describe Arachni::Framework do
                 f.checks.load :taint
                 f.run
 
-                expect(f.report.issues.
-                    map { |i| i.variations.first.vector.affected_input_name }.
-                    uniq.sort).to eq(%w(link_input form_input cookie_taint).sort)
+                expect(
+                    f.report.issues.
+                        map { |i| i.vector.affected_input_name }.
+                        uniq.sort
+                ).to eq(%w(link_input form_input cookie_taint).sort)
             end
         end
 

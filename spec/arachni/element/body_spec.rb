@@ -37,7 +37,7 @@ describe Arachni::Element::Body do
                 it 'logs an issue' do
                     auditable.match_and_log( valid_pattern )
 
-                    logged_issue = Arachni::Data.issues.flatten.first
+                    logged_issue = Arachni::Data.issues.first
                     expect(logged_issue).to be_truthy
 
                     expect(logged_issue.vector.url).to eq(Arachni::Utilities.normalize_url( @url ))

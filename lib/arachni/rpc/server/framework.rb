@@ -206,12 +206,11 @@ class Framework < ::Arachni::Framework
     end
 
     # @return  [Array<Hash>]
-    #   First variations of all discovered issues with generic info filled in
-    #   from the parent as {Arachni::Issue#to_rpc_data RPC data}.
+    #   Issues as {Arachni::Issue#to_rpc_data RPC data}.
     #
     # @private
     def issues
-        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_rpc_data }
+        Data.issues.sort.map(&:to_rpc_data)
     end
 
     # @return   [Array<Hash>]
@@ -219,7 +218,7 @@ class Framework < ::Arachni::Framework
     #
     # @see #issues
     def issues_as_hash
-        Data.issues.map { |issue| issue.variations.first.to_solo( issue ).to_h }
+        Data.issues.sort.map(&:to_h)
     end
 
     # @return   [String]

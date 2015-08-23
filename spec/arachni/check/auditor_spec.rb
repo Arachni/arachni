@@ -388,7 +388,7 @@ describe Arachni::Check::Auditor do
 
     describe '#log_remote_file' do
         let(:page) { Arachni::Page.from_url @url }
-        let(:issue) { Arachni::Data.issues.last.variations.last }
+        let(:issue) { Arachni::Data.issues.last }
         let(:vector) { Arachni::Element::Server.new( page.url ) }
 
         context 'given a' do
@@ -618,7 +618,12 @@ describe Arachni::Check::Auditor do
 
     describe '#create_issue' do
         it 'creates an issue' do
-            expect(auditor.class.create_issue( vector: issue.vector )).to eq(issue)
+            expect(
+                auditor.class.create_issue(
+                    proof: issue.proof,
+                    vector: issue.vector
+                )
+            ).to eq(issue)
         end
     end
 
@@ -626,7 +631,7 @@ describe Arachni::Check::Auditor do
         it 'logs an issue' do
             auditor.log_issue( issue_data )
 
-            logged_issue = Arachni::Data.issues.flatten.first
+            logged_issue = Arachni::Data.issues.first
 
             expect(logged_issue.to_h.tap do |h|
                 h[:page][:dom][:transitions].each { |t| t.delete :time }
@@ -641,7 +646,7 @@ describe Arachni::Check::Auditor do
         it 'assigns a #referring_page' do
             auditor.log_issue( issue_data )
 
-            logged_issue = Arachni::Data.issues.flatten.first
+            logged_issue = Arachni::Data.issues.first
             expect(logged_issue.referring_page).to eq(auditor.page)
         end
 
@@ -663,7 +668,7 @@ describe Arachni::Check::Auditor do
         it 'preserves the given remarks' do
             auditor.log( issue_data )
 
-            logged_issue = Arachni::Data.issues.flatten.first
+            logged_issue = Arachni::Data.issues.first
             expect(logged_issue.remarks.first).to be_any
         end
 
@@ -676,14 +681,14 @@ describe Arachni::Check::Auditor do
 
             it 'includes response data' do
                 auditor.log( issue_data )
-                expect(Arachni::Data.issues.flatten.first.response).to eq(
+                expect(Arachni::Data.issues.first.response).to eq(
                     issue_data[:page].response
                 )
             end
 
             it 'includes request data' do
                 auditor.log( issue_data )
-                expect(Arachni::Data.issues.flatten.first.request).to eq(
+                expect(Arachni::Data.issues.first.request).to eq(
                     issue_data[:page].request
                 )
             end
@@ -694,7 +699,7 @@ describe Arachni::Check::Auditor do
                 issue_data.delete(:page)
                 auditor.log( issue_data )
 
-                issue = Arachni::Data.issues.flatten.first
+                issue = Arachni::Data.issues.first
                 expect(issue.page.body).to eq(auditor.page.body)
                 expect(issue.response).to eq(auditor.page.response)
                 expect(issue.request).to eq(auditor.page.request)
@@ -725,7 +730,7 @@ describe Arachni::Check::Auditor do
                 auditor.audit( { unix: @seed }, substring: @seed )
                 @framework.http.run
                 expect(Arachni::Data.issues.size).to eq(1)
-                issue = Arachni::Data.issues.flatten.first
+                issue = Arachni::Data.issues.first
                 expect(issue.platform_name).to eq(:unix)
                 expect(issue.platform_type).to eq(:os)
             end
@@ -770,7 +775,7 @@ describe Arachni::Check::Auditor do
                          )
                         @framework.http.run
                         expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.flatten.first
+                        issue = Arachni::Data.issues.first
                         expect(issue.vector.class).to eq(Arachni::Element::Link)
                         expect(issue.vector.affected_input_name).to eq('link_input')
                     end
@@ -783,7 +788,7 @@ describe Arachni::Check::Auditor do
                          )
                         @framework.http.run
                         expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.flatten.first
+                        issue = Arachni::Data.issues.first
                         expect(issue.vector.class).to eq(Arachni::Element::Form)
                         expect(issue.vector.affected_input_name).to eq('form_input')
                     end
@@ -796,7 +801,7 @@ describe Arachni::Check::Auditor do
                          )
                         @framework.http.run
                         expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.flatten.first
+                        issue = Arachni::Data.issues.first
                         expect(issue.vector.class).to eq(Arachni::Element::Cookie)
                         expect(issue.vector.affected_input_name).to eq('cookie_input')
                     end
@@ -808,7 +813,7 @@ describe Arachni::Check::Auditor do
                         )
                         @framework.http.run
                         expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.flatten.first
+                        issue = Arachni::Data.issues.first
                         expect(issue.vector.class).to eq(Arachni::Element::Cookie)
                         expect(issue.vector.affected_input_name).to eq('vulnerable')
                     end
@@ -822,7 +827,7 @@ describe Arachni::Check::Auditor do
                          )
                         @framework.http.run
                         expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.flatten.first
+                        issue = Arachni::Data.issues.first
                         expect(issue.vector.class).to eq(Arachni::Element::Header)
                         expect(issue.vector.affected_input_name).to eq('Referer')
                     end
@@ -859,7 +864,7 @@ describe Arachni::Check::Auditor do
                             @framework.http.run
                         end
 
-                        expect(Arachni::Data.issues.flatten.find do |i|
+                        expect(Arachni::Data.issues.all.find do |i|
                             i.vector.affected_input_name == 'you_made_it'
                         end).to be_truthy
                     end
@@ -884,7 +889,7 @@ describe Arachni::Check::Auditor do
                             @framework.http.run
                         end
 
-                        issue = issues.flatten.first
+                        issue = issues.first
                         expect(issue).to be_truthy
                         expect(issue.vector.class).to eq(Arachni::Element::Form)
                         expect(issue.vector.affected_input_name).to eq('you_made_it')

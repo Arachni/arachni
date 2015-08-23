@@ -90,21 +90,12 @@ describe Arachni::Data::Issues do
             expect(subject.any?).to be_truthy
         end
 
-        context 'when an issue was discovered by manipulating an input' do
-            it 'does not register redundant issues' do
-                i = issue.deep_clone
-                i.vector.affected_input_name = 'some input'
-                20.times { subject << i }
+        it 'does not register duplicate issues' do
+            i = issue.deep_clone
+            i.vector.affected_input_name = 'some input'
+            20.times { subject << i }
 
-                expect(subject.size).to eq(1)
-            end
-        end
-
-        context 'when an issue was not discovered by manipulating an input' do
-            it 'registers it multiple times' do
-                20.times { subject << issue }
-                expect(subject.flatten.size).to eq(20)
-            end
+            expect(subject.size).to eq(1)
         end
     end
 
@@ -138,34 +129,6 @@ describe Arachni::Data::Issues do
         it 'returns all issues' do
             subject << issue
             expect(subject.all).to eq([issue])
-        end
-
-        it 'groups issues as variations' do
-            20.times { subject << issue }
-
-            all   = subject.all
-            first = all.first
-
-            expect(all).to eq([issue])
-            expect(first.variations.size).to eq(20)
-            expect(first.variations.first).to eq(issue)
-        end
-    end
-
-    describe '#summary' do
-        it 'returns first variation of all issues as solo versions' do
-            unsorted_issues.each { |i| subject << i }
-            expect(subject.summary).to eq(sorted_issues)
-            expect(subject.summary.map(&:solo?).uniq).to eq([true])
-        end
-    end
-
-    describe '#flatten' do
-        it 'returns all issues as solo versions' do
-            20.times { subject << issue }
-            expect(subject.flatten.size).to eq(20)
-            expect(subject.flatten.first).to eq(issue)
-            expect(subject.flatten.map(&:solo?).uniq).to eq([true])
         end
     end
 
@@ -291,7 +254,6 @@ describe Arachni::Data::Issues do
 
                 loaded_issue = Marshal.load( IO.read( issue_path ) )
                 expect(issue).to eq(loaded_issue)
-                expect(issue.variations).to eq(loaded_issue.variations)
             end
         end
 

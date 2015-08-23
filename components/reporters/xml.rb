@@ -73,60 +73,46 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                                     xml.source vector.source
                                 end
 
+                                if vector.respond_to? :seed
+                                    xml.seed vector.seed
+                                end
+
                                 if issue.active?
                                     xml.method_ vector.method
                                 end
 
-                                if issue.variations.first.vector.respond_to? :affected_input_name
-                                    xml.affected_input_name issue.variations.first.vector.affected_input_name
+                                if vector.respond_to? :affected_input_name
+                                    xml.affected_input_name vector.affected_input_name
                                 end
 
                                 if vector.respond_to? :inputs
                                     add_inputs( xml, vector.inputs )
                                 end
-                            }
 
-                            xml.variations {
-                                issue.variations.each do |variation|
-                                    xml.variation {
-                                        vector = variation.vector
-
-                                        xml.vector {
-                                            if issue.active?
-                                                xml.method_ vector.method
-                                            end
-
-                                            if vector.respond_to? :seed
-                                                xml.seed vector.seed
-                                            end
-
-                                            if vector.respond_to? :inputs
-                                                add_inputs( xml, vector.inputs )
-                                            end
-                                        }
-
-                                        xml.remarks {
-                                            variation.remarks.each do |commenter, remarks|
-                                                remarks.each do |remark|
-                                                    xml.remark {
-                                                        xml.commenter commenter
-                                                        xml.text_ remark
-                                                    }
-                                                end
-                                            end
-                                        }
-
-                                        add_page( xml, variation.page )
-                                        add_page( xml, variation.referring_page, :referring_page )
-
-                                        xml.signature variation.signature
-                                        xml.proof variation.proof
-                                        xml.trusted variation.trusted
-                                        xml.platform_type variation.platform_type
-                                        xml.platform_name variation.platform_name
-                                    }
+                                if vector.respond_to? :default_inputs
+                                    add_inputs( xml, vector.default_inputs, :default_inputs  )
                                 end
                             }
+
+                            xml.remarks {
+                                issue.remarks.each do |commenter, remarks|
+                                    remarks.each do |remark|
+                                        xml.remark {
+                                            xml.commenter commenter
+                                            xml.text_ remark
+                                        }
+                                    end
+                                end
+                            }
+
+                            add_page( xml, issue.page )
+                            add_page( xml, issue.referring_page, :referring_page )
+
+                            xml.signature issue.signature
+                            xml.proof issue.proof
+                            xml.trusted issue.trusted
+                            xml.platform_type issue.platform_type
+                            xml.platform_name issue.platform_name
                         }
                     end
                 }

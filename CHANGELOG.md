@@ -2,6 +2,10 @@
 
 ## Under development
 
+- `Issue`
+    - `#variations` -- Removed, all issues now include full data.
+    - `#unique_id`, `#digest` -- In cases of passive issues, the associated
+        `#proof` is now taken into consideration.
 - `Data`
     - `Framework`
         - `#update_sitemap` -- Don't push URLs that include the
@@ -26,10 +30,10 @@
             - Updated sanitization of traced `Event` arguments to extract only
                 certain properties instead of iterating through the whole object.
 - `Components`
-    - Path etxractors
+    - Path extractors
         - `script`
             - Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
-    - Reporters
+    - Reporters -- All reporters have been updated to remove `Issue#variations`.
         - `xml` -- Updated schema to include the new `Element::UIForm::DOM` and
             `Element::Input::DOM` elements.
     - Plugins

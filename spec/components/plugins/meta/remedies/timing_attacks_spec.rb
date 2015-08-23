@@ -20,8 +20,8 @@ describe name_from_filename do
                 next if issue.affected_input_name != 'untrusted_input'
 
                 checked += 1
-                expect(issue.variations.first).to be_untrusted
-                expect(issue.variations.first.remarks[:meta_analysis]).to be_truthy
+                expect(issue).to be_untrusted
+                expect(issue.remarks).to include :meta_analysis
             end
 
             expect(checked).to be > 0

@@ -7,5 +7,5 @@
 =end
 
 def issues
-    Arachni::Data.issues.flatten
+    Arachni::Data.issues.all
 end
