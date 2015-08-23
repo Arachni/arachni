@@ -23,6 +23,8 @@ shared_examples_for 'check' do
         reset_framework
         options.url = @url
 
+        framework.http.headers['User-Agent'] = 'arachni_user'
+
         options.audit.parameter_names      = true
         options.audit.with_extra_parameter = true
 
