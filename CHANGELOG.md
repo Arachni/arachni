@@ -31,6 +31,8 @@
                 certain properties instead of iterating through the whole object.
 - `Components`
     - Path extractors
+        - `comments`
+            - Small cleanup in acceptable paths.
         - `script`
             - Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
     - Reporters -- All reporters have been updated to remove `Issue#variations`.
