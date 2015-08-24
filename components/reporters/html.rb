@@ -440,7 +440,7 @@ access unauthorized pages.
             description:  %q{Exports the audit results as a compressed HTML report.},
             content_type: 'application/zip',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.4.1',
+            version:      '0.4.2',
             options:      [
                 Options.outfile( '.html.zip' ),
                 Options.skip_responses
@@ -496,9 +496,11 @@ access unauthorized pages.
                 Element::Body.type   => 0,
                 Element::Path.type   => 0,
                 Element::Server.type => 0,
-                Element::GenericDOM.type => 0,
-                Element::JSON.type       => 0,
-                Element::XML.type        => 0
+                Element::GenericDOM.type  => 0,
+                Element::JSON.type        => 0,
+                Element::XML.type         => 0,
+                Element::Input::DOM.type  => 0,
+                Element::UIForm::DOM.type => 0
             },
             verification:     {
                 'Yes' => 0,
