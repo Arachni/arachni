@@ -3,7 +3,14 @@ require 'spec_helper'
 describe Arachni::Element::Input::DOM do
     inputs = { 'my-input' => '1' }
 
-    it_should_behave_like 'element_dom', inputs: inputs, single_input: true
+    it_should_behave_like 'element_dom'
+
+    it_should_behave_like 'with_node'
+
+    it_should_behave_like 'submittable_dom'
+    it_should_behave_like 'inputtable_dom', single_input: true, inputs: inputs
+    it_should_behave_like 'mutable_dom',    single_input: true, inputs: inputs
+    it_should_behave_like 'auditable_dom'
 
     def run
         auditor.browser_cluster.wait

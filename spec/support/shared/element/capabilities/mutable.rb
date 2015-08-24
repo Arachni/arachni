@@ -1,5 +1,16 @@
 shared_examples_for 'mutable' do |options = {}|
 
+    before :each do
+        begin
+            Arachni::Options.audit.elements described_class.type
+        rescue Arachni::OptionGroups::Audit::Error => e
+        end
+    end
+
+    after :each do
+        reset_options
+    end
+
     let(:opts) do
         {
             single_input:   false,
@@ -184,7 +195,7 @@ shared_examples_for 'mutable' do |options = {}|
 
             describe :with_extra_parameter,
                      if: !described_class.ancestors.include?(
-                         Arachni::Element::Capabilities::Auditable::DOM
+                         Arachni::Element::DOM
                      ) && described_class != Arachni::Element::LinkTemplate &&
                              described_class != Arachni::Element::XML do
 
@@ -224,7 +235,7 @@ shared_examples_for 'mutable' do |options = {}|
 
             describe :with_both_http_methods,
                      if: !described_class.ancestors.include?(
-                         Arachni::Element::Capabilities::Auditable::DOM
+                         Arachni::Element::DOM
                      ) && described_class != Arachni::Element::JSON &&
                              described_class != Arachni::Element::XML do
 
@@ -261,9 +272,8 @@ shared_examples_for 'mutable' do |options = {}|
             end
 
             describe :parameter_names,
-                     if: !described_class.ancestors.include?(
-                         Arachni::Element::Capabilities::Auditable::DOM
-                     ) && described_class != Arachni::Element::LinkTemplate &&
+                     if: !described_class.ancestors.include?( Arachni::Element::DOM) &&
+                             described_class != Arachni::Element::LinkTemplate &&
                              described_class != Arachni::Element::XML do
 
                 describe true do
@@ -335,7 +345,7 @@ shared_examples_for 'mutable' do |options = {}|
                 describe 'Format::NULL' do
                     it 'terminates the string with a null character',
                        if: described_class != Arachni::Element::Header &&
-                               described_class.is_a?( Arachni::Element::Capabilities::Auditable::DOM ) do
+                               described_class.is_a?( Arachni::Element::DOM ) do
 
                         m = mutable.mutations( seed,
                                                 format: [Arachni::Element::Capabilities::Mutable::Format::NULL],
@@ -354,7 +364,7 @@ shared_examples_for 'mutable' do |options = {}|
                 describe 'Format::APPEND | Format::NULL' do
                     it 'appends the seed and terminate the string with a null character',
                        if: described_class != Arachni::Element::Header &&
-                            described_class.is_a?( Arachni::Element::Capabilities::Auditable::DOM ) do
+                            described_class.is_a?( Arachni::Element::DOM ) do
 
                         format = [Arachni::Element::Capabilities::Mutable::Format::APPEND |
                                       Arachni::Element::Capabilities::Mutable::Format::NULL]

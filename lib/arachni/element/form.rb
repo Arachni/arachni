@@ -21,6 +21,8 @@ class Form < Base
     Dir.glob( lib ).each { |f| require f }
 
     # Generic element capabilities.
+    include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::Capabilities::Inputtable
     include Arachni::Element::Capabilities::Analyzable
     include Arachni::Element::Capabilities::Refreshable
 

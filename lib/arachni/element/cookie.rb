@@ -25,6 +25,8 @@ class Cookie < Base
     Dir.glob( lib ).each { |f| require f }
 
     # Generic element capabilities.
+    include Arachni::Element::Capabilities::Submittable
+    include Arachni::Element::Capabilities::Auditable
     include Arachni::Element::Capabilities::Analyzable
     include Arachni::Element::Capabilities::WithSource
 

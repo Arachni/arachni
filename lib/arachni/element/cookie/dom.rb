@@ -6,14 +6,19 @@
     web site for more information on licensing and terms of use.
 =end
 
+require_relative '../dom'
+
 module Arachni::Element
 class Cookie
 
 # Provides access to DOM operations for {Cookie cookies}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class DOM < Base
-    include Arachni::Element::Capabilities::Auditable::DOM
+class DOM < DOM
+    include Arachni::Element::DOM::Capabilities::Mutable
+    include Arachni::Element::DOM::Capabilities::Inputtable
+    include Arachni::Element::DOM::Capabilities::Submittable
+    include Arachni::Element::DOM::Capabilities::Auditable
 
     def initialize( options )
         super
@@ -26,8 +31,8 @@ class DOM < Base
     def trigger
         [ browser.goto(
             action,
-            take_snapshot: false,
-            cookies: self.inputs,
+            take_snapshot:      false,
+            cookies:            self.inputs,
             update_transitions: false
         ) ]
     end

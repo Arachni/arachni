@@ -1,9 +1,7 @@
 shared_examples_for 'with_source' do |source|
 
     let(:with_source) do
-        dupped = subject.dup
-        dupped.source = source if source
-        dupped
+        subject.dup
     end
 
     describe '#to_rpc_data' do

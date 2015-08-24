@@ -1,34 +1,16 @@
-shared_examples_for 'auditable' do |options = {}|
-    it_should_behave_like 'inputtable', options
-    it_should_behave_like 'submittable'
-    it_should_behave_like 'mutable', options
-    it_should_behave_like 'with_auditor'
-
-    let(:opts) do
-        {
-            single_input:   false,
-            supports_nulls: true
-        }.merge( options )
-    end
+shared_examples_for 'auditable' do
 
     before :each do
         begin
             Arachni::Options.audit.elements described_class.type
-        rescue Arachni::OptionGroups::Audit::Error
+        rescue Arachni::OptionGroups::Audit::Error => e
         end
-
-        @framework ||= Arachni::Framework.new
-        @page      = Arachni::Page.from_url( url )
-        @auditor   = Auditor.new( @page, @framework )
     end
 
     after :each do
-        @framework.clean_up
-        @framework.reset
         reset_options
     end
 
-    let(:auditor) { @auditor }
     let(:seed) { 'my_seed' }
 
     let(:auditable) do
@@ -40,12 +22,6 @@ shared_examples_for 'auditable' do |options = {}|
             s.inputs = { subject.inputs.keys.first => '1' }
             s
         end
-    end
-
-    let(:other) do
-        new = auditable.dup
-        new.inputs = { stuff: 'blah' }
-        new
     end
 
     def has_parameter_extractor?
@@ -587,7 +563,7 @@ shared_examples_for 'auditable' do |options = {}|
                 describe 'Arachni::Check::Auditor::Format::NULL' do
                     it 'terminates the seed with a null character',
                        if: described_class != Arachni::Element::Header &&
-                               described_class.is_a?( Arachni::Element::Capabilities::Auditable::DOM ) do
+                               described_class.is_a?( Arachni::Element::DOM ) do
                         skip if !has_parameter_extractor?
 
                         injected = nil

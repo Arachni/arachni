@@ -7,22 +7,12 @@
 =end
 
 module Arachni::Element
-class Form
+class DOM
 module Capabilities
 
-# Extends {Arachni::Element::Capabilities::WithDOM} with {Form}-specific
-# functionality.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-module WithDOM
-    include Arachni::Element::Capabilities::WithDOM
-
-    # @return   [DOM]
-    def dom
-        return @dom if @dom
-        return if !node || inputs.empty?
-        super
-    end
+module Mutable
+    include Arachni::Element::Capabilities::Mutable
 
 end
 

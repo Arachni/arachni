@@ -14,9 +14,21 @@ module Arachni::Element
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Header < Base
-    include Capabilities::Analyzable
 
-    INVALID_INPUT_DATA     = [ "\0" ]
+    # Load and include all form-specific capability overrides.
+    lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
+    Dir.glob( lib ).each { |f| require f }
+
+    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Auditable
+    include Arachni::Element::Capabilities::Submittable
+    include Arachni::Element::Capabilities::Inputtable
+    include Arachni::Element::Capabilities::Analyzable
+
+    # Header-specific overrides.
+    include Capabilities::Mutable
+    include Capabilities::Inputtable
+
     ENCODE_CHARACTERS      = ["\n", "\r"]
     ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
 
@@ -30,37 +42,6 @@ class Header < Base
 
     def simple
         @inputs.dup
-    end
-
-    # Overrides {Capabilities::Mutable#each_mutation} to handle header-specific
-    # limitations.
-    #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
-    #
-    # @see Capabilities::Mutable#each_mutation
-    def each_mutation( payload, options = {}, &block )
-        parameter_names = options.delete( :parameter_names )
-        super( payload, options, &block )
-
-        return if !parameter_names
-
-        if !valid_input_name_data?( payload )
-            print_debug_level_2 'Payload not supported as input name by' <<
-                                    " #{audit_id}: #{payload.inspect}"
-            return
-        end
-
-        elem = self.dup
-        elem.affected_input_name = FUZZ_NAME
-        elem.inputs = { payload => FUZZ_NAME_VALUE }
-        yield elem
-    end
-
-    def valid_input_data?( data )
-        !INVALID_INPUT_DATA.find { |c| data.include? c }
     end
 
     # @return   [String]

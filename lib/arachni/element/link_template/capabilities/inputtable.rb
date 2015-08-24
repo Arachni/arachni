@@ -17,6 +17,11 @@ module Capabilities
 module Inputtable
     include Arachni::Element::Capabilities::Inputtable
 
+    INVALID_INPUT_DATA = [
+        # Protocol URLs require a // which we can't preserve.
+        '://'
+    ]
+
     # @param    [String]    name
     #   Input name.
     #

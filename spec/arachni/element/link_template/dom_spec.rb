@@ -1,10 +1,24 @@
 require 'spec_helper'
 
 describe Arachni::Element::LinkTemplate::DOM do
+    inputs = { 'param' => 'some-name' }
+
     it_should_behave_like 'element_dom'
+
+    it_should_behave_like 'with_node'
+    it_should_behave_like 'with_auditor'
+
+    it_should_behave_like 'submittable_dom'
+    it_should_behave_like 'inputtable_dom', inputs: inputs
+    it_should_behave_like 'mutable_dom',    inputs: inputs
+    it_should_behave_like 'auditable_dom'
 
     def auditable_extract_parameters( page )
         { 'param' => page.document.css('#container').text }
+    end
+
+    def run
+        auditor.browser_cluster.wait
     end
 
     before :each do
@@ -38,7 +52,7 @@ describe Arachni::Element::LinkTemplate::DOM do
     end
 
     let(:mutable) do
-        inputtable.dup
+        subject.dup
     end
 
     describe '#type' do

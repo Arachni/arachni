@@ -12,7 +12,7 @@ shared_examples_for 'element' do
         expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
-    rpc_attributes = if described_class.ancestors.include? Arachni::Element::Capabilities::Auditable::DOM
+    rpc_attributes = if described_class.ancestors.include? Arachni::Element::DOM
                          %w(url)
                      else
                          %w(url initialization_options)
@@ -132,7 +132,7 @@ shared_examples_for 'element' do
     end
 
     describe '#url=',
-             if: !described_class.ancestors.include?( Arachni::Element::Capabilities::Auditable::DOM ) do
+             if: !described_class.ancestors.include?( Arachni::Element::DOM ) do
         it 'normalizes the passed URL' do
             url = 'http://test.com/some stuff#frag!'
             subject.url = url

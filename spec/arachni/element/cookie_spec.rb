@@ -2,9 +2,27 @@ require 'spec_helper'
 
 describe Arachni::Element::Cookie do
     it_should_behave_like 'element'
+
     it_should_behave_like 'with_source'
     it_should_behave_like 'with_dom'
-    it_should_behave_like 'auditable', single_input: true
+    it_should_behave_like 'with_auditor'
+
+    it_should_behave_like 'submittable'
+    it_should_behave_like 'inputtable', single_input: true
+    it_should_behave_like 'mutable',    single_input: true
+    it_should_behave_like 'auditable'
+
+    before :each do
+        @framework ||= Arachni::Framework.new
+        @auditor     = Auditor.new( Arachni::Page.from_url( url ), @framework )
+    end
+
+    after :each do
+        @framework.reset
+        reset_options
+    end
+
+    let(:auditor) { @auditor }
 
     def auditable_extract_parameters( resource )
         YAML.load( resource.body )

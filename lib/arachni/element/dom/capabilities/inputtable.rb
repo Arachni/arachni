@@ -7,21 +7,17 @@
 =end
 
 module Arachni::Element
-class Form
+class DOM
 module Capabilities
 
-# Extends {Arachni::Element::Capabilities::WithDOM} with {Form}-specific
-# functionality.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-module WithDOM
-    include Arachni::Element::Capabilities::WithDOM
+module Inputtable
+    include Arachni::Element::Capabilities::Inputtable
 
-    # @return   [DOM]
-    def dom
-        return @dom if @dom
-        return if !node || inputs.empty?
-        super
+    INVALID_INPUT_DATA = [ "\0" ]
+
+    def valid_input_data?( data )
+        !INVALID_INPUT_DATA.find { |c| data.include? c }
     end
 
 end

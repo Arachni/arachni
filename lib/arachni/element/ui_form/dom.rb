@@ -10,9 +10,13 @@ module Arachni::Element
 class UIForm
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class DOM < Base
+class DOM < DOM
     include Arachni::Element::Capabilities::WithNode
-    include Arachni::Element::Capabilities::Auditable::DOM
+
+    include Arachni::Element::DOM::Capabilities::Mutable
+    include Arachni::Element::DOM::Capabilities::Inputtable
+    include Arachni::Element::DOM::Capabilities::Submittable
+    include Arachni::Element::DOM::Capabilities::Auditable
 
     INPUTS = Set.new([:input, :textarea])
 

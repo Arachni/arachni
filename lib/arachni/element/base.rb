@@ -166,6 +166,8 @@ class Base
         data.delete 'scope'
         data['class'] = self.class.to_s
 
+        data['initialization_options'] = initialization_options
+
         if data['initialization_options'].is_a? Hash
             data['initialization_options'] =
                 data['initialization_options'].my_stringify_keys(false)

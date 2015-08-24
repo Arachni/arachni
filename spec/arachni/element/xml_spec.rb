@@ -4,9 +4,27 @@ describe Arachni::Element::XML do
     inputtable_source = '<input1>value1</input1><input2>value2</input2>'
 
     it_should_behave_like 'element'
-    it_should_behave_like 'with_source', inputtable_source
-    it_should_behave_like 'auditable',
+
+    it_should_behave_like 'with_source'
+    it_should_behave_like 'with_auditor'
+
+    it_should_behave_like 'submittable'
+    it_should_behave_like 'inputtable'
+    it_should_behave_like 'mutable',
                           inputs: described_class.parse_inputs( inputtable_source )
+    it_should_behave_like 'auditable'
+
+    before :each do
+        @framework ||= Arachni::Framework.new
+        @auditor     = Auditor.new( Arachni::Page.from_url( url ), @framework )
+    end
+
+    after :each do
+        @framework.reset
+        reset_options
+    end
+
+    let(:auditor) { @auditor }
 
     def auditable_extract_parameters( resource )
         described_class.parse_inputs( resource.body )
@@ -88,7 +106,7 @@ EOXML
                 it 'fails' do
                     expect do
                         described_class.new( url: "#{url}submit" )
-                    end.to raise_error described_class::Error::MissingSource
+                    end.to raise_error Arachni::Element::Capabilities::WithSource::Error::MissingSource
                 end
             end
         end

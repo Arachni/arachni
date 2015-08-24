@@ -1,10 +1,21 @@
 require 'spec_helper'
 
 describe Arachni::Element::Cookie::DOM do
-    it_should_behave_like 'element_dom', single_input: true, without_node: true
+    inputs = { 'param' => '1' }
+
+    it_should_behave_like 'element_dom'
+
+    it_should_behave_like 'submittable_dom'
+    it_should_behave_like 'inputtable_dom', single_input: true, inputs: inputs
+    it_should_behave_like 'mutable_dom',    single_input: true, inputs: inputs
+    it_should_behave_like 'auditable_dom'
 
     def auditable_extract_parameters( page )
         Hash[[page.document.css('#container').text.split( '=' )]]
+    end
+
+    def run
+        auditor.browser_cluster.wait
     end
 
     before :each do
@@ -18,7 +29,12 @@ describe Arachni::Element::Cookie::DOM do
         @framework.reset
     end
 
+    let(:auditor) { @auditor }
+
     subject { parent.dom }
+
+    let(:url) { web_server_url_for( :cookie_dom ) }
+
     let(:parent) do
         Arachni::Element::Cookie.new(
             action: "#{url}/",
@@ -30,8 +46,8 @@ describe Arachni::Element::Cookie::DOM do
             c.dom.auditor = auditor
         end
     end
-    let(:url) { web_server_url_for( :cookie_dom ) }
-    let(:auditor) { @auditor }
+
+
     let(:inputtable) do
         Arachni::Element::Cookie.new(
             action: "#{url}/",

@@ -13,8 +13,6 @@ module Element::Capabilities
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Analyzable
-    include Auditable
-
     # Load and include all available analysis/audit techniques.
     Dir.glob( File.dirname( __FILE__ ) + '/analyzable/*.rb' ).each { |f| require f }
 

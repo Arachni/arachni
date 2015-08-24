@@ -7,10 +7,28 @@ describe Arachni::Element::Form do
             </form>'
 
     it_should_behave_like 'element'
-    it_should_behave_like 'with_node', html
+    it_should_behave_like 'with_node'
     it_should_behave_like 'with_dom',  html
     it_should_behave_like 'refreshable'
+    it_should_behave_like 'with_source'
+    it_should_behave_like 'with_auditor'
+
+    it_should_behave_like 'submittable'
+    it_should_behave_like 'inputtable'
+    it_should_behave_like 'mutable'
     it_should_behave_like 'auditable'
+
+    before :each do
+        @framework ||= Arachni::Framework.new
+        @auditor     = Auditor.new( Arachni::Page.from_url( url ), @framework )
+    end
+
+    after :each do
+        @framework.reset
+        reset_options
+    end
+
+    let(:auditor) { @auditor }
 
     def auditable_extract_parameters( resource )
         YAML.load( resource.body )

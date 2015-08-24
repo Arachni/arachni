@@ -6,6 +6,8 @@
     web site for more information on licensing and terms of use.
 =end
 
+require_relative '../dom'
+
 module Arachni::Element
 class Form
 
@@ -13,9 +15,13 @@ class Form
 # functionality.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class DOM < Base
+class DOM < DOM
     include Arachni::Element::Capabilities::WithNode
-    include Arachni::Element::Capabilities::Auditable::DOM
+
+    include Arachni::Element::DOM::Capabilities::Mutable
+    include Arachni::Element::DOM::Capabilities::Inputtable
+    include Arachni::Element::DOM::Capabilities::Submittable
+    include Arachni::Element::DOM::Capabilities::Auditable
 
     def initialize( options )
         super

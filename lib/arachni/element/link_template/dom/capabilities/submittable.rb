@@ -7,25 +7,23 @@
 =end
 
 module Arachni::Element
-class Form
+class LinkTemplate::DOM
 module Capabilities
 
-# Extends {Arachni::Element::Capabilities::WithDOM} with {Form}-specific
-# functionality.
+# Extends {Arachni::Element::DOM::Capabilities::Submittable} with
+# {LinkTemplate}-specific functionality.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-module WithDOM
-    include Arachni::Element::Capabilities::WithDOM
+module Submittable
+    include Arachni::Element::DOM::Capabilities::Submittable
 
-    # @return   [DOM]
-    def dom
-        return @dom if @dom
-        return if !node || inputs.empty?
-        super
+    def prepare_browser( browser, options )
+        @browser = browser
+        browser.javascript.custom_code = options[:custom_code]
+        browser.javascript.taint       = options[:taint]
     end
 
 end
-
 end
 end
 end
