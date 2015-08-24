@@ -108,7 +108,7 @@ class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
         return if self.class.payloads.empty?
 
         each_candidate_element do |element|
-            element.taint_analysis( self.class.payloads, self.class.options )
+            element.signature_analysis( self.class.payloads, self.class.options )
         end
     end
 

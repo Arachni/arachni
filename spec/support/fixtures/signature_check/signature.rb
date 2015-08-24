@@ -6,7 +6,7 @@
     web site for more information on licensing and terms of use.
 =end
 
-class Arachni::Checks::Taint < Arachni::Check::Base
+class Arachni::Checks::Signature < Arachni::Check::Base
 
     def run
         audit '--seed', submit: { train: true }
@@ -14,7 +14,7 @@ class Arachni::Checks::Taint < Arachni::Check::Base
 
     def self.info
         {
-            name:        'Taint check',
+            name:        'Signature check',
             description: %q{Test description},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',

@@ -13,13 +13,13 @@ module Analyzable
 # Looks for specific substrings or patterns in response bodies.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-module Taint
+module Signature
 
-    TAINT_CACHE = {
+    SIGNATURE_CACHE   = {
         match: Support::Cache::LeastRecentlyPushed.new( 10_000 )
     }
 
-    TAINT_OPTIONS = {
+    SIGNATURE_OPTIONS = {
         # The regular expression to match against the response body.
         #
         # Alternatively, you can use the :substring option.
@@ -43,13 +43,13 @@ module Taint
         longest_word_optimization: false
     }
 
-    # Performs taint analysis and logs an issue should there be one.
+    # Performs signatures analysis and logs an issue should there be one.
     #
     # It logs an issue when:
     #
     # * `:match` == nil AND `:regexp` matches the response body
-    # * `:match`` == not nil AND  `:regexp` match == `:match`
-    # * `:substring`exists in the response body
+    # * `:match` != nil AND  `:regexp` match == `:match`
+    # * `:substring` exists in the response body
     #
     # @param  [String, Array<String>, Hash{Symbol => <String, Array<String>>}]  payloads
     #   Payloads to inject, if given:
@@ -63,16 +63,16 @@ module Taint
     #       for the {Element::Capabilities::Submittable#action resource} to be audited.
     # @param  [Hash]    opts
     #   Options as described in {Arachni::Check::Auditor::OPTIONS} and
-    #   {TAINT_OPTIONS}.
+    #   {SIGNATURE_OPTIONS}.
     #
     # @return   [Bool]
     #   `true` if the audit was scheduled successfully, `false` otherwise (like
     #   if the resource is out of scope).
-    def taint_analysis( payloads, opts = { } )
+    def signature_analysis( payloads, opts = { } )
         return false if self.inputs.empty?
 
         if scope.out?
-            print_debug 'Taint analysis: Element is out of scope,' <<
+            print_debug 'Signature analysis: Element is out of scope,' <<
                             " skipping: #{audit_id}"
             return false
         end
@@ -81,8 +81,8 @@ module Taint
         # we've evaluated our control response.
         @candidate_issues = []
 
-        # Perform the taint analysis.
-        opts = self.class::OPTIONS.merge( TAINT_OPTIONS.merge( opts ) )
+        # Perform the analysis.
+        opts = self.class::OPTIONS.merge( SIGNATURE_OPTIONS.merge( opts ) )
         audit( payloads, opts ) { |response| get_matches( response ) }
     end
 
@@ -104,7 +104,7 @@ module Taint
 
     def match_patterns( patterns, matcher, response, opts )
         k = [patterns, response.body]
-        return if TAINT_CACHE[:match][k] == false
+        return if SIGNATURE_CACHE[:match][k] == false
 
         if opts[:longest_word_optimization]
             opts[:downcased_body] = response.body.downcase
@@ -114,7 +114,7 @@ module Taint
             when Regexp, String, Array
                 [patterns].flatten.compact.each do |pattern|
                     res = matcher.call( pattern, response, opts )
-                    TAINT_CACHE[:match][k] ||= !!res
+                    SIGNATURE_CACHE[:match][k] ||= !!res
                 end
 
             when Hash
@@ -122,7 +122,7 @@ module Taint
                     [patterns[opts[:platform]]].flatten.compact.each do |p|
                         [p].flatten.compact.each do |pattern|
                             res = matcher.call( pattern, response, opts )
-                            TAINT_CACHE[:match][k] ||= !!res
+                            SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
 
@@ -133,7 +133,7 @@ module Taint
 
                         [p].flatten.compact.each do |pattern|
                             res = matcher.call( pattern, response, dopts )
-                            TAINT_CACHE[:match][k] ||= !!res
+                            SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
                 end
@@ -149,7 +149,7 @@ module Taint
 
                         [p].flatten.compact.each do |pattern|
                             res = matcher.call( pattern, response, dopts )
-                            TAINT_CACHE[:match][k] ||= !!res
+                            SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
         end
@@ -159,9 +159,9 @@ module Taint
         return if substring.to_s.empty?
 
         k = [substring, response.body]
-        return if TAINT_CACHE[:match][k] == false
+        return if SIGNATURE_CACHE[:match][k] == false
 
-        TAINT_CACHE[:match][k] = includes = response.body.include?( substring )
+        SIGNATURE_CACHE[:match][k] = includes = response.body.include?( substring )
         return if !includes || ignore?( response, opts )
 
         @candidate_issues << {
@@ -178,7 +178,7 @@ module Taint
 
     def match_regexp_and_log( regexp, response, opts )
         k = [regexp, response.body]
-        return if TAINT_CACHE[:match][k] == false
+        return if SIGNATURE_CACHE[:match][k] == false
 
         regexp = regexp.is_a?( Regexp ) ? regexp :
             Regexp.new( regexp.to_s, Regexp::IGNORECASE )
@@ -192,7 +192,7 @@ module Taint
 
         match_data = match_data[0].to_s
 
-        TAINT_CACHE[:match][k] = !match_data.empty?
+        SIGNATURE_CACHE[:match][k] = !match_data.empty?
 
         return if match_data.empty? || ignore?( response, opts )
 
@@ -220,13 +220,13 @@ module Taint
         return if @setup_verification_callbacks
         @setup_verification_callbacks = true
 
-        # Go over the issues and flag them as untrusted if the pattern that
-        # caused them to be logged matches the untainted response.
+        # Go over the issues to ensure that the signature that identified them
+        # does not match by default.
         http.after_run do
             @setup_verification_callbacks = false
             next if @candidate_issues.empty?
 
-            # Grab an untainted response.
+            # Grab the default response.
             submit do |response|
                 # Something has gone wrong, timed-out request or closed connection.
                 # If we can't verify the issue bail out...

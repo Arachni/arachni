@@ -13,16 +13,14 @@ module Check
 #
 # There are 3 main types of audit and analysis techniques available:
 #
-# * {Arachni::Element::Capabilities::Analyzable::Taint Taint analysis}
+# * {Arachni::Element::Capabilities::Analyzable::Signature Signature analysis}
 #   -- {#audit}
 # * {Arachni::Element::Capabilities::Analyzable::Timeout Timeout analysis}
 #   -- {#audit_timeout}
 # * {Arachni::Element::Capabilities::Analyzable::Differential Differential analysis}
 #   -- {#audit_differential}
 #
-# It should be noted that actual analysis takes place at the element level,
-# and to be more specific, the {Arachni::Element::Capabilities::Auditable}
-# element level.
+# It should be noted that actual analysis takes place at the {Arachni::Element element} level.
 #
 # It also provides:
 #
@@ -542,17 +540,17 @@ module Auditor
     end
 
     # If a block has been provided it calls {Arachni::Element::Capabilities::Auditable#audit}
-    # for every element, otherwise, it defaults to {#audit_taint}.
+    # for every element, otherwise, it defaults to {#audit_signature}.
     #
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable#audit
-    # @see #audit_taint
+    # @see #audit_signature
     def audit( payloads, opts = {}, &block )
         opts = OPTIONS.merge( opts )
         if !block_given?
-            audit_taint( payloads, opts )
+            audit_signature( payloads, opts )
         else
             each_candidate_element( opts[:elements] ) do |e|
                 e.audit( payloads, opts, &block )
@@ -561,17 +559,17 @@ module Auditor
         end
     end
 
-    # Provides easy access to element auditing using simple taint analysis
+    # Provides easy access to element auditing using simple signature analysis
     # and automatically logs results.
     #
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
     # @see OPTIONS
-    # @see Arachni::Element::Capabilities::Analyzable::Taint
-    def audit_taint( payloads, opts = {} )
+    # @see Arachni::Element::Capabilities::Analyzable::Signature
+    def audit_signature( payloads, opts = {} )
         opts = OPTIONS.merge( opts )
         each_candidate_element( opts[:elements] )do |e|
-            e.taint_analysis( payloads, opts )
+            e.signature_analysis( payloads, opts )
             audited( e.coverage_id )
         end
     end

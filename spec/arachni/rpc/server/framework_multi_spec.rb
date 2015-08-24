@@ -3,7 +3,7 @@
 # describe 'Arachni::RPC::Server::Framework' do
 #     before( :all ) do
 #         @opts = Arachni::Options.instance
-#         @opts.paths.checks = fixtures_path + '/taint_check/'
+#         @opts.paths.checks = fixtures_path + '/signature_check/'
 #         @opts.audit.elements :links, :forms, :cookies
 #
 #         @instance  = instance_light_grid_spawn
@@ -108,7 +108,7 @@
 #         it 'handles pages with JavaScript code' do
 #             instance = instance_light_grid_spawn
 #             instance.options.url = web_server_url_for( :auditor ) + '/with_javascript'
-#             instance.checks.load :taint
+#             instance.checks.load :signature
 #
 #             expect(instance.framework.run).to be_truthy
 #             sleep 0.1 while instance.framework.busy?
@@ -123,7 +123,7 @@
 #         it 'handles AJAX' do
 #             instance = instance_light_grid_spawn
 #             instance.options.url = web_server_url_for( :auditor ) + '/with_ajax'
-#             instance.checks.load :taint
+#             instance.checks.load :signature
 #
 #             expect(instance.framework.run).to be_truthy
 #             sleep 0.1 while instance.framework.busy?

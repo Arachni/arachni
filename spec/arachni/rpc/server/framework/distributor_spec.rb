@@ -593,7 +593,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#initialize_slaves' do
         #before( :all ) do
-        #    @opts.paths.checks = fixtures_path + 'taint_check/'
+        #    @opts.paths.checks = fixtures_path + 'signature_check/'
         #
         #    @dispatcher_url = dispatcher_light_spawn.url
         #

@@ -14,7 +14,7 @@ describe Arachni::Framework::Parts::Data do
             Arachni::Framework.new do |f|
                 f.options.url = "#{@url}/"
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 f.run
                 expect(f.sitemap).to eq({ "#{@url}/" => 200 })
@@ -27,7 +27,7 @@ describe Arachni::Framework::Parts::Data do
 
         it 'pushes it to the page audit queue and returns true' do
             subject.options.audit.elements :links, :forms, :cookies
-            subject.checks.load :taint
+            subject.checks.load :signature
 
             expect(subject.page_queue_total_size).to eq(0)
             expect(subject.push_to_page_queue( page )).to be_truthy
@@ -39,7 +39,7 @@ describe Arachni::Framework::Parts::Data do
 
         it 'updates the #sitemap with the DOM URL' do
             subject.options.audit.elements :links, :forms, :cookies
-            subject.checks.load :taint
+            subject.checks.load :signature
 
             expect(subject.sitemap).to be_empty
 
@@ -121,7 +121,7 @@ describe Arachni::Framework::Parts::Data do
     describe '#push_to_url_queue' do
         it 'pushes a URL to the URL audit queue' do
             subject.options.audit.elements :links, :forms, :cookies
-            subject.checks.load :taint
+            subject.checks.load :signature
 
             expect(subject.url_queue_total_size).to eq(0)
             expect(subject.push_to_url_queue(  @url + '/link' )).to be_truthy

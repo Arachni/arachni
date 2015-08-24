@@ -15,14 +15,14 @@ describe Arachni::Framework do
             end
 
             it 'resets the framework' do
-                expect(Arachni::Checks.constants.include?( :Taint )).to be_falsey
+                expect(Arachni::Checks.constants.include?( :Signature )).to be_falsey
 
                 Arachni::Framework.new do |f|
                     expect(f.checks.load_all).to eq(%w(taint))
-                    expect(Arachni::Checks.constants.include?( :Taint )).to be_truthy
+                    expect(Arachni::Checks.constants.include?( :Signature )).to be_truthy
                 end
 
-                expect(Arachni::Checks.constants.include?( :Taint )).to be_falsey
+                expect(Arachni::Checks.constants.include?( :Signature )).to be_falsey
             end
 
             context 'when an exception is raised' do
@@ -58,7 +58,7 @@ describe Arachni::Framework do
         it 'performs the scan' do
             subject.options.url = @url + '/elem_combo'
             subject.options.audit.elements :links, :forms, :cookies
-            subject.checks.load :taint
+            subject.checks.load :signature
             subject.plugins.load :wait
 
             subject.run
@@ -71,7 +71,7 @@ describe Arachni::Framework do
             described_class.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new { f.run }
                 Timeout.timeout( 5 ) do
@@ -82,13 +82,13 @@ describe Arachni::Framework do
         end
 
         it 'handles heavy load' do
-            @options.paths.checks = fixtures_path + '/taint_check/'
+            @options.paths.checks = fixtures_path + '/signature_check/'
 
             Arachni::Framework.new do |f|
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
 
-                f.checks.load :taint
+                f.checks.load :signature
 
                 f.run
                 expect(f.report.issues.size).to eq(500)
@@ -100,7 +100,7 @@ describe Arachni::Framework do
                 f.options.url = @url + '/with_javascript'
                 f.options.audit.elements :links, :forms, :cookies
 
-                f.checks.load :taint
+                f.checks.load :signature
                 f.run
 
                 expect(
@@ -116,7 +116,7 @@ describe Arachni::Framework do
                 f.options.url = @url + '/with_ajax'
                 f.options.audit.elements :links, :forms, :cookies
 
-                f.checks.load :taint
+                f.checks.load :signature
                 f.run
 
                 expect(
@@ -132,7 +132,7 @@ describe Arachni::Framework do
                 described_class.new do |f|
                     f.options.url = @url + '/elem_combo'
                     f.options.audit.elements :links, :forms, :cookies
-                    f.checks.load :taint
+                    f.checks.load :signature
 
                     f.run
                     expect(f.status).to eq(:done)

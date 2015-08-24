@@ -28,13 +28,13 @@ describe Arachni::Issue do
 
     describe '#recheck' do
         it 'rechecks the issue' do
-            Arachni::Options.paths.checks = fixtures_path + '/taint_check/'
+            Arachni::Options.paths.checks = fixtures_path + '/signature_check/'
             Arachni::Options.audit.elements :links, :forms, :cookies
 
             issue = nil
             Arachni::Framework.new do |f|
                 f.options.url = "#{web_server_url_for( :auditor )}/link"
-                f.checks.load :taint
+                f.checks.load :signature
 
                 f.run
                 issue = f.report.issues.first

@@ -756,8 +756,8 @@ describe Arachni::Check::Auditor do
         end
 
         context 'when called without a block' do
-            it 'delegates to #audit_taint' do
-                expect(auditor).to receive(:audit_taint).with( @seed, described_class::OPTIONS )
+            it 'delegates to #audit_signature' do
+                expect(auditor).to receive(:audit_signature).with( @seed, described_class::OPTIONS )
                 auditor.audit( @seed )
             end
         end
@@ -918,22 +918,22 @@ describe Arachni::Check::Auditor do
         end
     end
 
-    describe '#audit_taint' do
-        it "delegates to #{Arachni::Element::Capabilities::Analyzable::Taint}#taint_analysis" do
+    describe '#audit_signature' do
+        it "delegates to #{Arachni::Element::Capabilities::Analyzable::Signature}#signature_analysis" do
             auditor.load_page_from( @url + '/link' )
 
-            $audit_taint_called = []
+            $audit_signature_called = []
             auditor.page.elements.each do |element|
                 element.class.class_eval do
-                    def taint_analysis( *args, &block )
-                        $audit_taint_called << self.class if $audit_taint_called
+                    def signature_analysis( *args, &block )
+                        $audit_signature_called << self.class if $audit_signature_called
                         super( *args, &block )
                     end
                 end
             end
 
-            auditor.audit_taint( 'seed' )
-            expect($audit_taint_called).to eq(auditor.page.elements.map(&:class))
+            auditor.audit_signature( 'seed' )
+            expect($audit_signature_called).to eq(auditor.page.elements.map(&:class))
         end
     end
 

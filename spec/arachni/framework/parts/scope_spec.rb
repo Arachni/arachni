@@ -28,7 +28,7 @@ describe Arachni::Framework::Parts::Scope do
                         f.options.audit.elements :links
                         f.options.scope.page_limit = 100
 
-                        f.checks.load :taint
+                        f.checks.load :signature
 
                         expect(f.page_limit_reached?).to be_falsey
                         f.run
@@ -43,7 +43,7 @@ describe Arachni::Framework::Parts::Scope do
                         f.options.url = web_server_url_for :framework
                         f.options.audit.elements :links
 
-                        f.checks.load :taint
+                        f.checks.load :signature
 
                         expect(f.page_limit_reached?).to be_falsey
                         f.run

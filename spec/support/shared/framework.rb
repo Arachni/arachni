@@ -10,7 +10,7 @@ shared_examples_for 'framework' do
     before( :each ) do
         reset_options
         @options.paths.reporters = fixtures_path + '/reporters/manager_spec/'
-        @options.paths.checks    = fixtures_path + '/taint_check/'
+        @options.paths.checks    = fixtures_path + '/signature_check/'
 
         @f = Arachni::Framework.new
         @f.options.url = @url

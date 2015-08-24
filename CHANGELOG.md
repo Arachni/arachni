@@ -20,10 +20,13 @@
         a `<form>` parent. Also covers cases of `<form>` submissions that occur
         via elements other than a submit button.
     - `Input` -- Audits individual `<input>` elements which have associated DOM events.
-    - `Capabilities`
+    - `Capabilities` -- Refactored to allow for easier expansion of DOM capabilities.
         - `Analyzable`
             - `Differential` -- Updated to remove the injected seed from the response
                 bodies, echoed payloads can compromise the analysis.
+            - `Taint` => `Signature` -- Signature analysis better describes that
+                process and the "taint" terminology was overloaded by the browser's
+                taint tracing subsystems.
 - `Browser`
     - `Javascript`
         - `TaintTracer`

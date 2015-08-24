@@ -16,7 +16,7 @@ module Analyzable
     # Load and include all available analysis/audit techniques.
     Dir.glob( File.dirname( __FILE__ ) + '/analyzable/*.rb' ).each { |f| require f }
 
-    include Taint
+    include Signature
     include Timeout
     include Differential
 

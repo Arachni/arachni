@@ -121,12 +121,12 @@ describe 'Arachni::RPC::Server::Framework' do
         end
 
         it 'handles pages with JavaScript code' do
-            @opts.paths.checks = fixtures_path + '/taint_check/'
+            @opts.paths.checks = fixtures_path + '/signature_check/'
 
             instance = instance_spawn
             instance.options.url = web_server_url_for( :auditor ) + '/with_javascript'
             instance.options.set audit: { elements: [:links, :forms, :cookies] }
-            instance.checks.load :taint
+            instance.checks.load :signature
 
             instance.framework.run
             sleep 0.1 while instance.framework.busy?
@@ -137,12 +137,12 @@ describe 'Arachni::RPC::Server::Framework' do
         end
 
         it 'handles AJAX' do
-            @opts.paths.checks = fixtures_path + '/taint_check/'
+            @opts.paths.checks = fixtures_path + '/signature_check/'
 
             instance = instance_spawn
             instance.options.url = web_server_url_for( :auditor ) + '/with_ajax'
             instance.options.set audit: { elements: [:links, :forms, :cookies] }
-            instance.checks.load :taint
+            instance.checks.load :signature
 
             instance.framework.run
             sleep 0.1 while instance.framework.busy?
