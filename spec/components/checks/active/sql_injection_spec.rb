@@ -19,7 +19,7 @@ describe name_from_filename do
             access:     {
                 Element::Form         => 12,
                 Element::Link         => 12,
-                Element::Cookie       => 6,
+                Element::Cookie       => 12,
                 Element::Header       => 6,
                 Element::LinkTemplate => 6,
                 Element::JSON         => 12,
@@ -28,7 +28,7 @@ describe name_from_filename do
             db2:        {
                 Element::Form         => 16,
                 Element::Link         => 16,
-                Element::Cookie       => 8,
+                Element::Cookie       => 16,
                 Element::Header       => 8,
                 Element::LinkTemplate => 8,
                 Element::JSON         => 16,
@@ -37,7 +37,7 @@ describe name_from_filename do
             emc:        {
                 Element::Form         => 8,
                 Element::Link         => 8,
-                Element::Cookie       => 4,
+                Element::Cookie       => 8,
                 Element::Header       => 4,
                 Element::LinkTemplate => 4,
                 Element::JSON         => 8,
@@ -46,7 +46,7 @@ describe name_from_filename do
             firebird:   {
                 Element::Form         => 4,
                 Element::Link         => 4,
-                Element::Cookie       => 2,
+                Element::Cookie       => 4,
                 Element::Header       => 2,
                 Element::LinkTemplate => 2,
                 Element::JSON         => 4,
@@ -55,7 +55,7 @@ describe name_from_filename do
             frontbase:  {
                 Element::Form         => 4,
                 Element::Link         => 4,
-                Element::Cookie       => 2,
+                Element::Cookie       => 4,
                 Element::Header       => 2,
                 Element::LinkTemplate => 2,
                 Element::JSON         => 4,
@@ -64,7 +64,7 @@ describe name_from_filename do
             hsqldb:     {
                 Element::Form         => 4,
                 Element::Link         => 4,
-                Element::Cookie       => 2,
+                Element::Cookie       => 4,
                 Element::Header       => 2,
                 Element::LinkTemplate => 2,
                 Element::JSON         => 4,
@@ -73,7 +73,7 @@ describe name_from_filename do
             informix:   {
                 Element::Form         => 12,
                 Element::Link         => 12,
-                Element::Cookie       => 6,
+                Element::Cookie       => 12,
                 Element::Header       => 6,
                 Element::LinkTemplate => 6,
                 Element::JSON         => 12,
@@ -82,7 +82,7 @@ describe name_from_filename do
             ingres:     {
                 Element::Form         => 12,
                 Element::Link         => 12,
-                Element::Cookie       => 6,
+                Element::Cookie       => 12,
                 Element::Header       => 6,
                 Element::LinkTemplate => 6,
                 Element::JSON         => 12,
@@ -91,7 +91,7 @@ describe name_from_filename do
             interbase:  {
                 Element::Form         => 8,
                 Element::Link         => 8,
-                Element::Cookie       => 4,
+                Element::Cookie       => 8,
                 Element::Header       => 4,
                 Element::LinkTemplate => 4,
                 Element::JSON         => 8,
@@ -100,7 +100,7 @@ describe name_from_filename do
             maxdb:      {
                 Element::Form         => 4,
                 Element::Link         => 4,
-                Element::Cookie       => 2,
+                Element::Cookie       => 4,
                 Element::Header       => 2,
                 Element::LinkTemplate => 2,
                 Element::JSON         => 4,
@@ -109,7 +109,7 @@ describe name_from_filename do
             mssql:      {
                 Element::Form         => 86,
                 Element::Link         => 86,
-                Element::Cookie       => 42,
+                Element::Cookie       => 86,
                 Element::Header       => 42,
                 Element::LinkTemplate => 42,
                 Element::JSON         => 86,
@@ -118,7 +118,7 @@ describe name_from_filename do
             mysql:      {
                 Element::Form         => 52,
                 Element::Link         => 52,
-                Element::Cookie       => 26,
+                Element::Cookie       => 52,
                 Element::Header       => 26,
                 Element::LinkTemplate => 26,
                 Element::JSON         => 52,
@@ -127,7 +127,7 @@ describe name_from_filename do
             oracle:     {
                 Element::Form         => 20,
                 Element::Link         => 20,
-                Element::Cookie       => 10,
+                Element::Cookie       => 20,
                 Element::Header       => 10,
                 Element::LinkTemplate => 10,
                 Element::JSON         => 20,
@@ -136,7 +136,7 @@ describe name_from_filename do
             pgsql:      {
                 Element::Form         => 36,
                 Element::Link         => 36,
-                Element::Cookie       => 18,
+                Element::Cookie       => 36,
                 Element::Header       => 18,
                 Element::LinkTemplate => 18,
                 Element::JSON         => 36,
@@ -145,7 +145,7 @@ describe name_from_filename do
             sqlite:     {
                 Element::Form         => 16,
                 Element::Link         => 16,
-                Element::Cookie       => 8,
+                Element::Cookie       => 16,
                 Element::Header       => 8,
                 Element::LinkTemplate => 8,
                 Element::JSON         => 16,
@@ -154,7 +154,7 @@ describe name_from_filename do
             sybase:     {
                 Element::Form         => 12,
                 Element::Link         => 12,
-                Element::Cookie       => 6,
+                Element::Cookie       => 12,
                 Element::Header       => 6,
                 Element::LinkTemplate => 6,
                 Element::JSON         => 12,
