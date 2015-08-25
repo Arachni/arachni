@@ -104,6 +104,11 @@ module Differential
     def differential_analysis( opts = {} )
         return if self.inputs.empty?
 
+        if empty_input = self.inputs.find { |k, v| v.to_s.empty? }
+            print_debug "Differential analysis: Input is missing default value: #{empty_input.first}"
+            return false
+        end
+
         return false if audited? audit_id
         audited audit_id
 

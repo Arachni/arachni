@@ -68,6 +68,18 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
             end
         end
 
+        context 'when the inputs are missing default values' do
+            let(:url) { 'http://stuff.com/' }
+
+            it 'returns false' do
+                subject.inputs = {
+                    'with-value' => 'value',
+                    'without-value' => ''
+                }
+                expect(subject.differential_analysis( @opts )).to be_falsey
+            end
+        end
+
         context 'when response behavior suggests a vuln' do
             let(:url) { @url + '/true' }
 
