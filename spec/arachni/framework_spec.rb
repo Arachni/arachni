@@ -18,7 +18,7 @@ describe Arachni::Framework do
                 expect(Arachni::Checks.constants.include?( :Signature )).to be_falsey
 
                 Arachni::Framework.new do |f|
-                    expect(f.checks.load_all).to eq(%w(taint))
+                    expect(f.checks.load_all).to eq(%w(signature))
                     expect(Arachni::Checks.constants.include?( :Signature )).to be_truthy
                 end
 
@@ -172,6 +172,10 @@ describe Arachni::Framework do
 
         it 'includes http statistics' do
             expect(statistics[:http]).to eq(subject.http.statistics)
+        end
+
+        it 'includes browser cluster statistics' do
+            expect(statistics[:browser_cluster]).to eq(Arachni::BrowserCluster.statistics)
         end
 
         [:found_pages, :audited_pages, :current_page].each  do |k|

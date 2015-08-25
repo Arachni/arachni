@@ -115,7 +115,9 @@ class Framework
 
     def print_statistics( unmute = false )
         statistics = @framework.statistics
-        http = statistics[:http]
+
+        http            = statistics[:http]
+        browser_cluster = statistics[:browser_cluster]
 
         refresh_line nil, unmute
         refresh_info( "Audited #{statistics[:audited_pages]} pages.", unmute )
@@ -127,8 +129,12 @@ class Framework
 
         refresh_line nil, unmute
 
-        refresh_info( "Sent #{statistics[:http][:request_count]} requests.", unmute )
-        refresh_info( "Received and analyzed #{statistics[:http][:response_count]} responses.", unmute )
+        res_req = "#{statistics[:http][:response_count]}/#{statistics[:http][:request_count]}"
+        refresh_info( "Processed #{res_req} HTTP requests.", unmute )
+
+        jobs = "#{browser_cluster[:completed_job_count]}/#{browser_cluster[:queued_job_count]}"
+        refresh_info( "Processed #{jobs} browser jobs.", unmute )
+
         refresh_info( "In #{seconds_to_hms( statistics[:runtime] )}", unmute )
 
         avg = "Average: #{http[:total_responses_per_second].to_s} requests/second."

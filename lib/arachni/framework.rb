@@ -133,6 +133,7 @@ class Framework
     #   Framework statistics:
     #
     #   *  `:http`          -- {HTTP::Client#statistics}
+    #   * `browser_cluster` -- {BrowserCluster.statistics}
     #   *  `:runtime`       -- Scan runtime in seconds.
     #   *  `:found_pages`   -- Number of discovered pages.
     #   *  `:audited_pages` -- Number of audited pages.
@@ -141,11 +142,12 @@ class Framework
     #   *  `:messages`      -- {#status_messages}
     def statistics
         {
-            http:          http.statistics,
-            runtime:       @start_datetime ? Time.now - @start_datetime : 0,
-            found_pages:   sitemap.size,
-            audited_pages: state.audited_page_count,
-            current_page:  @current_url
+            http:            http.statistics,
+            browser_cluster: BrowserCluster.statistics,
+            runtime:         @start_datetime ? Time.now - @start_datetime : 0,
+            found_pages:     sitemap.size,
+            audited_pages:   state.audited_page_count,
+            current_page:    @current_url
         }
     end
 

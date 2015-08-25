@@ -71,6 +71,8 @@ class BrowserCluster
 
     attr_reader :consumed_pids
 
+    attr_reader :job_counter
+
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
     #   Amount of {Worker browsers} to add to the pool.
@@ -153,6 +155,8 @@ class BrowserCluster
 
             notify_on_queue job
 
+            self.class.increment_queued_job_count
+
             @pending_job_counter  += 1
             @pending_jobs[job.id] += 1
             @job_callbacks[job.id] = block if block
@@ -222,6 +226,8 @@ class BrowserCluster
 
             @pending_job_counter -= @pending_jobs[job.id]
             @pending_jobs[job.id] = 0
+
+            self.class.increment_completed_job_count
 
             if @pending_job_counter <= 0
                 @pending_job_counter = 0
@@ -371,6 +377,23 @@ class BrowserCluster
     # @private
     def callback_for( job )
         @job_callbacks[job.id]
+    end
+
+    def self.increment_queued_job_count
+        @queued_job_count ||= 0
+        @queued_job_count += 1
+    end
+
+    def self.increment_completed_job_count
+        @completed_job_count ||= 0
+        @completed_job_count += 1
+    end
+
+    def self.statistics
+        {
+            queued_job_count:    @queued_job_count    || 0,
+            completed_job_count: @completed_job_count || 0
+        }
     end
 
     private

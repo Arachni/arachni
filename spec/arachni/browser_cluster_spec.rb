@@ -98,6 +98,31 @@ describe Arachni::BrowserCluster do
         end
     end
 
+    describe '.statistics' do
+        it 'includes :queued_job_count' do
+            @cluster = described_class.new
+
+            current = described_class.statistics[:queued_job_count]
+            @cluster.with_browser{}
+            @cluster.with_browser{}
+            @cluster.with_browser{}
+
+            expect(described_class.statistics[:queued_job_count] - current).to eq 3
+        end
+
+        it 'includes :completed_job_count' do
+            @cluster = described_class.new
+
+            current = described_class.statistics[:completed_job_count]
+            @cluster.with_browser{}
+            @cluster.with_browser{}
+            @cluster.with_browser{}
+            @cluster.wait
+
+            expect(described_class.statistics[:completed_job_count] - current).to eq 3
+        end
+    end
+
     describe '#with_browser' do
         it 'provides a worker to the block' do
             worker = nil
