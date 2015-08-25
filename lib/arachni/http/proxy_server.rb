@@ -63,7 +63,7 @@ class ProxyServer < WEBrick::HTTPProxyServer
 
         @logger = WEBrick::Log.new( $stderr, 5 )
         # Will force the proxy to stfu.
-        @logger.close if !Arachni::UI::Output.debug?( 2 )
+        @logger.close if !Arachni::UI::Output.debug?( 3 )
 
         @interceptor_ports = {}
         @interceptors      = {}
