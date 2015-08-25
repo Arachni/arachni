@@ -69,14 +69,21 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
         end
 
         context 'when the inputs are missing default values' do
-            let(:url) { 'http://stuff.com/' }
-
-            it 'returns false' do
+            it 'skips them' do
                 subject.inputs = {
-                    'with-value' => 'value',
+                    'with-value'    => 'value',
                     'without-value' => ''
                 }
-                expect(subject.differential_analysis( @opts )).to be_falsey
+
+                submitted = []
+
+                allow_any_instance_of(subject.class).to receive(:submit) do |instance|
+                    submitted << instance.affected_input_name
+                end
+
+                subject.differential_analysis( @opts )
+
+                expect(submitted.uniq).to eq ['with-value']
             end
         end
 
@@ -183,7 +190,6 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 expect(issues).to be_empty
             end
         end
-
     end
 
 end

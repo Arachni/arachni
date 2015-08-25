@@ -104,8 +104,9 @@ module Differential
     def differential_analysis( opts = {} )
         return if self.inputs.empty?
 
-        if empty_input = self.inputs.find { |k, v| v.to_s.empty? }
-            print_debug "Differential analysis: Input is missing default value: #{empty_input.first}"
+        with_missing_values = Set.new( self.inputs.select { |k, v| v.to_s.empty? }.keys )
+        if self.inputs.size == with_missing_values.size
+            print_debug 'Differential analysis: Inputs are missing default values.'
             return false
         end
 
@@ -120,6 +121,9 @@ module Differential
 
         @differential_analysis_options = opts.dup
         opts = self.class::MUTATION_OPTIONS.merge( DIFFERENTIAL_OPTIONS.merge( opts ) )
+        opts[:skip_like] = proc do |mutation|
+            with_missing_values.include? mutation.affected_input_name
+        end
 
         mutations_size = 0
         each_mutation( opts[:false], opts ) { mutations_size += 1 }
