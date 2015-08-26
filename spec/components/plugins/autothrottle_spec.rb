@@ -36,6 +36,7 @@ describe name_from_filename do
 
                 expect(http.max_concurrency).to be < pre
             end
+
             context 'and then fall bellow threshold' do
                 it 'increases the max concurrency (without exceeding http_request_concurrency)' do
                     http.max_concurrency.times { http.get( url + 'slow' ) }
