@@ -62,6 +62,7 @@
                     response headers. This will be enough to draw attention to the response,
                     while avoiding dynamic content (like `Date` and `Cookies`) which
                     can mess with the uniqueness of the `Issue#digest`.
+                - `http_only_cookies` -- Don't include the cookie value in the proof.
 
 ## 1.2.1 _(July 25, 2015)_
 
