@@ -46,7 +46,7 @@
         - `login_script` -- Updated to wait for the page to settle when using
             a JS login script.
     - Checks
-        - `Active`
+        - Active
             - Removed
                 `xss_dom_inputs` -- No longer necessary, covered by new DOM
                     element abstractions and `xss_dom`.
@@ -54,6 +54,9 @@
                 in the injected URL.
             - `unvalidated_redirect_dom` -- Updated to use `Utilities.random_seed`
                 in the injected URL.
+        - Passive
+            - Grep
+                - `captcha` -- Use the captcha input as proof instead of the whole form.
 
 ## 1.2.1 _(July 25, 2015)_
 
