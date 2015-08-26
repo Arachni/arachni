@@ -58,6 +58,10 @@
             - Grep
                 - `captcha` -- Use the captcha input as proof instead of the whole form.
                 - `form_upload` -- Use the file input as proof instead of the whole form.
+                - `hsts` -- Use the HTTP response status line as proof, instead of all the
+                    response headers. This will be enough to draw attention to the response,
+                    while avoiding dynamic content (like `Date` and `Cookies`) which
+                    can mess with the uniqueness of the `Issue#digest`.
 
 ## 1.2.1 _(July 25, 2015)_
 
