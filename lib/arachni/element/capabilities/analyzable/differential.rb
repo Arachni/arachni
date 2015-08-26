@@ -6,6 +6,8 @@
     web site for more information on licensing and terms of use.
 =end
 
+require_relative '../mutable'
+
 module Arachni
 module Element::Capabilities
 module Analyzable

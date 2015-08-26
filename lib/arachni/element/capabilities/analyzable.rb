@@ -6,8 +6,6 @@
     web site for more information on licensing and terms of use.
 =end
 
-require_relative 'auditable'
-
 module Arachni
 module Element::Capabilities
 

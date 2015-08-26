@@ -24,9 +24,13 @@ module Capabilities
     end
 end
 
-# load and include all available capabilities
-lib = File.dirname( __FILE__ ) + '/capabilities/*.rb'
-Dir.glob( lib ).each { |f| require f }
+file = File.dirname( __FILE__ )
+# Need to be loaded in order.
+%w(inputtable submittable mutable auditable analyzable).each do |name|
+    require_relative "#{file}/capabilities/#{name}.rb"
+end
+# Load the rest automatically.
+Dir.glob( "#{file}/capabilities/*.rb" ).each { |f| require f }
 
 # Base class for all element types.
 #
