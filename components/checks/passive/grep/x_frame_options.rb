@@ -54,7 +54,7 @@ embedded into other sites.
                 cwe:         693,
                 severity:    Severity::LOW,
                 remedy_guidance: %q{
-Configure your web server to include an X-Frame-Options header.
+Configure your web server to include an `X-Frame-Options` header.
 }
             }
         }
