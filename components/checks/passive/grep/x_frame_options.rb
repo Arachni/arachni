@@ -17,7 +17,7 @@ class Arachni::Checks::XFrameOptions < Arachni::Check::Base
 
         log(
             vector: Element::Server.new( page.url ),
-            proof:  page.response.headers_string
+            proof:  page.response.status_line
         )
     end
 

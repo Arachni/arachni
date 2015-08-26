@@ -54,16 +54,8 @@
                 in the injected URL.
             - `unvalidated_redirect_dom` -- Updated to use `Utilities.random_seed`
                 in the injected URL.
-        - Passive
-            - Grep
-                - `captcha` -- Use the captcha input as proof instead of the whole form.
-                - `form_upload` -- Use the file input as proof instead of the whole form.
-                - `hsts` -- Use the HTTP response status line as proof, instead of all the
-                    response headers. This will be enough to draw attention to the response,
-                    while avoiding dynamic content (like `Date` and `Cookies`) which
-                    can mess with the uniqueness of the `Issue#digest`.
-                - `http_only_cookies` -- Don't include the cookie value in the proof.
-                - `insecure_cookies` -- Don't include the cookie value in the proof.
+        - Passive -- Reworked proofs to remove dynamic content which can interfere
+            with issue uniqueness or removed proofs altogether when not necessary.
 
 ## 1.2.1 _(July 25, 2015)_
 

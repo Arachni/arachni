@@ -18,7 +18,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
             next if form.simple[:autocomplete] == 'off'
             next if has_input_with_autocomplete_off? form
 
-            log( proof: form.source, vector: form )
+            log( vector: form )
         end
     end
 
@@ -36,7 +36,7 @@ class Arachni::Checks::PasswordAutocomplete < Arachni::Check::Base
                 without explicitly disabling auto-complete.},
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3',
+            version:     '0.3.1',
 
             issue:       {
                 name:        %q{Password field with auto-complete},

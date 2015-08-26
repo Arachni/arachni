@@ -15,7 +15,7 @@ class Arachni::Checks::InsecureCookies < Arachni::Check::Base
         page.cookies.each do |cookie|
             next if cookie.secure? || audited?( cookie.name )
 
-            log( vector: cookie, proof: "#{cookie.name}=" )
+            log( vector: cookie )
             audited( cookie.name )
         end
     end

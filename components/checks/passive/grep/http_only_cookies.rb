@@ -15,7 +15,7 @@ class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
         page.cookies.each do |cookie|
             next if cookie.http_only? || audited?( cookie.name )
 
-            log( vector: cookie, proof: "#{cookie.name}=" )
+            log( vector: cookie )
             audited( cookie.name )
         end
     end
