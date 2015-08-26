@@ -41,14 +41,14 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
         print_info "User agent: #{report.options[:http][:user_agent]}"
         print_line
         print_status 'Audited elements: '
-        print_info '* Links'    if report.options[:audit][:links]
-        print_info '* Forms'    if report.options[:audit][:forms]
-        print_info '* Cookies'  if report.options[:audit][:cookies]
-        print_info '* Headers'  if report.options[:audit][:headers]
-        print_info '* XMLs'     if report.options[:audit][:xmls]
-        print_info '* JSONs'    if report.options[:audit][:jsons]
-        print_info '* Inputs'   if report.options[:audit][:inputs]
-        print_info '* UI forms' if report.options[:audit][:ui_forms]
+        print_info '* Links'     if report.options[:audit][:links]
+        print_info '* Forms'     if report.options[:audit][:forms]
+        print_info '* Cookies'   if report.options[:audit][:cookies]
+        print_info '* Headers'   if report.options[:audit][:headers]
+        print_info '* XMLs'      if report.options[:audit][:xmls]
+        print_info '* JSONs'     if report.options[:audit][:jsons]
+        print_info '* UI inputs' if report.options[:audit][:ui_inputs]
+        print_info '* UI forms'  if report.options[:audit][:ui_forms]
         print_line
         print_status "Checks: #{report.options[:checks].join( ', ' )}"
 

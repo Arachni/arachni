@@ -56,7 +56,7 @@ Injects URLs and checks the browser URL to determine whether the attack was succ
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS - [
                 Element::LinkTemplate::DOM,
-                Element::Input::DOM
+                Element::UIInput::DOM
             ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1.2',

@@ -499,7 +499,7 @@ access unauthorized pages.
                 Element::GenericDOM.type  => 0,
                 Element::JSON.type        => 0,
                 Element::XML.type         => 0,
-                Element::Input::DOM.type  => 0,
+                Element::UIInput::DOM.type  => 0,
                 Element::UIForm::DOM.type => 0
             },
             verification:     {

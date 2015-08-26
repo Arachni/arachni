@@ -151,9 +151,9 @@ class Audit < Arachni::OptionGroup
     #
     # @return    [Bool]
     #   Audit DOM inputs.
-    attr_accessor :inputs
-    alias :input_doms  :inputs
-    alias :input_doms=  :inputs=
+    attr_accessor :ui_inputs
+    alias :ui_input_doms  :ui_inputs
+    alias :ui_input_doms=  :ui_inputs=
 
     # @note Default is `false`.
     #
@@ -251,7 +251,8 @@ class Audit < Arachni::OptionGroup
     #   * `:forms`
     #   * `:cookies`
     #   * `:headers`
-    #   * `:inputs`
+    #   * `:ui_inputs`
+    #   * `:ui_forms`
     #   * `:xmls`
     #   * `:jsons`
     #
@@ -269,7 +270,7 @@ class Audit < Arachni::OptionGroup
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
-     :jsons, :xmls, :inputs, :input_doms, :ui_forms, :ui_form_doms,
+     :jsons, :xmls, :ui_inputs, :ui_input_doms, :ui_forms, :ui_form_doms,
      :parameter_values, :parameter_names, :with_extra_parameter].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )

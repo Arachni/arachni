@@ -19,7 +19,7 @@
     - `UIForm` -- Audits `<input>` and `<button>` groups which don't belong to
         a `<form>` parent. Also covers cases of `<form>` submissions that occur
         via elements other than a submit button.
-    - `Input` -- Audits individual `<input>` elements which have associated DOM events.
+    - `UIInput` -- Audits individual `<input>` elements which have associated DOM events.
     - `Capabilities` -- Refactored to allow for easier expansion of DOM capabilities.
         - `Analyzable`
             - `Differential` -- Updated to remove the injected seed from the response

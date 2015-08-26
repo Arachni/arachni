@@ -245,7 +245,7 @@ class Parser
     end
 
     # Dummy method, only the {Browser#to_page browser} can fill this in.
-    def inputs
+    def ui_inputs
         []
     end
 

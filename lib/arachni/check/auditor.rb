@@ -117,9 +117,9 @@ module Auditor
                         proc { audit.jsons? && page.jsons.find { |e| e.inputs.any? } },
                     Element::XML               =>
                         proc { audit.xmls? && page.xmls.find { |e| e.inputs.any? } },
-                    Element::Input             => false,
-                    Element::Input::DOM        =>
-                        proc { audit.inputs? && page.inputs.any? },
+                    Element::UIInput             => false,
+                    Element::UIInput::DOM        =>
+                        proc { audit.ui_inputs? && page.ui_inputs.any? },
                     Element::UIForm            => false,
                     Element::UIForm::DOM       =>
                         proc { audit.ui_forms? && page.ui_forms.any? },
@@ -193,7 +193,7 @@ module Auditor
     # Auditable DOM elements.
     DOM_ELEMENTS_WITH_INPUTS = [
         Element::Link::DOM, Element::Form::DOM, Element::Cookie::DOM,
-        Element::LinkTemplate::DOM, Element::Input::DOM, Element::UIForm::DOM
+        Element::LinkTemplate::DOM, Element::UIInput::DOM, Element::UIForm::DOM
     ]
 
     # Default audit options.
@@ -527,8 +527,8 @@ module Auditor
                 when Element::LinkTemplate::DOM.type
                     prepare_each_dom_element( page.link_templates, &block )
 
-                when Element::Input::DOM.type
-                    prepare_each_dom_element( page.inputs, &block )
+                when Element::UIInput::DOM.type
+                    prepare_each_dom_element( page.ui_inputs, &block )
 
                 when Element::UIForm::DOM.type
                     prepare_each_dom_element( page.ui_forms, &block )

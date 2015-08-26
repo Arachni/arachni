@@ -102,7 +102,7 @@ class Page
 
     ELEMENTS = [
         :links, :forms, :cookies, :headers, :link_templates, :jsons, :xmls,
-        :inputs, :ui_forms
+        :ui_inputs, :ui_forms
     ]
 
     METADATA = [ :nonce_name, :skip_dom ]

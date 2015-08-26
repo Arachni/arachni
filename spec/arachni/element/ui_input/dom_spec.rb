@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Element::Input::DOM do
+describe Arachni::Element::UIInput::DOM do
     inputs = { 'my-input' => '1' }
 
     it_should_behave_like 'element_dom'
@@ -21,7 +21,7 @@ describe Arachni::Element::Input::DOM do
     end
 
     def element
-        e = Arachni::Element::Input.new(
+        e = Arachni::Element::UIInput.new(
             method: 'input',
             action: @page.url,
             source: '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1" />'
@@ -49,20 +49,20 @@ describe Arachni::Element::Input::DOM do
     let(:inputtable) { element }
 
     describe '#type' do
-        it 'returns :input_dom' do
-            expect(subject.type).to eq(:input_dom)
+        it 'returns :ui_input_dom' do
+            expect(subject.type).to eq(:ui_input_dom)
         end
     end
 
     describe '.type' do
-        it 'returns :input_dom' do
-            expect(described_class.type).to eq(:input_dom)
+        it 'returns :ui_input_dom' do
+            expect(described_class.type).to eq(:ui_input_dom)
         end
     end
 
     describe '#parent' do
         it 'returns the parent element' do
-            expect(subject.parent).to be_kind_of Arachni::Element::Input
+            expect(subject.parent).to be_kind_of Arachni::Element::UIInput
         end
     end
 

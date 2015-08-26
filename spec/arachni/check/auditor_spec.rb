@@ -75,7 +75,7 @@ describe Arachni::Check::Auditor do
         Arachni::Element::Cookie, Arachni::Element::Cookie::DOM,
         Arachni::Element::Header, Arachni::Element::LinkTemplate,
         Arachni::Element::LinkTemplate::DOM, Arachni::Element::JSON,
-        Arachni::Element::XML, Arachni::Element::Input, Arachni::Element::Input::DOM,
+        Arachni::Element::XML, Arachni::Element::UIInput, Arachni::Element::UIInput::DOM,
         Arachni::Element::UIForm, Arachni::Element::UIForm::DOM
     ]
 
@@ -261,7 +261,7 @@ describe Arachni::Check::Auditor do
                                         end
                                     end
                                 end
-                            elsif element == Arachni::Element::Input ||
+                            elsif element == Arachni::Element::UIInput ||
                                          element == Arachni::Element::UIForm
                                 it 'returns false' do
                                     expect(auditor.class.check?( page )).to be_falsey
@@ -283,7 +283,7 @@ describe Arachni::Check::Auditor do
                                         expect(auditor.class.check?( page )).to be_truthy
                                     end
 
-                                elsif element == Arachni::Element::Input ||
+                                elsif element == Arachni::Element::UIInput ||
                                     element == Arachni::Element::UIForm
                                     it 'returns false' do
                                         expect(auditor.class.check?( page )).to be_falsey
@@ -415,10 +415,10 @@ describe Arachni::Check::Auditor do
             Arachni::Options.audit.link_templates = /link-template\/input\/(?<input>.+)/
             auditor.load_page_from "#{@url}each_candidate_element"
 
-            auditor.page.jsons    = [Factory[:json]]
-            auditor.page.xmls     = [Factory[:xml]]
-            auditor.page.inputs   = [Factory[:input]]
-            auditor.page.ui_forms = [Factory[:ui_form]]
+            auditor.page.jsons     = [Factory[:json]]
+            auditor.page.xmls      = [Factory[:xml]]
+            auditor.page.ui_inputs = [Factory[:ui_input]]
+            auditor.page.ui_forms  = [Factory[:ui_form]]
         end
 
         it 'sets the auditor' do
@@ -465,7 +465,7 @@ describe Arachni::Check::Auditor do
                     auditor.class.info[:elements].clear
 
                     expected_elements = Arachni::Page::ELEMENTS
-                    expected_elements.delete :inputs
+                    expected_elements.delete :ui_inputs
                     expected_elements.delete :ui_forms
 
                     elements = []
@@ -486,8 +486,8 @@ describe Arachni::Check::Auditor do
             Arachni::Options.audit.link_templates = /dom-link-template\/input\/(?<input>.+)/
             auditor.load_page_from "#{@url}each_candidate_dom_element"
 
-            auditor.page.inputs   = [Factory[:input]]
-            auditor.page.ui_forms = [Factory[:ui_form]]
+            auditor.page.ui_inputs = [Factory[:ui_input]]
+            auditor.page.ui_forms  = [Factory[:ui_form]]
         end
 
         it 'sets the auditor' do
@@ -542,7 +542,7 @@ describe Arachni::Check::Auditor do
                     expect(elements).to eq(
                         (auditor.page.links.select { |l| l.dom } |
                             auditor.page.forms | auditor.page.cookies |
-                            auditor.page.link_templates | auditor.page.inputs |
+                            auditor.page.link_templates | auditor.page.ui_inputs |
                             auditor.page.ui_forms).map(&:dom)
                     )
                 end

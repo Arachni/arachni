@@ -9,7 +9,7 @@
 module Arachni::Element
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class Input < Base
+class UIInput < Base
     require_relative 'input/dom'
 
     include Arachni::Element::Capabilities::DOMOnly
@@ -17,7 +17,7 @@ class Input < Base
     SUPPORTED_TYPES = Set.new([:input, :textarea])
 
     def self.type
-        :input
+        :ui_input
     end
 
     def self.from_browser( browser, page )
@@ -57,4 +57,4 @@ class Input < Base
 end
 end
 
-Arachni::Input = Arachni::Element::Input
+Arachni::UIInput = Arachni::Element::UIInput

@@ -754,7 +754,7 @@
             <xs:enumeration value="Arachni::Element::JSON" />
             <xs:enumeration value="Arachni::Element::XML" />
             <xs:enumeration value="Arachni::Element::UIForm::DOM" />
-            <xs:enumeration value="Arachni::Element::Input::DOM" />
+            <xs:enumeration value="Arachni::Element::UIInput::DOM" />
         </xs:restriction>
     </xs:simpleType>
 

@@ -208,11 +208,12 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.xmls = true
         end
 
-        on( '--audit-inputs', 'Audit DOM input elements.' ) do
-            options.audit.inputs = true
+        on( '--audit-ui-inputs', 'Audit orphan Input elements with events.' ) do
+            options.audit.ui_inputs = true
         end
 
-        on( '--audit-ui-forms', 'Audit DOM UI forms.' ) do
+        on( '--audit-ui-forms', 'Audit UI Forms.',
+            'Input and button groups that do not belong to a parent <form> element.' ) do
             options.audit.ui_forms = true
         end
 

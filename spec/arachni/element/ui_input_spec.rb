@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::Element::Input do
+describe Arachni::Element::UIInput do
     html = '<input type=password name="my_first_input" value="my_first_value"" />'
 
     it_should_behave_like 'dom_only', html
@@ -19,6 +19,18 @@ describe Arachni::Element::Input do
 
     let(:browser) { @browser }
     let(:page) { Arachni::Page.from_url( url ) }
+
+    describe '#type' do
+        it 'returns :ui_input' do
+            expect(subject.type).to eq(:ui_input)
+        end
+    end
+
+    describe '.type' do
+        it 'returns :ui_input' do
+            expect(described_class.type).to eq(:ui_input)
+        end
+    end
 
     describe '.from_browser' do
         before :each do

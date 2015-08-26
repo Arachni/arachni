@@ -7,7 +7,7 @@
 =end
 
 module Arachni::Element
-class Input
+class UIInput
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class DOM < DOM
@@ -57,7 +57,7 @@ class DOM < DOM
         self.class.type
     end
     def self.type
-        :input_dom
+        :ui_input_dom
     end
 
     def initialization_options

@@ -1139,11 +1139,11 @@ describe Arachni::Browser do
                 end
             end
 
-            context "#{Arachni::Element::Input} elements" do
+            context "#{Arachni::Element::UIInput} elements" do
                 context "and #{Arachni::OptionGroups::Audit}#inputs is" do
                     context true do
                         before do
-                            Arachni::Options.audit.elements :inputs
+                            Arachni::Options.audit.elements :ui_inputs
                         end
 
                         context '<input>' do
@@ -1151,7 +1151,7 @@ describe Arachni::Browser do
                                 it 'parses it' do
                                     @browser.load "#{@url}/to_page/input/with_events"
 
-                                    input = @browser.to_page.inputs.first
+                                    input = @browser.to_page.ui_inputs.first
 
                                     expect(input.action).to eq @browser.url
                                     expect(input.source).to eq '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1">'
@@ -1162,7 +1162,7 @@ describe Arachni::Browser do
                             context 'without DOM events' do
                                 it 'ignores it' do
                                     @browser.load "#{@url}/to_page/input/without_events"
-                                    expect(@browser.to_page.inputs).to be_empty
+                                    expect(@browser.to_page.ui_inputs).to be_empty
                                 end
                             end
                         end
@@ -1172,7 +1172,7 @@ describe Arachni::Browser do
                                 it 'parses it' do
                                     @browser.load "#{@url}/to_page/textarea/with_events"
 
-                                    input = @browser.to_page.inputs.first
+                                    input = @browser.to_page.ui_inputs.first
 
                                     expect(input.action).to eq @browser.url
                                     expect(input.source).to eq '<textarea oninput="handleOnInput();" id="my-input" name="my-input">'
@@ -1183,7 +1183,7 @@ describe Arachni::Browser do
                             context 'without DOM events' do
                                 it 'ignores it' do
                                     @browser.load "#{@url}/to_page/textarea/without_events"
-                                    expect(@browser.to_page.inputs).to be_empty
+                                    expect(@browser.to_page.ui_inputs).to be_empty
                                 end
                             end
                         end
@@ -1191,12 +1191,12 @@ describe Arachni::Browser do
 
                     context false do
                         before do
-                            Arachni::Options.audit.skip_elements :inputs
+                            Arachni::Options.audit.skip_elements :ui_inputs
                         end
 
                         it 'ignores them' do
                             @browser.load "#{@url}/to_page/input/with_events"
-                            expect(@browser.to_page.inputs).to be_empty
+                            expect(@browser.to_page.ui_inputs).to be_empty
                         end
                     end
                 end

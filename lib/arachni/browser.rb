@@ -829,11 +829,11 @@ class Browser
         page.dom.transitions          = @transitions.dup
         page.dom.skip_states          = skip_states.dup
 
-        if Options.audit.element? :inputs
-            page.inputs = Element::Input.from_browser( self, page )
+        if Options.audit.ui_inputs?
+            page.ui_inputs = Element::UIInput.from_browser( self, page )
         end
 
-        if Options.audit.element? :ui_form
+        if Options.audit.ui_forms?
             page.ui_forms = Element::UIForm.from_browser( self, page )
         end
 

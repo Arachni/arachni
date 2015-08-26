@@ -242,12 +242,12 @@ By inspecting all possible pages and their states (when using client-side code)
 Arachni is able to extract and audit the following elements and their inputs:
 
  - Forms
-    - Along with ones that require interaction with a real browser due to DOM events.
- - User-interface forms
-    - Input and button groups which don't belong to an HTML form element but
+    - Along with ones that require interaction via a real browser due to DOM events.
+ - User-interface Forms
+    - Input and button groups which don't belong to an HTML `<form>` element but
         are instead associated via JS code.
- - Inputs
-    - Orphan input elements with associated DOM events.
+ - User-interface Inputs
+    - Orphan `<input>` elements with associated DOM events.
  - Links
     - Along with ones that have client-side parameters in their fragment, i.e.:
         `http://example.com/#/?param=val&param2=val2`
@@ -314,11 +314,11 @@ Arachni is able to extract and audit the following elements and their inputs:
     - Forms
         - Can automatically refresh nonce tokens.
         - Can submit them via the integrated browser environment.
-     - User-interface forms
-        - Input and button groups which don't belong to an HTML form element but
-            are instead associated via JS code.
-    - Inputs
-        - Orphan input elements with associated DOM events.
+     - User-interface Forms
+        - Input and button groups which don't belong to an HTML `<form>` element
+            but are instead associated via JS code.
+    - User-interface Inputs
+        - Orphan `<input>` elements with associated DOM events.
     - Links
         - Can load them via the integrated browser environment.
     - LinkTemplates
@@ -474,7 +474,6 @@ Active checks engage the web application via its inputs.
 - XSS in HTML tags (`xss_tag`).
 - XSS in script context (`xss_script_context`).
 - DOM XSS (`xss_dom`).
-- DOM XSS inputs (`xss_dom_inputs`).
 - DOM XSS script context (`xss_dom_script_context`).
 - Source code disclosure (`source_code_disclosure`)
 - XML External Entity (`xxe`).

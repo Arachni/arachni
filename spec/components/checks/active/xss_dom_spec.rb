@@ -5,7 +5,7 @@ describe name_from_filename do
 
     def self.elements
         [ Element::Form::DOM, Element::Link::DOM, Element::Cookie::DOM,
-          Element::LinkTemplate::DOM, Element::Input::DOM, Element::UIForm::DOM ]
+          Element::LinkTemplate::DOM, Element::UIInput::DOM, Element::UIForm::DOM ]
     end
 
     def issue_count_per_element
@@ -14,7 +14,7 @@ describe name_from_filename do
             Element::Link::DOM         => 2,
             Element::Cookie::DOM       => 2,
             Element::LinkTemplate::DOM => 2,
-            Element::Input::DOM        => 2,
+            Element::UIInput::DOM        => 2,
             Element::UIForm::DOM       => 2
         }
     end
@@ -63,7 +63,7 @@ describe name_from_filename do
                     expect(transition.event).to eq :load
                     expect(transition.options[:cookies]).to eq issue.vector.inputs
 
-                when Element::Input::DOM
+                when Element::UIInput::DOM
                     expect(transition.element.tag_name).to eq :input
                     expect(transition.event).to eq :input
 
