@@ -28,7 +28,7 @@ module Differential
     end
 
     DIFFERENTIAL_OPTIONS =  {
-        format:         [Mutable::Format::STRAIGHT],
+        format:         [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
 
         # Amount of refinement operations to remove context-irrelevant dynamic
         # content -- like banners etc.
