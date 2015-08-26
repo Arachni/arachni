@@ -57,6 +57,7 @@
         - Passive
             - Grep
                 - `captcha` -- Use the captcha input as proof instead of the whole form.
+                - `form_upload` -- Use the file input as proof instead of the whole form.
 
 ## 1.2.1 _(July 25, 2015)_
 
