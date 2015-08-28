@@ -143,6 +143,7 @@ class Browser
         return if !(domain = curl.domain)
 
         asset_domains << domain
+        domain
     end
 
     # @param    [Hash]  options
@@ -997,12 +998,20 @@ class Browser
     def response
         u = watir.url
 
-        return if skip_path?( u )
+        if skip_path?( u )
+            print_debug "Response is out of scope: #{u}"
+            return
+        end
 
         r = get_response( u )
-        return r if r
 
-        print_debug "Response for '#{u}' never arrived."
+        return r if r && r.code != 504
+
+        if r
+            print_debug "Origin server timed-out when requesting: #{u}"
+        else
+            print_debug "Response never arrived: #{u}"
+        end
 
         nil
     end
@@ -1280,11 +1289,15 @@ class Browser
             end
         end
 
+        set_cookie = set_cookies.values.map(&:to_set_cookie)
+        print_debug_level_2 "Setting cookies: #{set_cookie}"
+
         url = "#{url}/set-cookies-#{request_token}"
         watir.goto preload( HTTP::Response.new(
+            code:    200,
             url:     url,
             headers: {
-                'Set-Cookie' => set_cookies.values.map(&:to_set_cookie)
+                'Set-Cookie' => set_cookie
             }
         ))
     end
@@ -1342,6 +1355,8 @@ class Browser
         return if request.headers['X-Arachni-Browser-Auth'] != auth_token
         request.headers.delete 'X-Arachni-Browser-Auth'
 
+        print_debug_level_2 "[#{__method__}] Request: #{request.url}"
+
         # We can't have 304 page responses in the framework, we need full request
         # and response data, the browser cache doesn't help us here.
         #
@@ -1352,10 +1367,16 @@ class Browser
             request.headers.delete 'If-Modified-Since'
         end
 
-        return if @javascript.serve( request, response )
+        if @javascript.serve( request, response )
+            print_debug_level_2 "[#{__method__}] Serving local JS."
+            return
+        end
 
         if !request.url.include?( request_token )
-            return if ignore_request?( request )
+            if ignore_request?( request )
+                print_debug_level_2 "[#{__method__}] Out of scope, ignoring."
+                return
+            end
 
             if @add_request_transitions
                 @request_transitions << Page::DOM::Transition.new( request.url, :request )
@@ -1365,10 +1386,14 @@ class Browser
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
         if from_preloads( request, response ) || from_cache( request, response )
+            print_debug_level_2 "[#{__method__}] Resource has been preloaded."
+
             # There may be taints or custom JS code that need to be updated.
             javascript.inject response
             return
         end
+
+        print_debug_level_2 "[#{__method__}] Request can proceed to origin."
 
         # Capture the request as elements of pages -- let's us grab AJAX and
         # other browser requests and convert them into elements we can analyze
@@ -1385,6 +1410,8 @@ class Browser
         # extension.
         if !request_for_asset?( request )
             request.response_max_size = nil
+        else
+            print_debug_level_2 "[#{__method__}] Asset detected, removing max size limit."
         end
 
         # Signal the proxy to continue with its request to the origin server.
@@ -1394,41 +1421,86 @@ class Browser
     def response_handler( request, response )
         return if request.url.include?( request_token )
 
+        print_debug_level_2 "[#{__method__}] Got response: #{response.url}"
+
         @request_transitions.each do |transition|
             next if !transition.running? || transition.element != request.url
             transition.complete
         end
 
-        javascript.inject response
+        if javascript.inject( response )
+            print_debug_level_2 "[#{__method__}] Injected custom JS."
+        end
 
         # Don't store assets, the browsers will cache them accordingly.
-        return if request_for_asset?( request ) || !response.text?
+        if request_for_asset?( request ) || !response.text?
+            print_debug_level_2 "[#{__method__}] Asset detected, will not store."
+            return
+        end
 
         # No-matter the scope, don't store resources for external domains.
-        return if !response.scope.in_domain?
+        if !response.scope.in_domain?
+            print_debug_level_2 "[#{__method__}] Outside of domain scope, will not store."
+            return
+        end
 
-        return if enforce_scope? && response.scope.out?
+        if enforce_scope? && response.scope.out?
+            print_debug_level_2 "[#{__method__}] Outside of general scope, will not store."
+            return
+        end
 
         whitelist_asset_domains( response )
         save_response response
+
+        print_debug_level_2 "[#{__method__}] Stored."
 
         nil
     end
 
     def ignore_request?( request )
-        return if !enforce_scope?
+        print_debug_level_2 "[#{__method__}] Checking: #{request.url}"
 
-        return false if request_for_asset?( request )
+        if !enforce_scope?
+            print_debug_level_2 "[#{__method__}] Allow: Scope enforcement disabled."
+            return
+        end
 
-        return true if !request.scope.follow_protocol?
+        if request_for_asset?( request )
+            print_debug_level_2 "[#{__method__}] Allow: Asset detected."
+            return false
+        end
 
-        return true if !request.scope.in_domain? &&
+        if !request.scope.follow_protocol?
+            print_debug_level_2 "[#{__method__}] Disallow: Cannot follow protocol."
+            return true
+        end
+
+        if !request.scope.in_domain? &&
             !self.class.asset_domains.include?( request.parsed_url.domain )
 
-        return true if request.scope.too_deep?
-        return true if !request.scope.include?
-        return true if request.scope.exclude?
-        return true if request.scope.redundant?
+            print_debug_level_2 "[#{__method__}] Disallow: Domain out of scope and not in CDN list."
+            return true
+        end
+
+        if request.scope.too_deep?
+            print_debug_level_2 "[#{__method__}] Disallow: Too deep."
+            return true
+        end
+
+        if !request.scope.include?
+            print_debug_level_2 "[#{__method__}] Disallow: Does not match inclusion rules."
+            return true
+        end
+
+        if request.scope.exclude?
+            print_debug_level_2 "[#{__method__}] Disallow: Matches exclusion rules."
+            return true
+        end
+
+        if request.scope.redundant?
+            print_debug_level_2 "[#{__method__}] Disallow: Matches redundant rules."
+            return true
+        end
 
         false
     end
@@ -1440,7 +1512,9 @@ class Browser
     def whitelist_asset_domains( response )
         ASSET_EXTRACTORS.each do |regexp|
             response.body.scan( regexp ).flatten.compact.each do |url|
-                self.class.add_asset_domain url
+                next if !(domain = self.class.add_asset_domain( url ))
+
+                print_debug_level_2 "[#{__method__}] #{domain} from #{url} based on #{regexp.source}"
             end
         end
     end
@@ -1457,11 +1531,15 @@ class Browser
         found_element = false
 
         if (json = JSON.from_request( @last_url, request ))
+            print_debug_level_2 "[#{__method__}] Extracted JSON input:\n#{json.source}"
+
             elements[:jsons] << json
             found_element = true
         end
 
         if !found_element && (xml = XML.from_request( @last_url, request ))
+            print_debug_level_2 "[#{__method__}] Extracted XML input:\n#{xml.source}"
+
             elements[:xmls] << xml
             found_element = true
         end
@@ -1492,13 +1570,30 @@ class Browser
                 return
         end
 
+        if (form = elements[:forms].last)
+            print_debug_level_2 "[#{__method__}] Extracted form input:\n" <<
+                                    "#{form.method.to_s.upcase} #{form.action} #{form.inputs}"
+        end
+
         el = elements.values.flatten
 
+        if el.empty?
+            print_debug_level_2 "[#{__method__}] No elements found."
+            return
+        end
+
         # Don't bother if the system in general has already seen the vectors.
-        return if el.empty? || !el.find { |e| !ElementFilter.include?( e ) }
+        if el.empty? || !el.find { |e| !ElementFilter.include?( e ) }
+            print_debug_level_2 "[#{__method__}] Ignoring, already seen."
+            return
+        end
 
         begin
-            return if !el.find { |e| !skip_state?( e ) }
+            if !el.find { |e| !skip_state?( e ) }
+                print_debug_level_2 "[#{__method__}] Ignoring, already seen."
+                return
+            end
+
             el.each { |e| skip_state e.id }
         # This could be an orphaned HTTP request, without a job, if running in
         # BrowserCluster::Worker.
@@ -1511,6 +1606,8 @@ class Browser
 
         @captured_pages << page if store_pages?
         notify_on_new_page( page )
+
+        print_debug_level_2 "[#{__method__}] Done."
     rescue => e
         print_debug "Could not capture: #{request.url}"
         print_debug request.body.to_s
