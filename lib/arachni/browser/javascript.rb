@@ -423,8 +423,6 @@ class Javascript
             EOHTML
         end
 
-        response.headers['content-length'] = response.body.size
-
         true
     end
 

@@ -394,6 +394,7 @@ end
 
 get '/test.png' do
     @@image_hit_count += 1
+    200
 end
 
 Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|

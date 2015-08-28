@@ -19,7 +19,7 @@ class WebServerManager
         @consumed_ports = Set.new
 
         Dir.glob( File.join( @lib + '**', '*.rb' ) ) do |path|
-            {} while @consumed_ports.include?( (port = available_port) )
+            {} while @consumed_ports.include?( (port = Arachni::Utilities.available_port) )
             @consumed_ports << port
 
             @servers[normalize_name( File.basename( path, '.rb' ) )] = {

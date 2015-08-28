@@ -330,8 +330,8 @@ class Dispatcher
         @operation_in_progress = true
 
         owner = 'dispatcher'
-        port  = available_port
-        token = generate_token
+        port  = Utilities.available_port
+        token = Utilities.generate_token
 
         pid = Processes::Manager.spawn( :instance, port: port, token: token )
         Process.detach( pid )

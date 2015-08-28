@@ -26,3 +26,5 @@ group :prof do
 end
 
 gemspec
+
+gem 'arachni-reactor', path: '../arachni-reactor/'

@@ -425,17 +425,6 @@ EOHTML
                 it 'appends a semicolon and newline to the body' do
                     expect(injected.body).to include "#{response.body};\n"
                 end
-
-                it 'updates the Content-Length' do
-                    old_content_length = response.headers['content-length'].to_i
-
-                    subject.inject( response )
-
-                    new_content_length = response.headers['content-length'].to_i
-
-                    expect(new_content_length).to be > old_content_length
-                    expect(new_content_length).to eq(response.body.bytesize)
-                end
             end
 
             context 'HTML' do
@@ -450,17 +439,6 @@ EOHTML
                     </body>
 EOHTML
                     )
-                end
-
-                it 'updates the Content-Length' do
-                    old_content_length = response.headers['content-length'].to_i
-
-                    subject.inject( response )
-
-                    new_content_length = response.headers['content-length'].to_i
-
-                    expect(new_content_length).to be > old_content_length
-                    expect(new_content_length).to eq(response.body.bytesize)
                 end
 
                 context 'when the response does not already contain the JS code' do

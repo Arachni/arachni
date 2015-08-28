@@ -75,7 +75,7 @@ class Dispatchers
                 pool_size:        options[:pool_size]
             },
             rpc:        {
-                server_port:    options[:port]    || available_port,
+                server_port:    options[:port]    || Utilities.available_port,
                 server_address: options[:address] || '127.0.0.1'
             }
         }

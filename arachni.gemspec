@@ -51,6 +51,9 @@ Gem::Specification.new do |s|
     # For compressing/decompressing system state archives.
     s.add_dependency 'rubyzip',           '1.1.6'
 
+    # HTTP proxy server
+    s.add_dependency 'http_parser.rb'
+
     # HTML report
     s.add_dependency 'coderay',           '1.1.0'
 

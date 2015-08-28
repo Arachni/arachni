@@ -69,14 +69,14 @@ class Instances
     #
     # @return   [RPC::Client::Instance]
     def spawn( options = {}, &block )
-        token = options.delete(:token) || generate_token
+        token = options.delete(:token) || Utilities.generate_token
         fork  = options.delete(:fork)
 
         options = {
             spawns: options[:spawns],
             rpc:    {
                 server_socket:  options[:socket],
-                server_port:    options[:port]    || available_port,
+                server_port:    options[:port]    || Utilities.available_port,
                 server_address: options[:address] || '127.0.0.1'
             }
         }
@@ -126,7 +126,7 @@ class Instances
         options[:grid_size].times do |i|
             last_member = Dispatchers.spawn(
                 neighbour: last_member ? last_member.url : last_member,
-                pipe_id:   available_port.to_s + available_port.to_s
+                pipe_id:   Utilities.available_port.to_s + Utilities.available_port.to_s
             )
         end
 
@@ -151,7 +151,7 @@ class Instances
         options[:grid_size].times do |i|
             last_member = Dispatchers.light_spawn(
                 neighbour: last_member ? last_member.url : last_member,
-                pipe_id:   available_port.to_s + available_port.to_s
+                pipe_id:   Utilities.available_port.to_s + Utilities.available_port.to_s
             )
         end
 

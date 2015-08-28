@@ -344,6 +344,8 @@ class Browser
 
         ensure_open_window
 
+        # This will also clear the current window, so better have it called
+        # always.
         load_cookies url, extra_cookies
 
         transition = Page::DOM::Transition.new( :page, :load,
@@ -393,12 +395,12 @@ class Browser
         @javascript.wait_till_ready
         print_debug_level_2 'Done'
 
-        print_debug_level_2 "Waiting for #{@proxy.active_connections} connections to close.."
-        wait_for_pending_requests
-        print_debug_level_2 'Done'
-
         print_debug_level_2 'Waiting for timers...'
         wait_for_timers
+        print_debug_level_2 'Done'
+
+        print_debug_level_2 "Waiting for #{@proxy.pending_requests} requests to complete.."
+        wait_for_pending_requests
         print_debug_level_2 'Done'
     end
 
@@ -997,19 +999,10 @@ class Browser
 
         return if skip_path?( u )
 
-        begin
-            with_timeout Options.http.request_timeout / 1_000 do
-                while !(r = get_response(u))
-                    sleep 0.1
-                end
+        r = get_response( u )
+        return r if r
 
-                fail Timeout::Error if r.timed_out?
-
-                return r
-            end
-        rescue Timeout::Error
-            print_debug "Response for '#{u}' never arrived."
-        end
+        print_debug "Response for '#{u}' never arrived."
 
         nil
     end
@@ -1138,7 +1131,7 @@ class Browser
         last_attempt_output = nil
         10.times do |i|
             done = false
-            port = available_port
+            port = Utilities.available_port
 
             print_debug "Attempt ##{i}, chose port number #{port}"
 
@@ -1149,7 +1142,7 @@ class Browser
                     @process = ChildProcess.build(
                         self.class.executable,
                         "--webdriver=#{port}",
-                        "--proxy=http://#{@proxy.address}/",
+                        "--proxy=#{@proxy.url}",
                         '--ignore-ssl-errors=true',
                         '--disk-cache=true',
                         "--debug=#{!!debug?}"
@@ -1261,27 +1254,8 @@ class Browser
     end
 
     def wait_for_pending_requests
-        # With AJAX requests being asynchronous and everything we need
-        # to wait a split second to give the browser time to initialize
-        # a connection.
-        #
-        # TODO: Add XMLHttpRequest.send() overrides to the DOMMonitor so
-        # that we'll know for sure when to wait.
         sleep 0.1
-
-        # Wait for pending requests to complete.
-        #
-        # The HTTP timeout option already guards us against this but I don't
-        # fully trust the proxy so we're using #with_timeout as a fallback.
-        with_timeout Options.http.request_timeout / 1_000 do
-            sleep 0.1 while @proxy.has_connections?
-        end
-
-        true
-    rescue Timeout::Error
-        #ap 'PENDING REQUESTS TIMEOUT'
-        #ap caller
-        false
+        sleep 0.01 while @proxy.has_pending_requests?
     end
 
     def load_cookies( url, cookies = {} )
