@@ -143,8 +143,9 @@ class Connection < Arachni::Reactor::Connection
         end
 
         code = response.code
-        # TODO: This should be 502 or something but it makes browsers block.
-        code = 200 if code == 0
+        if response.code == 0
+            code = 504
+        end
 
         res = "HTTP/#{http_version} #{code}\r\n"
 

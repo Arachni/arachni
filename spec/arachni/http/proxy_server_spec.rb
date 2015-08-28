@@ -84,7 +84,7 @@ describe Arachni::HTTP::ProxyServer do
                 sleep_url = @url + 'sleep'
 
                 expect(Typhoeus::Request.get( sleep_url ).code).not_to eq(0)
-                expect(via_proxy( proxy, sleep_url ).code).to eq(0)
+                expect(via_proxy( proxy, sleep_url ).code).to eq(504)
             end
         end
 
