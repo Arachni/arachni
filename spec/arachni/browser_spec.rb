@@ -2253,7 +2253,7 @@ describe Arachni::Browser do
         context "with #{Arachni::OptionGroups::Scope}#auto_redundant_paths has bee configured" do
             it 'respects scope restrictions' do
                 Arachni::Options.scope.auto_redundant_paths = 0
-                expect(@browser.load( @url + '/explore?test=1&test2=2' ).response.code).to eq(0)
+                expect(@browser.load( @url + '/explore?test=1&test2=2' ).response).to be_nil
             end
         end
 
