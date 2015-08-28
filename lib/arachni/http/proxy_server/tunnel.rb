@@ -16,22 +16,22 @@ class Tunnel < Arachni::Reactor::Connection
     personalize_output
 
     def initialize( options )
-        print_debug_level_2 'New SSL tunnel.'
+        print_debug_level_3 'New SSL tunnel.'
 
         @client = options[:client]
     end
 
     def on_connect
-        print_debug_level_2 'Connected to Interceptor.'
+        print_debug_level_3 'Connected to Interceptor.'
     end
 
     def write( data )
-        print_debug_level_2 " -> Forwarding #{data.size} bytes to Interceptor."
+        print_debug_level_3 " -> Forwarding #{data.size} bytes to Interceptor."
         super data
     end
 
     def on_close( reason = nil )
-        print_debug_level_2 "Closed because: [#{reason.class}] #{reason}"
+        print_debug_level_3 "Closed because: [#{reason.class}] #{reason}"
 
         # ap self.class
         # ap 'CLOSE'
@@ -44,7 +44,7 @@ class Tunnel < Arachni::Reactor::Connection
         # ap self.class
         # ap 'READ'
         # ap data
-        print_debug_level_2 "<- Forwarding #{data.size} bytes to client."
+        print_debug_level_3 "<- Forwarding #{data.size} bytes to client."
         @client.write data
     end
 end

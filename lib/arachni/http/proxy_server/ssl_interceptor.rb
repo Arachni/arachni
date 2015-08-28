@@ -29,7 +29,7 @@ class SSLInterceptor < Connection
     end
 
     def on_connect
-        print_debug_level_2 'Connected, starting SSL handshake.'
+        print_debug_level_3 'Connected, starting SSL handshake.'
         start_tls
     end
 

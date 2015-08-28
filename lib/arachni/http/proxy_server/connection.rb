@@ -28,19 +28,19 @@ class Connection < Arachni::Reactor::Connection
 
         @parser.on_message_begin = proc do
             if @reused
-                print_debug_level_2 "Reusing connection: #{object_id}"
+                print_debug_level_3 "Reusing connection: #{object_id}"
             else
-                print_debug_level_2 "Starting new connection: #{object_id}"
+                print_debug_level_3 "Starting new connection: #{object_id}"
             end
 
             @reused = true
 
-            print_debug_level_2 'Incoming request.'
+            print_debug_level_3 'Incoming request.'
             @parent.mark_connection_active self
         end
 
         @parser.on_body = proc do |chunk|
-            print_debug_level_2 "Got #{chunk.size} bytes."
+            print_debug_level_3 "Got #{chunk.size} bytes."
             @body << chunk
         end
 
@@ -48,7 +48,7 @@ class Connection < Arachni::Reactor::Connection
             method  = @parser.http_method.downcase.to_sym
             headers = cleanup_request_headers( @parser.headers )
 
-            print_debug_level_2 "Request received: #{@parser.http_method} #{@parser.request_url}"
+            print_debug_level_3 "Request received: #{@parser.http_method} #{@parser.request_url}"
 
             if method == :connect
                 handle_connect( headers )
@@ -71,7 +71,7 @@ class Connection < Arachni::Reactor::Connection
     end
 
     def handle_connect( headers )
-        print_debug_level_2 'Preparing to intercept.'
+        print_debug_level_3 'Preparing to intercept.'
 
         host = (headers['Host'] || @parser.request_url).split( ':', 2 ).first
         start_interceptor( host )
@@ -83,11 +83,11 @@ class Connection < Arachni::Reactor::Connection
     end
 
     def handle_request( request )
-        print_debug_level_2 'Processing request.'
+        print_debug_level_3 'Processing request.'
 
         Thread.new do
             if @options[:request_handler]
-                print_debug_level_2 "-- Has special handler: #{@options[:request_handler]}"
+                print_debug_level_3 "-- Has special handler: #{@options[:request_handler]}"
 
                 # Provisional empty, response in case the request_handler wants us to
                 # skip performing the request.
@@ -96,7 +96,7 @@ class Connection < Arachni::Reactor::Connection
 
                 # If the handler returns false then don't perform the HTTP request.
                 if @options[:request_handler].call( request, response )
-                    print_debug_level_2 '-- Handler approves, running...'
+                    print_debug_level_3 '-- Handler approves, running...'
 
                     # Even though it's a blocking request, force it to go through
                     # the HTTP::Client in order to handle cookie update and
@@ -104,20 +104,20 @@ class Connection < Arachni::Reactor::Connection
                     HTTP::Client.queue( request )
                     response = request.run
 
-                    print_debug_level_2 "-- ...completed in #{response.time}: #{response.status_line}"
+                    print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
                 else
-                    print_debug_level_2 '-- Handler did not approve, will not run.'
+                    print_debug_level_3 '-- Handler did not approve, will not run.'
                 end
             else
-                print_debug_level_2 '-- Running...'
+                print_debug_level_3 '-- Running...'
 
                 HTTP::Client.queue( request )
                 response = request.run
 
-                print_debug_level_2 "-- ...completed in #{response.time}: #{response.status_line}"
+                print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
             end
 
-            print_debug_level_2 'Processed request.'
+            print_debug_level_3 'Processed request.'
 
             handle_response( response )
         end
@@ -128,17 +128,17 @@ class Connection < Arachni::Reactor::Connection
     end
 
     def handle_response( response )
-        print_debug_level_2 'Preparing response.'
+        print_debug_level_3 'Preparing response.'
 
         # Connection was rudely closed before we had a chance to respond,
         # don't bother proceeding.
         if closed?
-            print_debug_level_2 '-- Connection closed, will not respond.'
+            print_debug_level_3 '-- Connection closed, will not respond.'
             return
         end
 
         if @options[:response_handler]
-            print_debug_level_2 "-- Has special handler: #{@options[:response_handler]}"
+            print_debug_level_3 "-- Has special handler: #{@options[:response_handler]}"
             @options[:response_handler].call( response.request, response )
         end
 
@@ -166,7 +166,7 @@ class Connection < Arachni::Reactor::Connection
 
         res << "\r\n"
 
-        print_debug_level_2 'Sending response.'
+        print_debug_level_3 'Sending response.'
 
         write (res << response.body)
     rescue => e
@@ -175,7 +175,7 @@ class Connection < Arachni::Reactor::Connection
     end
 
     def on_close( reason = nil )
-        print_debug_level_2 "Closed because: [#{reason.class}] #{reason}"
+        print_debug_level_3 "Closed because: [#{reason.class}] #{reason}"
 
         @parent.mark_connection_inactive self
 
@@ -192,9 +192,9 @@ class Connection < Arachni::Reactor::Connection
         if !@ssl_tunnel || @last_http
 
             if @last_http
-                print_debug_level_2 'Last response sent, switching to tunnel.'
+                print_debug_level_3 'Last response sent, switching to tunnel.'
             else
-                print_debug_level_2 'Response sent.'
+                print_debug_level_3 'Response sent.'
             end
 
             @parent.mark_connection_inactive self
@@ -226,7 +226,7 @@ class Connection < Arachni::Reactor::Connection
     def start_interceptor( origin_host )
         @interceptor_port = Utilities.available_port
 
-        print_debug_level_2 "Starting interceptor on port: #{@interceptor_port}"
+        print_debug_level_3 "Starting interceptor on port: #{@interceptor_port}"
 
         @ssl_interceptor = reactor.listen(
             @options[:address], @interceptor_port, SSLInterceptor,
