@@ -514,19 +514,19 @@ class Client
         request.id    = @request_count
 
         if debug_level_3?
-            print_debug_level_3 '------------'
-            print_debug_level_3 'Queued request.'
-            print_debug_level_3 "ID#: #{request.id}"
-            print_debug_level_3 "Performer: #{request.performer.inspect}"
-            print_debug_level_3 "URL: #{request.url}"
-            print_debug_level_3 "Method: #{request.method}"
-            print_debug_level_3 "Params: #{request.parameters}"
-            print_debug_level_3 "Body: #{request.body}"
-            print_debug_level_3 "Headers: #{request.headers}"
-            print_debug_level_3 "Cookies: #{request.cookies}"
-            print_debug_level_3 "Train?: #{request.train?}"
-            print_debug_level_3 "Fingerprint?: #{request.fingerprint?}"
-            print_debug_level_3  '------------'
+            print_debug_level_4 '------------'
+            print_debug_level_4 'Queued request.'
+            print_debug_level_4 "ID#: #{request.id}"
+            print_debug_level_4 "Performer: #{request.performer.inspect}"
+            print_debug_level_4 "URL: #{request.url}"
+            print_debug_level_4 "Method: #{request.method}"
+            print_debug_level_4 "Params: #{request.parameters}"
+            print_debug_level_4 "Body: #{request.body}"
+            print_debug_level_4 "Headers: #{request.headers}"
+            print_debug_level_4 "Cookies: #{request.cookies}"
+            print_debug_level_4 "Train?: #{request.train?}"
+            print_debug_level_4 "Fingerprint?: #{request.fingerprint?}"
+            print_debug_level_4  '------------'
         end
 
         if add_callbacks
@@ -575,23 +575,23 @@ class Client
             parse_and_set_cookies( response ) if request.update_cookies?
 
             if debug_level_3?
-                print_debug_level_3 '------------'
-                print_debug_level_3 "Got response for request ID#: #{response.request.id}\n#{response.request}"
-                print_debug_level_3 "Performer: #{response.request.performer.inspect}"
-                print_debug_level_3 "Status: #{response.code}"
-                print_debug_level_3 "Code: #{response.return_code}"
-                print_debug_level_3 "Message: #{response.return_message}"
-                print_debug_level_3 "URL: #{response.url}"
-                print_debug_level_3 "Headers:\n#{response.headers_string}"
-                print_debug_level_3 "Parsed headers: #{response.headers}"
+                print_debug_level_4 '------------'
+                print_debug_level_4 "Got response for request ID#: #{response.request.id}\n#{response.request}"
+                print_debug_level_4 "Performer: #{response.request.performer.inspect}"
+                print_debug_level_4 "Status: #{response.code}"
+                print_debug_level_4 "Code: #{response.return_code}"
+                print_debug_level_4 "Message: #{response.return_message}"
+                print_debug_level_4 "URL: #{response.url}"
+                print_debug_level_4 "Headers:\n#{response.headers_string}"
+                print_debug_level_4 "Parsed headers: #{response.headers}"
             end
 
             if response.timed_out?
-                print_debug_level_3 "Request timed-out! -- ID# #{response.request.id}"
+                print_debug_level_4 "Request timed-out! -- ID# #{response.request.id}"
                 @time_out_count += 1
             end
 
-            print_debug_level_3 '------------'
+            print_debug_level_4 '------------'
         end
     end
 

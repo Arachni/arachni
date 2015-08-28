@@ -200,7 +200,7 @@ class Framework
                         'g'     => 'generate a report',
                         'v'     => "#{verbose? ? 'dis' : 'en'}able verbose messages",
                         'd'     => "#{debug? ? 'dis' : 'en'}able debugging messages.\n" <<
-                            "#{' ' * 11}(You can set it to the desired level by sending d[1-3]," <<
+                            "#{' ' * 11}(You can set it to the desired level by sending d[1-4]," <<
                             " current level is #{debug_level})"
                     }.each do |key, action|
                         next if %w(Enter s p).include?( key ) && !@framework.scanning?

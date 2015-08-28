@@ -43,7 +43,7 @@ class OptionParser < UI::CLI::OptionParser
             verbose_on
         end
 
-        on( '--output-debug [LEVEL 1-3]', Integer, 'Show debugging information.' ) do |level|
+        on( '--output-debug [LEVEL 1-4]', Integer, 'Show debugging information.' ) do |level|
             debug_on( level || 1 )
         end
 

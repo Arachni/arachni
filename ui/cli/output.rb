@@ -98,8 +98,8 @@ module Output
     #
     # @param    [String]    str
     def print_error( str = '' )
-        print_color( '[-]', 31, str, $stderr )
-        log_error( str )
+        print_color( "[-] #{caller_location}", 31, str, $stderr )
+        log_error( "#{caller_location}#{str}" )
     end
 
     # Prints the backtrace of an exception as error messages.
@@ -204,7 +204,36 @@ module Output
     def print_debug( str = '', level = 1 )
         return if !debug?( level )
 
-        print_color( "[#{'!' * level}]", 36, str, $stderr )
+        print_color( "[#{'!' * level}] #{caller_location}", 36, str, $stderr )
+    end
+
+    def caller_location
+        file = nil
+        line = nil
+        caller_method = nil
+        Kernel.caller.each do |c|
+            file, line, method = *c.scan( /(.*):(\d+):in `(?:.*\s)?(.*)'/ ).flatten
+            next if file == __FILE__
+
+            caller_method = method
+            break
+        end
+
+        context = nil
+        if caller_method
+            file.gsub!( Options.paths.lib, '' )
+            file.gsub!( Options.paths.root, '' )
+
+            dir = File.dirname( file )
+            dir = '' if dir == '.'
+            dir << File::SEPARATOR if !dir.empty?
+
+            file = "#{dir}#{File.basename( file, '.rb' )}"
+
+            context = "[#{file}##{caller_method}:#{line}]"
+        end
+
+        context
     end
 
     def print_debug_level_1( str = '' )
@@ -217,6 +246,10 @@ module Output
 
     def print_debug_level_3( str = '' )
         print_debug( str, 3 )
+    end
+
+    def print_debug_level_4( str = '' )
+        print_debug( str, 4 )
     end
 
     def print_debug_exception( e, level = 1 )
@@ -326,6 +359,9 @@ module Output
     end
     def debug_level_3?
         debug? 3
+    end
+    def debug_level_4?
+        debug? 4
     end
 
     # Mutes everything but {#print_ok} messages.

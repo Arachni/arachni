@@ -358,7 +358,7 @@ module Timeout
         }
 
         if debug_level_2?
-            print_debug_level_2 "#{__method__}: #{options}"
+            print_debug_level_2 "#{options}"
         end
 
         audit( payloads, options ) do |response, mutation|

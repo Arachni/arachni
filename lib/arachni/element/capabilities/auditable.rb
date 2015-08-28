@@ -114,8 +114,7 @@ module Auditable
         return false if self.inputs.empty?
 
         if scope.out?
-            print_debug_level_2 "#{__method__}: Element is out of scope, " <<
-                                    "skipping: #{audit_id}"
+            print_debug_level_2 "Element is out of scope, skipping: #{audit_id}"
             return false
         end
 

@@ -41,7 +41,7 @@ class Dynamic404Handler
         # need advanced analysis.
         if checked_and_static?( url )
             result = (response.code == 404)
-            print_debug "#{__method__} [static]: #{block} #{url} #{result}"
+            print_debug "[static]: #{block} #{url} #{result}"
             block.call( result )
             return
         end
@@ -54,14 +54,14 @@ class Dynamic404Handler
             # If we've got a positive result that's all we need to know, return
             # it immediately.
             if result
-                print_debug "#{__method__} [cached]: #{block} #{url} #{result}"
+                print_debug "[cached]: #{block} #{url} #{result}"
                 return block.call( result )
             end
 
             # If the result was negative only return it if there's no need for
             # advanced analysis for this resource.
             if !needs_advanced_analysis?( url )
-                print_debug "#{__method__} [cached]: #{block} #{url} #{result}"
+                print_debug "[cached]: #{block} #{url} #{result}"
                 return block.call( result )
             end
         end
@@ -71,7 +71,7 @@ class Dynamic404Handler
         # complete.
         data_for( url )[:waiting] << [url, response.code, response.body, block]
         if data_for( url )[:in_progress]
-            print_debug "#{__method__} [waiting]: #{url} #{block}"
+            print_debug "[waiting]: #{url} #{block}"
             return
         end
         data_for( url )[:in_progress] = true
@@ -81,12 +81,12 @@ class Dynamic404Handler
         # don't waste time redoing it, we can jump straight into the advanced
         # analysis.
         if checked?( url ) && needs_advanced_analysis?( url )
-            print_debug "#{__method__} [checking-advanced]: #{url} #{block}"
+            print_debug "[checking-advanced]: #{url} #{block}"
             process_advanced_analysis_callers_for( url )
             return
         end
 
-        print_debug "#{__method__} [checking]: #{url} #{block}"
+        print_debug "[checking]: #{url} #{block}"
 
         # So... we've got nothing cached for the handler for this URL, let's
         # start from scratch.
@@ -164,11 +164,11 @@ class Dynamic404Handler
                 request( generator.call ) do |c_res|
                     next if corrupted
 
-                    print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
+                    print_debug "[gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
 
                     # Well, bad luck, bail out to avoid FPs.
                     if corrupted_response?( c_res )
-                        print_debug "#{__method__} [corrupted]: #{url} #{c_res.code} #{block}"
+                        print_debug "[corrupted]: #{url} #{c_res.code} #{block}"
                         corrupted = true
                         next clear_data_for( url )
                     end
@@ -218,11 +218,11 @@ class Dynamic404Handler
                 request( generator.call ) do |c_res|
                     next if corrupted
 
-                    print_debug "#{__method__} [gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
+                    print_debug "[gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
 
                     # Well, bad luck, bail out to avoid FPs.
                     if corrupted_response?( c_res )
-                        print_debug "#{__method__} [corrupted]: #{url} #{block}"
+                        print_debug "[corrupted]: #{url} #{block}"
                         corrupted = true
                         next clear_data_for( url )
                     end
@@ -248,10 +248,10 @@ class Dynamic404Handler
 
     def perform_advanced_analysis_if_necessary( url, body, &block )
         result = matches_preliminary_signatures?( url, body )
-        print_debug "#{__method__} [checked]: #{block} #{url} #{result}"
+        print_debug "[checked]: #{block} #{url} #{result}"
 
         if result
-            print_debug "#{__method__} [notify]: #{block} #{url} #{result}"
+            print_debug "[notify]: #{block} #{url} #{result}"
             checked( url )
             block.call( result )
             return
@@ -264,7 +264,7 @@ class Dynamic404Handler
             # then this handler will always require advanced analysis for each
             # URL.
             result = matches_advanced_signatures?( url, body )
-            print_debug "#{__method__} [notify]: #{block} #{url} #{result}"
+            print_debug "[notify]: #{block} #{url} #{result}"
             block.call result
 
             # More callers may have been added to the waiting queue during
@@ -286,7 +286,7 @@ class Dynamic404Handler
         while (waiting = data_for( url )[:waiting].pop)
             curl, code, _, callback = waiting
             result = (code == 404)
-            print_debug "#{__method__} [notify]: #{callback} #{curl} #{result}"
+            print_debug "[notify]: #{callback} #{curl} #{result}"
             callback.call result
         end
     end
