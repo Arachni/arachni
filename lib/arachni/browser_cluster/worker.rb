@@ -122,6 +122,8 @@ class Worker < Arachni::Browser
         browser_respawn
         nil
     ensure
+        BrowserCluster.increment_completed_job_count
+
         @javascript.taint = nil
 
         clear_buffers

@@ -227,8 +227,6 @@ class BrowserCluster
             @pending_job_counter -= @pending_jobs[job.id]
             @pending_jobs[job.id] = 0
 
-            self.class.increment_completed_job_count
-
             if @pending_job_counter <= 0
                 @pending_job_counter = 0
                 @done_signal << nil
@@ -384,9 +382,9 @@ class BrowserCluster
         @queued_job_count += 1
     end
 
-    def self.increment_completed_job_count
+    def self.increment_completed_job_count( increment = 1 )
         @completed_job_count ||= 0
-        @completed_job_count += 1
+        @completed_job_count += increment
     end
 
     def self.statistics
