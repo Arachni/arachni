@@ -251,13 +251,11 @@ class Connection < Arachni::Reactor::Connection
     end
 
     def cleanup_response_headers( headers )
-        headers = Arachni::HTTP::Headers.new( headers )
-
         SKIP_HEADERS.each do |name|
             headers.delete name
         end
 
-         # headers['Connection']       = 'close'
+        # headers['Connection']       = 'close'
 
         # Keep alive is on by default for HTTP/1.1 but leave this here as a
         # reminder.
