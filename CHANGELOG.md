@@ -27,6 +27,9 @@
             - `Taint` => `Signature` -- Signature analysis better describes that
                 process and the "taint" terminology was overloaded by the browser's
                 taint tracing subsystems.
+-`HTTP`
+    - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
+        written server with support for `keep-alive` and low-overhead SSL interception.
 - `Browser`
     - `Javascript`
         - `TaintTracer`
