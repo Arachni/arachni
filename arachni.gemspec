@@ -95,7 +95,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'terminal-table',    '1.4.5'
 
     # Browser support for DOM/JS/AJAX analysis stuff.
-    s.add_dependency 'watir-webdriver',   '0.6.9'
+    s.add_dependency 'watir-webdriver',   '0.8.0'
 
     # Markdown to HTML conversion, used by the HTML report for component
     # descriptions.
