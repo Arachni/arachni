@@ -152,6 +152,7 @@ class Client
         reset_burst_info
 
         @request_count  = 0
+        @async_response_count = 0
         @response_count = 0
         @time_out_count = 0
 
@@ -278,8 +279,8 @@ class Client
 
     # @return   [Float] Responses/second.
     def total_responses_per_second
-        if @response_count > 0 && total_runtime > 0
-            return @response_count / Float( total_runtime )
+        if @async_response_count > 0 && total_runtime > 0
+            return @async_response_count / Float( total_runtime )
         end
         0
     end
@@ -301,8 +302,8 @@ class Client
     # @return   [Float]
     #   Responses/second for the running requests (i.e. the current burst).
     def burst_responses_per_second
-        if @burst_response_count > 0 && burst_runtime > 0
-            return @burst_response_count / burst_runtime
+        if @async_burst_response_count > 0 && burst_runtime > 0
+            return @async_burst_response_count / burst_runtime
         end
         0
     end
@@ -501,6 +502,7 @@ class Client
     def reset_burst_info
         @burst_response_time_sum = 0
         @burst_response_count    = 0
+        @async_burst_response_count = 0
         @burst_runtime           = 0
         @burst_runtime_start     = Time.now
     end
@@ -555,6 +557,11 @@ class Client
         synchronize do
             @response_count       += 1
             @burst_response_count += 1
+
+            if request.asynchronous?
+                @async_response_count       += 1
+                @async_burst_response_count += 1
+            end
 
             response_time = response.timed_out? ?
                 request.timeout / 1_000.0 :
