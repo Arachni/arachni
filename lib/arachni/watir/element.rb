@@ -10,7 +10,18 @@ module Watir
 class Element
 
     def opening_tag
-        html.match( /<#{tag_name}.*?>/im )[0]
+        browser.execute_script(
+            %Q[
+                var s = '<' + arguments[0].tagName.toLowerCase();
+                var attrs = arguments[0].attributes;
+                for( var l = 0; l < attrs.length; ++l ) {
+                    s += ' ' + attrs[l].name + '="' + attrs[l].value.replace( '"', '\"' ) + '"';
+                }
+                s += '>'
+                return s;
+            ],
+            self
+        )
     end
 
     def events
