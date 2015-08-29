@@ -224,6 +224,10 @@ class BrowserCluster
                 @job_callbacks.delete job.id
             end
 
+            increment_completed_job_count
+
+            add_to_total_job_time( job.time )
+
             @pending_job_counter -= @pending_jobs[job.id]
             @pending_jobs[job.id] = 0
 
@@ -377,6 +381,28 @@ class BrowserCluster
         @job_callbacks[job.id]
     end
 
+    def increment_queued_job_count
+        synchronize do
+            self.class.increment_queued_job_count
+        end
+    end
+
+    def increment_completed_job_count( *args )
+        synchronize do
+            self.class.increment_completed_job_count( *args )
+        end
+    end
+
+    def add_to_total_job_time( time )
+        synchronize do
+            self.class.add_to_total_job_time( time )
+        end
+    end
+
+    def self.seconds_per_job
+        total_job_time / Float( completed_job_count )
+    end
+
     def self.increment_queued_job_count
         @queued_job_count ||= 0
         @queued_job_count += 1
@@ -387,8 +413,23 @@ class BrowserCluster
         @completed_job_count += increment
     end
 
+    def self.completed_job_count
+        @completed_job_count.to_i
+    end
+
+    def self.total_job_time
+        @total_job_time.to_i
+    end
+
+    def self.add_to_total_job_time( time )
+        @total_job_time ||= 0
+        @total_job_time += time.to_i
+    end
+
     def self.statistics
         {
+            seconds_per_job:     seconds_per_job,
+            total_job_time:      total_job_time,
             queued_job_count:    @queued_job_count    || 0,
             completed_job_count: @completed_job_count || 0
         }

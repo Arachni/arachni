@@ -45,7 +45,8 @@ class ResourceExploration < Job
     end
 
     def to_s
-        "#<#{self.class}:#{object_id} @resource=#{@resource}>"
+        "#<#{self.class}:#{object_id} @resource=#{@resource} " <<
+            "time=#{@time} timed_out=#{timed_out?}>"
     end
     alias :inspect :to_s
 

@@ -37,7 +37,8 @@ class EventTrigger < ResourceExploration
 
     def to_s
         "#<#{self.class}:#{object_id} @resource=#{@resource} " +
-            "@event=#{@event.inspect} @element=#{@element.inspect}>"
+            "@event=#{@event.inspect} @element=#{@element.inspect} " <<
+            "time=#{@time} timed_out=#{timed_out?}>"
     end
 
 end
