@@ -224,10 +224,6 @@ class BrowserCluster
                 @job_callbacks.delete job.id
             end
 
-            increment_completed_job_count
-
-            add_to_total_job_time( job.time )
-
             @pending_job_counter -= @pending_jobs[job.id]
             @pending_jobs[job.id] = 0
 
@@ -370,6 +366,9 @@ class BrowserCluster
     # @private
     def decrease_pending_job( job )
         synchronize do
+            increment_completed_job_count
+            add_to_total_job_time( job.time )
+
             @pending_job_counter  -= 1
             @pending_jobs[job.id] -= 1
             job_done( job ) if @pending_jobs[job.id] <= 0
