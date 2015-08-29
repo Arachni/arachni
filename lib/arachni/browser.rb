@@ -353,9 +353,9 @@ class Browser
             url:     url,
             cookies: extra_cookies
         ) do
-            print_debug_level_2 "Loading: #{url}"
+            print_debug_level_2 "Loading #{url} ..."
             watir.goto url
-            print_debug_level_2 'Done'
+            print_debug_level_2 '...done.'
 
             wait_till_ready
 
@@ -394,15 +394,11 @@ class Browser
     def wait_till_ready
         print_debug_level_2 'Waiting for custom JS...'
         @javascript.wait_till_ready
-        print_debug_level_2 'Done'
+        print_debug_level_2 '...done.'
 
-        print_debug_level_2 'Waiting for timers...'
         wait_for_timers
-        print_debug_level_2 'Done'
 
-        print_debug_level_2 "Waiting for #{@proxy.pending_requests} requests to complete.."
         wait_for_pending_requests
-        print_debug_level_2 'Done'
     end
 
     def shutdown
@@ -692,7 +688,7 @@ class Browser
             locator     = ElementLocator.from_html( opening_tag )
         end
 
-        print_debug_level_2 "#{__method__} [start]: #{event} (#{options}) #{locator}"
+        print_debug_level_2 "[start]: #{event} (#{options}) #{locator}"
 
         tag_name = tag_name.to_sym
 
@@ -700,7 +696,7 @@ class Browser
 
         tries = 0
         begin
-            Page::DOM::Transition.new( locator, event, options ) do
+            transition = Page::DOM::Transition.new( locator, event, options ) do
                 had_special_trigger = false
 
                 if tag_name == :form
@@ -733,13 +729,14 @@ class Browser
 
                 element.fire_event( event ) if !had_special_trigger
 
-                print_debug_level_2 "#{__method__} [waiting for requests]: #{event} (#{options}) #{locator}"
+                print_debug_level_2 "[waiting for requests]: #{event} (#{options}) #{locator}"
                 wait_for_pending_requests
-                print_debug_level_2 "#{__method__} [done waiting for requests]: #{event} (#{options}) #{locator}"
-
-                # puts source_with_line_numbers
-                print_debug_level_2 "#{__method__} [done]: #{event} (#{options}) #{locator}"
+                print_debug_level_2 "[done waiting for requests]: #{event} (#{options}) #{locator}"
             end
+
+            print_debug_level_2 "[done in #{transition.time}s]: #{event} (#{options}) #{locator}"
+
+            transition
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
 
@@ -988,7 +985,11 @@ class Browser
         delay = load_delay
         return if !delay
 
+        print_debug_level_2 'Waiting for timers...'
+
         sleep [Options.http.request_timeout, delay].min / 1000.0
+
+        print_debug_level_2 '...done.'
     end
 
     def skip_path?( path )
@@ -1263,8 +1264,12 @@ class Browser
     end
 
     def wait_for_pending_requests
+        print_debug_level_2 "Waiting for #{@proxy.pending_requests} requests to complete..."
+
         sleep 0.1
         sleep 0.01 while @proxy.has_pending_requests?
+
+        print_debug_level_2 '...done.'
     end
 
     def load_cookies( url, cookies = {} )
@@ -1398,7 +1403,9 @@ class Browser
         # Capture the request as elements of pages -- let's us grab AJAX and
         # other browser requests and convert them into elements we can analyze
         # and audit.
-        capture( request )
+        if request.scope.in?
+            capture( request )
+        end
 
         request.headers['user-agent'] = Options.http.user_agent
 
@@ -1606,8 +1613,6 @@ class Browser
 
         @captured_pages << page if store_pages?
         notify_on_new_page( page )
-
-        print_debug_level_2 'Done.'
     rescue => e
         print_debug "Could not capture: #{request.url}"
         print_debug request.body.to_s
