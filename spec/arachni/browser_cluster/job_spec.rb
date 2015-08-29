@@ -173,6 +173,24 @@ describe Arachni::BrowserCluster::Job do
             expect(dup.my_data).to eq('stuff')
             expect(dup.never_ending?).to eq(true)
         end
+
+        it 'preserves #time' do
+            subject.time = 10
+            expect(subject.time).to eq 10
+
+            dup = subject.dup
+            expect(dup.time).to eq 10
+        end
+
+        it 'preserves #timed_out' do
+            subject.timed_out! 10
+            expect(subject.time).to eq 10
+            expect(subject).to be_timed_out
+
+            dup = subject.dup
+            expect(dup.time).to eq 10
+            expect(subject).to be_timed_out
+        end
     end
 
     describe '#forward' do

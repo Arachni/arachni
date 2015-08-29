@@ -129,26 +129,29 @@ class Framework
 
         refresh_line nil, unmute
 
+        refresh_info( "Duration: #{seconds_to_hms( statistics[:runtime] )}", unmute )
+
         res_req = "#{statistics[:http][:response_count]}/#{statistics[:http][:request_count]}"
         refresh_info( "Processed #{res_req} HTTP requests.", unmute )
+
+        avg = "-- #{http[:total_responses_per_second].round(3)} requests/second."
+        refresh_info( avg, unmute )
 
         jobs = "#{browser_cluster[:completed_job_count]}/#{browser_cluster[:queued_job_count]}"
         refresh_info( "Processed #{jobs} browser jobs.", unmute )
 
-        refresh_info( "In #{seconds_to_hms( statistics[:runtime] )}", unmute )
-
-        avg = "Average: #{http[:total_responses_per_second].to_s} requests/second."
-        refresh_info( avg, unmute )
+        jobsps = "-- #{browser_cluster[:seconds_per_job].round(3)} second/job."
+        refresh_info( jobsps, unmute )
 
         refresh_line nil, unmute
         if !statistics[:current_page].to_s.empty?
             refresh_info( "Currently auditing          #{statistics[:current_page]}", unmute )
         end
 
-        refresh_info( "Burst response time sum     #{http[:burst_response_time_sum]} seconds", unmute )
+        refresh_info( "Burst response time sum     #{http[:burst_response_time_sum].round(3)} seconds", unmute )
         refresh_info( "Burst response count        #{http[:burst_response_count]}", unmute )
-        refresh_info( "Burst average response time #{http[:burst_average_response_time]} seconds", unmute )
-        refresh_info( "Burst average               #{http[:burst_responses_per_second]} requests/second", unmute )
+        refresh_info( "Burst average response time #{http[:burst_average_response_time].round(3)} seconds", unmute )
+        refresh_info( "Burst average               #{http[:burst_responses_per_second].round(3)} requests/second", unmute )
         refresh_info( "Timed-out requests          #{http[:time_out_count]}", unmute )
         refresh_info( "Original max concurrency    #{options.http.request_concurrency}", unmute )
         refresh_info( "Throttled max concurrency   #{http[:max_concurrency]}", unmute )

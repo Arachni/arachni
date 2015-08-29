@@ -44,12 +44,29 @@ class Job
     # @see #forward_as
     attr_accessor :forwarder
 
+    # @return   [Integer]
+    #   Duration of the job, in seconds.
+    attr_accessor :time
+
     # @param    [Hash]  options
     def initialize( options = {} )
         @options      = options.dup
         @options[:id] = @id = options.delete(:id) || increment_id
 
         options.each { |k, v| options[k] = send( "#{k}=", v ) }
+    end
+
+    # @param    [Integer]   time
+    #   Amount of {#time} elapsed until time-out.
+    def timed_out!( time )
+        @timed_out = true
+        @time = time
+    end
+
+    # @return   [Bool]
+    #   `true` if timed-ot, `false` otherwise.
+    def timed_out?
+        !!@timed_out
     end
 
     # @note The following resources will be available at the time of execution:
@@ -121,7 +138,10 @@ class Job
     # @return   [Job]
     #   Copy of `self`
     def dup
-        self.class.new add_id( @options )
+        n = self.class.new( add_id( @options ) )
+        n.time = time
+        n.timed_out!( time ) if timed_out?
+        n
     end
 
     # @param    [Hash]  options
