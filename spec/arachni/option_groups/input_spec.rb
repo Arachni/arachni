@@ -97,7 +97,7 @@ describe Arachni::OptionGroups::Input do
 
         context 'when no match could be found' do
             context "and 'use_default' is set to" do
-                context true do
+                context 'true' do
                     it 'returns the default' do
                         expect(subject.value_for_name( 'blahblah', true )).to eq(
                             described_class::DEFAULT
@@ -105,7 +105,7 @@ describe Arachni::OptionGroups::Input do
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'returns nil' do
                         expect(subject.value_for_name( 'blahblah', false )).to eq(nil)
                     end

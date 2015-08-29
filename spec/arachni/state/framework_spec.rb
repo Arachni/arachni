@@ -40,7 +40,7 @@ describe Arachni::State::Framework do
 
     describe '#add_status_message' do
         context 'when given a message of type' do
-            context String do
+            context 'String' do
                 it 'pushes it to #status_messages' do
                     message = 'Hey!'
                     subject.add_status_message message
@@ -49,7 +49,7 @@ describe Arachni::State::Framework do
                 end
             end
 
-            context Symbol do
+            context 'Symbol' do
                 context 'and it exists in #available_status_messages' do
                     it 'pushes the associated message to #status_messages' do
                         subject.add_status_message :suspending

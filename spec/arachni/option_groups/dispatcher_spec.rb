@@ -54,7 +54,7 @@ describe Arachni::OptionGroups::Dispatcher do
     end
 
     describe '#grid=' do
-        context true do
+        context 'true' do
             it 'is a shorthand for #grid_mode = :balance' do
                 subject.grid = true
                 expect(subject.grid_mode).to eq(:balance)
@@ -64,14 +64,14 @@ describe Arachni::OptionGroups::Dispatcher do
 
     describe '#grid_mode=' do
         context 'when given' do
-            context String do
+            context 'String' do
                 it 'converts it to Symbol and sets the option' do
                     subject.grid_mode = 'balance'
                     expect(subject.grid_mode).to eq(:balance)
                 end
             end
 
-            context Symbol do
+            context 'Symbol' do
                 it 'sets the option' do
                     subject.grid_mode = :aggregate
                     expect(subject.grid_mode).to eq(:aggregate)

@@ -90,7 +90,7 @@ describe Arachni::Platform::Manager do
         [page, page.response].each do |resource|
             context "when given a #{resource.class}" do
                 context 'when Options.fingerprint is set to' do
-                    context true do
+                    context 'true' do
                         context 'and it is text based' do
                             context 'and has not yet been fingerprinted' do
                                 context 'and is within scope' do
@@ -130,7 +130,7 @@ describe Arachni::Platform::Manager do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         it 'returns false' do
                             p = page
                             Arachni::Options.do_not_fingerprint

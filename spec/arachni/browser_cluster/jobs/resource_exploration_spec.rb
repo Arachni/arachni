@@ -31,13 +31,13 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
     end
 
     context 'when the resource is a' do
-        context String do
+        context 'String' do
             it 'loads the URL and explores the DOM' do
                 test described_class.new( resource: url )
             end
         end
 
-        context Arachni::HTTP::Response do
+        context 'Arachni::HTTP::Response' do
             subject do
                 described_class.new(
                     resource: Arachni::HTTP::Client.get( url, mode: :sync )
@@ -59,7 +59,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration do
             end
         end
 
-        context Arachni::Page do
+        context 'Arachni::Page' do
             subject { described_class.new( resource: Arachni::Page.from_url( url ) ) }
 
             it 'loads it and explores the DOM' do

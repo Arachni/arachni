@@ -47,7 +47,7 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
         end
 
         context 'and the resource is a' do
-            context String do
+            context 'String' do
                 it 'loads the URL and traces the taint' do
                     test_data_flow described_class.new(
                         resource: url,
@@ -56,7 +56,7 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
                 end
             end
 
-            context Arachni::HTTP::Response do
+            context 'Arachni::HTTP::Response' do
                 it 'loads it and traces the taint' do
                     test_data_flow described_class.new(
                         resource: Arachni::HTTP::Client.get( url, mode: :sync ),
@@ -65,7 +65,7 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
                 end
             end
 
-            context Arachni::Page do
+            context 'Arachni::Page' do
                 it 'loads it and traces the taint' do
                     test_data_flow described_class.new(
                         resource: Arachni::Page.from_url( url ),
@@ -83,7 +83,7 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
             end
 
             context 'and the resource is a' do
-                context String do
+                context 'String' do
                     it 'loads the URL and traces the taint' do
                         test_data_flow_with_injector described_class.new(
                             resource: url,
@@ -93,7 +93,7 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
                     end
                 end
 
-                context Arachni::HTTP::Response do
+                context 'Arachni::HTTP::Response' do
                     it 'loads it and traces the taint' do
                         test_data_flow_with_injector described_class.new(
                             resource: Arachni::HTTP::Client.get( url, mode: :sync ),
@@ -103,7 +103,7 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
                     end
                 end
 
-                context Arachni::Page do
+                context 'Arachni::Page' do
                     it 'loads it and traces the taint' do
                         test_data_flow_with_injector described_class.new(
                             resource: Arachni::Page.from_url( url ),
@@ -123,13 +123,13 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
         end
 
         context 'and the resource is a' do
-            context String do
+            context 'String' do
                 it 'loads the URL and traces the taint' do
                     test_execution_flow described_class.new( resource: url )
                 end
             end
 
-            context Arachni::HTTP::Response do
+            context 'Arachni::HTTP::Response' do
                 it 'loads it and traces the taint' do
                     test_execution_flow described_class.new(
                         resource: Arachni::HTTP::Client.get( url, mode: :sync )
@@ -137,7 +137,7 @@ describe Arachni::BrowserCluster::Jobs::TaintTrace do
                 end
             end
 
-            context Arachni::Page do
+            context 'Arachni::Page' do
                 it 'loads it and traces the taint' do
                     test_execution_flow described_class.new(
                         resource: Arachni::Page.from_url( url )

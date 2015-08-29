@@ -37,7 +37,7 @@ describe Arachni::State::Audit do
         context 'when an operation is not included' do
             it 'returns false' do
                 subject << audit_id
-                expect(subject).not_to include "#{audit_id}2"
+                expect(subject.include?( "#{audit_id}2")).to be_falsey
             end
         end
     end

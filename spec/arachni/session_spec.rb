@@ -365,7 +365,7 @@ describe Arachni::Session do
             end
         end
         context 'when passed an :action' do
-            context Regexp do
+            context 'Regexp' do
                 it 'should use it to match against form actions' do
                     expect(subject.find_login_form(
                         url:    @url + '/multiple',
@@ -373,7 +373,7 @@ describe Arachni::Session do
                     ).coverage_id).to eq(@id)
                 end
             end
-            context String do
+            context 'String' do
                 it 'should use it to match against form actions' do
                     expect(subject.find_login_form(
                         url:    @url + '/multiple',

@@ -36,7 +36,7 @@ describe Arachni::Page::DOM::Transition do
         end
 
         context 'when the element is a' do
-            context Symbol do
+            context 'Symbol' do
                 it 'restores it' do
                     original = described_class.new( :page, :load )
                     data     = Arachni::RPC::Serializer.rpc_data( original )
@@ -46,7 +46,7 @@ describe Arachni::Page::DOM::Transition do
                 end
             end
 
-            context Arachni::Browser::ElementLocator do
+            context 'Arachni::Browser::ElementLocator' do
                 it 'restores it' do
                     element = Arachni::Browser::ElementLocator.from_html(
                         '<div id="my-div" onclick="addForm();">'
@@ -164,14 +164,14 @@ describe Arachni::Page::DOM::Transition do
         end
 
         context 'when the element is' do
-            context String do
+            context 'String' do
                 it 'assigns it to #element' do
                     empty_transition.start 'http://test.com/stuff', :request
                     expect(empty_transition.element).to eq('http://test.com/stuff')
 
                 end
             end
-            context Symbol do
+            context 'Symbol' do
                 it 'assigns it to #element' do
                     empty_transition.start :page, :load
                     expect(empty_transition.element).to eq(:page)
@@ -237,7 +237,7 @@ describe Arachni::Page::DOM::Transition do
 
     describe '#depth' do
         context 'when the event is' do
-            context :request do
+            context ':request' do
                 it 'returns 0' do
                     expect(empty_transition.start( 'http://test/', :request ).depth).to eq(0)
                 end

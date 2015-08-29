@@ -98,15 +98,15 @@ describe Arachni::HTTP::Request do
             expect(r.parameters).to eq({ 'test' => 'blah' })
         end
 
-        describe :fingerprint do
-            context true do
+        describe ':fingerprint' do
+            context 'true' do
                 it 'enables fingerprinting' do
                     r = described_class.new( options.merge( fingerprint: true ) )
                     expect(r.fingerprint?).to be_truthy
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'disables fingerprinting' do
                     r = described_class.new( options.merge( fingerprint: false ) )
                     expect(r.fingerprint?).not_to be_truthy
@@ -694,7 +694,7 @@ describe Arachni::HTTP::Request do
 
     describe '#body_parameters' do
         context 'when #method is' do
-            context :post do
+            context ':post' do
                 context 'and there are #parameters' do
                     it 'returns #parameters' do
                         parameters = { 'stuff' => 'here' }

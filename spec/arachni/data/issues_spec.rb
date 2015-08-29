@@ -200,7 +200,7 @@ describe Arachni::Data::Issues do
         context 'when it does not includes the given issue' do
             it 'returns true' do
                 subject << active_issue
-                expect(subject).not_to include issue
+                expect(subject.include?(issue)).to be_falsey
             end
         end
     end

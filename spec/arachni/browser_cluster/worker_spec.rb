@@ -26,7 +26,7 @@ describe Arachni::BrowserCluster::Worker do
     let(:subject) { @cluster.workers.first }
 
     describe '#initialize' do
-        describe :job_timeout do
+        describe ':job_timeout' do
             it 'sets how much time to allow each job to run' do
                 @worker = described_class.new( job_timeout: 10 )
                 expect(@worker.job_timeout).to eq(10)
@@ -39,7 +39,7 @@ describe Arachni::BrowserCluster::Worker do
             end
         end
 
-        describe :max_time_to_live do
+        describe ':max_time_to_live' do
             it 'sets how many jobs should be run before respawning' do
                 @worker = described_class.new( max_time_to_live: 10 )
                 expect(@worker.max_time_to_live).to eq(10)
@@ -89,7 +89,7 @@ describe Arachni::BrowserCluster::Worker do
                 expect(subject.run_job( custom_job )).to be_truthy
             end
 
-            context Selenium::WebDriver::Error::WebDriverError do
+            context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'respawns' do
                     allow(subject.watir).to receive(:cookies) do
                         raise Selenium::WebDriver::Error::WebDriverError
@@ -290,7 +290,7 @@ describe Arachni::BrowserCluster::Worker do
             end
 
             context 'when cookie clearing raises' do
-                context Selenium::WebDriver::Error::NoSuchWindowError do
+                context 'Selenium::WebDriver::Error::NoSuchWindowError' do
                     it 'respawns' do
                         allow(subject.watir).to receive(:cookies) do
                             raise Selenium::WebDriver::Error::NoSuchWindowError

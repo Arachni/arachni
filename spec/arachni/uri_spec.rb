@@ -315,7 +315,7 @@ describe Arachni::URI do
     end
 
     describe '#initialize' do
-        context String do
+        context 'String' do
             it 'normalizes and parse the string' do
                 @urls.each do |url|
                     uri = described_class.new( url )
@@ -325,7 +325,7 @@ describe Arachni::URI do
             end
         end
 
-        context Hash do
+        context 'Hash' do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = described_class.new( described_class.fast_parse( url ) )
@@ -335,7 +335,7 @@ describe Arachni::URI do
             end
         end
 
-        context URI do
+        context 'URI' do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = ::URI.parse( described_class.normalize( url ) )
@@ -348,7 +348,7 @@ describe Arachni::URI do
             end
         end
 
-        context Arachni::URI do
+        context 'Arachni::URI' do
             it 'normalizes and construct a URI from a Hash of components' do
                 @urls.each do |url|
                     uri = described_class.new( url )

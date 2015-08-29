@@ -36,7 +36,7 @@ describe Arachni::Reporter::Manager do
                 end
             end
 
-            context false do
+            context 'false' do
                 context 'and the report raises an exception' do
                     it 'does not raise it' do
                         expect { @reporters.run( :error, report, {}, false ) }.to_not raise_error
@@ -44,7 +44,7 @@ describe Arachni::Reporter::Manager do
                 end
             end
 
-            context true do
+            context 'true' do
                 context 'and the report raises an exception' do
                     it 'does not raise it' do
                         expect { @reporters.run( :error, report, {}, true ) }.to raise_error

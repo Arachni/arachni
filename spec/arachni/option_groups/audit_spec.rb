@@ -66,14 +66,14 @@ describe Arachni::OptionGroups::Audit do
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms].each do |attribute|
         describe "#{attribute}?" do
             context "when ##{attribute} is" do
-                context true do
+                context 'true' do
                     it 'returns true' do
                         subject.send "#{attribute}=", true
                         expect(subject.send("#{attribute}?")).to eq(true)
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'returns false' do
                         subject.send "#{attribute}=", false
                         expect(subject.send("#{attribute}?")).to eq(false)

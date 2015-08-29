@@ -10,7 +10,7 @@ shared_examples_for 'with_dom' do |html = nil|
 
     describe '#skip_dom' do
         context 'when' do
-            context true do
+            context 'true' do
                 before do
                     with_dom.skip_dom = true
                 end
@@ -20,7 +20,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
             end
 
-            context false do
+            context 'false' do
                 before do
                     with_dom.skip_dom = false
                 end
@@ -34,7 +34,7 @@ shared_examples_for 'with_dom' do |html = nil|
 
     describe '#skip_dom?' do
         context 'when #skip_dom is' do
-            context true do
+            context 'true' do
                 before do
                     with_dom.skip_dom = true
                 end
@@ -44,7 +44,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
             end
 
-            context false do
+            context 'false' do
                 before do
                     with_dom.skip_dom = false
                 end

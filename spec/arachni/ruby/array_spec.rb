@@ -20,7 +20,7 @@ describe Array do
                 end
             end
 
-            context String do
+            context 'String' do
                 context 'when includes the given tag (as either a String or a Symbol)' do
                     it 'returns true' do
                         expect([ 1 ].includes_tags?( 1 )).to eq(true)
@@ -46,7 +46,7 @@ describe Array do
                 end
             end
 
-            context Array do
+            context 'Array' do
                 context 'when includes any of the given tags (as either a String or a Symbol)' do
                     it 'returns true' do
                         expect([ 1, 2, 3 ].includes_tags?( [1] )).to eq(true)

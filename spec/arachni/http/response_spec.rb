@@ -55,13 +55,13 @@ describe Arachni::HTTP::Response do
 
     describe '#modified?' do
         context 'when the #code is' do
-            describe 200 do
+            describe '200' do
                 it 'returns false' do
                     expect(described_class.new( url: @url, code: 200 )).to be_modified
                 end
             end
 
-            describe 304 do
+            describe '304' do
                 it 'returns true' do
                     expect(described_class.new( url: @url, code: 304 )).not_to be_modified
                 end

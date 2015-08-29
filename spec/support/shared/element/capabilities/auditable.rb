@@ -225,7 +225,7 @@ shared_examples_for 'auditable' do
         end
 
         context 'when the payloads is' do
-            context String do
+            context 'String' do
                 it 'injects the given payload' do
                     payload = 'stuff-here'
                     injected = nil
@@ -258,7 +258,7 @@ shared_examples_for 'auditable' do
                     end
                 end
             end
-            context Array do
+            context 'Array' do
                 it 'injects all supplied payload' do
                     payloads = [ 'stuff-here', 'stuff-here-2' ]
                     injected = []
@@ -290,7 +290,7 @@ shared_examples_for 'auditable' do
                 end
             end
 
-            context Hash do
+            context 'Hash' do
                 it 'picks payloads applicable to the resource\'s platforms' do
                     payloads = {
                         linux:   [ 'linux-payload-1', 'linux-payload-2' ],
@@ -396,7 +396,7 @@ shared_examples_for 'auditable' do
         end
 
         context 'when called with option' do
-            describe :submit do
+            describe ':submit' do
                 it 'uses them for the #submit call' do
                     options = { cookies: { stuff: 'blah' }}
 
@@ -411,7 +411,7 @@ shared_examples_for 'auditable' do
                 end
             end
 
-            describe :each_mutation do
+            describe ':each_mutation' do
                 it 'is passed each generated mutation' do
                     skip if !has_parameter_extractor?
 
@@ -482,8 +482,8 @@ shared_examples_for 'auditable' do
                 end
             end
 
-            describe :skip_like do
-                describe Proc do
+            describe ':skip_like' do
+                describe 'Proc' do
                     it 'skips mutations based on the block\'s return value' do
                         audited   = []
                         skip_like = proc { |m| m.affected_input_name != auditable.inputs.keys.first }
@@ -500,7 +500,7 @@ shared_examples_for 'auditable' do
                     end
                 end
 
-                describe Array do
+                describe 'Array' do
                     it 'skips mutations based on the blocks\' return value' do
                         audited   = []
                         skip_like = []
@@ -519,7 +519,7 @@ shared_examples_for 'auditable' do
                 end
             end
 
-            describe :format do
+            describe ':format' do
                 describe 'Arachni::Check::Auditor::Format::STRAIGHT' do
                     it 'injects the seed as is' do
                         skip if !has_parameter_extractor?
@@ -601,7 +601,7 @@ shared_examples_for 'auditable' do
                 end
             end
 
-            describe :redundant do
+            describe ':redundant' do
                 before do
                     @audit_opts = {
                         format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
@@ -609,7 +609,7 @@ shared_examples_for 'auditable' do
                     }
                 end
 
-                context true do
+                context 'true' do
                     it 'allows redundant audits' do
                         cnt = 0
                         5.times do |i|
@@ -620,7 +620,7 @@ shared_examples_for 'auditable' do
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'does not allow redundant requests/audits' do
                         cnt = 0
                         5.times do |i|
@@ -689,7 +689,7 @@ shared_examples_for 'auditable' do
         end
 
         context "when #{described_class::Scope}#out?" do
-            context true do
+            context 'true' do
                 it 'returns immediately' do
                     allow_any_instance_of(described_class::Scope).to receive(:out?) { true }
 

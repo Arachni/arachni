@@ -81,14 +81,14 @@ describe Arachni::Framework::Parts::Data do
         end
 
         context 'when #accepts_more_pages?' do
-            context false do
+            context 'false' do
                 it 'returns false' do
                     allow(subject).to receive(:accepts_more_pages?) { false }
                     expect(subject.push_to_page_queue( page )).to be_falsey
                 end
             end
 
-            context true do
+            context 'true' do
                 it 'returns true' do
                     allow(subject).to receive(:accepts_more_pages?) { true }
                     expect(subject.push_to_page_queue( page )).to be_truthy
@@ -147,14 +147,14 @@ describe Arachni::Framework::Parts::Data do
         end
 
         context 'when #accepts_more_pages?' do
-            context false do
+            context 'false' do
                 it 'returns false' do
                     allow(subject).to receive(:accepts_more_pages?) { false }
                     expect(subject.push_to_url_queue( @url )).to be_falsey
                 end
             end
 
-            context true do
+            context 'true' do
                 it 'returns true' do
                     allow(subject).to receive(:accepts_more_pages?) { true }
                     expect(subject.push_to_url_queue( @url )).to be_truthy

@@ -3,7 +3,7 @@ require 'spec_helper'
 describe Arachni::Framework::Parts::Audit do
     include_examples 'framework'
 
-    describe Arachni::OptionGroups::Scope do
+    describe 'Arachni::OptionGroups::Scope' do
         describe '#exclude_binaries' do
             it 'excludes binary pages from the scan' do
                 audited = []

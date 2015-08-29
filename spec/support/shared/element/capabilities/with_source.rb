@@ -14,7 +14,7 @@ shared_examples_for 'with_source' do |source|
 
     describe '#source=' do
         context 'when given' do
-            context String do
+            context 'String' do
                 let(:string) { 'stuff' }
 
                 it 'recodes it' do

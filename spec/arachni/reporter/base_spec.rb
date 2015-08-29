@@ -36,7 +36,7 @@ describe Arachni::Reporter::Base do
 
     describe '#skip_responses?' do
         context 'when the :skip_responses option is' do
-            context true do
+            context 'true' do
                 it 'returns true' do
                     expect(described_class.new(
                         report,
@@ -45,7 +45,7 @@ describe Arachni::Reporter::Base do
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'returns false' do
                     expect(described_class.new(
                         report,

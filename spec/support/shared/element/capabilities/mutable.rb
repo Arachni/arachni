@@ -155,15 +155,15 @@ shared_examples_for 'mutable' do |options = {}|
         end
 
         context 'with option' do
-            describe :parameter_values do
-                describe true do
+            describe ':parameter_values' do
+                describe 'true' do
                     it 'injects the payload into parameter values' do
                         expect(mutable.mutations( seed, parameter_values: true ).
                             find { |m| m.affected_input_value.include? seed }).
                             to be_truthy
                     end
                 end
-                describe false do
+                describe 'false' do
                     it 'does not inject the payload into parameter values' do
                         expect(mutable.mutations( seed, parameter_values: false ).
                             find { |m| m.affected_input_value.include? seed }).
@@ -193,7 +193,7 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :with_extra_parameter,
+            describe 'with_extra_parameter',
                      if: !described_class.ancestors.include?(
                          Arachni::Element::DOM
                      ) && described_class != Arachni::Element::LinkTemplate &&
@@ -201,13 +201,13 @@ shared_examples_for 'mutable' do |options = {}|
 
                 let(:extra_name) { described_class::EXTRA_NAME }
 
-                describe true do
+                describe 'true' do
                     it 'injects the payload into an extra parameter' do
                         expect(mutable.mutations( seed, with_extra_parameter: true ).
                             find { |m| m[extra_name].to_s.include? seed }).to be_truthy
                     end
                 end
-                describe false do
+                describe 'false' do
                     it 'does not inject the payload into an extra parameter' do
                         expect(mutable.mutations( seed, with_extra_parameter: false ).
                             find { |m| m[extra_name].to_s.include? seed }).to be_falsey
@@ -233,19 +233,19 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :with_both_http_methods,
+            describe 'with_both_http_methods',
                      if: !described_class.ancestors.include?(
                          Arachni::Element::DOM
                      ) && described_class != Arachni::Element::JSON &&
                              described_class != Arachni::Element::XML do
 
-                describe false do
+                describe 'false' do
                     it 'does not fuzz methods' do
                         expect(mutable.mutations( seed, with_both_http_methods: false ).
                             map(&:method).uniq).to eq [mutable.method]
                     end
                 end
-                describe true do
+                describe 'true' do
                     it 'fuzzes methods' do
                         expect(mutable.mutations( seed, with_both_http_methods: true ).
                             map(&:method).uniq).to eq [:get, :post]
@@ -271,19 +271,19 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :parameter_names,
+            describe 'parameter_names',
                      if: !described_class.ancestors.include?( Arachni::Element::DOM) &&
                              described_class != Arachni::Element::LinkTemplate &&
                              described_class != Arachni::Element::XML do
 
-                describe true do
+                describe 'true' do
                     it 'uses the seed as a parameter name' do
                         expect(mutable.mutations( seed, parameter_names: true ).
                             find { |m| m.inputs.keys.include? seed }).
                             to be_truthy
                     end
                 end
-                describe false do
+                describe 'false' do
                     it 'does not use the seed as a parameter name' do
                         allow_any_instance_of(mutable.class).
                             to receive(:valid_input_name_data?) { |instance, name| name != seed }
@@ -319,13 +319,13 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :skip do
+            describe ':skip' do
                 it 'skips mutation of parameters with these names' do
                     mutable.mutations( seed, skip: [ 'input_one' ] )
                 end
             end
 
-            describe :format do
+            describe ':format' do
                 describe 'Format::STRAIGHT' do
                     it 'injects the seed as is' do
                         m = mutable.mutations( seed,

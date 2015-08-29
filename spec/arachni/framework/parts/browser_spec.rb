@@ -5,7 +5,7 @@ describe Arachni::Framework::Parts::Browser do
 
     describe '#browser_cluster' do
         context 'when #use_browsers? is' do
-            context true do
+            context 'true' do
                 before do
                     allow(subject).to receive(:use_browsers?) { true }
                 end
@@ -15,7 +15,7 @@ describe Arachni::Framework::Parts::Browser do
                 end
             end
 
-            context false do
+            context 'false' do
                 before do
                     allow(subject).to receive(:use_browsers?) { false }
                 end
@@ -29,7 +29,7 @@ describe Arachni::Framework::Parts::Browser do
 
     describe '#use_browsers?' do
         context "when #{Arachni::OptionGroups::BrowserCluster}#pool_size is" do
-            context 0 do
+            context '0' do
                 before do
                     subject.options.browser_cluster.pool_size = 0
                 end
@@ -51,7 +51,7 @@ describe Arachni::Framework::Parts::Browser do
         end
 
         context "when #{Arachni::OptionGroups::Scope}#dom_depth_limit is" do
-            context 0 do
+            context '0' do
                 before do
                     subject.options.scope.dom_depth_limit = 0
                 end
@@ -73,7 +73,7 @@ describe Arachni::Framework::Parts::Browser do
         end
 
         context 'when #host_has_browser? is' do
-            context true do
+            context 'true' do
                 before do
                     allow(subject).to receive(:use_browsers?) { true }
                 end
@@ -83,7 +83,7 @@ describe Arachni::Framework::Parts::Browser do
                 end
             end
 
-            context false do
+            context 'false' do
                 before do
                     allow(subject).to receive(:host_has_browser?) { false }
                 end
@@ -97,7 +97,7 @@ describe Arachni::Framework::Parts::Browser do
 
     describe '#host_has_browser?' do
         context "when #{Arachni::Browser}.has_executable? is" do
-            context true do
+            context 'true' do
                 before do
                     allow(Arachni::Browser).to receive(:has_executable?) { true }
                 end
@@ -107,7 +107,7 @@ describe Arachni::Framework::Parts::Browser do
                 end
             end
 
-            context false do
+            context 'false' do
                 before do
                     allow(Arachni::Browser).to receive(:has_executable?) { false }
                 end

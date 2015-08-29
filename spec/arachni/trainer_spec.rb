@@ -84,7 +84,7 @@ describe Arachni::Trainer do
                 expect(@framework.pages.size).to eq(0)
             end
         end
-        describe false do
+        describe 'false' do
             it 'skips the Trainer' do
                 expect(@framework.pages.size).to eq(0)
 
@@ -94,7 +94,7 @@ describe Arachni::Trainer do
                 expect(@framework.pages.size).to eq(0)
             end
         end
-        describe true do
+        describe 'true' do
             it 'passes the response to the Trainer' do
                 expect(@framework.pages.size).to eq(0)
 
@@ -309,7 +309,7 @@ describe Arachni::Trainer do
 
             let(:subject) { TrainerMockFramework.new.trainer }
 
-            context true do
+            context 'true' do
                 before { allow_any_instance_of(TrainerMockFramework).to receive(:accepts_more_pages?){ true } }
 
                 it 'processes pages' do
@@ -322,7 +322,7 @@ describe Arachni::Trainer do
                 end
             end
 
-            context false do
+            context 'false' do
                 before { allow_any_instance_of(TrainerMockFramework).to receive(:accepts_more_pages?){ false } }
 
                 it 'does not process the page' do

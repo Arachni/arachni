@@ -63,8 +63,8 @@ describe Arachni::Element::LinkTemplate do
     let(:utilities) { Arachni::Utilities }
 
     describe '#initialize' do
-        describe :options do
-            describe :template do
+        describe ':options' do
+            describe ':template' do
                 it 'sets the #template' do
                     expect(described_class.new(
                         url:      url_with_inputs,
@@ -73,7 +73,7 @@ describe Arachni::Element::LinkTemplate do
                 end
             end
 
-            describe :inputs do
+            describe ':inputs' do
                 it 'sets the #inputs' do
                     expect(described_class.new(
                         url:      url_with_inputs,

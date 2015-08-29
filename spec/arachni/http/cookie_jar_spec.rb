@@ -104,7 +104,7 @@ describe Arachni::HTTP::CookieJar do
         end
 
         context 'when passed a' do
-            context Arachni::Cookie do
+            context 'Arachni::Cookie' do
                 it 'updates the cookie jar with it' do
                     c = Arachni::Cookie.new( url: 'http://test.com', inputs: { name: 'value' } )
 
@@ -116,7 +116,7 @@ describe Arachni::HTTP::CookieJar do
                 end
             end
 
-            context Hash do
+            context 'Hash' do
                 it 'converts it to Cookie and update the cookie jar with it' do
                     expect(subject).to be_empty
 
@@ -127,7 +127,7 @@ describe Arachni::HTTP::CookieJar do
                 end
             end
 
-            context String do
+            context 'String' do
                 it 'parses it into a Cookie and update the cookie jar with it' do
                     expect(subject).to be_empty
 
@@ -160,7 +160,7 @@ describe Arachni::HTTP::CookieJar do
                 end
             end
 
-            context Array do
+            context 'Array' do
                 it 'iterates and if necessary parses the entries and update the cookie jar with them' do
                     expect(subject).to be_empty
 
@@ -290,12 +290,12 @@ describe Arachni::HTTP::CookieJar do
             )
         end
         describe 'include_expired' do
-            context true do
+            context 'true' do
                 it 'returns all cookies' do
                     expect(subject.cookies( true ).size).to eq(2)
                 end
             end
-            context false do
+            context 'false' do
                 it 'returns non expired cookies only' do
                     c = subject.cookies( false )
                     expect(c.size).to eq(1)

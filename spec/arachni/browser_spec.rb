@@ -85,12 +85,12 @@ describe Arachni::Browser do
     end
 
     describe '#initialize' do
-        describe :concurrency do
+        describe ':concurrency' do
             it 'sets the HTTP request concurrency'
         end
 
-        describe :ignore_scope do
-            context true do
+        describe ':ignore_scope' do
+            context 'true' do
                 it 'ignores scope restrictions' do
                     @browser.shutdown
 
@@ -103,7 +103,7 @@ describe Arachni::Browser do
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'enforces scope restrictions' do
                     @browser.shutdown
 
@@ -116,7 +116,7 @@ describe Arachni::Browser do
                 end
             end
 
-            context :default do
+            context ':default' do
                 it 'enforces scope restrictions' do
                     @browser.shutdown
 
@@ -130,7 +130,7 @@ describe Arachni::Browser do
             end
         end
 
-        describe :width do
+        describe ':width' do
             it 'sets the window width' do
                 @browser.shutdown
 
@@ -144,7 +144,7 @@ describe Arachni::Browser do
             end
         end
 
-        describe :height do
+        describe ':height' do
             it 'sets the window height' do
                 @browser.shutdown
 
@@ -158,7 +158,7 @@ describe Arachni::Browser do
             end
         end
 
-        describe :store_pages do
+        describe ':store_pages' do
             describe 'default' do
                 it 'stores snapshot pages' do
                     @browser.shutdown
@@ -174,7 +174,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe true do
+            describe 'true' do
                 it 'stores snapshot pages' do
                     @browser.shutdown
                     @browser = described_class.new( store_pages: true )
@@ -189,7 +189,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'stores snapshot pages' do
                     @browser.shutdown
                     @browser = described_class.new( store_pages: false )
@@ -292,7 +292,7 @@ describe Arachni::Browser do
             end
 
             context '#store_pages?' do
-                context true do
+                context 'true' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: true )}
 
                     it 'stores it in #page_snapshots' do
@@ -307,7 +307,7 @@ describe Arachni::Browser do
                     end
                 end
 
-                context false do
+                context 'false' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: false ) }
 
                     it 'does not store it' do
@@ -365,7 +365,7 @@ describe Arachni::Browser do
             end
 
             context '#store_pages?' do
-                context true do
+                context 'true' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: true )}
 
                     it 'stores it in #page_snapshots_with_sinks' do
@@ -374,7 +374,7 @@ describe Arachni::Browser do
                     end
                 end
 
-                context false do
+                context 'false' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: false )}
 
                     it 'does not store it in #page_snapshots_with_sinks' do
@@ -1078,7 +1078,7 @@ describe Arachni::Browser do
         context 'when the page has' do
             context "#{Arachni::Element::UIForm} elements" do
                 context "and #{Arachni::OptionGroups::Audit}#inputs is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :ui_forms
                         end
@@ -1126,7 +1126,7 @@ describe Arachni::Browser do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :ui_forms
                         end
@@ -1141,7 +1141,7 @@ describe Arachni::Browser do
 
             context "#{Arachni::Element::UIInput} elements" do
                 context "and #{Arachni::OptionGroups::Audit}#inputs is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :ui_inputs
                         end
@@ -1189,7 +1189,7 @@ describe Arachni::Browser do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :ui_inputs
                         end
@@ -1204,7 +1204,7 @@ describe Arachni::Browser do
 
             context "#{Arachni::Element::Form::DOM} elements" do
                 context "and #{Arachni::OptionGroups::Audit}#forms is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :forms
                         end
@@ -1231,7 +1231,7 @@ describe Arachni::Browser do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :forms
                         end
@@ -1248,7 +1248,7 @@ describe Arachni::Browser do
                 let(:cookies) { @browser.to_page.cookies }
 
                 context "and #{Arachni::OptionGroups::Audit}#cookies is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :cookies
 
@@ -1295,7 +1295,7 @@ describe Arachni::Browser do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :cookies
 
@@ -1402,14 +1402,14 @@ describe Arachni::Browser do
         context 'when the trigger fails with' do
             let(:element) { @browser.watir.div( id: 'my-div' ) }
 
-            context Selenium::WebDriver::Error::WebDriverError do
+            context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'returns nil' do
                     allow(element).to receive(:fire_event){ raise Selenium::WebDriver::Error::WebDriverError }
                     expect(@browser.fire_event( element, :click )).to be_nil
                 end
             end
 
-            context Watir::Exception::Error do
+            context 'Watir::Exception::Error' do
                 it 'returns nil' do
                     allow(element).to receive(:fire_event){ raise Watir::Exception::Error }
                     expect(@browser.fire_event( element, :click )).to be_nil
@@ -1418,11 +1418,11 @@ describe Arachni::Browser do
         end
 
         context 'form' do
-            context :submit do
+            context ':submit' do
                 let(:url) { "#{@url}/fire_event/form/onsubmit" }
 
                 context 'when option' do
-                    describe :inputs do
+                    describe ':inputs' do
                         context 'is given' do
                             let(:inputs) do
                                 {
@@ -1617,7 +1617,7 @@ describe Arachni::Browser do
             end
 
             context 'image button' do
-                context :click do
+                context ':click' do
                     before( :each ) { @browser.start_capture }
                     let(:url) { "#{@url}fire_event/form/image-input" }
 
@@ -1658,11 +1658,11 @@ describe Arachni::Browser do
                         string[0...-1] : string
                 end
 
-                context event do
+                context 'event' do
                     let( :url ) { "#{@url}/fire_event/input/#{event}" }
 
                     context 'when option' do
-                        describe :inputs do
+                        describe ':inputs' do
                             context 'is given' do
                                 let(:value) do
                                     'The Dude'
@@ -1774,7 +1774,7 @@ describe Arachni::Browser do
             ])
         end
 
-        context :a do
+        context ':a' do
             context 'and the href is not empty' do
                 context 'and it starts with javascript:' do
                     let(:url) { @url + '/each_element_with_events/a/href/javascript' }
@@ -1810,8 +1810,8 @@ describe Arachni::Browser do
             end
         end
 
-        context :form do
-            context :input do
+        context ':form' do
+            context ':input' do
                 context 'of type "image"' do
                     let(:url) { @url + '/each_element_with_events/form/input/image' }
 
@@ -2108,7 +2108,7 @@ describe Arachni::Browser do
 
             context 'with an extension of' do
                 described_class::ASSET_EXTENSIONS.each do |extension|
-                    context extension do
+                    context 'extension' do
                         it 'loads it'
                     end
                 end
@@ -2203,7 +2203,7 @@ describe Arachni::Browser do
         end
 
         context "#{Arachni::OptionGroups::BrowserCluster}#ignore_images" do
-            context true do
+            context 'true' do
                 it 'does not load images' do
                     Arachni::Options.browser_cluster.ignore_images = true
                     @browser.shutdown
@@ -2215,7 +2215,7 @@ describe Arachni::Browser do
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'loads images' do
                     Arachni::Options.browser_cluster.ignore_images = false
                     @browser.shutdown
@@ -2257,7 +2257,7 @@ describe Arachni::Browser do
             end
         end
 
-        describe :cookies do
+        describe ':cookies' do
             it 'loads the given cookies' do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.goto @url, cookies: cookie
@@ -2286,8 +2286,8 @@ describe Arachni::Browser do
             end
         end
 
-        describe :take_snapshot do
-            describe true do
+        describe ':take_snapshot' do
+            describe 'true' do
                 it 'captures a snapshot of the loaded page' do
                     @browser.goto @url, take_snapshot: true
                     pages = @browser.page_snapshots
@@ -2300,7 +2300,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'does not capture a snapshot of the loaded page' do
                     @browser.goto @url, take_snapshot:  false
                     expect(@browser.page_snapshots).to be_empty
@@ -2321,15 +2321,15 @@ describe Arachni::Browser do
             end
         end
 
-        describe :update_transitions do
-            describe true do
+        describe ':update_transitions' do
+            describe 'true' do
                 it 'pushes the page load to the transitions' do
                     t = @browser.goto( @url, update_transitions: true )
                     expect(@browser.to_page.dom.transitions).to include t
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'does not push the page load to the transitions' do
                     t = @browser.goto( @url, update_transitions: false )
                     expect(@browser.to_page.dom.transitions).to be_empty
@@ -2350,7 +2350,7 @@ describe Arachni::Browser do
             expect(@browser.load( @url )).to eq(@browser)
         end
 
-        describe :cookies do
+        describe ':cookies' do
             it 'loads the given cookies' do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.load @url, cookies: cookie
@@ -2359,8 +2359,8 @@ describe Arachni::Browser do
             end
         end
 
-        describe :take_snapshot do
-            describe true do
+        describe ':take_snapshot' do
+            describe 'true' do
                 it 'captures a snapshot of the loaded page' do
                     @browser.load @url, take_snapshot: true
                     pages = @browser.page_snapshots
@@ -2373,7 +2373,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'does not capture a snapshot of the loaded page' do
                     @browser.load @url, take_snapshot: false
                     expect(@browser.page_snapshots).to be_empty
@@ -2395,7 +2395,7 @@ describe Arachni::Browser do
         end
 
         context 'when given a' do
-            describe String do
+            describe 'String' do
                 it 'treats it as a URL' do
                     expect(hit_count).to eq(0)
 
@@ -2407,7 +2407,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::HTTP::Response do
+            describe 'Arachni::HTTP::Response' do
                 it 'loads it' do
                     expect(hit_count).to eq(0)
 
@@ -2419,7 +2419,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::Page do
+            describe 'Arachni::Page' do
                 it 'loads it' do
                     expect(hit_count).to eq(0)
 
@@ -2521,7 +2521,7 @@ describe Arachni::Browser do
         end
 
         context 'when given a' do
-            describe Arachni::HTTP::Response do
+            describe 'Arachni::HTTP::Response' do
                 it 'preloads it' do
                     @browser.preload Arachni::HTTP::Client.get( @url, mode: :sync )
                     clear_hit_count
@@ -2536,7 +2536,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::Page do
+            describe 'Arachni::Page' do
                 it 'preloads it' do
                     @browser.preload Arachni::Page.from_url( @url )
                     clear_hit_count
@@ -2592,7 +2592,7 @@ describe Arachni::Browser do
         end
 
         context 'when given a' do
-            describe Arachni::HTTP::Response do
+            describe 'Arachni::HTTP::Response' do
                 it 'caches it' do
                     @browser.cache Arachni::HTTP::Client.get( @url, mode: :sync )
                     clear_hit_count
@@ -2607,7 +2607,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::Page do
+            describe 'Arachni::Page' do
                 it 'caches it' do
                     @browser.cache Arachni::Page.from_url( @url )
                     clear_hit_count
@@ -2832,7 +2832,7 @@ describe Arachni::Browser do
             expect(snapshot_id).to eq(@browser.load( url ).snapshot_id)
         end
 
-        context :a do
+        context ':a' do
             context 'and the href is not empty' do
                 context 'and it starts with javascript:' do
                     let(:url) { @url + '/each_element_with_events/a/href/javascript' }
@@ -2868,10 +2868,10 @@ describe Arachni::Browser do
             end
         end
 
-        context :form do
+        context ':form' do
             let(:empty_snapshot_id_url) { @url + '/snapshot_id/form/default' }
 
-            context :input do
+            context ':input' do
                 context 'of type "image"' do
                     let(:url) { @url + '/each_element_with_events/form/input/image' }
 

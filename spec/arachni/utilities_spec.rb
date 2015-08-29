@@ -132,7 +132,7 @@ describe Arachni::Utilities do
 
     describe '#skip_resource?' do
         context 'when passed a' do
-            context Arachni::HTTP::Response do
+            context 'Arachni::HTTP::Response' do
                 context 'and #skip_response? returns' do
                     context 'true' do
                         it 'returns true' do
@@ -150,7 +150,7 @@ describe Arachni::Utilities do
                 end
             end
 
-            context Arachni::Page do
+            context 'Arachni::Page' do
                 context 'and #skip_page? returns' do
                     context 'true' do
                         it 'returns true' do
@@ -168,7 +168,7 @@ describe Arachni::Utilities do
                 end
             end
 
-            context String do
+            context 'String' do
                 context 'and #skip_path? returns' do
                     context 'true' do
                         it 'returns true' do
@@ -231,7 +231,7 @@ describe Arachni::Utilities do
                     end
                 end
 
-                context true do
+                context 'true' do
                     it 're-raises the exception' do
                         expect do
                             subject.exception_jail( true ) { raise }
@@ -239,7 +239,7 @@ describe Arachni::Utilities do
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'returns nil' do
                         expect(subject.exception_jail( false ) { raise }).to be_nil
                     end
@@ -257,7 +257,7 @@ describe Arachni::Utilities do
                     end
                 end
 
-                context true do
+                context 'true' do
                     it 'does not rescue it' do
                         expect do
                             subject.exception_jail( true ) { raise Exception }
@@ -265,7 +265,7 @@ describe Arachni::Utilities do
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'does not rescue it' do
                         expect do
                             subject.exception_jail( false ) { raise Exception }

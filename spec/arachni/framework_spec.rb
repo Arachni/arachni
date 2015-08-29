@@ -184,7 +184,7 @@ describe Arachni::Framework do
             end
         end
 
-        describe :runtime do
+        describe ':runtime' do
             context 'when the scan has been running' do
                 it 'returns the runtime in seconds' do
                     subject.run

@@ -357,11 +357,11 @@ describe 'Arachni::RPC::Server::Instance' do
                 end
             end
 
-            describe :spawns do
+            describe ':spawns' do
                 context 'when it has a Dispatcher' do
                     context 'which is a Grid member' do
                         context 'with OptionGroup::Dispatcher#grid_mode set to' do
-                            context :aggregate do
+                            context ':aggregate' do
                                 it 'requests slaves from grid members with unique Pipe-IDs' do
                                     @instance = instance = instance_grid_spawn
 
@@ -386,7 +386,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     expect(instance.service.report['issues']).to be_any
                                 end
                             end
-                            context :balance do
+                            context ':balance' do
                                 it 'requests its slaves from it' do
                                     @instance = instance = instance_grid_spawn
 
@@ -431,7 +431,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         end
 
                         context 'with :grid set to' do
-                            context true do
+                            context 'true' do
                                 it 'it a shorthand for grid_mode: :balance' do
                                     @instance = instance = instance_grid_spawn
 
@@ -556,15 +556,15 @@ describe 'Arachni::RPC::Server::Instance' do
                 expect(p[:seed]).not_to be_empty
             end
 
-            describe :without do
-                describe :statistics do
+            describe ':without' do
+                describe ':statistics' do
                     it 'includes statistics' do
                         expect(@progress_instance.service.progress(
                             without: :statistics
                         )).not_to include :statistics
                     end
                 end
-                describe :issues do
+                describe ':issues' do
                     it 'does not include issues with the given Issue#digest hashes' do
                         p = @progress_instance.service.progress( with: :issues )
                         issue = p[:issues].first
@@ -596,8 +596,8 @@ describe 'Arachni::RPC::Server::Instance' do
                 end
             end
 
-            describe :with do
-                describe :issues do
+            describe ':with' do
+                describe ':issues' do
                     it 'includes issues' do
                         instance = @progress_instance
 
@@ -608,7 +608,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
                 end
 
-                describe :instances do
+                describe ':instances' do
                     it 'includes instances' do
                         instance = @progress_instance
 
@@ -630,7 +630,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
                 end
 
-                describe :sitemap do
+                describe ':sitemap' do
                     context 'when set to true' do
                         it 'returns entire sitemap' do
                             instance = @progress_instance
@@ -700,15 +700,15 @@ describe 'Arachni::RPC::Server::Instance' do
                 expect(p[:issues]).to be_nil
             end
 
-            describe :without do
-                describe :statistics do
+            describe ':without' do
+                describe ':statistics' do
                     it 'includes statistics' do
                         expect(@progress_instance.service.native_progress(
                             without: :statistics
                         )).not_to include :statistics
                     end
                 end
-                describe :issues do
+                describe ':issues' do
                     it 'does not include issues with the given Issue#digest hashes' do
                         p = @progress_instance.service.native_progress( with: :issues )
                         issue = p[:issues].first
@@ -740,8 +740,8 @@ describe 'Arachni::RPC::Server::Instance' do
                 end
             end
 
-            describe :with do
-                describe :issues do
+            describe ':with' do
+                describe ':issues' do
                     it 'includes issues as Arachni::Issue objects' do
                         instance = @progress_instance
 
@@ -751,7 +751,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
                 end
 
-                describe :instances do
+                describe ':instances' do
                     it 'includes instances' do
                         instance = @progress_instance
 

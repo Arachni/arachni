@@ -52,7 +52,7 @@ describe Arachni::HTTP::ProxyServer do
     end
 
     describe '#initialize' do
-        describe :address do
+        describe ':address' do
             it 'sets the bind address' do
                 address = WEBrick::Utils::getservername
 
@@ -64,7 +64,7 @@ describe Arachni::HTTP::ProxyServer do
             end
         end
 
-        describe :port do
+        describe ':port' do
             it 'sets the listen port' do
                 port = Arachni::Utilities.available_port
 
@@ -76,7 +76,7 @@ describe Arachni::HTTP::ProxyServer do
             end
         end
 
-        describe :timeout do
+        describe ':timeout' do
             it 'sets the HTTP request timeout' do
                 proxy = described_class.new( timeout: 1 )
                 proxy.start_async
@@ -88,7 +88,7 @@ describe Arachni::HTTP::ProxyServer do
             end
         end
 
-        # describe :concurrency do
+        # describe ':concurrency' do
         #     it 'sets the HTTP request concurrency' do
         #         sleep_url = @url + 'sleep'
         #
@@ -114,7 +114,7 @@ describe Arachni::HTTP::ProxyServer do
         #     end
         # end
 
-        describe :request_handler do
+        describe ':request_handler' do
             it 'sets a block to handle each HTTP request before the request is forwarded to the origin server' do
                 called = false
                 proxy = described_class.new(
@@ -208,7 +208,7 @@ describe Arachni::HTTP::ProxyServer do
             end
         end
 
-        describe :response_handler do
+        describe ':response_handler' do
             it 'sets a block to handle each HTTP request once the origin server has responded' do
                 called = false
                 proxy = described_class.new(

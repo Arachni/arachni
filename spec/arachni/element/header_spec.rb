@@ -51,14 +51,14 @@ describe Arachni::Element::Header do
     end
 
     describe '#mutations' do
-        describe :parameter_names do
+        describe ':parameter_names' do
             it 'creates a new header' do
                 expect(subject.mutations( 'seed', parameter_names: true ).last.
                     inputs.keys).to eq(%w(seed))
             end
         end
 
-        describe :format do
+        describe ':format' do
             it 'does not include NULLs' do
                 expect(subject.mutations( 'seed' ).
                     select { |m| m.affected_input_value.include? "\0" }).to be_empty

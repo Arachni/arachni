@@ -19,7 +19,7 @@ describe Arachni::Support::Signature do
 
     describe '#initialize' do
         describe 'option' do
-            describe :threshold do
+            describe ':threshold' do
                 it 'sets the maximum difference ratio when performing comparisons' do
                     seed1 = 'test this here 1'
                     seed2 = 'test that here 2'

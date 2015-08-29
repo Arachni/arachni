@@ -36,7 +36,7 @@ describe Arachni::BrowserCluster do
             end
         end
 
-        describe :pool_size do
+        describe ':pool_size' do
             it 'sets the amount of browsers to instantiate' do
                 @cluster = described_class.new( pool_size: 3 )
                 expect(@cluster.workers.size).to eq(3)
@@ -49,7 +49,7 @@ describe Arachni::BrowserCluster do
             end
         end
 
-        describe :on_pop do
+        describe ':on_pop' do
             it 'assigns blocks to be passed each poped job' do
                 cj = nil
                 @cluster = described_class.new(
@@ -65,7 +65,7 @@ describe Arachni::BrowserCluster do
             end
         end
 
-        describe :on_queue do
+        describe ':on_queue' do
             it 'assigns blocks to be passed each queued job' do
                 cj = nil
                 @cluster = described_class.new(
@@ -81,7 +81,7 @@ describe Arachni::BrowserCluster do
             end
         end
 
-        describe :on_job_done do
+        describe ':on_job_done' do
             it 'assigns blocks to be passed each finished job' do
                 cj = nil
                 @cluster = described_class.new(
@@ -261,7 +261,7 @@ describe Arachni::BrowserCluster do
         end
 
         context 'when the resource is a' do
-            context String do
+            context 'String' do
                 it 'loads the URL and explores the DOM' do
                     pages = []
 
@@ -274,7 +274,7 @@ describe Arachni::BrowserCluster do
                 end
             end
 
-            context Arachni::HTTP::Response do
+            context 'Arachni::HTTP::Response' do
                 it 'loads it and explores the DOM' do
                     pages = []
 
@@ -287,7 +287,7 @@ describe Arachni::BrowserCluster do
                 end
             end
 
-            context Arachni::Page do
+            context 'Arachni::Page' do
                 it 'loads it and explores the DOM' do
                     pages = []
 
@@ -313,7 +313,7 @@ describe Arachni::BrowserCluster do
             end
 
             context 'and the resource is a' do
-                context String do
+                context 'String' do
                     it 'loads the URL and traces the taint' do
                         pages = []
                         @cluster.trace_taint( url, taint: taint ) do |result|
@@ -325,7 +325,7 @@ describe Arachni::BrowserCluster do
                     end
                 end
 
-                context Arachni::HTTP::Response do
+                context 'Arachni::HTTP::Response' do
                     it 'loads it and traces the taint' do
                         pages = []
 
@@ -339,7 +339,7 @@ describe Arachni::BrowserCluster do
                     end
                 end
 
-                context Arachni::Page do
+                context 'Arachni::Page' do
                     it 'loads it and traces the taint' do
                         pages = []
 
@@ -362,7 +362,7 @@ describe Arachni::BrowserCluster do
                 end
 
                 context 'and the resource is a' do
-                    context String do
+                    context 'String' do
                         it 'loads the URL and traces the taint' do
                             pages = []
                             @cluster.trace_taint( url,
@@ -376,7 +376,7 @@ describe Arachni::BrowserCluster do
                         end
                     end
 
-                    context Arachni::HTTP::Response do
+                    context 'Arachni::HTTP::Response' do
                         it 'loads it and traces the taint' do
                             pages = []
                             @cluster.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
@@ -390,7 +390,7 @@ describe Arachni::BrowserCluster do
                         end
                     end
 
-                    context Arachni::Page do
+                    context 'Arachni::Page' do
                         it 'loads it and traces the taint' do
                             pages = []
                             @cluster.trace_taint( Arachni::Page.from_url( url ),
@@ -414,7 +414,7 @@ describe Arachni::BrowserCluster do
             end
 
             context 'and the resource is a' do
-                context String do
+                context 'String' do
                     it 'loads the URL and traces the taint' do
                         pages = []
                         @cluster.trace_taint( url ) do |result|
@@ -426,7 +426,7 @@ describe Arachni::BrowserCluster do
                     end
                 end
 
-                context Arachni::HTTP::Response do
+                context 'Arachni::HTTP::Response' do
                     it 'loads it and traces the taint' do
                         pages = []
                         @cluster.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ) ) do |result|
@@ -438,7 +438,7 @@ describe Arachni::BrowserCluster do
                     end
                 end
 
-                context Arachni::Page do
+                context 'Arachni::Page' do
                     it 'loads it and traces the taint' do
                         pages = []
                         @cluster.trace_taint( Arachni::Page.from_url( url ) ) do |result|

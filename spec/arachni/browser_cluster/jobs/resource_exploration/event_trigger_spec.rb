@@ -40,13 +40,13 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
     end
 
     context 'when the resource is a' do
-        context String do
+        context 'String' do
             it 'loads the URL and triggers the given event on the given element' do
                 test described_class.new( resource: url, event: event, element: element )
             end
         end
 
-        context Arachni::HTTP::Response do
+        context 'Arachni::HTTP::Response' do
             it 'loads it and triggers the given event on the given element' do
                 test described_class.new(
                          resource: Arachni::HTTP::Client.get( url, mode: :sync ),
@@ -56,7 +56,7 @@ describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
             end
         end
 
-        context Arachni::Page do
+        context 'Arachni::Page' do
             it 'loads it and triggers the given event on the given element' do
                 test described_class.new(
                     resource: Arachni::Page.from_url( url ),

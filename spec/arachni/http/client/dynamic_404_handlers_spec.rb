@@ -231,7 +231,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
 
     describe 'needs_check?' do
         context 'when #checked?' do
-            context false do
+            context 'false' do
                 before(:each) { allow(subject).to receive(:checked?) { false } }
 
                 it 'returns true' do
@@ -239,7 +239,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                 end
 
                 context 'and #checked_and_static?' do
-                    context false do
+                    context 'false' do
                         before(:each) { allow(subject).to receive(:checked_and_static?) { false } }
 
                         it 'returns true' do
@@ -247,7 +247,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                         end
                     end
 
-                    context true do
+                    context 'true' do
                         before(:each) { allow(subject).to receive(:checked_and_static?) { true } }
 
                         it 'returns true' do
@@ -257,7 +257,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                 end
             end
 
-            context true do
+            context 'true' do
                 before(:each) { allow(subject).to receive(:checked?) { true } }
 
                 it 'returns true' do
@@ -265,7 +265,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                 end
 
                 context 'and #checked_and_static?' do
-                    context true do
+                    context 'true' do
                         before(:each) { allow(subject).to receive(:checked_and_static?) { true } }
 
                         it 'returns false' do
@@ -273,7 +273,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before(:each) { allow(subject).to receive(:checked_and_static?) { false } }
 
                         it 'returns true' do

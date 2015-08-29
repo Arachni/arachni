@@ -84,7 +84,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#mutations' do
-        describe :parameter_names do
+        describe ':parameter_names' do
             it 'creates a new cookie' do
                 expect(subject.mutations( 'seed', parameter_names: true ).last.inputs.keys).to eq(
                     %w(seed)

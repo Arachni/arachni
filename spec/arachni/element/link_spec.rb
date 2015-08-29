@@ -53,7 +53,7 @@ describe Arachni::Element::Link do
     end
 
     describe '#initialize' do
-        describe :action do
+        describe ':action' do
             it 'sets #action' do
                 action = "#{url}stuff"
                 expect(described_class.new( url: url, action: action ).action).to eq(action)

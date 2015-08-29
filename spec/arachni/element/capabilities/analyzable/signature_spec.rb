@@ -67,8 +67,8 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
         end
 
         context 'when called with option' do
-            describe :regexp do
-                context String do
+            describe ':regexp' do
+                context 'String' do
                     it 'tries to match the provided pattern' do
                         @positive.signature_analysis( @seed,
                                                   regexp: @seed,
@@ -80,7 +80,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     end
                 end
 
-                context Array do
+                context 'Array' do
                     it 'tries to match the provided patterns' do
                         @positive.signature_analysis( @seed,
                                                   regexp: [@seed],
@@ -92,7 +92,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     end
                 end
 
-                context Hash do
+                context 'Hash' do
                     it 'assigns the relevant platform to the issue' do
                         regexps = {
                             windows: /#{@seed} w.*/,
@@ -195,8 +195,8 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                 end
             end
 
-            describe :substring do
-                context String do
+            describe ':substring' do
+                context 'String' do
                     it 'tries to match the provided pattern' do
                         @positive.signature_analysis( @seed,
                                                   substring: @seed,
@@ -209,7 +209,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     end
                 end
 
-                context Array do
+                context 'Array' do
                     it 'tries to match the provided patterns' do
                         @positive.signature_analysis( @seed,
                                                   substring: [@seed],
@@ -222,7 +222,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     end
                 end
 
-                context Hash do
+                context 'Hash' do
                     it 'assigns the relevant platform to the issue' do
                         substrings = {
                             windows: "#{@seed} w",
@@ -328,7 +328,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                 end
             end
 
-            describe :ignore do
+            describe ':ignore' do
                 it 'ignores matches whose response also matches the ignore patterns' do
                     @positive.signature_analysis( @seed,
                         substring: @seed,
@@ -340,7 +340,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                 end
             end
 
-            describe :longest_word_optimization do
+            describe ':longest_word_optimization' do
                 it 'optimizes the pattern matching process by first matching against the largest word in the regexp' do
                     @positive.signature_analysis(
                         @seed,

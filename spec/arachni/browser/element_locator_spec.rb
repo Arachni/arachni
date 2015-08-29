@@ -72,17 +72,17 @@ describe Arachni::Browser::ElementLocator do
     end
 
     describe '#initialize' do
-        describe :tag_name do
+        describe ':tag_name' do
             it 'sets #tag_name' do
                 expect(described_class.new( tag_name: :a ).tag_name).to eq(:a)
             end
 
-            it 'converts it to a Sybmol' do
+            it 'converts it to a Symbol' do
                 expect(described_class.new( tag_name: 'a' ).tag_name).to eq(:a)
             end
         end
 
-        describe :attributes do
+        describe ':attributes' do
             it 'sets #attributes' do
                 expect(described_class.new( attributes: attributes ).attributes).to eq(attributes)
             end

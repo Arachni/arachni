@@ -85,8 +85,8 @@ shared_examples_for 'submittable_dom' do
             end
         end
 
-        describe :options do
-            describe :custom_code do
+        describe ':options' do
+            describe ':custom_code' do
                 it 'injects the given code' do
                     called = false
                     title = 'Injected title'
@@ -101,7 +101,7 @@ shared_examples_for 'submittable_dom' do
                 end
             end
 
-            describe :taint do
+            describe ':taint' do
                 it 'sets the Browser::Javascript#taint' do
                     taint = Arachni::Utilities.generate_token
 

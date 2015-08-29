@@ -10,7 +10,8 @@ shared_examples_for 'cache' do
                     expect(described_class.new.capped?).to be_falsey
                 end
             end
-            describe Integer do
+
+            describe 'Integer' do
                 it 'imposes a limit to the size of the cache' do
                     expect(described_class.new( 10 ).capped?).to be_truthy
                 end

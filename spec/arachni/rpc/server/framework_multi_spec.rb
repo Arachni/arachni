@@ -213,7 +213,7 @@
 #         end
 #
 #         context 'when called with option' do
-#             describe :errors do
+#             describe ':errors' do
 #                 context 'when set to true' do
 #                     it 'includes all error messages' do
 #                         instance = instance_light_grid_spawn
@@ -241,7 +241,7 @@
 #                 end
 #             end
 #
-#             describe :sitemap do
+#             describe ':sitemap' do
 #                 context 'when set to true' do
 #                     it 'returns entire sitemap' do
 #                         expect(@instance_clean.framework.
@@ -260,7 +260,7 @@
 #                 end
 #             end
 #
-#             describe :statistics do
+#             describe ':statistics' do
 #                 context 'when set to false' do
 #                     it 'excludes statistics' do
 #                         expect(@instance_clean.framework.progress(
@@ -269,7 +269,7 @@
 #                     end
 #                 end
 #             end
-#             describe :issues do
+#             describe ':issues' do
 #                 context 'when set to false' do
 #                     it 'excludes issues' do
 #                         expect(@instance_clean.framework.progress(
@@ -278,7 +278,7 @@
 #                     end
 #                 end
 #             end
-#             describe :slaves do
+#             describe ':slaves' do
 #                 context 'when set to false' do
 #                     it 'excludes slave data' do
 #                         expect(@instance_clean.framework.progress(
@@ -287,7 +287,7 @@
 #                     end
 #                 end
 #             end
-#             describe :as_hash do
+#             describe ':as_hash' do
 #                 context 'when set to true' do
 #                     it 'includes issues as a hash' do
 #                         expect(@instance_clean.framework.

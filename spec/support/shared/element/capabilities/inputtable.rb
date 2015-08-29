@@ -110,7 +110,7 @@ shared_examples_for 'inputtable' do |options = {}|
                 end
             end
 
-            context Array do
+            context 'Array' do
                 context 'when it has the given inputs' do
                     it 'returns true' do
                         expect(subject.has_inputs?( sym_keys )).to be_truthy
@@ -125,7 +125,7 @@ shared_examples_for 'inputtable' do |options = {}|
                 end
             end
 
-            context Hash do
+            context 'Hash' do
                 context 'when it has the given inputs (names and values)' do
                     it 'returns true' do
                         expect(subject.has_inputs?( subject.inputs )).to be_truthy
