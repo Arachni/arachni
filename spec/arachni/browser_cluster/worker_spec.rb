@@ -253,7 +253,7 @@ describe Arachni::BrowserCluster::Worker do
 
                     expect(watir).not_to eq(subject.watir)
                     expect(pid).not_to eq(subject.pid)
-                    expect(subject.watir.windows.size).to eq(2)
+                    expect(subject.watir.windows.size).to eq(1)
                 end
 
                 it 'clears the cached HTTP responses' do

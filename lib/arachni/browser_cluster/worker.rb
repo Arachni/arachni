@@ -269,7 +269,6 @@ class Worker < Arachni::Browser
         # that, just leave it dead and try again at the next job.
         begin
             @watir = ::Watir::Browser.new( selenium )
-            ensure_open_window
             true
         rescue Selenium::WebDriver::Error::WebDriverError,
             Browser::Error::Spawn => e

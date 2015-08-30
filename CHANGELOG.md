@@ -2,6 +2,16 @@
 
 ## Under development
 
+- `HTTP`
+    - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
+        written server with support for `keep-alive` and low-overhead SSL interception.
+- `Browser`
+    - Optimized to avoid use of slow `Watir::Element#fire_event` method.
+        Instead use native `Watir::Element` event helpers when available or a
+        custom event dispatcher.
+
+## Under development
+
 - `Issue`
     - `#variations` -- Removed, all issues now include full data.
     - `#unique_id`, `#digest` -- In cases of passive issues, the associated
@@ -27,9 +37,6 @@
             - `Taint` => `Signature` -- Signature analysis better describes that
                 process and the "taint" terminology was overloaded by the browser's
                 taint tracing subsystems.
--`HTTP`
-    - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
-        written server with support for `keep-alive` and low-overhead SSL interception.
 - `Browser`
     - `Javascript`
         - `TaintTracer`

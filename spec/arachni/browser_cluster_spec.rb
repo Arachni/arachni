@@ -23,6 +23,7 @@ describe Arachni::BrowserCluster do
 
             @cluster = described_class.new
             @cluster.workers.each do |browser|
+                browser.load url
                 expect(browser.javascript.run('return window.innerWidth')).to eq(100)
             end
         end
@@ -32,6 +33,7 @@ describe Arachni::BrowserCluster do
 
             @cluster = described_class.new
             @cluster.workers.each do |browser|
+                browser.load url
                 expect(browser.javascript.run('return window.innerHeight')).to eq(200)
             end
         end

@@ -74,6 +74,13 @@ class Browser
         ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'woff', 'json']
     )
 
+    INPUT_EVENTS          = Set.new([
+        :change, :blur, :focus, :select, :keyup, :keypress, :keydown, :input
+    ])
+    INPUT_EVENTS_TO_FORCE = Set.new([
+        :focus, :change, :blur, :select
+    ])
+
     ASSET_EXTRACTORS = [
         /<\s*link.*?href=['"](.*?)['"].*?>/im,
         /<\s*script.*?src=['"](.*?)['"].*?>/im,
@@ -168,10 +175,10 @@ class Browser
             concurrency:      @options[:concurrency],
             address:          '127.0.0.1',
             request_handler:  proc do |request, response|
-                synchronize { exception_jail { request_handler( request, response ) } }
+                exception_jail { request_handler( request, response ) }
             end,
             response_handler: proc do |request, response|
-                synchronize { exception_jail { response_handler( request, response ) } }
+                exception_jail { response_handler( request, response ) }
             end
         )
 
@@ -213,8 +220,6 @@ class Browser
         @last_url = nil
 
         @javascript = Javascript.new( self )
-
-        ensure_open_window
     end
 
     def clear_buffers
@@ -345,8 +350,6 @@ class Browser
 
         ensure_open_window
 
-        # This will also clear the current window, so better have it called
-        # always.
         load_cookies url, extra_cookies
 
         transition = Page::DOM::Transition.new( :page, :load,
@@ -674,11 +677,6 @@ class Browser
             return
         end
 
-        if !element.visible?
-            print_debug_level_2 "#{element.inspect} is not visible, skipping..."
-            return
-        end
-
         if locator
             opening_tag = locator.to_s
             tag_name    = locator.tag_name
@@ -688,46 +686,53 @@ class Browser
             locator     = ElementLocator.from_html( opening_tag )
         end
 
+        element_subtype = element.to_subtype
+
         print_debug_level_2 "[start]: #{event} (#{options}) #{locator}"
 
         tag_name = tag_name.to_sym
 
         notify_on_fire_event( element, event )
 
-        tries = 0
         begin
             transition = Page::DOM::Transition.new( locator, event, options ) do
-                had_special_trigger = false
+                force = true
 
+                # It's better to use the Watir helpers whenever possible instead
+                # of firing events manually.
                 if tag_name == :form
                     fill_in_form_inputs( element, options[:inputs] )
 
                     if event == :submit
-                        element.to_subtype.submit
-                        had_special_trigger = true
+                        force = false
+
+                        element_subtype.submit
                     end
-                elsif tag_name == :input && event == :click &&
-                        element.attribute_value(:type) == 'image'
 
-                    element.to_subtype.click
-                    had_special_trigger = true
+                elsif event == :click
+                    force = false
 
-                elsif [:keyup, :keypress, :keydown, :change, :input, :focus, :blur, :select].include? event
+                    element_subtype.click
 
-                    # Some of these need an explicit event triggers.
-                    had_special_trigger = true if ![:change, :blur, :focus, :select].include? event
+                elsif INPUT_EVENTS.include? event
+                    force = INPUT_EVENTS_TO_FORCE.include?( event )
 
                     # Send keys will append to the existing value, so we need to
-                    # clear it first. The receiving input may support values
+                    # clear it first. The receiving input may not support values
                     # though, so watch out.
                     if (subtype = element.to_subtype).respond_to?( :value= )
                         subtype.value = ''
                     end
 
+                    # Simulates real text input and will trigger associated events.
+                    # Except for INPUT_EVENTS_TO_FORCE of course.
                     element.send_keys( (options[:value] || value_for( element )).to_s )
                 end
 
-                element.fire_event( event ) if !had_special_trigger
+                if force
+                    print_debug_level_2 "[forcing event]: #{event} (#{options}) #{locator}"
+                    fire_event_js locator, event
+                end
 
                 print_debug_level_2 "[waiting for requests]: #{event} (#{options}) #{locator}"
                 wait_for_pending_requests
@@ -740,11 +745,6 @@ class Browser
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
 
-            sleep 0.1
-
-            tries += 1
-            retry if tries < 5
-
             print_debug "Error when triggering event for: #{url}"
             print_debug "-- '#{event}' on: #{opening_tag}"
             print_debug
@@ -752,6 +752,40 @@ class Browser
 
             nil
         end
+    end
+
+    # This is essentially the same thing as Watir::Element#fire_event
+    # but 10 times faster.
+    #
+    # Does not perform any sort of sanitization nor sanity checking, it will
+    # just try to trigger the event.
+    #
+    # @param    [Browser::ElementLocator]   locator
+    # @param    [Symbol,String]   event
+    # @param    [Bool]   ret
+    #   Return JS result?
+    # @param    [Numeric]   wait
+    #   Amount of time to wait (in seconds) after triggering the event.
+    def fire_event_js( locator, event, ret: false, wait: 0.1 )
+        r = javascript.run <<-EOJS
+            var element = document.querySelector( #{locator.css.inspect} );
+            var event   = document.createEvent( "Events" );
+
+            event.initEvent( "#{event}", true, true );
+
+            event.view     = window;
+            event.altKey   = false;
+            event.ctrlKey  = false;
+            event.shiftKey = false;
+            event.metaKey  = false;
+            event.keyCode  = 0;
+            event.charCode = 'a';
+
+            #{'return' if ret} element.dispatchEvent( event );
+        EOJS
+
+        sleep wait
+        r
     end
 
     # Starts capturing requests and parses them into elements of pages,
@@ -1285,14 +1319,18 @@ class Browser
             cookie.data.delete :domain
             set_cookies[cookie.name] = cookie
         end
+
         cookies.each do |name, value|
             if set_cookies[name]
                 set_cookies[name] = set_cookies[name].dup
                 set_cookies[name].update( name => value )
             else
                 set_cookies[name] = Cookie.new( url: url, inputs: { name => value } )
+                set_cookies[name].data.delete :domain
             end
         end
+
+        return if set_cookies.empty?
 
         set_cookie = set_cookies.values.map(&:to_set_cookie)
         print_debug_level_2 "Setting cookies: #{set_cookie}"
@@ -1310,12 +1348,14 @@ class Browser
     # Makes sure we have at least 2 windows open so that we can switch to the
     # last available one in case there's some JS in the page that closes one.
     def ensure_open_window
-        return if watir.windows.size > 1
+        @javascript.run( 'window.open()' )
+
+        if watir.windows.size > 1
+            watir.windows[0...-1].each(&:close)
+        end
 
         watir.windows.last.use
         watir.window.resize_to( @width, @height )
-
-        @javascript.run( 'window.open()' )
     end
 
     # # Firefox driver, only used for debugging.
@@ -1384,21 +1424,25 @@ class Browser
             end
 
             if @add_request_transitions
-                @request_transitions << Page::DOM::Transition.new( request.url, :request )
+                synchronize do
+                    @request_transitions << Page::DOM::Transition.new(
+                        request.url, :request
+                    )
+                end
             end
         end
 
         # Signal the proxy to not actually perform the request if we have a
         # preloaded or cached response for it.
         if from_preloads( request, response ) || from_cache( request, response )
-            print_debug_level_2 "Resource has been preloaded."
+            print_debug_level_2 'Resource has been preloaded.'
 
             # There may be taints or custom JS code that need to be updated.
             javascript.inject response
             return
         end
 
-        print_debug_level_2 "Request can proceed to origin."
+        print_debug_level_2 'Request can proceed to origin.'
 
         # Capture the request as elements of pages -- let's us grab AJAX and
         # other browser requests and convert them into elements we can analyze
@@ -1418,7 +1462,7 @@ class Browser
         if !request_for_asset?( request )
             request.response_max_size = nil
         else
-            print_debug_level_2 "Asset detected, removing max size limit."
+            print_debug_level_2 'Asset detected, removing max size limit.'
         end
 
         # Signal the proxy to continue with its request to the origin server.
@@ -1436,30 +1480,30 @@ class Browser
         end
 
         if javascript.inject( response )
-            print_debug_level_2 "Injected custom JS."
+            print_debug_level_2 'Injected custom JS.'
         end
 
         # Don't store assets, the browsers will cache them accordingly.
         if request_for_asset?( request ) || !response.text?
-            print_debug_level_2 "Asset detected, will not store."
+            print_debug_level_2 'Asset detected, will not store.'
             return
         end
 
         # No-matter the scope, don't store resources for external domains.
         if !response.scope.in_domain?
-            print_debug_level_2 "Outside of domain scope, will not store."
+            print_debug_level_2 'Outside of domain scope, will not store.'
             return
         end
 
         if enforce_scope? && response.scope.out?
-            print_debug_level_2 "Outside of general scope, will not store."
+            print_debug_level_2 'Outside of general scope, will not store.'
             return
         end
 
         whitelist_asset_domains( response )
         save_response response
 
-        print_debug_level_2 "Stored."
+        print_debug_level_2 'Stored.'
 
         nil
     end
@@ -1468,44 +1512,44 @@ class Browser
         print_debug_level_2 "Checking: #{request.url}"
 
         if !enforce_scope?
-            print_debug_level_2 "Allow: Scope enforcement disabled."
+            print_debug_level_2 'Allow: Scope enforcement disabled.'
             return
         end
 
         if request_for_asset?( request )
-            print_debug_level_2 "Allow: Asset detected."
+            print_debug_level_2 'Allow: Asset detected.'
             return false
         end
 
         if !request.scope.follow_protocol?
-            print_debug_level_2 "Disallow: Cannot follow protocol."
+            print_debug_level_2 'Disallow: Cannot follow protocol.'
             return true
         end
 
         if !request.scope.in_domain? &&
             !self.class.asset_domains.include?( request.parsed_url.domain )
 
-            print_debug_level_2 "Disallow: Domain out of scope and not in CDN list."
+            print_debug_level_2 'Disallow: Domain out of scope and not in CDN list.'
             return true
         end
 
         if request.scope.too_deep?
-            print_debug_level_2 "Disallow: Too deep."
+            print_debug_level_2 'Disallow: Too deep.'
             return true
         end
 
         if !request.scope.include?
-            print_debug_level_2 "Disallow: Does not match inclusion rules."
+            print_debug_level_2 'Disallow: Does not match inclusion rules.'
             return true
         end
 
         if request.scope.exclude?
-            print_debug_level_2 "Disallow: Matches exclusion rules."
+            print_debug_level_2 'Disallow: Matches exclusion rules.'
             return true
         end
 
         if request.scope.redundant?
-            print_debug_level_2 "Disallow: Matches redundant rules."
+            print_debug_level_2 'Disallow: Matches redundant rules.'
             return true
         end
 
@@ -1517,11 +1561,13 @@ class Browser
     end
 
     def whitelist_asset_domains( response )
-        ASSET_EXTRACTORS.each do |regexp|
-            response.body.scan( regexp ).flatten.compact.each do |url|
-                next if !(domain = self.class.add_asset_domain( url ))
+        synchronize do
+            ASSET_EXTRACTORS.each do |regexp|
+                response.body.scan( regexp ).flatten.compact.each do |url|
+                    next if !(domain = self.class.add_asset_domain( url ))
 
-                print_debug_level_2 "#{domain} from #{url} based on #{regexp.source}"
+                    print_debug_level_2 "#{domain} from #{url} based on #{regexp.source}"
+                end
             end
         end
     end
@@ -1620,21 +1666,25 @@ class Browser
     end
 
     def from_preloads( request, response )
-        return if !(preloaded = preloads.delete( request.url ))
+        synchronize do
+            return if !(preloaded = preloads.delete( request.url ))
 
-        copy_response_data( preloaded, response )
-        response.request = request
-        save_response( response ) if !preloaded.url.include?( request_token )
+            copy_response_data( preloaded, response )
+            response.request = request
+            save_response( response ) if !preloaded.url.include?( request_token )
 
-        preloaded
+            preloaded
+        end
     end
 
     def from_cache( request, response )
-        return if !@cache.include?( request.url )
+        synchronize do
+            return if !@cache.include?( request.url )
 
-        copy_response_data( @cache[request.url], response )
-        response.request = request
-        save_response response
+            copy_response_data( @cache[request.url], response )
+            response.request = request
+            save_response response
+        end
     end
 
     def copy_response_data( source, destination )

@@ -28,6 +28,20 @@ get '/' do
 HTML
 end
 
+get '/open-new-window' do
+    <<HTML
+<html>
+    <body>
+        <script>
+            window.open( "/with-ajax" );
+        </script>
+
+        <a href="/">Click me!</a>
+    </body>
+</html>
+HTML
+end
+
 get '/If-None-Match' do
     etag '1'
 
@@ -417,7 +431,6 @@ Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
 </html>
         EOHTML
     end
-
 end
 
 get '/lots_of_sinks' do
@@ -652,7 +665,8 @@ get '/level2' do
         <div id="level3">
         </div>
 
-        <a onmouseover="writeButton();" href="javascript:level3();">level3 link</a>
+        <a onmouseover="writeButton();" href="#">Write button</a>
+        <a href="javascript:level3();">level3 link</a>
     </div>
 HTML
 end
@@ -995,6 +1009,16 @@ get '/trigger_events' do
 HTML
 end
 
+get '/trigger_events/invisible-div' do
+    <<HTML
+<html>
+    <body>
+        <div id="invisible-div" style="display: none">
+        </div>
+    </body>
+</html>
+HTML
+end
 
 get '/trigger_events-wait-for-ajax' do
     <<HTML

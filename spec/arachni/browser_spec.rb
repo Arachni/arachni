@@ -136,10 +136,15 @@ describe Arachni::Browser do
 
                 width = 100
                 @browser = described_class.new( width: width )
+
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerWidth')).to eq(width)
             end
 
             it 'defaults to 1600' do
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerWidth')).to eq(1600)
             end
         end
@@ -150,10 +155,15 @@ describe Arachni::Browser do
 
                 height = 100
                 @browser = described_class.new( height: height )
+
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerHeight')).to eq(height)
             end
 
             it 'defaults to 1200' do
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerHeight')).to eq(1200)
             end
         end
@@ -399,17 +409,14 @@ describe Arachni::Browser do
         end
 
         context 'when there are multiple windows open' do
-            before :each do
-                subject.load( ajax_url, take_snapshot: false )
-            end
 
             it 'captures snapshots from all windows' do
-                subject.javascript.run( 'window.open()' )
-                subject.watir.windows.last.use
-                subject.load sink_url, take_snapshot: false
+                url = "#{@url}open-new-window"
+
+                subject.load url, take_snapshot: false
 
                 expect(subject.capture_snapshot.map(&:url).sort).to eq(
-                    [ajax_url, sink_url].sort
+                    [url, "#{@url}with-ajax"].sort
                 )
             end
         end
@@ -590,7 +597,7 @@ describe Arachni::Browser do
                             tag_name: 'a',
                             attributes: {
                                 'onmouseover' => 'writeButton();',
-                                'href'        => 'javascript:level3();'
+                                'href'        => '#'
                             }
                         } => :mouseover
                     }
@@ -603,11 +610,11 @@ describe Arachni::Browser do
                         {
                             tag_name: 'a',
                             attributes: {
-                                'onmouseover' => 'writeButton();',
                                 'href'        => 'javascript:level3();'
                             }
                         } => :click
                     },
+                    { "#{@url}level4" => :request },
                     { "#{@url}level4" => :request }
                 ],
                 [
@@ -619,7 +626,7 @@ describe Arachni::Browser do
                             tag_name: 'a',
                             attributes: {
                                 'onmouseover' => 'writeButton();',
-                                'href'        => 'javascript:level3();'
+                                'href'        => '#'
                             }
                         } => :mouseover
                     },
@@ -640,11 +647,11 @@ describe Arachni::Browser do
                         {
                             tag_name: 'a',
                             attributes: {
-                                'onmouseover' => 'writeButton();',
                                 'href'        => 'javascript:level3();'
                             }
                         } => :click
                     },
+                    { "#{@url}level4" => :request },
                     { "#{@url}level4" => :request },
                     {
                         {
@@ -680,7 +687,7 @@ describe Arachni::Browser do
                                 tag_name: 'a',
                                 attributes: {
                                     'onmouseover' => 'writeButton();',
-                                    'href'        => 'javascript:level3();'
+                                    'href'        => '#'
                                 }
                             } => :mouseover
                         }
@@ -693,11 +700,11 @@ describe Arachni::Browser do
                             {
                                 tag_name: 'a',
                                 attributes: {
-                                    'onmouseover' => 'writeButton();',
                                     'href'        => 'javascript:level3();'
                                 }
                             } => :click
                         },
+                        { "#{@url}level4" => :request },
                         { "#{@url}level4" => :request }
                     ]
                 ].map { |transitions| transitions_from_array( transitions ) })
@@ -1364,10 +1371,8 @@ describe Arachni::Browser do
 
         context 'when the element is not visible' do
             it 'returns nil' do
-                element = @browser.watir.div( id: 'my-div' )
-
-                allow(element).to receive(:visible?) { false }
-
+                @browser.goto "#{url}/invisible-div"
+                element = @browser.watir.div( id: 'invisible-div' )
                 expect(@browser.fire_event( element, :click )).to be_nil
             end
         end
@@ -1404,14 +1409,20 @@ describe Arachni::Browser do
 
             context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'returns nil' do
-                    allow(element).to receive(:fire_event){ raise Selenium::WebDriver::Error::WebDriverError }
+                    allow(@browser).to receive(:wait_for_pending_requests) do
+                        raise Selenium::WebDriver::Error::WebDriverError
+                    end
+
                     expect(@browser.fire_event( element, :click )).to be_nil
                 end
             end
 
             context 'Watir::Exception::Error' do
                 it 'returns nil' do
-                    allow(element).to receive(:fire_event){ raise Watir::Exception::Error }
+                    allow(@browser).to receive(:wait_for_pending_requests) do
+                        raise Watir::Exception::Error
+                    end
+
                     expect(@browser.fire_event( element, :click )).to be_nil
                 end
             end
@@ -1658,7 +1669,7 @@ describe Arachni::Browser do
                         string[0...-1] : string
                 end
 
-                context 'event' do
+                context event do
                     let( :url ) { "#{@url}/fire_event/input/#{event}" }
 
                     context 'when option' do
@@ -1899,6 +1910,10 @@ describe Arachni::Browser do
     end
 
     describe '#trigger_events' do
+        it 'returns self' do
+            expect(@browser.load( @url + '/explore' ).trigger_events).to eq(@browser)
+        end
+
         it 'waits for AJAX requests to complete' do
             @browser.load( @url + '/trigger_events-wait-for-ajax' ).start_capture.trigger_events
 
@@ -1916,6 +1931,7 @@ describe Arachni::Browser do
 
         it 'assigns the proper page transitions' do
             pages = @browser.load( @url + '/explore' ).trigger_events.page_snapshots
+
             expect(pages.map(&:dom).map(&:transitions)).to eq([
                 [
                     { :page => :load },
@@ -1933,7 +1949,8 @@ describe Arachni::Browser do
                             }
                         } => :click
                     },
-                    { "#{@url}get-ajax?ajax-token=my-token" => :request }
+                    { "#{@url}get-ajax?ajax-token=my-token" => :request },
+                    { "#{@url}post-ajax" => :request }
                 ],
                 [
                     { :page => :load },
@@ -1947,6 +1964,8 @@ describe Arachni::Browser do
                         } => :click
                     },
                     { "#{@url}href-ajax" => :request },
+                    { "#{@url}href-ajax" => :request },
+                    { "#{@url}post-ajax" => :request }
                 ]
             ].map { |transitions| transitions_from_array( transitions ) })
         end
@@ -1974,10 +1993,6 @@ describe Arachni::Browser do
                 pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
                 pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
             end
-        end
-
-        it 'returns self' do
-            expect(@browser.load( @url + '/explore' ).trigger_events).to eq(@browser)
         end
     end
 
