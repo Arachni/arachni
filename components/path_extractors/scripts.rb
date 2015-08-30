@@ -22,7 +22,12 @@ class Arachni::Parser::Extractors::Scripts < Arachni::Parser::Extractors::Base
                 select do |s|
                     # String looks like a path, but don't get fooled by comments.
                     s.include?( '.' ) && s.include?( '/' )  &&
-                    !s.include?( '*' ) && !s.start_with?( '//' )
+                    !s.include?( '*' ) && !s.start_with?( '//' ) &&
+
+                    # Require absolute paths, otherwise we may get caught in
+                    # a loop, this context isn't the most reliable for extracting
+                    # real paths.
+                    s.start_with?( '/' )
                 end
     end
 

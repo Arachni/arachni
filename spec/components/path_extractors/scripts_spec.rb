@@ -8,7 +8,7 @@ describe name_from_filename do
             'http://test.com',
             'test',
             'test.com',
-            'test/stuff2.php'
+            '/test/stuff2.php'
         ]
     end
 
@@ -17,7 +17,8 @@ describe name_from_filename do
         <script>
             /*Blah.1*/
             //Blah.2
-            var path = "test/stuff2.php"
+            var path = "/test/stuff2.php"
+            var ignore = "test/stuff2"
         </script>
 SCRIPT
 
