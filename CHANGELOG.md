@@ -38,6 +38,7 @@
             - Small cleanup in acceptable paths.
         - `script`
             - Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
+            - Updated to require absolute paths to avoid processing junk.
     - Reporters -- All reporters have been updated to remove `Issue#variations`.
         - `xml` -- Updated schema to include the new `Element::UIForm::DOM` and
             `Element::Input::DOM` elements.
