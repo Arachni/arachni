@@ -323,7 +323,7 @@ describe Arachni::Element::Cookie do
             )
 
             expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
+                'blah%3Dha%25=some+stuff+%3B; Path=/; Secure; HttpOnly'
             )
             expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
 
@@ -336,7 +336,7 @@ describe Arachni::Element::Cookie do
 
             expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
             expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=127.0.0.2'
+                'blah%3Dha%25=some+stuff+%3B; Path=/stuff'
             )
         end
     end
