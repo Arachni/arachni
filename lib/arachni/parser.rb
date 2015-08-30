@@ -330,16 +330,28 @@ class Parser
     #   Paths.
     def run_extractors
         begin
-            self.class.extractors.available.map do |name|
+            unsanitized_paths = Set.new
+            self.class.extractors.available.each do |name|
                 exception_jail false do
-                    self.class.extractors[name].new(
+                    unsanitized_paths.merge self.class.extractors[name].new(
                         document: document,
                         html:     body
                     ).run
                 end
-            end.flatten.uniq.compact.
-                map { |path| to_absolute( path ) }.compact.uniq.
-                reject { |path| skip?( path ) }
+            end
+
+            sanitized_paths = Set.new
+            unsanitized_paths.map do |path|
+                # Path that starts with '.' is probably something else.
+                next if path.start_with?( '.' )
+
+                abs = to_absolute( path )
+                next if !abs || skip?( abs )
+
+                sanitized_paths << abs
+            end
+
+            sanitized_paths.to_a
         rescue => e
             print_exception e
             []
