@@ -23,6 +23,7 @@ group :prof do
     gem 'stackprof'
     gem 'sys-proctable'
     gem 'ruby-mass'
+    gem 'benchmark-ips'
 end
 
 gemspec
