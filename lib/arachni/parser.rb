@@ -342,9 +342,6 @@ class Parser
 
             sanitized_paths = Set.new
             unsanitized_paths.map do |path|
-                # Path that starts with '.' is probably something else.
-                next if path.start_with?( '.' )
-
                 abs = to_absolute( path )
                 next if !abs || skip?( abs )
 
