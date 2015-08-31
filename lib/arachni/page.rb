@@ -411,7 +411,7 @@ class Page
         tags.flatten.each do |tag|
             tag = tag.to_s
 
-            next if !(body =~ /<\s*#{tag}/i)
+            next if !body.has_html_tag?( tag )
 
             return false if !document
             return true  if document.css( tag ).any?

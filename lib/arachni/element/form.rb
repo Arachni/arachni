@@ -267,7 +267,7 @@ class Form < Base
             if !document.is_a?( Nokogiri::HTML::Document )
                 document = document.to_s
 
-                return [] if !(document =~ /<\s*form/i)
+                return [] if !in_html?( document )
 
                 document = Nokogiri::HTML( document )
             end
@@ -284,6 +284,10 @@ class Form < Base
                     form
                 end
             end.flatten.compact
+        end
+
+        def in_html?( html )
+            html.has_html_tag? 'form'
         end
 
         def from_node( url, node, ignore_scope = false )

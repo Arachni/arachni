@@ -160,7 +160,7 @@ class Parser
     #   Forms from {#document}.
     def forms
         return @forms.freeze if @forms
-        return [] if !text? || !(body =~ /<\s*form/i)
+        return [] if !text? || !Form.in_html?( body )
 
         f = Form.from_document( @url, document )
         return f if !@secondary_responses
@@ -211,7 +211,7 @@ class Parser
     #   Links in {#document}.
     def links
         return @links.freeze if @links
-        return @links = [link].compact if !text? || !(body =~ /\?.*=/)
+        return @links = [link].compact if !text? || !Link.in_html?( body )
 
         @links = [link].compact | Link.from_document( @url, document )
     end
@@ -260,7 +260,7 @@ class Parser
         return @cookies.freeze if @cookies
 
         @cookies = Cookie.from_headers( @url, @response.headers )
-        return @cookies if !text?
+        return @cookies if !text? || !Cookie.in_html?( body )
 
         @cookies |= Cookie.from_document( @url, document )
     end
@@ -342,9 +342,6 @@ class Parser
 
             sanitized_paths = Set.new
             unsanitized_paths.map do |path|
-                # Path that starts with '.' is probably something else.
-                next if path.start_with?( '.' )
-
                 abs = to_absolute( path )
                 next if !abs || skip?( abs )
 

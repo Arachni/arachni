@@ -40,9 +40,15 @@ class UIForm < Base
         # JS not supported on page, no sense in continuing...
         return ui_forms if !browser.javascript.supported?
 
-        # Does the page have any buttons at all?
+        body = page.body
+
+        if !(body.has_html_tag?( 'button' ) ||
+            body.has_html_tag?( 'input', 'button' ))
+            return ui_forms
+        end
+
         if !page.has_elements?( :button ) &&
-            !page.document.xpath( "//input[@type='button']" )
+            page.document.xpath( "//input[@type='button']" ).empty?
             return ui_forms
         end
 
@@ -74,20 +80,26 @@ class UIForm < Base
         opening_tags = {}
         inputs       = {}
 
-        page.document.css( 'textarea' ).each do |textarea|
-            name = node_to_name( textarea )
+        if UIInput.with_textarea_in_html?( page.body )
+            page.document.css( 'textarea' ).each do |textarea|
+                name = node_to_name( textarea )
 
-            inputs[name]       = textarea.text
-            opening_tags[name] = Arachni::Browser::ElementLocator.from_node( textarea ).to_s
+                inputs[name]       = textarea.text
+                opening_tags[name] =
+                    Arachni::Browser::ElementLocator.from_node( textarea ).to_s
+            end
         end
 
-        page.document.css( 'input' ).each do |input|
-            next if input['type'] && input['type'] != 'text'
+        if UIInput.with_input_in_html?( page.body )
+            page.document.css( 'input' ).each do |input|
+                next if input['type'] && input['type'] != 'text'
 
-            name = node_to_name( input )
+                name = node_to_name( input )
 
-            inputs[name]       = input['value'].to_s
-            opening_tags[name] = Arachni::Browser::ElementLocator.from_node( input ).to_s
+                inputs[name]       = input['value'].to_s
+                opening_tags[name] =
+                    Arachni::Browser::ElementLocator.from_node( input ).to_s
+            end
         end
 
         [inputs, opening_tags]

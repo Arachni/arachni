@@ -25,6 +25,18 @@ class String
         Hash[regexp.names.zip( matches )].reject { |_, v| v.empty? }
     end
 
+    # @param    [String,Regexp] tag
+    #   Tag name to look for.
+    # @param    [String,Regexp] attributes
+    #   Attributes to look for.
+    def has_html_tag?( tag, attributes = nil )
+        if attributes
+            attributes = ".*#{attributes}"
+        end
+
+        self =~ /<\s*#{tag}#{attributes}.*?>/mi
+    end
+
     # @param    [Regexp]    regexp
     #   Regular expression with named captures.
     # @param    [Hash]    substitutions

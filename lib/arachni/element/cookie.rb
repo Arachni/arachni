@@ -311,7 +311,7 @@ class Cookie < Base
             if !document.is_a?( Nokogiri::HTML::Document )
                 document = document.to_s
 
-                return [] if !(document =~ /set-cookie/i )
+                return [] if !in_html?( document )
 
                 document = Nokogiri::HTML( document )
             end
@@ -323,6 +323,10 @@ class Cookie < Base
                     from_set_cookie( url, elem['content'] )
                 end.flatten.compact
             } rescue []
+        end
+
+        def in_html?( html )
+            html =~ /http-equiv/i && html =~ /set-cookie/i
         end
 
         # Extracts cookies from the `Set-Cookie` HTTP response header field.

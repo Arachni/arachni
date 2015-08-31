@@ -25,9 +25,16 @@ class UIInput < Base
 
         return inputs if !browser.javascript.supported?
 
-        if page.document.css( 'textarea' ).empty? &&
+        body = page.body
+        if !(body.has_html_tag?( 'textarea' ) ||
+            body.has_html_tag?( 'input', 'text' ) ||
+            body.has_html_tag?( 'input', /(?!type=)/))
+            return inputs
+        end
+
+        if !page.has_elements?( 'textarea' ) &&
             page.document.xpath( '//input[@type="text"]' ).empty? &&
-                page.document.xpath( '//input[not(@type)]' ).empty?
+            page.document.xpath( '//input[not(@type)]' ).empty?
             return inputs
         end
 
@@ -52,6 +59,19 @@ class UIInput < Base
         end
 
         inputs
+    end
+
+    def self.in_html?( html )
+        with_textarea_in_html?( html ) || with_input_in_html?( html )
+    end
+
+    def self.with_textarea_in_html?( html )
+        html.has_html_tag?( 'textarea' )
+    end
+
+    def self.with_input_in_html?( html )
+        html.has_html_tag?( 'input', 'text' ) ||
+            html.has_html_tag?( 'input', /(?!type=)/)
     end
 
 end

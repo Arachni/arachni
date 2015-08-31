@@ -112,7 +112,7 @@ class Link < Base
             if !document.is_a?( Nokogiri::HTML::Document )
                 document = document.to_s
 
-                return [] if !(document =~ /\?.*=/)
+                return [] if !in_html?( document )
 
                 document = Nokogiri::HTML( document )
             end
@@ -139,6 +139,10 @@ class Link < Base
                     source: link.to_html.freeze
                 )
             end.compact
+        end
+
+        def in_html?( html )
+            html.has_html_tag? 'a', /\?.*=/
         end
 
         def encode( string )
