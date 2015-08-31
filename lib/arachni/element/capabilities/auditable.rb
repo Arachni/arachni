@@ -370,11 +370,8 @@ module Auditable
         true
     end
 
-    def audit_input?( path )
-        [path].flatten.each do |name|
-            return false if !Options.audit.vector?( name )
-        end
-        true
+    def audit_input?( name )
+        Options.audit.vector?( name )
     end
 
     # Checks whether or not an audit has been already performed.
