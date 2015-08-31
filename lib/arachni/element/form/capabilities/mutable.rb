@@ -87,22 +87,23 @@ module Mutable
         yield elem if !generated.include?( elem )
         generated << elem
 
-        # Default values, in case they reveal new resources.
-        if node
-            inputs.keys.each do |input|
-                next if field_type_for( input ) != :select
+        # Default select values, in case they reveal new resources.
+        inputs.keys.each do |input|
+            next if field_type_for( input ) != :select
 
-                node.xpath( "select[@name=\"#{input}\"]" ).css('option').each do |option|
-                    try_input do
-                        elem = self.dup
-                        elem.mutation_with_original_values
-                        elem.affected_input_name  = input
-                        elem.affected_input_value = option['value'] || option.text
-                        yield elem if !generated.include?( elem )
-                        generated << elem
-                    end
+            # We do the break inside the loop because #node is lazy parsed
+            # and we don't want to parse it unless we have a select input.
+            break if !node
+
+            node.xpath( "select[@name=\"#{input}\"]" ).css('option').each do |option|
+                try_input do
+                    elem = self.dup
+                    elem.mutation_with_original_values
+                    elem.affected_input_name  = input
+                    elem.affected_input_value = option['value'] || option.text
+                    yield elem if !generated.include?( elem )
+                    generated << elem
                 end
-
             end
         end
 
