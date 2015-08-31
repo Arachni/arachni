@@ -162,7 +162,7 @@ module Mutable
         print_debug_formatting( options )
 
         options          = prepare_mutation_options( options )
-        generated        = Support::LookUp::HashSet.new( hasher: :mutable_id )
+        generated        = Support::LookUp::HashSet.new
         filled_in_inputs = Options.input.fill( @inputs )
 
         if options[:parameter_values]
@@ -193,8 +193,8 @@ module Mutable
                 each_formatted_payload( payload, options[:format] ) do |format, formatted_payload|
 
                     elem = create_and_yield_if_unique(
-                        generated, filled_in_inputs.merge( EXTRA_NAME => '' ), payload, EXTRA_NAME,
-                        formatted_payload, format, &block
+                        generated, filled_in_inputs.merge( EXTRA_NAME => '' ),
+                        payload, EXTRA_NAME, formatted_payload, format, &block
                     )
 
                     next if !elem || !options[:with_both_http_methods]
@@ -296,6 +296,10 @@ module Mutable
         "#{self.method}:#{inputtable_id}"
     end
 
+    def self.mutable_id( method, inputs )
+        "#{method}:#{Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs )}"
+    end
+
     private
 
     def prepare_mutation_options( options )
@@ -355,6 +359,11 @@ module Mutable
 
     def create_and_yield_if_unique( list, inputs, seed, input_name, input_value,
                                       format, &block )
+        # We can check if it's unique prior to actually creating, so do it.
+        return if list.include?(
+            Arachni::Element::Capabilities::Mutable.mutable_id( self.method, inputs )
+        )
+
         element = create_mutation( inputs, seed, input_name, input_value, format )
         return if !element
 
@@ -363,7 +372,7 @@ module Mutable
     end
 
     def yield_if_unique( element, list )
-        return if list.include?( element )
+        return if list.include?( element.mutable_id )
 
         print_debug_mutation element
         list << element

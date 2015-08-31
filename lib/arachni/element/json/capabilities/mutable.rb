@@ -56,7 +56,7 @@ module Mutable
         print_debug_formatting( options )
 
         options   = prepare_mutation_options( options )
-        generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutable_id )
+        generated = Arachni::Support::LookUp::HashSet.new
 
         if options[:parameter_values]
             options[:format].each do |format|

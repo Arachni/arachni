@@ -227,8 +227,12 @@ module Capabilities::Inputtable
     # @return   [String]
     #   Uniquely identifies the {#inputs}.
     def inputtable_id
-        INPUTTABLE_CACHE[:inputtable_id][@inputs] ||=
-            @inputs ? @inputs.sort_by { |k, _| k }.hash.to_s : ''
+        Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs )
+    end
+
+    def self.inputtable_id( inputs )
+        INPUTTABLE_CACHE[:inputtable_id][inputs] ||=
+            inputs ? inputs.sort_by { |k, _| k }.hash.to_s : ''
     end
 
     def to_h
