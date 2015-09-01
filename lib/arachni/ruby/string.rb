@@ -25,16 +25,21 @@ class String
         Hash[regexp.names.zip( matches )].reject { |_, v| v.empty? }
     end
 
-    # @param    [String,Regexp] tag
-    #   Tag name to look for.
+    # @param    [String] tag
+    #   Tag name to look for, in lower case.
     # @param    [String,Regexp] attributes
-    #   Attributes to look for.
+    #   Content to look for in attributes, in lower case.
     def has_html_tag?( tag, attributes = nil )
         if attributes
             attributes = ".*#{attributes}"
         end
 
-        self =~ /<\s*#{tag}#{attributes}.*?>/mi
+        dc_self = self.downcase
+        dc_tag  = tag.downcase
+
+        return false if !dc_self.include?( dc_tag )
+
+        dc_self =~ /<\s*#{dc_tag}#{attributes}.*?>/m
     end
 
     # @param    [Regexp]    regexp
