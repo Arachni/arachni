@@ -28,11 +28,17 @@ Arachni::UI::Output.mute
 # Uncomment to show output from spawned processes.
 Arachni::Processes::Manager.preserve_output
 
+RSpec::Core::MemoizedHelpers.module_eval do
+    alias to should
+    alias to_not should_not
+end
+
 RSpec.configure do |config|
     config.run_all_when_everything_filtered = true
     config.color = true
     config.add_formatter :documentation
     config.include PageHelpers
+    config.alias_example_to :expect_it
 
     config.mock_with :rspec do |mocks|
         mocks.yield_receiver_to_any_instance_implementation_blocks = true
