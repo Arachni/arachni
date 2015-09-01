@@ -231,8 +231,8 @@ class Javascript
     #
     # @return   [Object]
     #   Result of `script`.
-    def run( script )
-        @browser.watir.execute_script script
+    def run( *args )
+        @browser.selenium.execute_script *args
     end
 
     # Executes the given code but unwraps Watir elements.
@@ -242,8 +242,8 @@ class Javascript
     #
     # @return   [Object]
     #   Result of `script`.
-    def run_without_elements( script )
-        unwrap_elements run( script )
+    def run_without_elements( *args )
+        unwrap_elements run( *args )
     end
 
     # @return   (see TaintTracer#debug)
@@ -544,6 +544,9 @@ class Javascript
     def unwrap_elements( obj )
         case obj
             when Watir::Element
+                unwrap_element( obj )
+
+            when Selenium::WebDriver::Element
                 unwrap_element( obj )
 
             when Array

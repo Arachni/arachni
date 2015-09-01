@@ -39,6 +39,20 @@ class Typhoeus < Common
 
         response = ::Typhoeus::Request.send( verb, url, options )
 
+        $WATIR_REQ_COUNT ||= 0
+        $WATIR_REQ_COUNT += 1
+
+        # if url.end_with?( '/cookie' )
+        # if !url.end_with?( '/url' ) && response.time > 0.1
+        # if response.code == 500
+        #     ap "#{$WATIR_REQ_COUNT} #{verb} #{url}"
+        #     ap payload
+        #     ap headers
+        #     ap response.time
+        #     ap caller
+        #     puts response.body
+        # end
+
         create_response extract_real_code( response ), response.body,
                         response.headers['Content-Type']
     end

@@ -38,19 +38,6 @@ shared_examples_for 'submittable_dom' do
             expect(called).to be_truthy
         end
 
-        it 'sets the #element on the #performer',
-           if: described_class.ancestors.include?( Arachni::Element::Capabilities::WithNode ) do
-
-            called = false
-            subject.submit do |page|
-                expect(page.performer.element).to be_kind_of Watir::HTMLElement
-                called = true
-            end
-
-            subject.auditor.browser_cluster.wait
-            expect(called).to be_truthy
-        end
-
         it 'adds the submission transitions to the Page::DOM#transitions' do
             transitions = []
             subject.with_browser do |browser|

@@ -62,10 +62,10 @@ class ElementLocator
         end
     end
 
-    # @return   [Watir::HTMLElement]
-    #   Locates and returns the element based on {#tag_name} and {#attributes}.
+    # @return   [Selenium::WebDriver::Element]
+    #   Locates and returns the element based on {#css}.
     def locate( browser )
-        browser.watir.element( css: css )
+        browser.selenium.find_element( :css, css )
     end
 
     def css

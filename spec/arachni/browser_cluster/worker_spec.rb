@@ -91,11 +91,11 @@ describe Arachni::BrowserCluster::Worker do
 
             context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'respawns' do
-                    allow(subject.watir).to receive(:cookies) do
+                    expect(custom_job).to receive(:configure_and_run) do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
-                    allow(subject.watir).to receive(:close) do
+                    expect(subject.watir).to receive(:close) do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
@@ -120,19 +120,6 @@ describe Arachni::BrowserCluster::Worker do
                 @cluster.wait
 
                 expect(subject.javascript.taint).to be_nil
-            end
-
-            it 'clears #cookies' do
-                subject.preload page
-                expect(subject.preloads).to be_any
-
-                @cluster.with_browser do |browser|
-                    browser.load page
-                    expect(subject.cookies).to be_any
-                end
-                @cluster.wait
-
-                expect(subject.cookies).to be_empty
             end
 
             it 'clears #preloads' do

@@ -13,6 +13,7 @@ class UIInput
 class DOM < DOM
     include Arachni::Element::Capabilities::WithNode
 
+    include Arachni::Element::DOM::Capabilities::Locatable
     include Arachni::Element::DOM::Capabilities::Mutable
     include Arachni::Element::DOM::Capabilities::Inputtable
     include Arachni::Element::DOM::Capabilities::Submittable
@@ -38,7 +39,7 @@ class DOM < DOM
 
     # Submits the form using the configured {#inputs}.
     def trigger
-        [ browser.fire_event( element, @method, value: value ) ]
+        [ browser.fire_event( locate, @method, value: value ) ]
     end
 
     def name

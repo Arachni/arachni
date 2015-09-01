@@ -82,6 +82,10 @@ class Worker < Arachni::Browser
         # If we can't respawn, then bail out.
         return if browser_respawn_if_necessary.nil?
 
+        # ap '=' * 250
+        # ap '=' * 250
+        pre = $WATIR_REQ_COUNT
+
         time = Time.now
         begin
             with_timeout @job_timeout do
@@ -110,12 +114,7 @@ class Worker < Arachni::Browser
             browser_respawn
         end
 
-        begin
-            watir.cookies.clear
-        # Working window was closed by JS (probably), start from scratch.
-        rescue Selenium::WebDriver::Error::NoSuchWindowError
-            browser_respawn
-        end
+        # ap $WATIR_REQ_COUNT - pre
 
         decrease_time_to_live
         browser_respawn_if_necessary
@@ -247,9 +246,7 @@ class Worker < Arachni::Browser
     end
 
     def browser_respawn_if_necessary
-        return false if !time_to_die? && browser_alive? &&
-            watir.windows.size < RESPAWN_WHEN_WINDOW_COUNT_REACHES
-
+        return false if !time_to_die? && browser_alive?
         browser_respawn
     end
 
@@ -260,7 +257,8 @@ class Worker < Arachni::Browser
             # If PhantomJS is already dead this will block for quite some time so
             # beware.
             @watir.close if browser_alive?
-        rescue Selenium::WebDriver::Error::WebDriverError
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error
         end
 
         kill_process

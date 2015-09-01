@@ -8,6 +8,7 @@ describe Arachni::Element::LinkTemplate::DOM do
     it_should_behave_like 'with_node'
     it_should_behave_like 'with_auditor'
 
+    it_should_behave_like 'locatable_dom'
     it_should_behave_like 'submittable_dom'
     it_should_behave_like 'inputtable_dom', inputs: inputs
     it_should_behave_like 'mutable_dom',    inputs: inputs
@@ -89,28 +90,6 @@ describe Arachni::Element::LinkTemplate::DOM do
     describe '#fragment' do
         it 'returns the URL fragment' do
             expect(subject.fragment).to eq('/param/some-name')
-        end
-    end
-
-    describe '#locate' do
-        it 'locates the live element' do
-            called = false
-            subject.with_browser do |browser|
-                subject.browser = browser
-                browser.load subject.page
-
-                element = subject.locate
-                expect(element).to be_kind_of Watir::HTMLElement
-
-                expect(parent.class.from_document(
-                    parent.url, Nokogiri::HTML(element.html)
-                ).first).to eq(parent)
-
-                called = true
-            end
-
-            subject.auditor.browser_cluster.wait
-            expect(called).to be_truthy
         end
     end
 

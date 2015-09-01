@@ -6,9 +6,8 @@
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
         written server with support for `keep-alive` and low-overhead SSL interception.
 - `Browser`
-    - Optimized to avoid use of slow `Watir::Element#fire_event` method.
-        Instead use native `Watir::Element` event helpers when available or a
-        custom event dispatcher.
+    - Replaced internal use of `Watir` with direct access to `Selenium`, resulting
+        in much better performance and lower CPU utilization.
 
 ## Under development
 

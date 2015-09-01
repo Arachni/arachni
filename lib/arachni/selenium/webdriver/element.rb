@@ -1,16 +1,13 @@
-=begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
-
-    This file is part of the Arachni Framework project and is subject to
-    redistribution and commercial restrictions. Please see the Arachni Framework
-    web site for more information on licensing and terms of use.
-=end
-
-module Watir
+module Selenium
+module WebDriver
 class Element
 
+    def html
+        @bridge.executeScript( 'return arguments[0].outerHTML', self )
+    end
+
     def opening_tag
-        browser.execute_script(
+        @bridge.executeScript(
             %Q[
                 var s = '<' + arguments[0].tagName.toLowerCase();
                 var attrs = arguments[0].attributes;
@@ -25,14 +22,14 @@ class Element
     end
 
     def events
-        (browser.execute_script( 'return arguments[0]._arachni_events;', self ) || []).
+        (@bridge.executeScript( 'return arguments[0]._arachni_events;', self ) || []).
             map { |event, fn| [event.to_sym, fn] } |
             (::Arachni::Browser::Javascript.events.flatten.map(&:to_s) & attributes).
-                map { |event| [event.to_sym, attribute_value( event )] }
+                map { |event| [event.to_sym, attribute( event )] }
     end
 
     def attributes
-        browser.execute_script(
+        @bridge.executeScript(
             %Q[
                 var s = [];
                 var attrs = arguments[0].attributes;
@@ -45,5 +42,7 @@ class Element
         )
     end
 
+
+end
 end
 end

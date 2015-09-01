@@ -20,6 +20,7 @@ class DOM < DOM
 
     # Generic element capabilities.
     include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::DOM::Capabilities::Locatable
     include Arachni::Element::DOM::Capabilities::Mutable
     include Arachni::Element::DOM::Capabilities::Inputtable
     include Arachni::Element::DOM::Capabilities::Auditable

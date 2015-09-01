@@ -59,20 +59,6 @@ class DOM < Base
         @page = parent.page if parent
     end
 
-    # @return   [Watir::HTMLElement]
-    def element
-        @element ||= locate
-    end
-
-    def locator
-        @locator ||= Arachni::Browser::ElementLocator.from_node( node )
-    end
-
-    # Locates the element in the page.
-    def locate
-        locator.locate( browser )
-    end
-
     # Triggers the event on the subject {#element}.
     #
     # @return   [Array<Page::DOM::Transition>]

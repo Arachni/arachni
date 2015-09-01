@@ -27,7 +27,7 @@ describe Arachni::Browser do
 
             options = {}
             if element == :page && event == :load
-                options.merge!( url: @browser.watir.url, cookies: {} )
+                options.merge!( url: @browser.dom_url, cookies: {} )
             end
 
             if element.is_a? Hash
@@ -423,7 +423,7 @@ describe Arachni::Browser do
 
         context 'when an error occurs' do
             it 'ignores it' do
-                allow(subject.watir).to receive(:windows) { raise }
+                allow(subject).to receive(:to_page) { raise }
                 expect(subject.capture_snapshot( blah: :stuff )).to be_empty
             end
         end
@@ -503,8 +503,8 @@ describe Arachni::Browser do
                 calls << [element.opening_tag, event]
             end
 
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :mouseover
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :mouseover
 
             expect(calls).to eq([
                 [ "<div id=\"my-div\" onclick=\"addForm();\">", :click ],
@@ -1344,22 +1344,22 @@ describe Arachni::Browser do
         end
 
         it 'fires the given event' do
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
         it 'accepts events without the "on" prefix' do
             pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :onclick
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
         it 'returns a playable transition' do
-            transition = @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            transition = @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
             @browser.load( url ).start_capture
@@ -1372,7 +1372,7 @@ describe Arachni::Browser do
         context 'when the element is not visible' do
             it 'returns nil' do
                 @browser.goto "#{url}/invisible-div"
-                element = @browser.watir.div( id: 'invisible-div' )
+                element = @browser.selenium.find_element( id: 'invisible-div' )
                 expect(@browser.fire_event( element, :click )).to be_nil
             end
         end
@@ -1387,40 +1387,17 @@ describe Arachni::Browser do
 
                     allow(element).to receive(:locate){ raise Selenium::WebDriver::Error::WebDriverError }
                     expect(@browser.fire_event( element, :click )).to be_nil
-
-                    allow(element).to receive(:locate){ raise Watir::Exception::Error }
-                    expect(@browser.fire_event( element, :click )).to be_nil
                 end
             end
         end
 
-        context 'when the element never appears' do
-            it 'returns nil' do
-                element = @browser.watir.div( id: 'my-div' )
-
-                allow(element).to receive(:exists?) { false }
-
-                expect(@browser.fire_event( element, :click )).to be_nil
-            end
-        end
-
         context 'when the trigger fails with' do
-            let(:element) { @browser.watir.div( id: 'my-div' ) }
+            let(:element) { @browser.selenium.find_element( id: 'my-div' ) }
 
             context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'returns nil' do
                     allow(@browser).to receive(:wait_for_pending_requests) do
                         raise Selenium::WebDriver::Error::WebDriverError
-                    end
-
-                    expect(@browser.fire_event( element, :click )).to be_nil
-                end
-            end
-
-            context 'Watir::Exception::Error' do
-                it 'returns nil' do
-                    allow(@browser).to receive(:wait_for_pending_requests) do
-                        raise Watir::Exception::Error
                     end
 
                     expect(@browser.fire_event( element, :click )).to be_nil
@@ -1434,16 +1411,21 @@ describe Arachni::Browser do
 
                 context 'when option' do
                     describe ':inputs' do
+
+                        def element
+                            @browser.selenium.find_element(:tag_name, :form)
+                        end
+
                         context 'is given' do
                             let(:inputs) do
                                 {
-                                    name:  "The Dude",
+                                    name:  'The Dude',
                                     email: 'the.dude@abides.com'
                                 }
                             end
 
                             before(:each) do
-                                @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                @browser.fire_event element, :submit, inputs: inputs
                             end
 
                             it 'fills in its inputs with the given values' do
@@ -1458,7 +1440,7 @@ describe Arachni::Browser do
                             it 'returns a playable transition' do
                                 @browser.load url
 
-                                transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                transition = @browser.fire_event element, :submit, inputs: inputs
 
                                 @browser.load url
 
@@ -1524,7 +1506,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                    transition = @browser.fire_event element, :submit, inputs: inputs
 
                                     @browser.load url
 
@@ -1552,7 +1534,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                    transition = @browser.fire_event element, :submit, inputs: inputs
 
                                     @browser.load url
 
@@ -1581,7 +1563,7 @@ describe Arachni::Browser do
                         context 'is not given' do
                             it 'fills in its inputs with sample values' do
                                 @browser.load url
-                                @browser.fire_event @browser.watir.form, :submit
+                                @browser.fire_event element, :submit
 
                                 expect(@browser.watir.div( id: 'container-name' ).text).to eq(
                                     Arachni::Options.input.value_for_name( 'name' )
@@ -1593,7 +1575,7 @@ describe Arachni::Browser do
 
                             it 'returns a playable transition' do
                                 @browser.load url
-                                transition = @browser.fire_event @browser.watir.form, :submit
+                                transition = @browser.fire_event element, :submit
 
                                 @browser.load url
 
@@ -1614,7 +1596,7 @@ describe Arachni::Browser do
                                 let(:url) { "#{@url}/fire_event/form/disabled_inputs" }
 
                                 it 'is skips those inputs' do
-                                    @browser.fire_event @browser.watir.form, :submit
+                                    @browser.fire_event element, :submit
 
                                     expect(@browser.watir.div( id: 'container-name' ).text).to eq(
                                         Arachni::Options.input.value_for_name( 'name' )
@@ -1632,9 +1614,13 @@ describe Arachni::Browser do
                     before( :each ) { @browser.start_capture }
                     let(:url) { "#{@url}fire_event/form/image-input" }
 
+                    def element
+                        @browser.selenium.find_element( :xpath, '//input[@type="image"]')
+                    end
+
                     it 'submits the form with x, y coordinates' do
                         @browser.load( url )
-                        @browser.fire_event @browser.watir.input( type: 'image'), :click
+                        @browser.fire_event element, :click
 
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
@@ -1642,7 +1628,7 @@ describe Arachni::Browser do
 
                     it 'returns a playable transition' do
                         @browser.load( url )
-                        transition = @browser.fire_event @browser.watir.input( type: 'image'), :click
+                        transition = @browser.fire_event element, :click
 
                         captured_pages = @browser.flush_pages
                         pages_should_have_form_with_input captured_pages, 'myImageButton.x'
@@ -1674,13 +1660,17 @@ describe Arachni::Browser do
 
                     context 'when option' do
                         describe ':inputs' do
+                            def element
+                                @browser.selenium.find_element(:tag_name, :input)
+                            end
+
                             context 'is given' do
                                 let(:value) do
                                     'The Dude'
                                 end
 
                                 before(:each) do
-                                    @browser.fire_event @browser.watir.input, event, value: value
+                                    @browser.fire_event element, event, value: value
                                 end
 
                                 it 'fills in its inputs with the given values' do
@@ -1691,7 +1681,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.input, event, value: value
+                                    transition = @browser.fire_event element, event, value: value
 
                                     @browser.load url
                                     expect(@browser.watir.div( id: 'container' ).text).to be_empty
@@ -1713,7 +1703,7 @@ describe Arachni::Browser do
 
                                     it 'returns a playable transition' do
                                         @browser.load url
-                                        transition = @browser.fire_event @browser.watir.input, event, value: value
+                                        transition = @browser.fire_event element, event, value: value
 
                                         @browser.load url
                                         expect(@browser.watir.div( id: 'container' ).text).to be_empty
@@ -1726,7 +1716,7 @@ describe Arachni::Browser do
 
                             context 'is not given' do
                                 it 'fills in a sample value' do
-                                    @browser.fire_event @browser.watir.input, event
+                                    @browser.fire_event element, event
 
                                     expect(@browser.watir.div( id: 'container' ).text).to eq(
                                         calculate_expectation.call( Arachni::Options.input.value_for_name( 'name' ) )
@@ -1735,7 +1725,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.input, event
+                                    transition = @browser.fire_event element, event
 
                                     @browser.load url
                                     expect(@browser.watir.div( id: 'container' ).text).to be_empty
@@ -1887,7 +1877,7 @@ describe Arachni::Browser do
             @browser.load( @url + '/trigger_events' ).start_capture
 
             locators = []
-            @browser.watir.elements.each do |element|
+            @browser.selenium.find_elements(:css, '*').each do |element|
                 begin
                     locators << described_class::ElementLocator.from_html( element.opening_tag )
                 rescue
@@ -1964,8 +1954,8 @@ describe Arachni::Browser do
                         } => :click
                     },
                     { "#{@url}href-ajax" => :request },
-                    { "#{@url}href-ajax" => :request },
-                    { "#{@url}post-ajax" => :request }
+                    { "#{@url}post-ajax" => :request },
+                    { "#{@url}href-ajax" => :request }
                 ]
             ].map { |transitions| transitions_from_array( transitions ) })
         end

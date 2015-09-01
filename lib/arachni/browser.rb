@@ -8,7 +8,7 @@
 
 require 'childprocess'
 require 'watir-webdriver'
-require_relative 'watir/element'
+require_relative 'selenium/webdriver/element'
 require_relative 'selenium/webdriver/remote/http/typhoeus'
 require_relative 'processes/manager'
 require_relative 'browser/element_locator'
@@ -99,6 +99,10 @@ class Browser
     #   Watir driver interface.
     attr_reader :watir
 
+    # @return   [Selenium::WebDriver]
+    #   Selenium driver interface.
+    attr_reader :selenium
+
     # @return   [Array<Page>]
     #   Same as {#page_snapshots} but it doesn't deduplicate and only contains
     #   pages with sink ({Page::DOM#data_flow_sinks} or {Page::DOM#execution_flow_sinks})
@@ -124,8 +128,6 @@ class Browser
     attr_reader :pid
 
     attr_reader :last_url
-
-    attr_reader :last_dom_url
 
     # @return   [Bool]
     #   `true` if a supported browser is in the OS PATH, `false` otherwise.
@@ -248,7 +250,6 @@ class Browser
     # @return   [Browser]
     #   `self`
     def load( resource, options = {} )
-        @last_dom_url = nil
 
         case resource
             when String
@@ -262,8 +263,6 @@ class Browser
 
                 @transitions = resource.dom.transitions.dup
                 update_skip_states resource.dom.skip_states
-
-                @last_dom_url = resource.dom.url
 
                 @add_request_transitions = false if @transitions.any?
                 resource.dom.restore self
@@ -345,6 +344,8 @@ class Browser
             @add_request_transitions = false
         end
 
+        @current_url = nil
+
         @last_url = Arachni::URI( url ).to_s
         self.class.add_asset_domain @last_url
 
@@ -357,21 +358,22 @@ class Browser
             cookies: extra_cookies
         ) do
             print_debug_level_2 "Loading #{url} ..."
-            watir.goto url
+            @selenium.navigate.to url
             print_debug_level_2 '...done.'
 
             wait_till_ready
 
-            url = watir.url
+            url = dom_url
             Options.browser_cluster.css_to_wait_for( url ).each do |css|
                 print_info "Waiting for #{css.inspect} to appear for: #{url}"
 
                 begin
-                    watir.element( css: css ).
-                        wait_until_present( Options.browser_cluster.job_timeout )
+                    Selenium::WebDriver::Wait.new(
+                        timeout: Options.browser_cluster.job_timeout
+                    ).until { @selenium.find_element( :css, css ) }
 
                     print_info "#{css.inspect} appeared for: #{url}"
-                rescue Watir::Wait::TimeoutError
+                rescue Selenium::WebDriver::Error::TimeOutError
                     print_bad "#{css.inspect} did not appeared for: #{url}"
                 end
 
@@ -416,9 +418,15 @@ class Browser
     end
 
     # @return   [String]
-    #   Current URL.
+    #   Current URL, noralized via #{Arachni::URI.}
     def url
-        normalize_url watir.url
+        normalize_url dom_url
+    end
+
+    # @return   [String]
+    #   Current URL, as provided by the browser.
+    def dom_url
+        @current_url ||= javascript.run( 'return document.URL;' )
     end
 
     # Explores the browser's DOM tree and captures page snapshots for each
@@ -633,7 +641,7 @@ class Browser
 
     # Triggers `event` on `element`.
     #
-    # @param    [Watir::Element, ElementLocator]  element
+    # @param    [Selenium::WebDriver::Element, ElementLocator]  element
     # @param    [Symbol]  event
     # @param    [Hash]  options
     # @option options [Hash<Symbol,String=>String>]  :inputs
@@ -653,28 +661,16 @@ class Browser
             locator = element
 
             begin
-                element = element.locate( self )
-            rescue Selenium::WebDriver::Error::WebDriverError,
-                Watir::Exception::Error => e
+                Selenium::WebDriver::Wait.new( timeout: ELEMENT_APPEARANCE_TIMEOUT ).
+                    until { element = element.locate( self ) }
 
+            rescue Selenium::WebDriver::Error::WebDriverError => e
                 print_debug "Element '#{element.inspect}' could not be " <<
                                 "located for triggering '#{event}'."
                 print_debug
                 print_debug_exception e
                 return
             end
-        end
-
-        # The page may need a bit to settle and the element is lazily located
-        # by Watir so give it a few tries.
-        begin
-            with_timeout ELEMENT_APPEARANCE_TIMEOUT do
-                sleep 0.1 while !element.exists?
-            end
-        rescue Timeout::Error
-            print_debug_level_2 "#{element.inspect} did not appear in " <<
-                                    "#{ELEMENT_APPEARANCE_TIMEOUT}."
-            return
         end
 
         if locator
@@ -685,8 +681,6 @@ class Browser
             tag_name    = element.tag_name
             locator     = ElementLocator.from_html( opening_tag )
         end
-
-        element_subtype = element.to_subtype
 
         print_debug_level_2 "[start]: #{event} (#{options}) #{locator}"
 
@@ -706,13 +700,13 @@ class Browser
                     if event == :submit
                         force = false
 
-                        element_subtype.submit
+                        element.submit
                     end
 
                 elsif event == :click
                     force = false
 
-                    element_subtype.click
+                    element.click
 
                 elsif INPUT_EVENTS.include? event
                     force = INPUT_EVENTS_TO_FORCE.include?( event )
@@ -720,9 +714,7 @@ class Browser
                     # Send keys will append to the existing value, so we need to
                     # clear it first. The receiving input may not support values
                     # though, so watch out.
-                    if (subtype = element.to_subtype).respond_to?( :value= )
-                        subtype.value = ''
-                    end
+                    element.clear if [:input, :textarea].include?( tag_name )
 
                     # Simulates real text input and will trigger associated events.
                     # Except for INPUT_EVENTS_TO_FORCE of course.
@@ -742,8 +734,7 @@ class Browser
             print_debug_level_2 "[done in #{transition.time}s]: #{event} (#{options}) #{locator}"
 
             transition
-        rescue Selenium::WebDriver::Error::WebDriverError,
-            Watir::Exception::Error => e
+        rescue Selenium::WebDriver::Error::WebDriverError => e
 
             print_debug "Error when triggering event for: #{url}"
             print_debug "-- '#{event}' on: #{opening_tag}"
@@ -752,6 +743,8 @@ class Browser
 
             nil
         end
+    ensure
+        @current_url = nil
     end
 
     # This is essentially the same thing as Watir::Element#fire_event
@@ -845,7 +838,7 @@ class Browser
         if !(r = response)
             return Page.from_data(
                 dom: {
-                    url: watir.url
+                    url: dom_url
                 },
                 response: {
                     code: 0,
@@ -856,7 +849,7 @@ class Browser
 
         page                          = r.to_page
         page.body                     = source
-        page.dom.url                  = watir.url
+        page.dom.url                  = dom_url
         page.dom.digest               = @javascript.dom_digest
         page.dom.execution_flow_sinks = @javascript.execution_flow_sinks
         page.dom.data_flow_sinks      = @javascript.data_flow_sinks
@@ -915,31 +908,36 @@ class Browser
         request_transitions = flush_request_transitions
         transitions = ([transition] + request_transitions).flatten.compact
 
+        cached_current_url = @current_url
+        window_handles     = @selenium.window_handles
+
         begin
-            # Skip about:blank windows.
-            watir.windows( url: /^http/ ).each do |window|
-                window.use do
-                    next if !(page = to_page)
+            window_handles.each do |handle|
+                if window_handles.size > 1
+                    @selenium.switch_to.window( handle )
+                    @current_url = nil
+                end
 
-                    if pages.empty?
-                        transitions.each do |t|
-                            @transitions << t
-                            page.dom.push_transition t
-                        end
+                next if !(page = to_page)
+
+                if pages.empty?
+                    transitions.each do |t|
+                        @transitions << t
+                        page.dom.push_transition t
                     end
+                end
 
-                    capture_snapshot_with_sink( page )
+                capture_snapshot_with_sink( page )
 
-                    unique_id  = self.snapshot_id
-                    next if skip_state? unique_id
-                    skip_state unique_id
+                unique_id = self.snapshot_id
+                next if skip_state? unique_id
+                skip_state unique_id
 
-                    notify_on_new_page( page )
+                notify_on_new_page( page )
 
-                    if store_pages?
-                        @page_snapshots[unique_id.hash] = page
-                        pages << page
-                    end
+                if store_pages?
+                    @page_snapshots[unique_id.hash] = page
+                    pages << page
                 end
             end
         rescue => e
@@ -951,6 +949,9 @@ class Browser
 
             print_debug
             print_debug_exception e
+        ensure
+            @selenium.switch_to.default_content
+            @current_url ||= cached_current_url
         end
 
         pages
@@ -983,16 +984,18 @@ class Browser
     # @return   [Array<Cookie>]
     #   Browser cookies.
     def cookies
+        # Unfortunately, we can't just parse this string, HTTPOnly cookies
+        # won't show.
         js_cookies = begin
-            # Watir doesn't tell us if cookies are HttpOnly, so we need to figure
-            # this out ourselves, by checking for JS visibility.
+             # Watir doesn't tell us if cookies are HttpOnly, so we need to figure
+             # this out ourselves, by checking for JS visibility.
             javascript.run( 'return document.cookie' )
         # We may not have a page.
         rescue Selenium::WebDriver::Error::WebDriverError
             ''
         end
 
-        watir.cookies.to_a.map do |c|
+        @selenium.manage.all_cookies.map do |c|
             original_name = c[:name].to_s
 
             c[:path]     = '/' if c[:path] == '//'
@@ -1007,7 +1010,7 @@ class Browser
     # @return   [String]
     #   HTML code of the evaluated (DOM/JS/AJAX) page.
     def source
-        watir.html
+        @selenium.page_source
     end
 
     def load_delay
@@ -1031,7 +1034,7 @@ class Browser
     end
 
     def response
-        u = watir.url
+        u = dom_url
 
         if skip_path?( u )
             print_debug "Response is out of scope: #{u}"
@@ -1086,31 +1089,37 @@ class Browser
     private
 
     def fill_in_form_inputs( form, inputs = nil )
-        form.text_fields.each do |input|
+        form.find_elements( :css, 'input, textarea' ).each do |input|
             name_or_id = name_or_id_for( input )
-            value      = inputs ? inputs[name_or_id] : value_for( input )
+            value      = inputs ? inputs[name_or_id] : value_for_name( name_or_id )
 
             begin
-                input.set( value.to_s.recode )
+                input.clear
+                input.send_keys( value.to_s.recode )
             # Disabled inputs and such...
-            rescue Selenium::WebDriver::Error::WebDriverError,
-                Watir::Exception::Error => e
+            rescue Selenium::WebDriver::Error::WebDriverError => e
                 print_debug_level_2 "Could not fill in form input '#{name_or_id}'" <<
                                         " because: #{e} [#{e.class}"
             end
         end
 
-        form.selects.each do |input|
-            name_or_id = name_or_id_for( input )
-            value      = inputs ? inputs[name_or_id] : value_for( input )
+        form.find_elements( :tag_name, 'select' ).each do |select|
+            name_or_id = name_or_id_for( select )
+            value      = inputs ? inputs[name_or_id] : value_for( name_or_id )
 
-            begin
-                input.select_value( value.to_s.recode )
-            # Disabled inputs and such...
-            rescue Selenium::WebDriver::Error::WebDriverError,
-                Watir::Exception::Error => e
-                print_debug_level_2 "Could not fill in form select '#{name_or_id}'" <<
-                                        " because: #{e} [#{e.class}"
+            options = select.find_elements( tag_name: 'option' )
+            options.each do |option|
+
+                begin
+                    if option[:value] == value || option.text == value
+                        option.click
+                        return
+                    end
+                # Disabled inputs and such...
+                rescue Selenium::WebDriver::Error::WebDriverError => e
+                    print_debug_level_2 "Could not fill in form select '#{name_or_id}'" <<
+                                            " because: #{e} [#{e.class}"
+                end
             end
         end
     end
@@ -1128,10 +1137,10 @@ class Browser
     end
 
     def name_or_id_for( element )
-        name = element.attribute_value(:name).to_s
+        name = element[:name].to_s
         return name if !name.empty?
 
-        id = element.attribute_value(:id).to_s
+        id = element[:id].to_s
         return id if !id.empty?
 
         nil
@@ -1154,6 +1163,10 @@ class Browser
     # @see OptionGroups::Input.value_for_name
     def value_for( element )
         Options.input.value_for_name( name_or_id_for( element ) )
+    end
+
+    def value_for_name( name )
+        Options.input.value_for_name( name )
     end
 
     def spawn_browser
@@ -1310,8 +1323,9 @@ class Browser
         # First clears the browser's cookies and then tricks it into accepting
         # the system cookies for its cookie-jar.
 
+        @selenium.manage.delete_all_cookies
+
         url = normalize_url( url )
-        watir.cookies.clear
 
         set_cookies = {}
         HTTP::Client.cookie_jar.for_url( url ).each do |cookie|
@@ -1335,27 +1349,38 @@ class Browser
         set_cookie = set_cookies.values.map(&:to_set_cookie)
         print_debug_level_2 "Setting cookies: #{set_cookie}"
 
-        url = "#{url}/set-cookies-#{request_token}"
-        watir.goto preload( HTTP::Response.new(
+        @selenium.navigate.to preload( HTTP::Response.new(
             code:    200,
-            url:     url,
+            url:     "#{url}/set-cookies-#{request_token}",
             headers: {
                 'Set-Cookie' => set_cookie
             }
         ))
+
     end
 
     # Makes sure we have at least 2 windows open so that we can switch to the
     # last available one in case there's some JS in the page that closes one.
     def ensure_open_window
-        @javascript.run( 'window.open()' )
+        window_handles = @selenium.window_handles
 
-        if watir.windows.size > 1
-            watir.windows[0...-1].each(&:close)
+        if window_handles.size == 0
+            @javascript.run( 'window.open()' )
+        else
+            if window_handles.size > 1
+                # Keep the first
+                window_handles[1...-1].each do |handle|
+                    @selenium.switch_to.window( handle )
+                    @selenium.close
+                end
+
+                @selenium.switch_to.default_content
+            end
+
+            @selenium.navigate.to 'about:blank'
         end
 
-        watir.windows.last.use
-        watir.window.resize_to( @width, @height )
+        @selenium.manage.window.resize_to( @width, @height )
     end
 
     # # Firefox driver, only used for debugging.
@@ -1373,6 +1398,11 @@ class Browser
 
     def capabilities
         Selenium::WebDriver::Remote::Capabilities.phantomjs(
+            # Selenium tries to be helpful by including screenshots for errors
+            # in the JSON response. That's not gonna fly in this use case as
+            # parsing lots of massive JSON responses at the same time will
+            # have a significant impact on performance.
+            takes_screenshot: false,
             'phantomjs.page.settings.userAgent'  => Options.http.user_agent,
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
             'phantomjs.page.settings.resourceTimeout' => Options.http.request_timeout,

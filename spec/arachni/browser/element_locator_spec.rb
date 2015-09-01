@@ -90,19 +90,21 @@ describe Arachni::Browser::ElementLocator do
     end
 
     describe '#locate' do
-        it "returns a #{Watir} locator" do
+        it "returns a #{Selenium::WebDriver::Element} locator" do
             browser.load "#{url}/digest"
 
             l = described_class.new( tag_name: :a, attributes: { href: '#stuff'} )
             element = l.locate( browser )
-            expect(element).to be_kind_of Watir::HTMLElement
-            expect(element.exists?).to be_truthy
+            expect(element).to be_kind_of Selenium::WebDriver::Element
         end
 
         context 'when the element cannot be located' do
-            it "returns a #{Watir} locator" do
+            it "raises #{Selenium::WebDriver::Error::NoSuchElementError}" do
                 browser.load "#{url}/digest"
-                expect(subject.locate( browser ).exists?).to be_falsey
+
+                expect do
+                    subject.locate( browser )
+                end.to raise_error Selenium::WebDriver::Error::NoSuchElementError
             end
         end
     end

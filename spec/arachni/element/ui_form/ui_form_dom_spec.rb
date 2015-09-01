@@ -8,6 +8,7 @@ describe Arachni::Element::UIForm::DOM do
     it_should_behave_like 'with_node'
     it_should_behave_like 'with_auditor'
 
+    it_should_behave_like 'locatable_dom'
     it_should_behave_like 'submittable_dom'
     it_should_behave_like 'inputtable_dom', inputs: inputs
     it_should_behave_like 'mutable_dom',    inputs: inputs
@@ -76,28 +77,6 @@ describe Arachni::Element::UIForm::DOM do
     describe '#inputs' do
         it 'returns the parent inputs' do
             expect(subject.inputs).to eq subject.parent.inputs
-        end
-    end
-
-    describe '#locate' do
-        it 'locates the live element' do
-            called = false
-            subject.with_browser do |browser|
-                subject.browser = browser
-                browser.load subject.page
-
-                element = subject.locate
-                expect(element).to be_kind_of Watir::HTMLElement
-
-                expect(Arachni::Browser::ElementLocator.
-                           from_html( element.opening_tag ).attributes
-                ).to eq(subject.locator.attributes)
-
-                called = true
-            end
-
-            subject.auditor.browser_cluster.wait
-            expect(called).to be_truthy
         end
     end
 

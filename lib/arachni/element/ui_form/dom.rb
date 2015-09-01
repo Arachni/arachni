@@ -13,6 +13,7 @@ class UIForm
 class DOM < DOM
     include Arachni::Element::Capabilities::WithNode
 
+    include Arachni::Element::DOM::Capabilities::Locatable
     include Arachni::Element::DOM::Capabilities::Mutable
     include Arachni::Element::DOM::Capabilities::Inputtable
     include Arachni::Element::DOM::Capabilities::Submittable
@@ -40,7 +41,7 @@ class DOM < DOM
         transitions = fill_in_inputs
 
         print_debug "Submitting: #{self.source}"
-        submission_transition = browser.fire_event( element, @method )
+        submission_transition = browser.fire_event( locate, @method )
         print_debug "Submitted: #{self.source}"
 
         return if !submission_transition

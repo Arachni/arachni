@@ -351,7 +351,7 @@ class Session
             form = form.dom
             form.browser = browser
 
-            if !form.element.visible?
+            if !form.locate.displayed?
                 fail Error::FormNotVisible, 'Login form is not visible in the DOM.'
             end
         end
