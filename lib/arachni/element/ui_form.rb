@@ -57,12 +57,12 @@ class UIForm < Base
         return ui_forms if inputs.empty?
 
         # Looks like we have input groups, get buttons with events.
-        browser.each_element_with_events false do |locator, events|
+        browser.elements_with_events.each do |locator, events|
             next if !SUPPORTED_TYPES.include?( locator.tag_name )
             next if locator.tag_name == :input &&
                 locator.attributes['type'] != 'button'
 
-            browser.filter_events( locator.tag_name, events ).each do |event, _|
+            browser.javascript.class.select_events( locator.tag_name, events ).each do |event, _|
                 ui_forms << new(
                     action:       page.url,
                     source:       locator.to_s,

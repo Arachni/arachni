@@ -21,8 +21,22 @@ describe Arachni::Browser::Javascript do
     describe '.events_for' do
         it 'returns events for the given element' do
             described_class::EVENTS_PER_ELEMENT.each do |element, events|
-                expect(described_class.events_for( element )).to eq(described_class::GLOBAL_EVENTS | events)
+                expect(described_class.events_for( element )).to eq(Set.new(described_class::GLOBAL_EVENTS | events))
             end
+        end
+    end
+
+    describe '.select_events' do
+        it 'selects only events valid for the given element' do
+            events = {
+                onclick:   'blah();',
+                mouseover: 'blah2();',
+                onselect:  'my-id'
+            }
+            expect(described_class.select_events( :div, events )).to eq({
+                onclick:   'blah();',
+                mouseover: 'blah2();',
+            })
         end
     end
 

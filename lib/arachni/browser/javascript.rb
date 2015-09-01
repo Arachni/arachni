@@ -22,7 +22,9 @@ class Javascript
     require_relative 'javascript/dom_monitor'
 
     CACHE = {
-        select_event_attributes: Support::Cache::LeastRecentlyPushed.new( 1_000 )
+        select_event_attributes: Support::Cache::LeastRecentlyPushed.new( 1_000 ),
+        events_for:              Support::Cache::LeastRecentlyPushed.new( 1_000 ),
+        filter_events:           Support::Cache::LeastRecentlyPushed.new( 1_000 )
     }
 
     TOKEN = 'arachni_js_namespace'
@@ -138,12 +140,30 @@ class Javascript
         @event_whitelist ||= Set.new( events.flatten.map(&:to_s) )
     end
 
-    # @param    [Symbol]    element
+    # @param    [Symbol]    tag_name
     #
-    # @return   [Array<Symbol>]
+    # @return   [Set<Symbol>]
     #   Events for `element`.
-    def self.events_for( element )
-        GLOBAL_EVENTS | EVENTS_PER_ELEMENT[element.to_sym]
+    def self.events_for( tag_name )
+        CACHE[:events_for][tag_name.to_sym] ||= Set.new(
+            GLOBAL_EVENTS + (EVENTS_PER_ELEMENT[tag_name.to_sym] || [])
+        ).freeze
+    end
+
+    # @param    [Symbol]    tag_name
+    # @param    [Hash]    events
+    #   Event data with the event name as the key.
+    #
+    # @return   [Hash]
+    #   `events` filtered to only include valid events for the given element type.
+    def self.select_events( tag_name, events )
+        k = [tag_name, events]
+        return CACHE[:filter_events][k] if CACHE[:filter_events][k]
+
+        supported = events_for( tag_name )
+        CACHE[:filter_events][k] = events.reject do |name, _|
+            !supported.include?( ('on' + name.to_s.gsub( /^on/, '' )).to_sym )
+        end.freeze
     end
 
     # @param    [Hash]  attributes
@@ -156,7 +176,7 @@ class Javascript
             attributes.inject({}) do |h, (event, handler)|
                 next h if !event_whitelist.include?( event.to_s )
                 h.merge!( event.to_sym => handler )
-            end
+            end.freeze
     end
 
     # @param    [Browser]   browser

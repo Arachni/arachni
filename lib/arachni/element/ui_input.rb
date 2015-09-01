@@ -38,12 +38,12 @@ class UIInput < Base
             return inputs
         end
 
-        browser.each_element_with_events false do |locator, events|
+        browser.elements_with_events.each do |locator, events|
             next if !SUPPORTED_TYPES.include?( locator.tag_name )
             next if locator.attributes['type'] &&
                 locator.attributes['type'] != 'text'
 
-            browser.filter_events( locator.tag_name, events ).each do |event, _|
+            browser.javascript.class.select_events( locator.tag_name, events ).each do |event, _|
                 name = locator.attributes['name'] || locator.attributes['id'] ||
                     locator.to_s
 

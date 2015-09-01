@@ -458,14 +458,10 @@ class Browser
     # Iterates over all elements which have events and passes their info to the
     # given block.
     #
-    # @param    [Bool]  mark_state
-    #   Mark each element/events as visited and skip it if it has already been
-    #   seen.
-    #
     # @yield    [ElementLocator,Array<Symbol>]
-    #   Hash with information about the element, its tag name, applicable events
-    #   along with their handlers and attributes.
-    def each_element_with_events( mark_state = true )
+    #   Element locator along with the element's applicable events along with
+    #   their handlers and attributes.
+    def each_element_with_events
         current_url = url
 
         javascript.dom_elements_with_events.each do |element|
@@ -504,18 +500,39 @@ class Browser
 
             next if events.empty?
 
-            if mark_state
-                state = "#{tag_name}#{attributes}#{events}"
-                next if skip_state?( state )
-                skip_state state
-            end
-
             yield ElementLocator.new( tag_name: tag_name, attributes: attributes ),
                     events
         end
 
         self
     end
+
+    # @note The results will be cached, if direct access in necessary
+    #   use {#each_element_with_events}.
+    #
+    # @return    [Hash<ElementLocator,Array<Symbol>>]
+    #   Element locator along with the element's applicable events along with
+    #   their handlers and attributes.
+    def elements_with_events( clear_cache = false )
+        current_url = self.url
+
+        @elements_with_events ||= {}
+        @elements_with_events.clear if clear_cache
+
+        if @elements_with_events.include?( current_url )
+            return @elements_with_events[current_url]
+        end
+
+        @elements_with_events.clear
+        @elements_with_events[current_url] ||= {}
+
+        each_element_with_events do |locator, events|
+            @elements_with_events[current_url][locator] = events
+        end
+
+        @elements_with_events[current_url]
+    end
+
 
     # @return   [String]
     #   Snapshot ID used to determine whether or not a page snapshot has already
@@ -524,7 +541,7 @@ class Browser
     #   when further browser analysis can be performed and when new element
     #   audit workload (but possibly without any DOM relevance) is available.
     def snapshot_id
-        current_url = url
+        current_url = self.url
 
         id = []
         javascript.dom_elements_with_events.each do |element|
@@ -590,7 +607,11 @@ class Browser
     def trigger_events
         root_page = to_page
 
-        each_element_with_events do |locator, events|
+        elements_with_events( true ).each do |locator, events|
+            state = "#{locator.tag_name}#{locator.attributes}#{events}"
+            next if skip_state?( state )
+            skip_state state
+
             events.each do |name, _|
                 distribute_event( root_page, locator, name.to_sym )
             end
@@ -740,7 +761,6 @@ class Browser
             print_debug "-- '#{event}' on: #{opening_tag}"
             print_debug
             print_debug_exception e
-
             nil
         end
     ensure
@@ -1079,11 +1099,6 @@ class Browser
         s << "last-url=#{@last_url.inspect} "
         s << "transitions=#{@transitions.size}"
         s << '>'
-    end
-
-    def filter_events( element, events )
-        supported = Set.new( Arachni::Browser::Javascript.events_for( element ) )
-        events.reject { |name, _| !supported.include? ('on' + name.to_s.gsub( /^on/, '' )).to_sym }
     end
 
     private

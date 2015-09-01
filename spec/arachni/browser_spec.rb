@@ -1743,6 +1743,44 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#elements_with_events' do
+        before :each do
+            @browser.load url
+        end
+
+        let(:elements_with_events) do
+            elements_with_events = {}
+            @browser.each_element_with_events do |locator, events|
+                elements_with_events[locator] = events
+            end
+            elements_with_events
+        end
+
+        let(:url) { @url + '/trigger_events' }
+
+        it 'returns all elements with associated events' do
+            expect(subject.elements_with_events.to_s).to eq elements_with_events.to_s
+        end
+
+        it 'caches results' do
+            expect(subject).to receive(:each_element_with_events)
+            subject.elements_with_events
+
+            expect(subject).to_not receive(:each_element_with_events)
+            subject.elements_with_events
+        end
+
+        context 'when passed true' do
+            it 'clears the cache' do
+                expect(subject).to receive(:each_element_with_events)
+                subject.elements_with_events
+
+                expect(subject).to receive(:each_element_with_events)
+                subject.elements_with_events( true )
+            end
+        end
+    end
+
     describe '#each_element_with_events' do
         before :each do
             @browser.load url

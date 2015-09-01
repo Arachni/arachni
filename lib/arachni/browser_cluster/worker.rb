@@ -84,7 +84,7 @@ class Worker < Arachni::Browser
 
         # ap '=' * 250
         # ap '=' * 250
-        pre = $WATIR_REQ_COUNT
+        # pre = $WATIR_REQ_COUNT
 
         time = Time.now
         begin
@@ -135,24 +135,6 @@ class Worker < Arachni::Browser
         clear_observers
 
         @job = nil
-    end
-
-    # We change the default scheduling to distribute elements and events to all
-    # available browsers ASAP, instead of building a list and then consuming it,
-    # since we're don't have to worry about messing up our page's state in this
-    # setup.
-    #
-    # @see Browser#trigger_events
-    def trigger_events
-        root_page = to_page
-
-        each_element_with_events do |element, events|
-            events.each do |name, _|
-                distribute_event( root_page, element, name.to_sym )
-            end
-        end
-
-        true
     end
 
     # Direct the distribution to the master and let it take it from there.
