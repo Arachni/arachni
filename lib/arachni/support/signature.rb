@@ -109,15 +109,14 @@ class Signature
     # @param    [Signature, String] data
     #
     # @return [Array<String,Integer>]
-    #   Words as tokens represented by either the words themselves or their
-    #   hashes, depending on which is smaller in size.
+    #   Words as tokens.
     def tokenize( data )
         return data.tokens if data.is_a? self.class
 
         if CACHE[:tokens][data]
             CACHE[:tokens][data].dup
         else
-            CACHE[:tokens][data] = compress( data.split( /(?![\w])/ ) )
+            CACHE[:tokens][data] = compress( data.split( /\W/ ) )
         end
     end
 
@@ -127,6 +126,10 @@ class Signature
     def compress( tokens )
         s = Set.new
         tokens.each do |token|
+            # Left-over non-word characters will be on their own, this is a
+            # low-overhead way to dispose of them.
+            next if token.empty?
+
             s << token.hash
         end
         s
