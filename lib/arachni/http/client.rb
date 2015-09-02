@@ -475,14 +475,7 @@ class Client
 
         reset_burst_info
 
-        # Lots of new objects are about to be generated, make sure that old ones
-        # have been collected to prevent RAM spikes.
-        gc
-
         client_run
-
-        # Collect the new objects as well.
-        gc
 
         @queue_size = 0
         @running    = false
@@ -491,14 +484,6 @@ class Client
         @total_runtime += @burst_runtime
     end
 
-    def gc
-        # Don't GC after every little run, only do it when we're past the
-        # maximum queue size.
-        return if @queue_size < Options.http.request_queue_size
-
-        GC.start
-    end
-    
     def reset_burst_info
         @burst_response_time_sum = 0
         @burst_response_count    = 0
