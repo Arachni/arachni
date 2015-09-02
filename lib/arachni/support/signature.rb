@@ -125,7 +125,11 @@ class Signature
     # Seems kinda silly but this can actually save us GB of RAM when comparing
     # large signatures, not to mention CPU cycles.
     def compress( tokens )
-        Set.new( tokens.map(&:hash) )
+        s = Set.new
+        tokens.each do |token|
+            s << token.hash
+        end
+        s
     end
 
 end
