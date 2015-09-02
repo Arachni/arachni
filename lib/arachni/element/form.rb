@@ -69,8 +69,8 @@ class Form < Base
     # @option   options [String]    :action
     #   Form action -- defaults to `:url`.
     # @option   options [Hash]    :inputs
-    #   Form inputs, can either be simple `name => value` pairs or more a
-    #   more detailed representation such as:
+    #   Form inputs, can either be simple `name => value` pairs or a more
+    #   detailed representation such as:
     #
     #       {
     #           'my_token'  => {
@@ -88,7 +88,6 @@ class Form < Base
 
         cinputs = (options[:inputs] || {}).inject({}) do |h, (name, value_or_info)|
              if value_or_info.is_a? Hash
-                 value_or_info             = value_or_info.my_symbolize_keys
                  h[name]                   = value_or_info[:value]
                  @input_details[name.to_s] = value_or_info
              else
@@ -211,7 +210,7 @@ class Form < Base
     #
     # @return   [String]
     def field_type_for( name )
-        details_for( name )[:type] || :text
+        (details_for( name )[:type] || :text).to_sym
     end
 
     def fake_field?( name )
@@ -309,7 +308,7 @@ class Form < Base
 
             %w(textarea input select button).each do |attr|
                 options[attr] ||= []
-                node.search( ".//#{attr}" ).each do |elem|
+                node.css( attr ).each do |elem|
                     elem_attrs = attributes_to_hash( elem.attributes )
                     elem_attrs[:type] = elem_attrs[:type].to_sym if elem_attrs[:type]
 
@@ -419,6 +418,18 @@ class Form < Base
             rescue ArgumentError
                 URI.decode( string.gsub( '+', ' ' ) )
             end
+        end
+
+        def from_rpc_data( data )
+            # Inputs contain attribute data instead of just values, normalize them.
+            if data['initialization_options']['inputs'].values.first.is_a? Hash
+                data['initialization_options']['inputs'].each do |name, details|
+                    data['initialization_options']['inputs'][name] =
+                        details.my_symbolize_keys( true )
+                end
+            end
+
+            super data
         end
 
     end
