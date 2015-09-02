@@ -27,7 +27,7 @@ module WithSource
     end
 
     def source=( s )
-        @source = (s ? s.recode.freeze : s)
+        @source = (s.frozen? ? s : s.recode.freeze )
     end
 
     def to_h
@@ -45,7 +45,7 @@ module WithSource
     private
 
     def copy_with_source( other )
-        other.source = source
+        other.source = @source
         other
     end
 
