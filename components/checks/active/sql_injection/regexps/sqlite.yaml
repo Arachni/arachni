@@ -1,0 +1,2 @@
+sqlite_: Warning.*sqlite_.*
+SQLite3::: "Warning.*SQLite3::"

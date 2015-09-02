@@ -10,8 +10,6 @@ if @@errors.empty?
     end
 end
 
-@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../components/checks/active/no_sql_injection/regexp_ignore.txt' )
-
 def variations
     @@variations ||= [ '\';.")' ]
 end
@@ -67,10 +65,6 @@ end
         return if !params['input'].start_with?( default )
 
         get_variations( platform, params['input'].split( default ).last )
-    end
-
-    get "/#{platform_str}/link/ignore" do
-        @@errors.to_s + @@ignore.to_s
     end
 
     get "/#{platform_str}/link-template" do

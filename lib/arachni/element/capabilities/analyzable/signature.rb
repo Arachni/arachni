@@ -20,30 +20,75 @@ module Signature
     }
 
     SIGNATURE_OPTIONS = {
-        # The regular expression to match against the response body.
-        #
-        # Alternatively, you can use the :substring option.
-        regexp:    nil,
-
-        # The substring to look for the response body.
+        # The signatures to look for the response body, if `Regexp` it will be
+        # matched against it, if `String` it'll be used as a needle.
         #
         # Alternatively, you can use the :regexp option.
-        substring: nil,
+        signatures: [],
 
-        # Array of patterns to ignore.
+        # Array of signatures to ignore.
         #
-        # Useful when needing to narrow down what to log without
-        # having to construct overly complex match regexps.
-        ignore:    nil,
-
-        # Extract the longest word from each regexp and only proceed to the
-        # full match only if that word is included in the response body.
-        #
-        # The check is case insensitive.
-        longest_word_optimization: false
+        # Useful when needing to narrow down what to log without having to
+        # construct overly complex signatures.
+        ignore:     []
     }
 
-    # Performs signatures analysis and logs an issue should there be one.
+    FILE_SIGNATURES = {
+        'environ'  => proc do |response|
+            next if !response.body.include?( 'DOCUMENT_ROOT=' )
+            /DOCUMENT_ROOT=.*HTTP_USER_AGENT=/m
+        end,
+        'passwd'   => proc do |response|
+            next if !response.body.include?( 'bin/' )
+            /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/
+        end,
+        'boot.ini' => proc do |response|
+            next if !response.body.include?( '[boot loader]' )
+            /\[boot loader\].*\[operating systems\]/m
+        end,
+        'win.ini'  => proc do |response|
+            next if !response.body.include?( '[fonts]' )
+            /\[fonts\].*\[extensions\]/m
+        end,
+        'web.xml'  => '<web-app'
+    }
+
+    FILE_SIGNATURES_PER_PLATFORM = {
+        unix:   [
+            FILE_SIGNATURES['environ'],
+            FILE_SIGNATURES['passwd']
+        ],
+        windows: [
+            FILE_SIGNATURES['boot.ini'],
+            FILE_SIGNATURES['win.ini']
+        ],
+        java:    [
+            FILE_SIGNATURES['web.xml']
+        ]
+    }
+
+    SOURCE_CODE_SIGNATURES_PER_PLATFORM = {
+        php:  [
+            '<?php'
+        ],
+
+        # No need to optimize the following with procs, OR'ed Regexps perform
+        # better than multiple substring checks, so long as the Regexp parts are
+        # fairly simple.
+
+        java: [
+            /<%|<%=|<%@\s+page|<%@\s+include|<%--|import\s+javax.servlet|
+                import\s+java.io|import=['"]java.io|request\.getParameterValues\(|
+                response\.setHeader|response\.setIntHeader\(/m
+        ],
+        asp:  [
+            /<%|Response\.Write|Request\.Form|Request\.QueryString|
+                Response\.Flush|Session\.SessionID|Session\.Timeout|
+                Server\.CreateObject|Server\.MapPath/m
+        ]
+    }
+
+    # Performs signatures analysis and logs an issue, should there be one.
     #
     # It logs an issue when:
     #
@@ -96,43 +141,44 @@ module Signature
     def get_matches( response )
         vector = response.request.performer
         opts   = vector.audit_options.dup
-        opts[:substring] = vector.seed if !opts[:regexp] && !opts[:substring]
 
-        match_patterns( opts[:regexp], method( :match_regexp_and_log ), response, opts.dup )
-        match_patterns( opts[:substring], method( :match_substring_and_log ), response, opts.dup )
-    end
-
-    def match_patterns( patterns, matcher, response, opts )
-        k = [patterns, response.body]
-        return if SIGNATURE_CACHE[:match][k] == false
-
-        if opts[:longest_word_optimization]
-            opts[:downcased_body] = response.body.downcase
+        if !opts[:signatures].is_a?( Array ) && !opts[:signatures].is_a?( Hash )
+            opts[:signatures] = [opts[:signatures]]
         end
 
-        case patterns
+        opts[:signatures] = [vector.seed] if opts[:signatures].empty?
+
+        find_signatures( opts[:signatures], response, opts.dup )
+    end
+    public :get_matches
+
+    def find_signatures( signatures, response, opts )
+        k = [signatures, response.body]
+        return if SIGNATURE_CACHE[:match][k] == false
+
+        case signatures
             when Regexp, String, Array
-                [patterns].flatten.compact.each do |pattern|
-                    res = matcher.call( pattern, response, opts )
+                [signatures].flatten.compact.each do |signature|
+                    res = find_signature( signature, response, opts )
                     SIGNATURE_CACHE[:match][k] ||= !!res
                 end
 
             when Hash
-                if opts[:platform] && patterns[opts[:platform]]
-                    [patterns[opts[:platform]]].flatten.compact.each do |p|
-                        [p].flatten.compact.each do |pattern|
-                            res = matcher.call( pattern, response, opts )
+                if opts[:platform] && signatures[opts[:platform]]
+                    [signatures[opts[:platform]]].flatten.compact.each do |p|
+                        [p].flatten.compact.each do |signature|
+                            res = find_signature( signature, response, opts )
                             SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
 
                 else
-                    patterns.each do |platform, p|
+                    signatures.each do |platform, p|
                         dopts = opts.dup
                         dopts[:platform] = platform
 
-                        [p].flatten.compact.each do |pattern|
-                            res = matcher.call( pattern, response, dopts )
+                        [p].flatten.compact.each do |signature|
+                            res = find_signature( signature, response, dopts )
                             SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
@@ -140,22 +186,36 @@ module Signature
 
                 return if !opts[:payload_platforms]
 
-                # Find out if there are any patterns without associated payloads
+                # Find out if there are any signatures without associated payloads
                 # and match them against every payload's response.
-                patterns.select { |p, _|  !opts[:payload_platforms].include?( p ) }.
+                signatures.select { |p, _|  !opts[:payload_platforms].include?( p ) }.
                     each do |platform, p|
                         dopts = opts.dup
                         dopts[:platform] = platform
 
-                        [p].flatten.compact.each do |pattern|
-                            res = matcher.call( pattern, response, dopts )
+                        [p].flatten.compact.each do |signature|
+                            res = find_signature( signature, response, dopts )
                             SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
         end
     end
 
-    def match_substring_and_log( substring, response, opts )
+    def find_signature( signature, response, opts )
+        if signature.respond_to?( :call )
+            signature = signature.call( response )
+        end
+
+        return if !signature
+
+        if signature.is_a? Regexp
+            match_regexp_and_log( signature, response, opts )
+        else
+            find_substring_and_log( signature, response, opts )
+        end
+    end
+
+    def find_substring_and_log( substring, response, opts )
         return if substring.to_s.empty?
 
         k = [substring, response.body]
@@ -164,14 +224,13 @@ module Signature
         SIGNATURE_CACHE[:match][k] = includes = response.body.include?( substring )
         return if !includes || ignore?( response, opts )
 
-        @candidate_issues << {
+        control_and_log(
             response:  response,
             platform:  opts[:platform],
             proof:     substring,
             signature: substring,
             vector:    response.request.performer
-        }
-        setup_verification_callbacks
+        )
 
         true
     end
@@ -179,13 +238,6 @@ module Signature
     def match_regexp_and_log( regexp, response, opts )
         k = [regexp, response.body]
         return if SIGNATURE_CACHE[:match][k] == false
-
-        regexp = regexp.is_a?( Regexp ) ? regexp :
-            Regexp.new( regexp.to_s, Regexp::IGNORECASE )
-
-        if opts[:downcased_body]
-            return if !opts[:downcased_body].include?( longest_word_for_regexp( regexp ) )
-        end
 
         match_data = response.body.match( regexp )
         return if !match_data
@@ -196,58 +248,66 @@ module Signature
 
         return if match_data.empty? || ignore?( response, opts )
 
-        @candidate_issues << {
+        control_and_log(
             response:  response,
             platform:  opts[:platform],
             proof:     match_data,
             signature: regexp,
             vector:    response.request.performer
-        }
-        setup_verification_callbacks
+        )
 
         true
     end
 
-    def ignore?( res, opts )
-        [opts[:ignore]].flatten.compact.each do |r|
-            r = r.is_a?( Regexp ) ? r : Regexp.new( r.to_s, Regexp::IGNORECASE )
-            return true if res.body.scan( r ).flatten.first
+    def ignore?( response, opts )
+        [opts[:ignore]].flatten.compact.each do |signature|
+            return true if signature_match?( signature, response )
         end
+
         false
     end
 
-    def setup_verification_callbacks
-        return if @setup_verification_callbacks
-        @setup_verification_callbacks = true
+    def signature_match?( signature, response )
+        if signature.respond_to?( :call )
+            signature = signature.call( response )
+        end
 
-        # Go over the issues to ensure that the signature that identified them
-        # does not match by default.
-        http.after_run do
-            @setup_verification_callbacks = false
-            next if @candidate_issues.empty?
+        return if !signature
 
-            # Grab the default response.
-            submit do |response|
-                # Something has gone wrong, timed-out request or closed connection.
-                # If we can't verify the issue bail out...
-                next if response.code == 0
-
-                while (issue = @candidate_issues.pop)
-                    # If the body of the control response matches the proof
-                    # of the current issue don't bother, it'll be a coincidence
-                    # causing a false positive.
-                    next if response.body.include?( issue[:proof] )
-
-                    @auditor.log( issue )
-                end
-            end
+        if signature.is_a? Regexp
+            response.body =~ signature
+        else
+            response.body.include?( signature )
         end
     end
 
-    def longest_word_for_regexp( regexp )
-        @@longest_word_for_regex ||= {}
-        @@longest_word_for_regex[regexp.source.hash] ||=
-            regexp.source.longest_word.downcase
+    def control_and_log( issue )
+        control = issue[:vector].dup
+
+        if control.parameter_name_audit?
+            inputs = control.inputs.dup
+            value  = inputs.delete( control.seed )
+
+            control.inputs = inputs.merge( Utilities.random_seed => value )
+        else
+            control.affected_input_value = Utilities.random_seed
+        end
+
+        control.submit do |response|
+            # Something has gone wrong, timed-out request or closed connection.
+            # If we can't verify the issue bail out...
+            next if response.code == 0
+
+            # If the signature matches the control response don't bother, it'll
+            # be a coincidence causing a false positive.
+            next if signature_match?( issue[:signature], response )
+
+            # We can't have procs in there, we only log stuff that
+            # can be serialized.
+            issue[:vector].audit_options.delete :signatures
+
+            @auditor.log( issue )
+        end
     end
 
 end

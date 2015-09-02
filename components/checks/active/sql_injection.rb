@@ -9,7 +9,6 @@
 # SQL Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.2
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://unixwiz.net/techtips/sql-injection.html
@@ -18,22 +17,36 @@
 # @see https://www.owasp.org/index.php/SQL_Injection
 class Arachni::Checks::SqlInjection < Arachni::Check::Base
 
-    def self.error_patterns
-        return @error_patterns if @error_patterns
+    def self.error_signatures
+        return @error_signatures if @error_signatures
 
-        @error_patterns = {}
-        Dir[File.dirname( __FILE__ ) + '/sql_injection/patterns/*'].each do |file|
-            @error_patterns[File.basename( file ).to_sym] =
-                IO.read( file ).split( "\n" ).map do |pattern|
-                    Regexp.new( pattern, Regexp::IGNORECASE )
-                end
+        @error_signatures = {}
+
+        Dir[File.dirname( __FILE__ ) + '/sql_injection/substrings/*'].each do |file|
+            @error_signatures[File.basename( file ).to_sym] =
+                IO.read( file ).split( "\n" )
         end
 
-        @error_patterns
+        Dir[File.dirname( __FILE__ ) + '/sql_injection/regexps/*'].each do |file|
+            platform = File.basename( file, '.yaml' ).to_sym
+
+            @error_signatures[platform] ||= []
+
+            YAML.load_file( file ).each do |substring, pattern|
+                regexp = Regexp.new( pattern )
+
+                @error_signatures[platform] << proc do |response|
+                    next if !response.body.include?( substring )
+                    regexp
+                end
+            end
+        end
+
+        @error_signatures
     end
 
-    def self.ignore_patterns
-        @ignore_patterns ||= read_file( 'regexp_ignore.txt' )
+    def self.ignore_signatures
+        @ignore_signatures ||= read_file( 'ignore_substrings' )
     end
 
     # Prepares the payloads that will hopefully cause the webapp to output SQL
@@ -44,10 +57,9 @@ class Arachni::Checks::SqlInjection < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format:                    [Format::APPEND],
-            regexp:                    error_patterns,
-            ignore:                    ignore_patterns,
-            longest_word_optimization: true
+            format:     [Format::APPEND],
+            signatures: error_signatures,
+            ignore:     ignore_signatures
         }
     end
 
@@ -63,8 +75,8 @@ SQL injection check, uses known SQL DB errors to identify vulnerabilities.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.2',
-            platforms:   options[:regexp].keys,
+            version:     '0.2.3',
+            platforms:   options[:signatures].keys,
 
             issue:       {
                 name:            %q{SQL Injection},

@@ -223,6 +223,10 @@ module Mutable
         nil
     end
 
+    def parameter_name_audit?
+        affected_input_name == FUZZ_NAME
+    end
+
     def switch_method
         self.dup.tap { |c| c.method = (c.method == :get ? :post : :get) }
     end

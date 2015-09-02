@@ -11,6 +11,21 @@
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.
+- `Element`
+    - `Capabilities`
+        - `Analyzable`
+            - `Signature`
+                - Replaced `regexp` and `substring` options with `signature` --
+                    type of matching depends on `signature` type.
+                - Allow `signature` to be generated dynamically based on the
+                    `HTTP::Response` about to be checked, from a `#call`able object.
+- Checks
+    - Active -- Updated all checks that make use of `Element::Capabilities::Analyzable::Signature`
+        to provide simple substring signatures whenever possible.
+        Alternatively, when a `Regexp` is necessary, they take advantage of dynamic
+        signature generation based on the current response and perform a lightweight
+        preliminary check for hints of vulnerability, only then is the more
+        resource intensive `Regexp` matched.
 
 ## Under development
 

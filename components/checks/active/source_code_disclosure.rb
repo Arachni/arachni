@@ -11,29 +11,14 @@
 # source code.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.3
 #
 # @see http://cwe.mitre.org/data/definitions/540.html
 class Arachni::Checks::SourceCodeDisclosure < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format:  [Format::STRAIGHT],
-            regexp:  {
-                php:  [
-                    /<\?php/
-                ],
-                java: [
-                    /<%|<%=|<%@\s+page|<%@\s+include|<%--|import\s+javax.servlet|
-                        import\s+java.io|import=['"]java.io|request\.getParameterValues\(|
-                        response\.setHeader|response\.setIntHeader\(/m
-                ],
-                asp:  [
-                    /<%|Response\.Write|Request\.Form|Request\.QueryString|
-                        Response\.Flush|Session\.SessionID|Session\.Timeout|
-                        Server\.CreateObject|Server\.MapPath/im
-                ]
-            },
+            format:     [Format::STRAIGHT],
+            signatures: SOURCE_CODE_SIGNATURES_PER_PLATFORM,
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
@@ -121,8 +106,8 @@ source code.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.3',
-            platforms:   options[:regexp].keys,
+            version:     '0.2.4',
+            platforms:   options[:signatures].keys,
 
             issue:       {
                 name:            %q{Source code disclosure},

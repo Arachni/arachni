@@ -12,6 +12,14 @@ module Arachni
 
 module Element
 
+def self.type_to_class( type )
+    Element.constants.each do |c|
+        klass = Element.const_get( c )
+        return klass if klass.respond_to?(:type) && klass.type == type
+    end
+    nil
+end
+
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Error < Arachni::Error
 end

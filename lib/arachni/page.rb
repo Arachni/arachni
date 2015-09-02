@@ -565,7 +565,7 @@ class Page
 
                         when *ELEMENTS.map(&:to_s)
                             value.map do |e|
-                                Element.const_get(name[0...-1].capitalize.to_sym).from_rpc_data( e )
+                                Element.type_to_class( name[0...-1].to_sym ).from_rpc_data( e )
                             end.to_a
 
                         else

@@ -7,25 +7,18 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.2
 class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
 
-    def self.error_patterns
-        return @error_patterns if @error_patterns
+    def self.error_signatures
+        return @error_signatures if @error_signatures
 
-        @error_patterns = {}
-        Dir[File.dirname( __FILE__ ) + '/no_sql_injection/patterns/*'].each do |file|
-            @error_patterns[File.basename( file ).to_sym] =
-                IO.read( file ).split( "\n" ).map do |pattern|
-                    Regexp.new( pattern, Regexp::IGNORECASE )
-                end
+        @error_signatures = {}
+        Dir[File.dirname( __FILE__ ) + '/no_sql_injection/substrings/*'].each do |file|
+            @error_signatures[File.basename( file ).to_sym] =
+                IO.read( file ).split( "\n" )
         end
 
-        @error_patterns
-    end
-
-    def self.ignore_patterns
-        @ignore_patterns ||= read_file( 'regexp_ignore.txt' )
+        @error_signatures
     end
 
     # Prepares the payloads that will hopefully cause the webapp to output SQL
@@ -36,10 +29,8 @@ class Arachni::Checks::NoSqlInjection < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format:                    [Format::APPEND],
-            regexp:                    error_patterns,
-            ignore:                    ignore_patterns,
-            longest_word_optimization: true
+            format:     [Format::APPEND],
+            signatures: error_signatures
         }
     end
 
@@ -55,7 +46,7 @@ NoSQL injection check, uses known DB errors to identify vulnerabilities.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             platforms:   payloads.keys,
 
             issue:       {

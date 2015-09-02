@@ -180,6 +180,15 @@ module Auditor
         self.class.max_issues
     end
 
+    FILE_SIGNATURES_PER_PLATFORM =
+        Arachni::Element::Capabilities::Analyzable::Signature::FILE_SIGNATURES_PER_PLATFORM
+
+    FILE_SIGNATURES =
+        Arachni::Element::Capabilities::Analyzable::Signature::FILE_SIGNATURES
+
+    SOURCE_CODE_SIGNATURES_PER_PLATFORM =
+        Arachni::Element::Capabilities::Analyzable::Signature::SOURCE_CODE_SIGNATURES_PER_PLATFORM
+
     # Holds constant bitfields that describe the preferred formatting of
     # injection strings.
     Format = Element::Capabilities::Mutable::Format

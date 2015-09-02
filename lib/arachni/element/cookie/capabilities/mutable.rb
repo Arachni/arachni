@@ -61,6 +61,7 @@ module Mutable
                 element                     = self.dup
                 element.affected_input_name = FUZZ_NAME
                 element.inputs              = { payload => FUZZ_NAME_VALUE }
+                element.seed                = payload
                 yield element if block_given?
             else
                 print_debug_level_2 'Payload not supported as input name by' <<

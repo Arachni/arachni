@@ -1,0 +1,8 @@
+Procedure or function: Procedure or function .* expects parameter
+in query expression: Syntax error .* in query expression
+SQL Server: OLE DB.*SQL Server
+mssql_: Warning.*mssql_.*
+Driver: Driver.*SQL[\-\_\ ]*Server
+SQL Server: SQL Server.*Driver
+SQL Server: SQL Server.*[0-9a-fA-F]{8}
+SqlClient: Exception.*\WSystem\.Data\.SqlClient\.

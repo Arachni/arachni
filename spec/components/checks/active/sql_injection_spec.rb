@@ -4,9 +4,8 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.platforms
-        [:access, :db2, :emc, :firebird, :frontbase, :hsqldb,
-         :informix, :ingres, :interbase, :maxdb, :mssql, :mysql, :oracle,
-         :pgsql, :sqlite, :sybase]
+        [:access, :db2, :emc, :firebird, :frontbase, :hsqldb, :informix, :ingres,
+         :interbase, :maxdb, :mssql, :mysql, :oracle, :pgsql, :sqlite, :sybase]
     end
 
     def self.elements
@@ -26,13 +25,13 @@ describe name_from_filename do
                 Element::XML          => 12
             },
             db2:        {
-                Element::Form         => 16,
-                Element::Link         => 16,
-                Element::Cookie       => 16,
-                Element::Header       => 8,
-                Element::LinkTemplate => 8,
-                Element::JSON         => 16,
-                Element::XML          => 16
+                Element::Form         => 12,
+                Element::Link         => 12,
+                Element::Cookie       => 12,
+                Element::Header       => 6,
+                Element::LinkTemplate => 6,
+                Element::JSON         => 12,
+                Element::XML          => 12
             },
             emc:        {
                 Element::Form         => 8,
@@ -107,13 +106,13 @@ describe name_from_filename do
                 Element::XML          => 4
             },
             mssql:      {
-                Element::Form         => 86,
-                Element::Link         => 86,
-                Element::Cookie       => 86,
-                Element::Header       => 42,
-                Element::LinkTemplate => 42,
-                Element::JSON         => 86,
-                Element::XML          => 84
+                Element::Form         => 78,
+                Element::Link         => 78,
+                Element::Cookie       => 78,
+                Element::Header       => 38,
+                Element::LinkTemplate => 38,
+                Element::JSON         => 78,
+                Element::XML          => 76
             },
             mysql:      {
                 Element::Form         => 52,
