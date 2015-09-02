@@ -72,8 +72,6 @@ class Base
     attr_reader   :initialization_options
 
     def initialize( options )
-        options = options.my_symbolize_keys( false )
-
         if !(options[:url] || options[:action])
             fail 'Needs :url or :action option.'
         end
