@@ -297,7 +297,7 @@ module Mutable
     protected
 
     def mutable_id
-        "#{self.method}:#{inputtable_id}"
+        "#{@method}:#{inputtable_id}"
     end
 
     def self.mutable_id( method, inputs )
