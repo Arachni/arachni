@@ -1226,6 +1226,9 @@ class Browser
                              # This can be problematic on something other than
                              # MRI.
                              buff << (out.readline rescue '').to_s
+
+                             # 100% CPU isn't nice, take a breather.
+                             sleep 0.1
                          end
 
                         buff = nil
