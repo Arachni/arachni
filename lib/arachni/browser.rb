@@ -363,7 +363,6 @@ class Browser
 
             wait_till_ready
 
-            url = dom_url
             Options.browser_cluster.css_to_wait_for( url ).each do |css|
                 print_info "Waiting for #{css.inspect} to appear for: #{url}"
 
@@ -388,7 +387,7 @@ class Browser
 
         @add_request_transitions = pre_add_request_transitions
 
-        HTTP::Client.update_cookies cookies
+        update_cookies
 
         # Capture the page at its initial state.
         capture_snapshot if take_snapshot
@@ -536,10 +535,12 @@ class Browser
 
     # @return   [String]
     #   Snapshot ID used to determine whether or not a page snapshot has already
-    #   been seen. Uses both elements and their DOM events and possible audit
-    #   workload to determine the ID, as page snapshots should be retained both
-    #   when further browser analysis can be performed and when new element
-    #   audit workload (but possibly without any DOM relevance) is available.
+    #   been seen.
+    #
+    #   Uses both elements and their DOM events and possible audit workload to
+    #   determine the ID, as page snapshots should be retained both when further
+    #   browser analysis can be performed and when new element audit workload
+    #   (but possibly without any DOM relevance) is available.
     def snapshot_id
         current_url = self.url
 
@@ -595,6 +596,8 @@ class Browser
 
             id << "#{tag_name}:#{element_id}:#{events}"
         end
+
+        id << [:cookies, javascript_cookies.map(&:name).sort].to_s
 
         id.uniq.sort.to_s
     end
@@ -750,6 +753,8 @@ class Browser
                 print_debug_level_2 "[waiting for requests]: #{event} (#{options}) #{locator}"
                 wait_for_pending_requests
                 print_debug_level_2 "[done waiting for requests]: #{event} (#{options}) #{locator}"
+
+                update_cookies
             end
 
             print_debug_level_2 "[done in #{transition.time}s]: #{event} (#{options}) #{locator}"
@@ -1001,11 +1006,12 @@ class Browser
         @page_snapshots.clear
     end
 
+    # @note HTTP cookies will be intercepted by the {HTTP::ProxyServer}
+    #   and placed in the {HTTP::Client} {HTTP::CookieJar}.
+    #
     # @return   [Array<Cookie>]
-    #   Browser cookies.
-    def cookies
-        # Unfortunately, we can't just parse this string, HTTPOnly cookies
-        # won't show.
+    #   Cookies visible to JS.
+    def javascript_cookies
         js_cookies = begin
              # Watir doesn't tell us if cookies are HttpOnly, so we need to figure
              # this out ourselves, by checking for JS visibility.
@@ -1015,16 +1021,7 @@ class Browser
             ''
         end
 
-        @selenium.manage.all_cookies.map do |c|
-            original_name = c[:name].to_s
-
-            c[:path]     = '/' if c[:path] == '//'
-            c[:name]     = Cookie.decode( c[:name].to_s )
-            c[:value]    = Cookie.value_to_v0( c[:value].to_s )
-            c[:httponly] = !js_cookies.include?( original_name )
-
-            Cookie.new c.merge( url: @last_url || url )
-        end
+        Cookie.from_string( self.url, js_cookies )
     end
 
     # @return   [String]
@@ -1337,8 +1334,12 @@ class Browser
     def load_cookies( url, cookies = {} )
         # First clears the browser's cookies and then tricks it into accepting
         # the system cookies for its cookie-jar.
-
-        @selenium.manage.delete_all_cookies
+        #
+        # Well, it doesn't really clear the browser's cookie-jar, but that's
+        # not necessary because whatever cookies the browser has have already
+        # gotten into the system-wide cookiejar, and since we're passing
+        # all applicable cookies to the browser the end result will be that
+        # it'll have the wanted values.
 
         url = normalize_url( url )
 
@@ -1396,6 +1397,12 @@ class Browser
         end
 
         @selenium.manage.window.resize_to( @width, @height )
+    end
+
+    def update_cookies
+        # HTTPOnly cookies don't worry us, the proxy server will have already
+        # set them globally.
+        HTTP::Client.update_cookies self.javascript_cookies
     end
 
     # # Firefox driver, only used for debugging.

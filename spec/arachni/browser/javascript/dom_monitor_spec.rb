@@ -112,8 +112,8 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ])
 
             expect(@browser.load_delay).to eq(2000)
-            expect(@browser.cookies.size).to eq(4)
-            expect(@browser.cookies.map { |c| c.to_s }.sort).to eq([
+            expect(@browser.javascript_cookies.size).to eq(4)
+            expect(@browser.javascript_cookies.map { |c| c.to_s }.sort).to eq([
                 'timeout3=post-2000',
                 'timeout2=post-1500',
                 'timeout1=post-1000',
@@ -134,8 +134,8 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ])
 
             sleep 2
-            expect(@browser.cookies.size).to eq(2)
-            expect(@browser.cookies.map { |c| c.to_s }.sort).to eq([
+            expect(@browser.javascript_cookies.size).to eq(2)
+            expect(@browser.javascript_cookies.map { |c| c.to_s }.sort).to eq([
                 'timeout1=post-2000',
                 'timeout=pre'
             ].sort)

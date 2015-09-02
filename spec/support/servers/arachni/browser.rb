@@ -20,6 +20,7 @@ get '/' do
     <body>
         <div>
             <script type="text/javascript">
+                document.cookie = 'cookie_name="cookie value"';
                 document.write( navigator.userAgent );
             </script>
         </div>
@@ -202,6 +203,22 @@ get '/snapshot_id/default' do
     <<-EOHTML
     <html>
         <body>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/each_element_with_events/set-cookie' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            function setCookie() {
+                document.cookie = 'cookie_name="cookie value"';
+            }
+        </script>
+
+        <body>
+            <button onclick="setCookie()">Set cookie</button>
         </body>
     </html>
     EOHTML

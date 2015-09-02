@@ -1369,6 +1369,25 @@ describe Arachni::Browser do
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
+        context 'when cookies are set' do
+            let(:url) { @url + '/each_element_with_events/set-cookie' }
+
+            it 'sets them globally' do
+                expect(Arachni::HTTP::Client.cookies).to be_empty
+
+                @browser.fire_event described_class::ElementLocator.new(
+                    tag_name: :button,
+                    attributes: {
+                        onclick: 'setCookie()'
+                    }
+                ), :click
+
+                cookie = Arachni::HTTP::Client.cookies.first
+                expect(cookie.name).to eq 'cookie_name'
+                expect(cookie.value).to eq 'cookie value'
+            end
+        end
+
         context 'when the element is not visible' do
             it 'returns nil' do
                 @browser.goto "#{url}/invisible-div"
@@ -2305,7 +2324,10 @@ describe Arachni::Browser do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.goto @url, cookies: cookie
 
-                expect(@browser.cookies.find { |c| c.name == cookie.keys.first }.inputs).to eq(cookie)
+                cookie_data = @browser.javascript_cookies.
+                    find { |c| c.name == cookie.keys.first }.inputs
+
+                expect(cookie_data).to eq(cookie)
             end
 
             it 'includes them in the transition' do
@@ -2318,13 +2340,12 @@ describe Arachni::Browser do
             context 'when auditing existing cookies' do
                 it 'preserves the HttpOnly attribute' do
                     @browser.goto( @url )
-                    expect(@browser.cookies.size).to eq(1)
+                    expect(@browser.javascript_cookies.size).to eq(1)
 
-                    cookies = { @browser.cookies.first.name => 'updated' }
+                    cookies = { @browser.javascript_cookies.first.name => 'updated' }
                     @browser.goto( @url, cookies: cookies )
 
-                    @browser.cookies.first.value == 'updated'
-                    expect(@browser.cookies.first).to be_http_only
+                    @browser.javascript_cookies.first.value == 'updated'
                 end
             end
         end
@@ -2398,7 +2419,7 @@ describe Arachni::Browser do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.load @url, cookies: cookie
 
-                expect(@browser.cookies.find { |c| c.name == cookie.keys.first }.inputs).to eq(cookie)
+                expect(@browser.javascript_cookies.find { |c| c.name == cookie.keys.first }.inputs).to eq(cookie)
             end
         end
 
@@ -2474,7 +2495,7 @@ describe Arachni::Browser do
                 end
 
                 it 'uses its #cookie_jar' do
-                    expect(@browser.cookies).to be_empty
+                    expect(@browser.javascript_cookies).to be_empty
 
                     page = Arachni::Page.from_data(
                         url:        @url,
@@ -2489,7 +2510,7 @@ describe Arachni::Browser do
                     )
 
                     @browser.load( page )
-                    expect(@browser.cookies).to eq(page.cookie_jar)
+                    expect(@browser.javascript_cookies).to eq(page.cookie_jar)
                 end
 
                 it 'replays its DOM#transitions' do
@@ -2824,20 +2845,22 @@ describe Arachni::Browser do
         end
     end
 
-    describe '#cookies' do
-        it 'returns the browser cookies' do
+    describe '#javascript_cookies' do
+        it 'updates the global cookie-jar' do
             @browser.load @url
-            expect(@browser.cookies.size).to eq(1)
-            cookie = @browser.cookies.first
 
-            expect(cookie).to be_kind_of Arachni::Cookie
+            cookie = Arachni::HTTP::Client.cookies.find(&:http_only?)
+
             expect(cookie.name).to  eq('This name should be updated; and properly escaped')
             expect(cookie.value).to eq('This value should be updated; and properly escaped')
         end
 
-        it 'preserves the HttpOnly attribute' do
+        it 'returns cookies visible via JavaScript' do
             @browser.load @url
-            expect(@browser.cookies.first).to be_http_only
+
+            cookie = @browser.javascript_cookies.first
+            expect(cookie.name).to  eq 'cookie_name'
+            expect(cookie.value).to eq 'cookie value'
         end
 
         context 'when parsing v1 cookies' do
@@ -2847,32 +2870,54 @@ describe Arachni::Browser do
                 @browser.load @url
                 @browser.javascript.run( "document.cookie = '#{cookie}';" )
 
-                expect(@browser.cookies.first.value).to eq('06142010_0:e275d357943e9a2de0')
+                cookie = @browser.javascript_cookies.find { |c| c.name == 'rsession' }
+                expect(cookie.value).to eq('06142010_0:e275d357943e9a2de0')
             end
         end
 
         context 'when no page is available' do
             it 'returns an empty Array' do
-                expect(@browser.cookies).to be_empty
+                expect(@browser.javascript_cookies).to be_empty
             end
         end
     end
 
     describe '#snapshot_id' do
-        before(:each) { Arachni::Options.url = @url }
+        before(:each) do
+            Arachni::Options.url = @url
+
+            @empty_snapshot_id ||= @browser.load( empty_snapshot_id_url ).snapshot_id
+
+            @snapshot_id = @browser.load( url ).snapshot_id
+        end
 
         let(:empty_snapshot_id_url) { @url + '/snapshot_id/default' }
         let(:empty_snapshot_id) do
-            @browser.load( empty_snapshot_id_url ).snapshot_id
+            @empty_snapshot_id
         end
         let(:snapshot_id) do
-            @browser.load( url ).snapshot_id
+            @snapshot_id
         end
 
         let(:url) { @url + '/trigger_events' }
 
         it 'returns a DOM digest' do
             expect(snapshot_id).to eq(@browser.load( url ).snapshot_id)
+        end
+
+        context 'when there are new cookies' do
+            let(:url) { @url + '/each_element_with_events/set-cookie' }
+
+            it 'takes them into account' do
+                @browser.fire_event described_class::ElementLocator.new(
+                    tag_name: :button,
+                    attributes: {
+                        onclick: 'setCookie()'
+                    }
+                ), :click
+
+                expect(@browser.snapshot_id).not_to eq(snapshot_id)
+            end
         end
 
         context ':a' do
