@@ -13,7 +13,7 @@ class TaintTrace
 class EventTrigger
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class Result < ResourceExploration::Result
+class Result < DOMExploration::Result
 end
 
 end

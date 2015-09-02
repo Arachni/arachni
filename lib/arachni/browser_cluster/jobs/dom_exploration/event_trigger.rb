@@ -9,13 +9,13 @@
 module Arachni
 class BrowserCluster
 module Jobs
-class ResourceExploration
+class DOMExploration
 
 # Loads a {#resource} and {Browser#trigger_event triggers} the specified
 # {#event} on the given {#element element}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class EventTrigger < ResourceExploration
+class EventTrigger < DOMExploration
 
     require_relative 'event_trigger/result'
 

@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::BrowserCluster::Jobs::ResourceExploration::EventTrigger do
+describe Arachni::BrowserCluster::Jobs::DOMExploration::EventTrigger do
     before do
         @cluster = Arachni::BrowserCluster.new
 

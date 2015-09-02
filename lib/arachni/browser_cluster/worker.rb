@@ -84,7 +84,7 @@ class Worker < Arachni::Browser
 
         # ap '=' * 250
         # ap '=' * 250
-        # pre = $WATIR_REQ_COUNT
+        pre = $WATIR_REQ_COUNT
 
         time = Time.now
         begin

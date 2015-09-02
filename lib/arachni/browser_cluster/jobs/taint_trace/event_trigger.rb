@@ -12,7 +12,7 @@ module Jobs
 class TaintTrace
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class EventTrigger < ResourceExploration::EventTrigger
+class EventTrigger < DOMExploration::EventTrigger
 
     require_relative 'event_trigger/result'
 

@@ -163,7 +163,7 @@ module Browser
         #
         # Also, this job should never end so that all analysis operations
         # share the same state.
-        @browser_job ||= BrowserCluster::Jobs::ResourceExploration.new(
+        @browser_job ||= BrowserCluster::Jobs::DOMExploration.new(
             never_ending: true
         )
     end

@@ -9,20 +9,14 @@
 module Arachni
 class BrowserCluster
 module Jobs
-class ResourceExploration
+class DOMExploration
+class EventTrigger
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class Result < Job::Result
-
-    # @return [Page]
-    attr_accessor :page
-
-    def to_s
-        "#<#{self.class}:#{object_id} @job=#{@job} @page=#{@page}>"
-    end
-
+class Result < DOMExploration::Result
 end
 
+end
 end
 end
 end

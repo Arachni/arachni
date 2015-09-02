@@ -17,7 +17,7 @@ describe Arachni::BrowserCluster::Worker do
 
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
     let(:job) do
-        Arachni::BrowserCluster::Jobs::ResourceExploration.new(
+        Arachni::BrowserCluster::Jobs::DOMExploration.new(
             resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync )
         )
     end

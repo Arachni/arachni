@@ -183,15 +183,15 @@ class BrowserCluster
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.
     # @param    [Hash]  options
-    #   See {Jobs::ResourceExploration} accessors.
+    #   See {Jobs::DOMExploration} accessors.
     # @param    [Block]  block
     #   Callback to be passed the {Job::Result}.
     #
-    # @see Jobs::ResourceExploration
+    # @see Jobs::DOMExploration
     # @see #queue
     def explore( resource, options = {}, &block )
         queue(
-            Jobs::ResourceExploration.new( options.merge( resource: resource ) ),
+            Jobs::DOMExploration.new( options.merge( resource: resource ) ),
             &block
         )
     end

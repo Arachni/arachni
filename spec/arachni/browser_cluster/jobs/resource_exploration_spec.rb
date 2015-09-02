@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe Arachni::BrowserCluster::Jobs::ResourceExploration do
+describe Arachni::BrowserCluster::Jobs::DOMExploration do
     before { @cluster = Arachni::BrowserCluster.new }
 
     let(:url) do

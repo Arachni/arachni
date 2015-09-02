@@ -13,10 +13,10 @@ module Jobs
 # Loads a {#resource} and {Browser#trigger_events explores} its DOM.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class ResourceExploration < Job
+class DOMExploration < Job
 
-    require_relative 'resource_exploration/result'
-    require_relative 'resource_exploration/event_trigger'
+    require_relative 'dom_exploration/result'
+    require_relative 'dom_exploration/event_trigger'
 
     # @return [Page, String, HTTP::Response]
     #   Resource to explore, if given a `String` it will be treated it as a URL
