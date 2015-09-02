@@ -523,8 +523,15 @@ describe Arachni::Element::Cookie do
             expect(cookie.source).to eq(sc3)
         end
 
+        it 'can handle v1 values' do
+            expect(described_class.from_set_cookie(
+                'http://owner-url.com',
+                'cookie="blah stuff"'
+            ).first.value).to eq('blah stuff')
+        end
+
         context 'when there is no path' do
-            it 'reverts to \'/\'' do
+            it "'reverts to '/'" do
                 sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.foo.com; HttpOnly"
                 cookies = described_class.from_set_cookie( 'http://test.com/stuff', sc3 )
                 expect(cookies.size).to eq(1)
