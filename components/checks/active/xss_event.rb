@@ -10,8 +10,6 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.1.5
-#
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
@@ -48,7 +46,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             ";arachni_xss_in_element_event=#{random_seed}//",
             "\";arachni_xss_in_element_event=#{random_seed}//",
             "';arachni_xss_in_element_event=#{random_seed}//"
-        ].map { |s| [ "script:#{s}", s ] }.flatten
+        ].map { |s| [ " script:#{s}", " #{s}" ] }.flatten
     end
 
     def self.options
@@ -67,6 +65,8 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
         seed = element.seed.dup
 
         EVENT_ATTRS.each do |attribute|
+            next if !body.include?( attribute )
+
             doc.xpath( "//*[@#{attribute}]" ).each do |elem|
                 value = elem.attributes[attribute].to_s.downcase
                 seed  = seed.split( ':', 2 ).last
@@ -91,7 +91,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.5',
+            version:     '0.1.6',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in event tag of HTML element},
