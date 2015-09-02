@@ -344,8 +344,6 @@ class Browser
             @add_request_transitions = false
         end
 
-        @current_url = nil
-
         @last_url = Arachni::URI( url ).to_s
         self.class.add_asset_domain @last_url
 
@@ -425,7 +423,7 @@ class Browser
     # @return   [String]
     #   Current URL, as provided by the browser.
     def dom_url
-        @current_url ||= javascript.run( 'return document.URL;' )
+        javascript.run( 'return document.URL;' )
     end
 
     # Explores the browser's DOM tree and captures page snapshots for each
@@ -461,7 +459,7 @@ class Browser
     #   Element locator along with the element's applicable events along with
     #   their handlers and attributes.
     def each_element_with_events
-        current_url = url
+        current_url = self.url
 
         javascript.dom_elements_with_events.each do |element|
             tag_name   = element['tag_name']
@@ -768,8 +766,6 @@ class Browser
             print_debug_exception e
             nil
         end
-    ensure
-        @current_url = nil
     end
 
     # This is essentially the same thing as Watir::Element#fire_event
@@ -933,14 +929,12 @@ class Browser
         request_transitions = flush_request_transitions
         transitions = ([transition] + request_transitions).flatten.compact
 
-        cached_current_url = @current_url
         window_handles     = @selenium.window_handles
 
         begin
             window_handles.each do |handle|
                 if window_handles.size > 1
                     @selenium.switch_to.window( handle )
-                    @current_url = nil
                 end
 
                 next if !(page = to_page)
@@ -976,7 +970,6 @@ class Browser
             print_debug_exception e
         ensure
             @selenium.switch_to.default_content
-            @current_url ||= cached_current_url
         end
 
         pages
@@ -1531,8 +1524,18 @@ class Browser
             transition.complete
         end
 
-        if javascript.inject( response )
-            print_debug_level_2 'Injected custom JS.'
+        # If we abort the request because it's out of scope we need to emulate
+        # an OK response because we **do** want to be able to grab a page with
+        # the out of scope URL, even if it's empty.
+        # For example, unvalidated_redirect checks need this.
+        if response.code == 0
+            if enforce_scope? && response.scope.out?
+                response.code = 200
+            end
+        else
+            if javascript.inject( response )
+                print_debug_level_2 'Injected custom JS.'
+            end
         end
 
         # Don't store assets, the browsers will cache them accordingly.
@@ -1578,8 +1581,11 @@ class Browser
             return true
         end
 
-        if !request.scope.in_domain? &&
-            !self.class.asset_domains.include?( request.parsed_url.domain )
+        if !request.scope.in_domain?
+            if self.class.asset_domains.include?( request.parsed_url.domain )
+                print_debug_level_2 'Allow: Out of scope but in CDN list.'
+                return false
+            end
 
             print_debug_level_2 'Disallow: Domain out of scope and not in CDN list.'
             return true
