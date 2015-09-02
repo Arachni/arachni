@@ -235,7 +235,7 @@ class Transition
     end
 
     def dup
-        deep_clone
+        rpc_clone
     end
 
     # @return   [Hash]

@@ -84,7 +84,7 @@ class JSON < Base
     end
 
     def dup
-        super.tap { |e| e.inputs = @inputs.deep_clone }
+        super.tap { |e| e.inputs = @inputs.rpc_clone }
     end
 
     class <<self

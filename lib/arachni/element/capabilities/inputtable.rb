@@ -104,7 +104,7 @@ module Capabilities::Inputtable
     # Resets the inputs to their original format/values.
     def reset
         super if defined?( super )
-        self.inputs = @default_inputs.deep_clone
+        self.inputs = @default_inputs.rpc_clone
         self
     end
 

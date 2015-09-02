@@ -19,6 +19,20 @@ class Object
         Marshal.load( Marshal.dump( self ) )
     end
 
+    def rpc_clone
+        if self.class.respond_to?( :from_rpc_data )
+            self.class.from_rpc_data(
+                Arachni::RPC::Serializer.serializer.load(
+                    Arachni::RPC::Serializer.serializer.dump( to_rpc_data_or_self )
+                )
+            )
+        else
+            Arachni::RPC::Serializer.serializer.load(
+                Arachni::RPC::Serializer.serializer.dump( self )
+            )
+        end
+    end
+
     def to_rpc_data_or_self
         respond_to?( :to_rpc_data ) ? to_rpc_data : self
     end
