@@ -1001,7 +1001,11 @@ describe Arachni::Browser do
         context 'when the resource is out of scope' do
             it 'returns nil' do
                 Arachni::Options.url = @url
-                @browser.load 'http://google.com/'
+                @browser.load @url
+
+                subject.javascript.run( 'window.location = "http://google.com/";' )
+                sleep 1
+
                 expect(@browser.response).to be_nil
             end
         end
