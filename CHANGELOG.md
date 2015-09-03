@@ -2,6 +2,7 @@
 
 ## Under development
 
+- `URI` -- Optimized and re-written to completely bypass Ruby's `URI` lib.
 - `HTTP`
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
         written server with support for `keep-alive` and low-overhead SSL interception.
