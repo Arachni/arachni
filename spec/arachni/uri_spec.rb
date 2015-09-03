@@ -248,15 +248,28 @@ describe Arachni::URI do
 
     describe '.to_absolute' do
         it 'converts a relative path to absolute using the reference URL' do
-            abs  = 'http://test.com/blah/ha'
+            abs  = 'http://test.com/blah/ha?name=val#/!/stuff/?fname=fval'
+
             rel  = '/test'
+            described_class.to_absolute( rel, abs ).should == 'http://test.com/test'
+
+            rel  = '/test?name2=val2'
+            described_class.to_absolute( rel, abs ).should == 'http://test.com/test?name2=val2'
+
+            rel  = '?name2=val2'
+            described_class.to_absolute( rel, abs ).should == 'http://test.com/blah/ha?name2=val2'
+
             rel2 = 'test2'
-            described_class.to_absolute( rel, abs ).should == "http://test.com" + rel
-            described_class.to_absolute( rel2, abs ).should == "http://test.com/blah/" + rel2
-            described_class.to_absolute( rel2, abs + '/' ).should == "http://test.com/blah/ha/" + rel2
+            described_class.to_absolute( rel2, abs ).should == 'http://test.com/blah/test2'
+
+            abs  = 'http://test.com/blah/ha/?name=val#/!/stuff/?fname=fval'
+            described_class.to_absolute( rel2, abs ).should == 'http://test.com/blah/ha/test2'
 
             rel = '//domain-name.com/stuff'
-            described_class.to_absolute( rel, abs ).should == "http:" + rel
+            described_class.to_absolute( rel, abs ).should == 'http://domain-name.com/stuff'
+
+            rel = '//domain-name.com'
+            described_class.to_absolute( rel, abs ).should == 'http://domain-name.com/'
         end
     end
 

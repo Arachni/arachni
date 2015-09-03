@@ -444,7 +444,7 @@ class URI
             reference = self.class.new( reference.to_s )
         end
 
-        %w(scheme userinfo host port query).each do |part|
+        %w(scheme userinfo host port).each do |part|
             next if send( part )
 
             ref_part = reference.send( "#{part}" )
