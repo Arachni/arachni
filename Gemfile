@@ -20,6 +20,7 @@ group :spec do
 end
 
 group :prof do
+    gem 'benchmark-ips'
     gem 'stackprof'
     gem 'sys-proctable'
     gem 'ruby-mass'
