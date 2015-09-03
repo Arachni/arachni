@@ -295,8 +295,8 @@ class URI
         # @return   [String]
         #   Absolute URL (frozen).
         def to_absolute( relative, reference = Options.instance.url.to_s )
-            return reference if !relative || relative.empty?
-            key = relative + ' :: ' + reference
+            return normalize( reference ) if !relative || relative.empty?
+            key = [relative, reference].hash
 
             cache = CACHE[__method__]
             begin

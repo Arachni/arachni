@@ -250,6 +250,8 @@ describe Arachni::URI do
         it 'converts a relative path to absolute using the reference URL' do
             abs  = 'http://test.com/blah/ha?name=val#/!/stuff/?fname=fval'
 
+            described_class.to_absolute( '', abs ).should == 'http://test.com/blah/ha?name=val'
+
             rel  = '/test'
             described_class.to_absolute( rel, abs ).should == 'http://test.com/test'
 
