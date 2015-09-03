@@ -9,7 +9,9 @@
 require 'rubygems'
 require 'bundler/setup'
 
-require 'oj_mimic_json'
+if RUBY_PLATFORM != 'java'
+    require 'oj_mimic_json'
+end
 
 def ap( obj )
     super obj, raw: true

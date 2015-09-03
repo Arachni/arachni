@@ -64,6 +64,10 @@ Gem::Specification.new do |s|
         s.add_dependency 'msgpack-jruby', '1.4.0'
     else
         s.add_dependency 'msgpack',       '0.5.8'
+
+        # Optimized JSON.
+        s.add_dependency 'oj',                '~> 2.12.9'
+        s.add_dependency 'oj_mimic_json'
     end
 
     # RPC client/server implementation.
@@ -80,10 +84,6 @@ Gem::Specification.new do |s|
 
     # Printing complex objects.
     s.add_dependency 'awesome_print',     '~> 1.2.0'
-
-    # Optimized JSON.
-    s.add_dependency 'oj',                '~> 2.12.9'
-    s.add_dependency 'oj_mimic_json'
 
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',       '0.5.1'
