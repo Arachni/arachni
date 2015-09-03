@@ -21,16 +21,13 @@ module Arachni
     end
 
 # The URI class automatically normalizes the URLs it is passed to parse
-# while maintaining compatibility with Ruby's URI core class by delegating
-# missing methods to it -- thus, you can treat it like a Ruby URI and enjoy some
-# extra perks along the way.
+# while maintaining compatibility with Ruby's URI core class.
 #
 # It also provides *cached* (to maintain a low latency) helper class methods to
 # ease common operations such as:
 #
 # * {.normalize Normalization}.
-# * Parsing to {.parse Arachni::URI} (see also {.URI}), {.ruby_parse ::URI} or
-#   {.fast_parse Hash} objects.
+# * Parsing to {.parse Arachni::URI} (see also {.URI}) or {.fast_parse Hash} objects.
 # * Conversion to {.to_absolute absolute URLs}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
@@ -51,7 +48,6 @@ class URI
 
     CACHE_SIZES = {
         parse:       1000,
-        ruby_parse:  1000,
         fast_parse:  1000,
         encode:      1000,
         decode:      1000,
@@ -119,39 +115,6 @@ class URI
         # @note This method's results are cached for performance reasons.
         #   If you plan on doing something destructive with its return value
         #   duplicate it first because there may be references to it elsewhere.
-        #
-        # {.normalize Normalizes} `url` and uses Ruby's core URI lib to parse it.
-        #
-        # @param    [String]    url
-        #   URL to parse
-        #
-        # @return   [URI]
-        def ruby_parse( url )
-            return url if url.to_s.empty? || url.is_a?( ::URI )
-            return if url.downcase.start_with? 'javascript:'
-
-            CACHE[__method__][url] ||= begin
-                ::URI::Generic.build( fast_parse( url ) )
-            rescue
-                begin
-                    parser.parse( normalize( url ).dup )
-                rescue => e
-                    print_debug "Failed to parse '#{url}'."
-                    print_debug "Error: #{e}"
-                    print_debug_backtrace( e )
-                    nil
-                end
-            end
-        end
-
-        # @note This method's results are cached for performance reasons.
-        #   If you plan on doing something destructive with its return value
-        #   duplicate it first because there may be references to it elsewhere.
-        #
-        # @note The Hash is suitable for passing to `::URI::Generic.build` -- if
-        #   however you plan on doing that you'll be better off just using
-        #   {.ruby_parse} which does the same thing and caches the results for some
-        #   extra schnell.
         #
         # Performs a parse that is less resource intensive than Ruby's URI lib's
         # method while normalizing the URL (will also discard the fragment and

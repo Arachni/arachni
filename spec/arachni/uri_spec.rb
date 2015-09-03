@@ -206,28 +206,6 @@ describe Arachni::URI do
         end
     end
 
-    # describe '.ruby_parse' do
-    #     it 'cleans the URL' do
-    #         @urls.each do |url|
-    #             described_class.ruby_parse( url ).to_s.should == @ref_normalizer.call( url )
-    #         end
-    #     end
-    #
-    #     it 'ignores javascript: URLs' do
-    #         described_class.ruby_parse( 'javascript:stuff()' ).should be_nil
-    #         described_class.ruby_parse( 'jAvaScRipT:stuff()' ).should be_nil
-    #     end
-    #
-    #     context 'when an error occurs' do
-    #         it 'returns nil' do
-    #             described_class.stub(:fast_parse){ raise }
-    #             described_class.stub(:normalize){ raise }
-    #
-    #             described_class.ruby_parse( 'http://test.com/222' ).should be_nil
-    #         end
-    #     end
-    # end
-
     describe '.fast_parse' do
         it 'parses a URI and return its components as a hash' do
             scheme   = 'http'
