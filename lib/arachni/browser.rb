@@ -1307,8 +1307,23 @@ class Browser
         end
 
         url = "#{url}/set-cookies-#{request_token}"
+
+        body = ''
+        if Arachni::Options::browser_cluster.local_storage.any?
+            body = <<EOJS
+                <script>
+                    var data = #{Arachni::Options::browser_cluster.local_storage.to_json};
+
+                    for( prop in data ) {
+                        localStorage.setItem( prop, data[prop] );
+                    }
+                </script>
+EOJS
+        end
+
         watir.goto preload( HTTP::Response.new(
             url:     url,
+            body:    body,
             headers: {
                 'Set-Cookie' => set_cookies.values.map(&:to_set_cookie)
             }

@@ -2,6 +2,10 @@
 
 ## Under development
 
+- `UI`
+    - `CLI`
+        - Options
+            - `--browser-cluster-local-storage` -- Sets `localStorage` data from JSON file.
 - `Issue`
     - `#variations` -- Removed, all issues now include full data.
     - `#unique_id`, `#digest` -- In cases of passive issues, the associated
@@ -28,6 +32,7 @@
                 process and the "taint" terminology was overloaded by the browser's
                 taint tracing subsystems.
 - `Browser`
+    - Sets `localStorage` data from `Arachni::OptionGroups::BrowserCluster#local_storage`.
     - `Javascript`
         - `TaintTracer`
             - Updated sanitization of traced `Event` arguments to extract only
