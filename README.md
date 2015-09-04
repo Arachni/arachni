@@ -227,6 +227,7 @@ Configuration options include:
  - Ability to disable loading images.
  - Adjustable screen width and height.
      - Can be used to analyze responsive and mobile applications.
+ - Ability to wait until certain elements appear in the page.
 
 ### Coverage
 
