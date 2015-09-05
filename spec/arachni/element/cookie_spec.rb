@@ -273,7 +273,7 @@ describe Arachni::Element::Cookie do
                 end
             end
 
-            ['+', ';', '%', "\0", '&', '"'].each do |character|
+            ['+', ';', '%', "\0", '&', '"', "\n", "\r"].each do |character|
                 it "encodes '#{character}'" do
                     expect(described_class.encode( character )).to eq("%#{character.unpack('H*')[0]}".upcase)
                 end
@@ -291,7 +291,7 @@ describe Arachni::Element::Cookie do
                 end
             end
 
-            ['=', '+', ';', '%', "\0", '&', '"'].each do |character|
+            ['=', '+', ';', '%', "\0", '&', '"', "\n", "\r"].each do |character|
                 it "encodes '#{character}'" do
                     expect(described_class.encode( character, true )).to eq("%#{character.unpack('H*')[0]}".upcase)
                 end

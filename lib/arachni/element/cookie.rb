@@ -35,7 +35,7 @@ class Cookie < Base
     include Capabilities::Inputtable
     include Capabilities::Mutable
 
-    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", '&', ' ', '"']
+    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", '&', ' ', '"', "\n", "\r"]
     ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
 
     ENCODE_CHARACTERS_IN_NAME      = ENCODE_CHARACTERS + ['=']
