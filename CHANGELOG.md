@@ -49,8 +49,9 @@
             `Element::Input::DOM` elements.
     - Plugins
         - `proxy` -- Fixed bug causing the plugin to hang after proxy server shutdown.
-        - `login_script` -- Updated to wait for the page to settle when using
-            a JS login script.
+        - `login_script`
+            - Wait for the page to settle when using a JS login script.
+            - Catch script syntax errors.
     - Checks
         - Active
             - Removed

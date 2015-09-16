@@ -217,6 +217,63 @@ EOSCRIPT
         context 'when using Javascript' do
             let(:script) do
                 <<EOSCRIPT
+                doesNotExist()
+EOSCRIPT
+            end
+            let(:script_path) { "#{super()}.js" }
+
+            it 'sets the status' do
+                run
+
+                expect(actual_results['status']).to  eq('error')
+            end
+
+            it 'sets the message' do
+                run
+
+                expect(actual_results['message']).to eq(plugin::STATUSES[:error])
+            end
+
+            it 'aborts the scan' do
+                run
+
+                expect(framework.status).to eq(:aborted)
+            end
+        end
+    end
+
+    context 'when there is a syntax error in the script' do
+        context 'when using Ruby' do
+            let(:script) do
+                <<EOSCRIPT
+                    {
+                        id: => stuff
+                    }
+EOSCRIPT
+            end
+
+            it 'sets the status' do
+                run
+
+                expect(actual_results['status']).to  eq('error')
+            end
+
+            it 'sets the message' do
+                run
+
+                expect(actual_results['message']).to eq(plugin::STATUSES[:error])
+            end
+
+            it 'aborts the scan' do
+                run
+
+                expect(framework.status).to eq(:aborted)
+            end
+        end
+
+        context 'when using Javascript' do
+            let(:script) do
+                <<EOSCRIPT
                 document.cookie = '
 EOSCRIPT
             end
