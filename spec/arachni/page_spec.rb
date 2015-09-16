@@ -937,7 +937,7 @@ describe Arachni::Page do
 
             data = {
                 url:  'http://test/',
-                body: 'test',
+                body: 'http://test/1 http://test/2',
                 paths: [ 'http://test/1', 'http://test/2' ],
                 links: [Arachni::Element::Link.new( elem_opts )],
                 forms: [Arachni::Element::Form.new( elem_opts )],
