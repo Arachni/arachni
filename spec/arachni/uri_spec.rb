@@ -244,6 +244,10 @@ describe Arachni::URI do
         it 'ignores javascript: URLs' do
             described_class.fast_parse( 'javascript:stuff()' ).should be_nil
         end
+
+        it 'ignores fragment-only URLs' do
+            described_class.fast_parse( '#stuff' ).should be_nil
+        end
     end
 
     describe '.to_absolute' do

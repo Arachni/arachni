@@ -133,7 +133,8 @@ class URI
         #     * `:query`
         def fast_parse( url )
             return if !url || url.empty?
-            return if url.downcase.start_with? 'javascript:'
+            return if url.downcase.start_with?( 'javascript:' ) ||
+                url.start_with?( '#' )
 
             cache = CACHE[__method__]
 
@@ -267,13 +268,13 @@ class URI
                 components.values.each(&:freeze)
 
                 cache[c_url] = components.freeze
-            rescue => ex
-                ap ex
-                ap ex.backtrace
+            rescue => e
+                ap e
+                ap e.backtrace
 
                 print_debug "Failed to parse '#{c_url}'."
-                print_debug "Error: #{ex}"
-                print_debug_backtrace( ex )
+                print_debug "Error: #{e}"
+                print_debug_backtrace( e )
 
                 cache[c_url] = :err
                 nil
@@ -696,7 +697,7 @@ class URI
             end
         end
 
-        s << @path
+        s << @path.to_s
 
         if @query
             s << '?'
