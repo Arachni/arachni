@@ -278,7 +278,7 @@ class Session
         http.get( Options.session.check_url, http_options ) do |response|
             bool = !!response.body.match( Options.session.check_pattern )
 
-            print_debug "Login check done: #{bool}"
+            print_debug "Login check done: #{bool}\n#{response}"
             block.call( bool ) if block
         end
 
