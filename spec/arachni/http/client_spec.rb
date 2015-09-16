@@ -61,8 +61,7 @@ describe Arachni::HTTP::Client do
                     expect(code).to eq(401)
 
                     url = Arachni::Utilities.uri_parse( "#{@opts.url}auth/simple-chars" )
-                    url.user = 'username'
-                    url.password = 'password'
+                    url.userinfo = 'username:password'
                     @opts.url = url.to_s
 
                     body = nil
