@@ -474,7 +474,8 @@ class Browser
                         if href.downcase.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
-                            next if skip_path?( to_absolute( href, current_url ) )
+                            absolute = to_absolute( href, current_url )
+                            next if absolute && skip_path?( absolute )
                         end
                     end
 
@@ -490,7 +491,8 @@ class Browser
                         if action.downcase.start_with?( 'javascript:' )
                             events << [ :submit, action ]
                         else
-                            next if skip_path?( to_absolute( action, current_url ) )
+                            absolute = to_absolute( action, current_url )
+                            next if absolute && skip_path?( absolute )
                         end
                     end
             end
@@ -560,7 +562,7 @@ class Browser
                             events << [ :click, href ]
                         else
                             absolute = to_absolute( href, current_url )
-                            next if skip_path?( absolute )
+                            next if absolute && skip_path?( absolute )
 
                             events << [ :click, href ]
                         end
@@ -581,9 +583,9 @@ class Browser
                             events << [ :submit, action ]
                         else
                             absolute = to_absolute( action, current_url )
-                            if !skip_path?( absolute )
-                                events << [ :submit, absolute ]
-                            end
+                            next if absolute && skip_path?( absolute )
+
+                            events << [ :submit, absolute ]
                         end
                     else
                         events << [ :submit, current_url ]
