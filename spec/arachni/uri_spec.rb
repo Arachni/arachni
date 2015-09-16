@@ -246,13 +246,20 @@ describe Arachni::URI do
         end
 
         it 'ignores fragment-only URLs' do
-            described_class.fast_parse( '#stuff' ).should be_nil
+            described_class.fast_parse( '#/stuff/here?blah=1' ).should be_nil
         end
     end
 
     describe '.to_absolute' do
+        let(:reference) do
+            'http://test.com/blah/ha?name=val#/!/stuff/?fname=fval'
+        end
+        let(:sanitized_reference) do
+            'http://test.com/blah/ha?name=val'
+        end
+
         it 'converts a relative path to absolute using the reference URL' do
-            abs  = 'http://test.com/blah/ha?name=val#/!/stuff/?fname=fval'
+            abs  = reference
 
             described_class.to_absolute( '', abs ).should == 'http://test.com/blah/ha?name=val'
 
@@ -276,6 +283,20 @@ describe Arachni::URI do
 
             rel = '//domain-name.com'
             described_class.to_absolute( rel, abs ).should == 'http://domain-name.com/'
+        end
+
+        context 'when the URL starts with javascript:' do
+            it 'returns the sanitized reference URL' do
+                rel = 'javascript:stuff()'
+                described_class.to_absolute( rel, reference ).should == sanitized_reference
+            end
+        end
+
+        context 'when the URL only has fragment data' do
+            it 'returns the sanitized reference URL' do
+                rel = '#/stuff/here?blah=1'
+                described_class.to_absolute( rel, reference ).should == sanitized_reference
+            end
         end
     end
 

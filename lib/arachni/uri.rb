@@ -316,7 +316,13 @@ class URI
                     relative = "#{parsed_ref.scheme}:#{relative}"
                 end
 
-                cache[key] = parse( relative ).to_absolute( parsed_ref ).to_s.freeze
+                parsed = parse( relative )
+
+                # Doesn't contain anything or interest (javascript: or fragment only),
+                # return the ref.
+                return parsed_ref.to_s if !parsed
+
+                cache[key] = parsed.to_absolute( parsed_ref ).to_s.freeze
             rescue
                 cache[key] = :err
                 nil

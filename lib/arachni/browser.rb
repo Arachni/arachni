@@ -474,8 +474,7 @@ class Browser
                         if href.downcase.start_with?( 'javascript:' )
                             events << [ :click, href ]
                         else
-                            absolute = to_absolute( href, current_url )
-                            next if absolute && skip_path?( absolute )
+                            next if skip_path?( to_absolute( href, current_url ) )
                         end
                     end
 
@@ -491,8 +490,7 @@ class Browser
                         if action.downcase.start_with?( 'javascript:' )
                             events << [ :submit, action ]
                         else
-                            absolute = to_absolute( action, current_url )
-                            next if absolute && skip_path?( absolute )
+                            next if skip_path?( to_absolute( action, current_url ) )
                         end
                     end
             end
@@ -532,7 +530,6 @@ class Browser
         @elements_with_events[current_url]
     end
 
-
     # @return   [String]
     #   Snapshot ID used to determine whether or not a page snapshot has already
     #   been seen.
@@ -562,7 +559,7 @@ class Browser
                             events << [ :click, href ]
                         else
                             absolute = to_absolute( href, current_url )
-                            next if absolute && skip_path?( absolute )
+                            next if skip_path?( absolute )
 
                             events << [ :click, href ]
                         end
@@ -583,9 +580,9 @@ class Browser
                             events << [ :submit, action ]
                         else
                             absolute = to_absolute( action, current_url )
-                            next if absolute && skip_path?( absolute )
-
-                            events << [ :submit, absolute ]
+                            if !skip_path?( absolute )
+                                events << [ :submit, absolute ]
+                            end
                         end
                     else
                         events << [ :submit, current_url ]
