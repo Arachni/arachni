@@ -137,13 +137,14 @@ class URI
 
             cache = CACHE[__method__]
 
-            # One for reference.
-            c_url = url
             # One to rip apart.
-            url   = url.dup
+            url = url.dup
 
             # Remove the fragment if there is one.
             url.sub!( /#.*/, '' )
+
+            # One for reference.
+            c_url = url
 
             components = {
                 scheme:   nil,
