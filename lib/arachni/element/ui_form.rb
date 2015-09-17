@@ -6,6 +6,8 @@
     web site for more information on licensing and terms of use.
 =end
 
+require_relative 'base'
+
 module Arachni::Element
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
