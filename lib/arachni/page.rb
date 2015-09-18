@@ -275,7 +275,7 @@ class Page
         @has_javascript = nil
         clear_cache
 
-        @body = string.to_s.dup.freeze
+        @body = string.to_s.dup.recode.freeze
     end
 
     ELEMENTS.each do |type|
