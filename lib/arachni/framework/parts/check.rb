@@ -80,6 +80,7 @@ module Check
             @checks.run_one( check, page )
         rescue => e
             print_error "Error in #{check.to_s}: #{e.to_s}"
+            print_error "Page: #{page.dom.url}"
             print_error_backtrace e
             false
         end
