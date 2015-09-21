@@ -199,6 +199,50 @@ describe Arachni::URI::Scope do
                 expect(subject.exclude?).to be_falsey
             end
         end
+
+        context 'when #exclude_extension?' do
+            context 'is true' do
+                before do
+                    expect(subject).to receive(:exclude_extension?).and_return( true )
+                end
+
+                it 'returns true' do
+                    expect(subject.exclude?).to be_truthy
+                end
+            end
+        end
+
+        context 'when #exclude_extension?' do
+            context 'is false' do
+                before do
+                    expect(subject).to receive(:exclude_extension?).and_return( false )
+                end
+
+                it 'returns false' do
+                    expect(subject.exclude?).to be_falsey
+                end
+            end
+        end
+    end
+
+    describe '#exclude_extension?' do
+        subject { Arachni::URI.parse( 'http://test.com/exclude.gif' ).scope }
+
+        context 'when self matches the provided exclude rules' do
+            it 'returns true' do
+                scope.exclude_extensions = [ 'gif' ]
+
+                expect(subject.exclude?).to be_truthy
+            end
+        end
+
+        context 'when self does not match the provided exclude rules' do
+            it 'returns false' do
+                scope.exclude_extensions = [ 'gi' ]
+
+                expect(subject.exclude?).to be_falsey
+            end
+        end
     end
 
     describe '#include?' do

@@ -76,6 +76,12 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.exclude_path_patterns << pattern
         end
 
+        on( '--scope-exclude-extensions EXTENSION,EXTENSION2,..',
+            'Exclude resources with the specified extensions.'
+        ) do |extensions|
+            options.scope.exclude_extensions = extensions.split(',')
+        end
+
         on( '--scope-exclude-content-pattern PATTERN', Regexp,
                'Exclude pages whose content matches PATTERN.',
                '(Can be used multiple times.)'

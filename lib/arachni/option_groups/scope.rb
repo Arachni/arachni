@@ -81,6 +81,13 @@ class Scope < Arachni::OptionGroup
     # @see URI::Scope#include?
     attr_accessor :include_path_patterns
 
+    # @return    [Array<String>]
+    #   Extension exclusion patterns, resources whose extension is in the list
+    #   will not be considered.
+    #
+    # @see URI::Scope#exclude_extension?
+    attr_accessor :exclude_extensions
+
     # @return    [Array<Regexp>]
     #   Path exclusion patterns, resources that match any of the specified
     #   patterns will not be considered.
@@ -132,6 +139,7 @@ class Scope < Arachni::OptionGroup
     set_defaults(
         redundant_path_patterns:  {},
         dom_depth_limit:          5,
+        exclude_extensions:       Set.new,
         exclude_path_patterns:    [],
         exclude_content_patterns: [],
         include_path_patterns:    [],
@@ -149,6 +157,18 @@ class Scope < Arachni::OptionGroup
                 Regexp.new( regexp.to_s, Regexp::IGNORECASE )
             h.merge!( regexp => value )
             h
+        end
+    end
+
+    def exclude_extensions=( ext )
+        return @exclude_extensions = defaults[:exclude_extensions].dup if !ext
+
+        if ext.is_a? Set
+            @exclude_extensions = ext
+        else
+            @exclude_extensions = Set.new(
+                [ext].flatten.compact.map { |s| s.to_s.downcase }
+            )
         end
     end
 
@@ -223,6 +243,8 @@ class Scope < Arachni::OptionGroup
 
     def to_rpc_data
         d = super
+
+        d['exclude_extensions'] = d['exclude_extensions'].to_a
 
         %w(redundant_path_patterns url_rewrites).each do |k|
             d[k] = d[k].inject({}) { |h, (k2, v)| h.merge k2.source => v }
