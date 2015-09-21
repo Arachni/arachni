@@ -144,7 +144,9 @@ class Scope < Arachni::OptionGroup
         return @url_rewrites = defaults[:url_rewrites].dup if !rules
 
         @url_rewrites = rules.inject({}) do |h, (regexp, value)|
-            regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+            regexp = regexp.is_a?( Regexp ) ?
+                regexp :
+                Regexp.new( regexp.to_s, Regexp::IGNORECASE )
             h.merge!( regexp => value )
             h
         end
@@ -162,7 +164,9 @@ class Scope < Arachni::OptionGroup
     [ :exclude_content_patterns, :include_path_patterns, :exclude_path_patterns ].each do |m|
         define_method( "#{m}=".to_sym ) do |arg|
             arg = [arg].flatten.compact.
-                map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+                map { |s| s.is_a?( Regexp ) ?
+                s :
+                Regexp.new( s.to_s, Regexp::IGNORECASE ) }
             instance_variable_set( "@#{m}".to_sym, arg )
         end
     end
@@ -209,7 +213,9 @@ class Scope < Arachni::OptionGroup
 
         @redundant_path_patterns =
              filters.inject({}) do |h, (regexp, counter)|
-                 regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+                 regexp = regexp.is_a?( Regexp ) ?
+                     regexp :
+                     Regexp.new( regexp.to_s, Regexp::IGNORECASE )
                  h.merge!( regexp => Integer( counter ) )
                  h
              end
@@ -219,11 +225,11 @@ class Scope < Arachni::OptionGroup
         d = super
 
         %w(redundant_path_patterns url_rewrites).each do |k|
-            d[k] = d[k].my_stringify
+            d[k] = d[k].inject({}) { |h, (k2, v)| h.merge k2.source => v }
         end
 
         %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|
-            d[k] = d[k].map(&:to_s)
+            d[k] = d[k].map(&:source)
         end
 
         d

@@ -16,7 +16,7 @@ describe Arachni::OptionGroups::Input do
             }
 
             expect(subject.values).to eq({
-                /article/ => 'my article'
+                /article/i => 'my article'
             })
         end
     end
@@ -28,7 +28,7 @@ describe Arachni::OptionGroups::Input do
             }
 
             expect(subject.default_values).to eq({
-                /article/ => 'my article'
+                /article/i => 'my article'
             })
         end
     end
@@ -41,7 +41,7 @@ describe Arachni::OptionGroups::Input do
 
     describe '#effective_values' do
         it 'merges the #default_values with the configured #values' do
-            subject.values = { /some stuff/ => '2' }
+            subject.values = { /some stuff/i => '2' }
             expect(subject.effective_values).to eq(
                 subject.default_values.merge( subject.values )
             )
@@ -63,8 +63,8 @@ describe Arachni::OptionGroups::Input do
         it 'updates #values from the given file' do
             subject.update_values_from_file( file )
             expect(subject.values).to eq({
-                /test/       => 'blah',
-                /other-test/ => 'blah2'
+                /test/        => 'blah',
+                /other-test/i => 'blah2'
             })
         end
     end
@@ -193,12 +193,12 @@ describe Arachni::OptionGroups::Input do
             values = { /article/ => 'my article' }
             subject.values = values
 
-            expect(data['values']).to eq({ /article/.to_s => 'my article' })
+            expect(data['values']).to eq({ 'article' => 'my article' })
         end
 
         it "converts 'default_values' to strings" do
             expect(data['default_values'].keys).to eq(
-                subject.default_values.keys.map(&:to_s)
+                subject.default_values.keys.map(&:source)
             )
         end
     end

@@ -137,7 +137,9 @@ class Input < Arachni::OptionGroup
         return if !values
 
         values.inject({}) do |h, (regexp, value)|
-            regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+            regexp = regexp.is_a?( Regexp ) ?
+                regexp :
+                Regexp.new( regexp.to_s, Regexp::IGNORECASE )
             h.merge!( regexp => value )
             h
         end
@@ -147,7 +149,8 @@ class Input < Arachni::OptionGroup
         h = super
         [:values, :default_values].each do |k|
             # We can't have blocks in there...
-            h[k] = h[k].select{ |_, v| v.is_a? String }.my_stringify
+            h[k] = h[k].select{ |_, v| v.is_a? String }.
+                inject({}) { |h2, (k2, v)| h2.merge k2.source => v }
         end
         h
     end

@@ -63,7 +63,9 @@ class BrowserCluster < Arachni::OptionGroup
         return @wait_for_elements = defaults[:wait_for_elements].dup if !rules
 
         @wait_for_elements = rules.inject({}) do |h, (regexp, value)|
-            regexp = regexp.is_a?( Regexp ) ? regexp : Regexp.new( regexp.to_s )
+            regexp = regexp.is_a?( Regexp ) ?
+                regexp :
+                Regexp.new( regexp.to_s, Regexp::IGNORECASE )
             h.merge!( regexp => value )
             h
         end
@@ -72,8 +74,8 @@ class BrowserCluster < Arachni::OptionGroup
     def to_rpc_data
         d = super
 
-        %w(wait_for_elements).each do |k|
-            d[k] = d[k].my_stringify
+        d['wait_for_elements'].dup.each do |k, v|
+            d['wait_for_elements'][k.source] = d['wait_for_elements'].delete(k)
         end
 
         d

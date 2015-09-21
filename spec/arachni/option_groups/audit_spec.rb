@@ -15,10 +15,10 @@ describe Arachni::OptionGroups::Audit do
             templates = %w(/param\/(?<param>\w+)/ /param2\/(?<param2>\w+)/)
 
             subject.link_templates = templates.first
-            expect(subject.link_templates).to eq([Regexp.new( templates.first )])
+            expect(subject.link_templates).to eq([Regexp.new( templates.first, Regexp::IGNORECASE )])
 
             subject.link_templates = templates
-            expect(subject.link_templates).to eq(templates.map { |p| Regexp.new( p ) })
+            expect(subject.link_templates).to eq(templates.map { |p| Regexp.new( p, Regexp::IGNORECASE ) })
         end
 
         context 'when given nil' do
@@ -93,14 +93,14 @@ describe Arachni::OptionGroups::Audit do
     describe '#exclude_vector_patterns=' do
         it 'converts the argument to a flat array of Regexp' do
             subject.exclude_vector_patterns = [ [:test], 'string' ]
-            expect(subject.exclude_vector_patterns).to eq([/test/, /string/])
+            expect(subject.exclude_vector_patterns).to eq([/test/i, /string/i])
         end
     end
 
     describe '#include_vector_patterns=' do
         it 'converts the argument to a flat array of Regexp' do
             subject.include_vector_patterns = [ [:test], 'string' ]
-            expect(subject.include_vector_patterns).to eq([/test/, /string/])
+            expect(subject.include_vector_patterns).to eq([/test/i, /string/i])
         end
     end
 
@@ -324,7 +324,7 @@ describe Arachni::OptionGroups::Audit do
 
         it "converts 'link_templates' to strings" do
             subject.link_templates << /param\/(?<param>\w+)/
-            expect(data['link_templates']).to eq(subject.link_templates.map(&:to_s))
+            expect(data['link_templates']).to eq(subject.link_templates.map(&:source))
         end
     end
 end

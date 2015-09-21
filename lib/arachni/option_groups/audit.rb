@@ -181,7 +181,9 @@ class Audit < Arachni::OptionGroup
         return @link_templates = [] if !templates
 
         @link_templates = [templates].flatten.compact.map do |s|
-            template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
+            template = s.is_a?( Regexp ) ?
+                s :
+                Regexp.new( s.to_s, Regexp::IGNORECASE )
 
             if template.names.empty?
                 fail Error::InvalidLinkTemplate,
@@ -196,7 +198,9 @@ class Audit < Arachni::OptionGroup
     %w(include_vector_patterns exclude_vector_patterns).each do |m|
         define_method "#{m}=" do |patterns|
             patterns = [patterns].flatten.compact.
-                map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+                map { |s| s.is_a?( Regexp ) ?
+                s :
+                Regexp.new( s.to_s, Regexp::IGNORECASE ) }
 
             instance_variable_set "@#{m}".to_sym, patterns
         end
@@ -295,7 +299,7 @@ class Audit < Arachni::OptionGroup
     def to_h
         h = super
         [:link_templates, :include_vector_patterns, :exclude_vector_patterns].each do |k|
-            h[k] = h[k].map(&:to_s)
+            h[k] = h[k].map(&:source)
         end
         h
     end

@@ -36,16 +36,9 @@ describe Arachni::RPC::Server::ActiveOptions do
             h = @instance.options.to_h
 
             expect(h['url'].to_s).to eq(@utils.normalize_url( opts['url'] ))
-            expect(h['scope']['exclude_path_patterns']).to eq(
-                opts['scope']['exclude_path_patterns'].map { |s| Regexp.new(s).to_s }
-            )
-            expect(h['scope']['include_path_patterns']).to eq(
-                opts['scope']['include_path_patterns'].map { |s| Regexp.new(s).to_s }
-            )
-            expect(h['scope']['redundant_path_patterns']).to eq(
-                opts['scope']['redundant_path_patterns'].
-                    inject({}) { |hh, (k, v)| hh[Regexp.new(k).to_s] = v.to_s; hh }
-            )
+            expect(h['scope']['exclude_path_patterns']).to eq( opts['scope']['exclude_path_patterns'] )
+            expect(h['scope']['include_path_patterns']).to eq( opts['scope']['include_path_patterns'] )
+            expect(h['scope']['redundant_path_patterns']).to eq( opts['scope']['redundant_path_patterns'] )
 
             expect(h['datastore']).to eq(opts['datastore'])
 
