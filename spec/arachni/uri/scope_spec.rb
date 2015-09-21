@@ -200,10 +200,10 @@ describe Arachni::URI::Scope do
             end
         end
 
-        context 'when #exclude_file_extensions?' do
+        context 'when #exclude_file_extension?' do
             context 'is true' do
                 before do
-                    expect(subject).to receive(:exclude_file_extensions?).and_return( true )
+                    expect(subject).to receive(:exclude_file_extension?).and_return( true )
                 end
 
                 it 'returns true' do
@@ -212,10 +212,10 @@ describe Arachni::URI::Scope do
             end
         end
 
-        context 'when #exclude_file_extensions?' do
+        context 'when #exclude_file_extension?' do
             context 'is false' do
                 before do
-                    expect(subject).to receive(:exclude_file_extensions?).and_return( false )
+                    expect(subject).to receive(:exclude_file_extension?).and_return( false )
                 end
 
                 it 'returns false' do
@@ -225,7 +225,7 @@ describe Arachni::URI::Scope do
         end
     end
 
-    describe '#exclude_file_extensions?' do
+    describe '#exclude_file_extension?' do
         subject { Arachni::URI.parse( 'http://test.com/exclude.gif' ).scope }
 
         context 'when self matches the provided exclude rules' do

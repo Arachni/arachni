@@ -85,7 +85,7 @@ class Scope < Arachni::OptionGroup
     #   Extension exclusion patterns, resources whose extension is in the list
     #   will not be considered.
     #
-    # @see URI::Scope#exclude_file_extensions?
+    # @see URI::Scope#exclude_file_extension?
     attr_accessor :exclude_file_extensions
 
     # @return    [Array<Regexp>]
