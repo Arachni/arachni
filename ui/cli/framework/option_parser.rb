@@ -76,10 +76,10 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.exclude_path_patterns << pattern
         end
 
-        on( '--scope-exclude-extensions EXTENSION,EXTENSION2,..',
+        on( '--scope-exclude-file-extensions EXTENSION,EXTENSION2,..',
             'Exclude resources with the specified extensions.'
         ) do |extensions|
-            options.scope.exclude_extensions = extensions.split(',')
+            options.scope.exclude_file_extensions = extensions.split(',')
         end
 
         on( '--scope-exclude-content-pattern PATTERN', Regexp,

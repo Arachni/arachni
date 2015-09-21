@@ -5,7 +5,7 @@
 - Options
     - Added
         - Scope
-            - `--scope-exclude-extensions` -- CSV of file extensions to exclude.
+            - `--scope-exclude-file-extensions` -- CSV of file extensions to exclude.
 - `URI` -- Optimized and re-written to completely bypass Ruby's `URI` lib.
 - `HTTP`
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom

@@ -7,7 +7,7 @@ describe Arachni::OptionGroups::Scope do
     %w(directory_depth_limit dom_depth_limit page_limit restrict_paths extend_paths
         redundant_path_patterns auto_redundant_paths include_path_patterns
         exclude_path_patterns exclude_content_patterns include_subdomains https_only
-        url_rewrites exclude_binaries exclude_extensions
+        url_rewrites exclude_binaries exclude_file_extensions
     ).each do |method|
         it { is_expected.to respond_to method }
         it { is_expected.to respond_to "#{method}=" }
@@ -177,15 +177,15 @@ describe Arachni::OptionGroups::Scope do
         end
     end
 
-    describe '#exclude_extensions=' do
+    describe '#exclude_file_extensions=' do
         it 'converts its param to an array of strings' do
             exclude_extensions = %w(my_extend_paths my_other_extend_paths)
 
-            subject.exclude_extensions = exclude_extensions.first
-            expect(subject.exclude_extensions).to eq(Set.new([exclude_extensions.first]))
+            subject.exclude_file_extensions = exclude_extensions.first
+            expect(subject.exclude_file_extensions).to eq(Set.new([exclude_extensions.first]))
 
-            subject.exclude_extensions = exclude_extensions
-            expect(subject.exclude_extensions).to eq(Set.new(exclude_extensions))
+            subject.exclude_file_extensions = exclude_extensions
+            expect(subject.exclude_file_extensions).to eq(Set.new(exclude_extensions))
         end
     end
 
@@ -234,10 +234,10 @@ describe Arachni::OptionGroups::Scope do
             expect(data['url_rewrites']).to eq({ 'url_rewrites' => 'test' })
         end
 
-        it "converts 'exclude_extensions' to Array of string" do
-            subject.exclude_extensions = Set.new( ['stuff'] )
+        it "converts 'exclude_file_extensions' to Array of string" do
+            subject.exclude_file_extensions = Set.new( ['stuff'] )
 
-            expect(data['exclude_extensions']).to eq(['stuff'])
+            expect(data['exclude_file_extensions']).to eq(['stuff'])
         end
 
         %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|

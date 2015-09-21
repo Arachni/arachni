@@ -43,17 +43,17 @@ class Scope < Arachni::Scope
     # @see OptionGroups::Scope#exclude_path_patterns
     # @see #exclude_extension?
     def exclude?
-        exclude_extension? ||
+        exclude_file_extensions? ||
             !!options.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
     end
 
     # @return   [Bool]
-    #   `true` if the resource extension is in {OptionGroups::Scope#exclude_extensions},
+    #   `true` if the resource extension is in {OptionGroups::Scope#@exclude_file_extensions},
     #   `false` otherwise.
     #
-    # @see OptionGroups::Scope#exclude_extensions
-    def exclude_extension?
-        options.exclude_extensions.include? @url.resource_extension.to_s.downcase
+    # @see OptionGroups::Scope#@exclude_file_extensions
+    def exclude_file_extensions?
+        options.exclude_file_extensions.include? @url.resource_extension.to_s.downcase
     end
 
     # @return   [Bool]
