@@ -218,9 +218,14 @@ class Connection < Arachni::Reactor::Connection
 
         # ap data
         @parser << data
+    rescue ::HTTP::Parser::Error => e
+        close e
+
+    # TODO: While in dev only of course.
     rescue => e
         ap e
         ap e.backtrace
+        close e
     end
 
     def start_interceptor( origin_host )
