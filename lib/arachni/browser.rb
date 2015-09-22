@@ -70,9 +70,7 @@ class Browser
     # Let the browser take as long as it needs to complete an operation.
     WATIR_COM_TIMEOUT = 3600 # 1 hour.
 
-    ASSET_EXTENSIONS = Set.new(
-        ['css', 'js', 'jpg', 'jpeg', 'png', 'gif', 'woff', 'json']
-    )
+    ASSET_EXTENSIONS = Set.new(%w( css js jpg jpeg png gif json ))
 
     INPUT_EVENTS          = Set.new([
         :change, :blur, :focus, :select, :keyup, :keypress, :keydown, :input
