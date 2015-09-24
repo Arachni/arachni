@@ -129,9 +129,8 @@ class Link < Base
                 href = to_absolute( link['href'], base_url )
                 next if !href
 
-                if (parsed_url = Arachni::URI( href ))
-                    next if parsed_url.scope.out?
-                end
+                next if !(parsed_url = Arachni::URI( href )) ||
+                    parsed_url.scope.out?
 
                 new(
                     url:    url.freeze,
