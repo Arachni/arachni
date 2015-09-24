@@ -92,7 +92,8 @@ module Mutable
             inputs.keys.each do |input|
                 next if field_type_for( input ) != :select
 
-                node.xpath( "select[@name=\"#{input}\"]" ).css('option').each do |option|
+                escape = "'#{input.split( "'" ).join( "', \"'\", '" )}', ''"
+                node.xpath( "select[@name=concat(#{escape})]" ).css('option').each do |option|
                     try_input do
                         elem = self.dup
                         elem.mutation_with_original_values
