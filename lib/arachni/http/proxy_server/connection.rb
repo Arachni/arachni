@@ -154,7 +154,7 @@ class Connection < Arachni::Reactor::Connection
 
         headers.each do |k, v|
             if v.is_a?( Array )
-                v.each do |h|
+                v.flatten.each do |h|
                     res << "#{k}: #{h.gsub(/[\n\r]/, '')}\r\n"
                 end
 
