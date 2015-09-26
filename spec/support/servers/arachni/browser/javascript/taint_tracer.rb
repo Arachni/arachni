@@ -30,6 +30,46 @@ get '/angular-route.js' do
     IO.read "#{JS_LIB}/angular-route.js"
 end
 
+get '/data_trace/taint_depth/4' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function process( data ) {}
+            process(
+                {
+                    d2: [
+                        '#{params[:taint]}'
+                    ],
+                }
+            );
+        </script>
+    <head>
+</html>
+HTML
+end
+
+get '/data_trace/taint_depth/5' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function process( data ) {}
+            process(
+                {
+                    d2: [
+                        d4: {
+                            '#{params[:taint]}'
+                        }
+                    ],
+                }
+            );
+        </script>
+    <head>
+</html>
+HTML
+end
+
 get '/data_trace/XMLHttpRequest.open' do
     <<HTML
 <html>
