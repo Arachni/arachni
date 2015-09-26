@@ -37,6 +37,7 @@
         - `TaintTracer`
             - Updated sanitization of traced `Event` arguments to extract only
                 certain properties instead of iterating through the whole object.
+            - Limited the depth of the recursive taint search in argument objects.
 - `Components`
     - Path extractors
         - `comments`
