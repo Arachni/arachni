@@ -224,6 +224,25 @@ shared_examples_for 'auditable' do
             end
         end
 
+        context 'when the response is out of scope' do
+            it 'ignores it' do
+                called = nil
+
+                allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:out?).and_return(true)
+                allow_any_instance_of(Arachni::Page::Scope).to receive(:out?).and_return(true)
+
+                auditable.audit( 'stuff',
+                                 format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
+                                 skip_original: true
+                ) do |_, element|
+                    called = true
+                end
+
+                run
+                expect(called).to be_falsey
+            end
+        end
+
         context 'when the payloads is' do
             context 'String' do
                 it 'injects the given payload' do

@@ -35,6 +35,41 @@ describe Arachni::HTTP::Client do
         expect(YAML.load( body )).to eq({ 'stuff' => "=stuf \00 here==" })
     end
 
+    describe '#reset_options' do
+        it 'resets #max_concurrency' do
+            Arachni::Options.http.request_concurrency = 10
+            subject.max_concurrency = 1
+
+            subject.reset_options
+            expect(subject.max_concurrency).to eq 10
+        end
+
+        it 'resets User-Agent headers' do
+            Arachni::Options.http.user_agent = 'Stuff'
+            subject.headers['User-Agent'] = 'Other stuff'
+
+            subject.reset_options
+            expect(subject.headers['User-Agent']).to eq 'Stuff'
+        end
+
+        it 'resets custom headers' do
+            Arachni::Options.http.request_headers = {
+                'X-Stuff' => '1'
+            }
+            subject.headers['X-Stuff'] = '2'
+
+            subject.reset_options
+            expect(subject.headers['X-Stuff']).to eq '1'
+        end
+
+        it 'clears custom headers' do
+            subject.headers['X-Stuff'] = '2'
+
+            subject.reset_options
+            expect(subject.headers).to_not include 'X-Stuff'
+        end
+    end
+
     describe '#statistics' do
         let(:statistics) { subject.statistics }
 

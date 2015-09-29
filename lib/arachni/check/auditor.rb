@@ -303,6 +303,11 @@ module Auditor
             page = self.page
         end
 
+        # Don't check the page scope, the check may have exceeded the DOM depth
+        # limit but the check is allowed to do that, only check for an out of
+        # scope response.
+        return if page.response.scope.out?
+
         msg = "In #{vector.type}"
 
         active = vector.respond_to?( :affected_input_name ) && vector.affected_input_name

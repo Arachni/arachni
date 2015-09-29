@@ -665,6 +665,15 @@ describe Arachni::Check::Auditor do
     end
 
     describe '#log' do
+        let(:issue_data) do
+            d = super()
+
+            d[:page].response.url = @opts.url
+            d.merge( page: d[:page] )
+
+            d
+        end
+
         it 'preserves the given remarks' do
             auditor.log( issue_data )
 
@@ -703,6 +712,26 @@ describe Arachni::Check::Auditor do
                 expect(issue.page.body).to eq(auditor.page.body)
                 expect(issue.response).to eq(auditor.page.response)
                 expect(issue.request).to eq(auditor.page.request)
+            end
+        end
+
+        context 'when the resource is out of scope' do
+            let(:issue_data) do
+                d = super()
+
+                d[:page].response.url = 'http://stuff/'
+                d.merge( page: d[:page] )
+
+                d
+            end
+
+            it 'returns ni' do
+                expect(auditor.log( issue_data )).to be_nil
+            end
+
+            it 'does not log the issue' do
+                auditor.log( issue_data )
+                expect(issues).to be_empty
             end
         end
     end

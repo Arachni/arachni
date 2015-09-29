@@ -236,6 +236,9 @@ module Auditable
     #   Block to be used for analysis of the response.
     def submit_and_process( options = {}, &block )
         submit( options ) do |response|
+            # In case of redirection or runtime scope changes.
+            next if response.scope.out?
+
             element = response.request.performer
             if !element.audit_options[:silent]
                 print_status "Analyzing response ##{response.request.id} for " <<

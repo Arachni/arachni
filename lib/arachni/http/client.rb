@@ -123,6 +123,19 @@ class Client
         reset
     end
 
+    def reset_options
+        @original_max_concurrency = Options.http.request_concurrency || MAX_CONCURRENCY
+        self.max_concurrency      = @original_max_concurrency
+
+        headers.clear
+        headers.merge!(
+            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent' => Options.http.user_agent
+        )
+        headers['From'] = Options.authorized_by if Options.authorized_by
+        headers.merge!( Options.http.request_headers )
+    end
+
     # @return   [Arachni::HTTP]
     #   Reset `self`.
     def reset( hooks_too = true )
@@ -134,20 +147,19 @@ class Client
 
         client_initialize
 
-        headers.merge!(
-            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent' => Options.http.user_agent
-        )
-        headers['From'] = Options.authorized_by if Options.authorized_by
-        headers.merge!( Options.http.request_headers )
+        reset_options
 
-        cookie_jar.load( Options.http.cookie_jar_filepath ) if Options.http.cookie_jar_filepath
+        if Options.http.cookie_jar_filepath
+            cookie_jar.load( Options.http.cookie_jar_filepath )
+        end
 
         Options.http.cookies.each do |name, value|
             update_cookies( name => value )
         end
 
-        update_cookies( Options.http.cookie_string ) if Options.http.cookie_string
+        if Options.http.cookie_string
+            update_cookies( Options.http.cookie_string )
+        end
 
         reset_burst_info
 
@@ -588,11 +600,7 @@ class Client
     end
 
     def client_initialize
-        @original_max_concurrency = Options.http.request_concurrency || MAX_CONCURRENCY
-
-        @hydra = Typhoeus::Hydra.new(
-            max_concurrency: @original_max_concurrency
-        )
+        @hydra = Typhoeus::Hydra.new
     end
 
     def client_run
