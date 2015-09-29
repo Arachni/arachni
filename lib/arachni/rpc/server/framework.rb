@@ -129,6 +129,8 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Hash<String=>Integer>]
     def sitemap_entries( from_index = 0 )
+        return {} if sitemap.size <= from_index + 1
+
         Hash[sitemap.to_a[from_index..-1] || {}]
     end
 
