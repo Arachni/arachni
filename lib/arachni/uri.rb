@@ -202,7 +202,7 @@ class URI
                                 host = splits.first
 
                                 if splits.last && !splits.last.empty?
-                                    components[:port] = Integer( splits.last )
+                                    components[:port] = splits.last.to_i
                                 end
 
                                 if components[:port] == 80
@@ -271,6 +271,8 @@ class URI
             rescue => e
                 ap e
                 ap e.backtrace
+                ap c_url
+                ap url
 
                 print_debug "Failed to parse '#{c_url}'."
                 print_debug "Error: #{e}"
