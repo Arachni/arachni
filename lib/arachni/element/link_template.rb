@@ -100,11 +100,13 @@ class LinkTemplate < Base
 
     def to_rpc_data
         data = super
+        data.delete 'dom_data'
+
         return data if !@template
 
         data.merge!( 'template' => @template.source )
         data['initialization_options']['template'] = data['template']
-        data.delete 'dom_data'
+
         data
     end
 
