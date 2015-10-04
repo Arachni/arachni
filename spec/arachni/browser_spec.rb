@@ -1682,7 +1682,7 @@ describe Arachni::Browser do
                         string[0...-1] : string
                 end
 
-                context event do
+                context event.to_s do
                     let( :url ) { "#{@url}/fire_event/input/#{event}" }
 
                     context 'when option' do
