@@ -28,4 +28,4 @@ end
 
 gemspec
 
-gem 'arachni-reactor', path: '../arachni-reactor/'
+gem 'arachni-reactor', github: 'arachni/arachni-reactor', branch: 'slice-to-byteslice'
