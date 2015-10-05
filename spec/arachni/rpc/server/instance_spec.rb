@@ -107,7 +107,7 @@ describe 'Arachni::RPC::Server::Instance' do
     describe '#suspended?' do
         context 'when the scan has not been suspended' do
             it 'returns false' do
-                expect(@shared_instance.service).not_to be_suspended
+                expect(@shared_instance.service.suspended?).to be_falsey
             end
         end
 
@@ -131,7 +131,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     sleep 1 while @instance.service.status != :suspended
                 end
 
-                expect(@instance.service).to be_suspended
+                expect(@instance.service.suspended?).to be_truthy
             end
         end
     end
@@ -626,7 +626,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         end
 
                         expect(stats1.size).to eq(2)
-                        expect(stats1).to eq(stats2)
+                        expect(stats1.to_s).to eq(stats2.to_s)
                     end
                 end
 
@@ -769,7 +769,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         end
 
                         expect(stats1.size).to eq(2)
-                        expect(stats1).to eq(stats2)
+                        expect(stats1.to_s).to eq(stats2.to_s)
                     end
                 end
 
@@ -798,7 +798,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 expect(instance.service.shutdown).to be_truthy
                 sleep 4
 
-                expect { instance.service.alive? }.to raise_error
+                expect { instance.service.alive? }.to raise_error Arachni::RPC::Exceptions::ConnectionError
             end
         end
     end
