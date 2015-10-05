@@ -104,6 +104,10 @@ class Manager < Hash
     def initialize( lib, namespace )
         @lib       = lib
         @namespace = namespace
+
+        @helper_check_cache = {}
+        @name_to_path_cache = {}
+        @path_to_name_cache = {}
     end
 
     # Loads components.
@@ -302,9 +306,13 @@ class Manager < Hash
     def delete( name )
         name = name.to_s
         begin
-            @namespace.send( :remove_const, fetch( name ).to_s.split( ':' ).last.to_sym )
+            @namespace.send(
+                :remove_const,
+                fetch( name ).to_s.split( ':' ).last.to_sym
+            )
         rescue
         end
+
         super( name )
     end
     alias :unload :delete
@@ -312,7 +320,7 @@ class Manager < Hash
     # @return    [Array]
     #   Names of available components.
     def available
-        paths.map{ |path| path_to_name( path ) }
+        paths.map { |path| path_to_name( path ) }
     end
 
     # @return    [Array]
@@ -329,8 +337,8 @@ class Manager < Hash
     # @return   [String]
     #   Path to component file.
     def name_to_path( name )
-        paths.each { |path| return path if name.to_s == path_to_name( path ) }
-        nil
+        @name_to_path_cache[name] ||=
+            paths.find { |path| name.to_s == path_to_name( path ) }
     end
 
     # Converts the path of a component to a component name.
@@ -341,13 +349,15 @@ class Manager < Hash
     # @return   [String]
     #   Component name.
     def path_to_name( path )
-        File.basename( path, '.rb' )
+        @path_to_name_cache[path] ||= File.basename( path, '.rb' )
     end
 
     # @return   [Array]
     #   Paths of all available components (excluding helper files).
     def paths
-        Dir.glob( File.join( "#{@lib}**", "*.rb" ) ).reject{ |path| helper?( path ) }
+        @paths_cache ||=
+            Dir.glob( File.join( "#{@lib}**", "*.rb" ) ).
+                reject{ |path| helper?( path ) }
     end
 
     private
@@ -393,7 +403,7 @@ class Manager < Hash
     end
 
     def helper?( path )
-        File.exist?( File.dirname( path ) + '.rb' )
+        @helper_check_cache[path] ||= File.exist?( File.dirname( path ) + '.rb' )
     end
 
 end

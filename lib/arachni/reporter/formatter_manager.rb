@@ -12,7 +12,9 @@ module Reporter
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class FormatterManager < Component::Manager
     def paths
-        Dir.glob( File.join( "#{@lib}", '*.rb' ) ).reject { |path| helper?( path ) }
+        @paths_cache ||=
+            Dir.glob( File.join( "#{@lib}", '*.rb' ) ).
+                reject { |path| helper?( path ) }
     end
 end
 
