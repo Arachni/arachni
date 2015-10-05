@@ -33,19 +33,19 @@ class Base
 
     class <<self
         def fullname
-            info[:name]
+            @fullname ||= info[:name]
         end
 
         def description
-            info[:description]
+            @description ||= info[:description]
         end
 
         def author
-            info[:author]
+            @author ||= info[:author]
         end
 
         def version
-            info[:version]
+            @version ||= info[:version]
         end
 
         def shortname=( shortname )
