@@ -1353,7 +1353,8 @@ class Browser
             end
         end
 
-        return if set_cookies.empty?
+        return if set_cookies.empty? &&
+            Arachni::Options::browser_cluster.local_storage.empty?
 
         set_cookie = set_cookies.values.map(&:to_set_cookie)
         print_debug_level_2 "Setting cookies: #{set_cookie}"
