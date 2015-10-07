@@ -7,10 +7,28 @@ describe Arachni::Element::Form do
             </form>'
 
     it_should_behave_like 'element'
-    it_should_behave_like 'with_node', html
+    it_should_behave_like 'with_node'
     it_should_behave_like 'with_dom',  html
     it_should_behave_like 'refreshable'
+    it_should_behave_like 'with_source'
+    it_should_behave_like 'with_auditor'
+
+    it_should_behave_like 'submittable'
+    it_should_behave_like 'inputtable'
+    it_should_behave_like 'mutable'
     it_should_behave_like 'auditable'
+
+    before :each do
+        @framework ||= Arachni::Framework.new
+        @auditor     = Auditor.new( Arachni::Page.from_url( url ), @framework )
+    end
+
+    after :each do
+        @framework.reset
+        reset_options
+    end
+
+    let(:auditor) { @auditor }
 
     def auditable_extract_parameters( resource )
         YAML.load( resource.body )
@@ -39,29 +57,29 @@ describe Arachni::Element::Form do
     end
 
     it 'assigned to Arachni::Form for easy access' do
-        Arachni::Form.should == described_class
+        expect(Arachni::Form).to eq(described_class)
     end
 
     describe '#initialize' do
         describe :method do
             it 'defaults to :get' do
-                described_class.new( url: url ).method.should == :get
+                expect(described_class.new( url: url ).method).to eq(:get)
             end
         end
         describe :name do
             it 'sets #name' do
-                described_class.new( url: url, name: 'john' ).name.should == 'john'
+                expect(described_class.new( url: url, name: 'john' ).name).to eq('john')
             end
         end
         describe :action do
             it 'sets #action' do
                 action = "#{url}stuff"
-                described_class.new( url: url, action: action ).action.should == action
+                expect(described_class.new( url: url, action: action ).action).to eq(action)
             end
 
             context 'when nil' do
                 it 'defaults to :url' do
-                    described_class.new( url: url ).action.should == url
+                    expect(described_class.new( url: url ).action).to eq(url)
                 end
             end
         end
@@ -69,26 +87,26 @@ describe Arachni::Element::Form do
 
     describe '#mutation_with_original_values?' do
         it 'returns false' do
-            subject.mutation_with_original_values?.should be_false
+            expect(subject.mutation_with_original_values?).to be_falsey
         end
 
         context 'when #mutation_with_original_values' do
             it 'returns true' do
                 subject.mutation_with_original_values
-                subject.mutation_with_original_values?.should be_true
+                expect(subject.mutation_with_original_values?).to be_truthy
             end
         end
     end
 
     describe '#mutation_with_sample_values?' do
         it 'returns false' do
-            subject.mutation_with_sample_values?.should be_false
+            expect(subject.mutation_with_sample_values?).to be_falsey
         end
 
         context 'when #mutation_with_sample_values' do
             it 'returns true' do
                 subject.mutation_with_sample_values
-                subject.mutation_with_sample_values?.should be_true
+                expect(subject.mutation_with_sample_values?).to be_truthy
             end
         end
     end
@@ -97,7 +115,7 @@ describe Arachni::Element::Form do
         context 'when #force_train?' do
             it 'returns #mutation_id' do
                 subject.mutation_with_original_values
-                subject.audit_id( 'stuff' ).should == subject.id
+                expect(subject.audit_id( 'stuff' )).to eq(subject.id)
             end
         end
     end
@@ -114,7 +132,7 @@ describe Arachni::Element::Form do
                 subject.audit( 'stuff', each_mutation: each_mutation ) {}
                 subject.http.run
 
-                had_mutation_with_original_values.should be_false
+                expect(had_mutation_with_original_values).to be_falsey
             end
 
             it 'ignores mutation_with_sample_values' do
@@ -127,7 +145,7 @@ describe Arachni::Element::Form do
                 subject.audit( 'stuff', each_mutation: each_mutation ) {}
                 subject.http.run
 
-                had_mutation_with_sample_values.should be_false
+                expect(had_mutation_with_sample_values).to be_falsey
             end
         end
     end
@@ -135,8 +153,8 @@ describe Arachni::Element::Form do
     describe '#name_or_id' do
         context 'when a #name is available' do
             it 'returns it' do
-                described_class.new( url: url, name: 'john' ).
-                    name_or_id.should == 'john'
+                expect(described_class.new( url: url, name: 'john' ).
+                    name_or_id).to eq('john')
             end
         end
 
@@ -144,8 +162,8 @@ describe Arachni::Element::Form do
             subject { described_class.new( url: url, id: 'john' ) }
 
             it 'returns the configured :id' do
-                subject.name.should be_nil
-                subject.name_or_id.should == 'john'
+                expect(subject.name).to be_nil
+                expect(subject.name_or_id).to eq('john')
             end
         end
 
@@ -153,7 +171,7 @@ describe Arachni::Element::Form do
             subject { described_class.new( url: url ) }
 
             it 'returns nil' do
-                subject.name_or_id.should be_nil
+                expect(subject.name_or_id).to be_nil
             end
         end
     end
@@ -162,33 +180,33 @@ describe Arachni::Element::Form do
         context 'when there are no #inputs' do
             it 'returns nil' do
                 subject.inputs = {}
-                subject.dom.should be_nil
+                expect(subject.dom).to be_nil
             end
         end
 
         context 'when there is no #node' do
             it 'returns nil' do
                 subject.source = nil
-                subject.dom.should be_nil
+                expect(subject.dom).to be_nil
             end
         end
     end
 
     describe '#force_train?' do
         it 'returns false' do
-            subject.force_train?.should be_false
+            expect(subject.force_train?).to be_falsey
         end
 
         context 'when #mutation_with_original_values?' do
             it 'returns true' do
                 subject.mutation_with_original_values
-                subject.force_train?.should be_true
+                expect(subject.force_train?).to be_truthy
             end
         end
         context 'when #mutation_with_sample_values?' do
             it 'returns true' do
                 subject.mutation_with_sample_values
-                subject.force_train?.should be_true
+                expect(subject.force_train?).to be_truthy
             end
         end
     end
@@ -221,11 +239,11 @@ describe Arachni::Element::Form do
                 let(:method) { :get }
 
                 it 'removes the URL query' do
-                    subject.action.should == url
+                    expect(subject.action).to eq(url)
                 end
 
                 it 'merges the URL query parameters with the given :inputs' do
-                    subject.inputs.should == query_inputs.merge( option_inputs )
+                    expect(subject.inputs).to eq(query_inputs.merge( option_inputs ))
                 end
 
                 context 'when URL query parameters and :inputs have the same name' do
@@ -237,7 +255,7 @@ describe Arachni::Element::Form do
                     end
 
                     it 'it gives precedence to the :inputs' do
-                        subject.inputs.should == query_inputs.merge( option_inputs )
+                        expect(subject.inputs).to eq(query_inputs.merge( option_inputs ))
                     end
                 end
             end
@@ -246,11 +264,11 @@ describe Arachni::Element::Form do
                 let(:method) { :post }
 
                 it 'preserves the URL query' do
-                    subject.action.should == action
+                    expect(subject.action).to eq(action)
                 end
 
                 it 'ignores the URL query parameters' do
-                    subject.inputs.should == option_inputs
+                    expect(subject.inputs).to eq(option_inputs)
                 end
             end
         end
@@ -270,13 +288,14 @@ describe Arachni::Element::Form do
                     }
                 }
 
-                described_class.new( options ).details_for( :password ).should ==
+                expect(described_class.new( options ).details_for( :password )).to eq(
                     options[:inputs]['password']
+                )
             end
         end
         describe 'when no data is available' do
             it 'return nil' do
-                described_class.new( options ).details_for( :username ).should == {}
+                expect(described_class.new( options ).details_for( :username )).to eq({})
             end
         end
     end
@@ -284,12 +303,12 @@ describe Arachni::Element::Form do
     describe '#name' do
         context 'when there is a form name' do
             it 'returns it' do
-                described_class.new( options ).name.should == options[:name]
+                expect(described_class.new( options ).name).to eq(options[:name])
             end
         end
         describe 'when no data is available' do
             it 'return nil' do
-                described_class.new( url: options[:url] ).name.should be_nil
+                expect(described_class.new( url: options[:url] ).name).to be_nil
             end
         end
     end
@@ -314,8 +333,8 @@ describe Arachni::Element::Form do
             }
 
             e = described_class.new( options )
-            e.field_type_for( 'password' ).should     == :password
-            e.field_type_for( 'hidden_field' ).should == :hidden
+            expect(e.field_type_for( 'password' )).to     eq(:password)
+            expect(e.field_type_for( 'hidden_field' )).to eq(:hidden)
         end
     end
 
@@ -333,8 +352,8 @@ describe Arachni::Element::Form do
                         </body>
                     </html>'
 
-                described_class.from_document( url, html ).
-                    first.requires_password?.should be_true
+                expect(described_class.from_document( url, html ).
+                    first.requires_password?).to be_truthy
             end
         end
         context 'when the form does not have a password field' do
@@ -349,8 +368,8 @@ describe Arachni::Element::Form do
                         </body>
                     </html>'
 
-                described_class.from_document( url, html ).
-                    first.requires_password?.should be_false
+                expect(described_class.from_document( url, html ).
+                    first.requires_password?).to be_falsey
             end
         end
     end
@@ -370,16 +389,16 @@ describe Arachni::Element::Form do
                     has_sample   ||= false
 
                     e.mutations( 'seed' ).each do |m|
-                        m.url.should    == e.url
-                        m.action.should == e.action
+                        expect(m.url).to    eq(e.url)
+                        expect(m.action).to eq(e.action)
 
                         if m.mutation_with_original_values?
-                            m.inputs.should  == e.inputs
+                            expect(m.inputs).to  eq(e.inputs)
                             has_original ||= true
                         end
                     end
 
-                    has_original.should be_true
+                    expect(has_original).to be_truthy
                 end
             end
         end
@@ -399,17 +418,17 @@ describe Arachni::Element::Form do
                     has_sample   ||= false
 
                     e.mutations( 'seed' ).each do |m|
-                        m.url.should    == e.url
-                        m.action.should == e.action
+                        expect(m.url).to    eq(e.url)
+                        expect(m.action).to eq(e.action)
 
                         if m.mutation_with_sample_values?
-                            m.affected_input_name.should == described_class::SAMPLE_VALUES
-                            m.inputs.should == Arachni::Options.input.fill( e.inputs )
+                            expect(m.affected_input_name).to eq(described_class::SAMPLE_VALUES)
+                            expect(m.inputs).to eq(Arachni::Options.input.fill( e.inputs ))
                             has_sample ||= true
                         end
                     end
 
-                    has_sample.should be_true
+                    expect(has_sample).to be_truthy
                 end
             end
         end
@@ -427,14 +446,14 @@ describe Arachni::Element::Form do
             e.mutations( 'seed' ).each do |m|
                 next if m.mutation_with_original_values? || m.mutation_with_sample_values?
 
-                m.url.should == e.url
-                m.action.should == e.action
+                expect(m.url).to eq(e.url)
+                expect(m.action).to eq(e.action)
 
-                m.inputs.should_not == e.inputs
+                expect(m.inputs).not_to eq(e.inputs)
                 checked = true
             end
 
-            checked.should be_true
+            expect(checked).to be_truthy
         end
 
         it 'sets #affected_input_name to the name of the fuzzed input' do
@@ -448,16 +467,16 @@ describe Arachni::Element::Form do
             e.mutations( 'seed' ).each do |m|
                 next if m.mutation_with_original_values? || m.mutation_with_sample_values?
 
-                m.url.should == e.url
-                m.action.should == e.action
+                expect(m.url).to eq(e.url)
+                expect(m.action).to eq(e.action)
 
-                m.affected_input_name.should_not == e.affected_input_name
-                m.inputs[m.affected_input_name].should include 'seed'
+                expect(m.affected_input_name).not_to eq(e.affected_input_name)
+                expect(m.inputs[m.affected_input_name]).to include 'seed'
 
                 checked = true
             end
 
-            checked.should be_true
+            expect(checked).to be_truthy
         end
 
         context 'when it contains more than 1 password field' do
@@ -471,9 +490,9 @@ describe Arachni::Element::Form do
 
                 e = described_class.from_document( 'http://test.com', form ).first
 
-                e.mutations( 'seed' ).select do |m|
+                expect(e.mutations( 'seed' ).select do |m|
                     m.inputs['my_pass'] == m.inputs['my_pass_validation']
-                end.should be_any
+                end).to be_any
             end
         end
 
@@ -506,10 +525,10 @@ describe Arachni::Element::Form do
                 numbers       = mutations.map { |f| f['numbers'] }
 
                 include = %w(volvo Saab mercedes audi)
-                (manufacturers & include).should == include
+                expect(manufacturers & include).to eq(include)
 
                 include = %w(33 22)
-                (numbers & include).should == include
+                expect(numbers & include).to eq(include)
             end
         end
 
@@ -517,7 +536,7 @@ describe Arachni::Element::Form do
             it 'does not add mutations with original nor default values' do
                 e = described_class.new( options )
                 mutations = e.mutations( @seed, skip_original: true )
-                mutations.select { |m| m.mutation? }.size.should == 10
+                expect(mutations.select { |m| m.mutation? }.size).to eq(10)
             end
         end
     end
@@ -526,7 +545,7 @@ describe Arachni::Element::Form do
         it 'sets the name of the input holding the nonce' do
             f = described_class.new( url: url, inputs: { nonce: 'value' } )
             f.nonce_name = 'nonce'
-            f.nonce_name.should == 'nonce'
+            expect(f.nonce_name).to eq('nonce')
         end
 
         context 'when there is no input called nonce_name' do
@@ -548,13 +567,13 @@ describe Arachni::Element::Form do
             it 'returns true' do
                 f = described_class.new( url: url, inputs: { nonce: 'value' } )
                 f.nonce_name = 'nonce'
-                f.has_nonce?.should be_true
+                expect(f.has_nonce?).to be_truthy
             end
         end
         context 'when the form does not have a nonce' do
             it 'returns false' do
                 f = described_class.new( url: url, inputs: { nonce: 'value' } )
-                f.has_nonce?.should be_false
+                expect(f.has_nonce?).to be_falsey
             end
         end
     end
@@ -573,7 +592,7 @@ describe Arachni::Element::Form do
 
                 f.submit { |res| body = res.body }
                 http.run
-                body_should.should == body
+                expect(body_should).to eq(body)
             end
         end
         context 'when method is get' do
@@ -589,7 +608,7 @@ describe Arachni::Element::Form do
 
                 f.submit.on_complete { |res| body = res.body }
                 http.run
-                body_should.should == body
+                expect(body_should).to eq(body)
             end
         end
         context 'when the form has a nonce' do
@@ -612,20 +631,20 @@ describe Arachni::Element::Form do
 
                 subject.submit { |res| body = res.body }
                 http.run
-                body.should_not == subject.default_inputs['nonce']
-                body.to_i.should > 0
+                expect(body).not_to eq(subject.default_inputs['nonce'])
+                expect(body.to_i).to be > 0
             end
 
             context 'and it could not refresh it' do
                 it 'submits it anyway' do
                     body = nil
 
-                    subject.stub(:refresh) { nil }
+                    allow(subject).to receive(:refresh) { nil }
                     subject.submit { |res| body = res.body }
                     http.run
 
-                    body.should_not == subject.default_inputs['nonce']
-                    body.to_i.should > 0
+                    expect(body).not_to eq(subject.default_inputs['nonce'])
+                    expect(body.to_i).to be > 0
                 end
             end
         end
@@ -635,7 +654,7 @@ describe Arachni::Element::Form do
         it 'returns a simplified version of the form attributes and inputs as a Hash' do
             f = described_class.new( options )
             f.update 'user' => 'blah'
-            f.simple.should == {
+            expect(f.simple).to eq({
                 url:    options[:url],
                 action: options[:url],
                 name:   'login-form',
@@ -645,20 +664,20 @@ describe Arachni::Element::Form do
                     'password'     => 's3cr3t'
                 },
                 source: html
-            }
+            })
         end
     end
 
     describe '#type' do
         it 'is "form"' do
-            described_class.new( options ).type.should == :form
+            expect(described_class.new( options ).type).to eq(:form)
         end
     end
 
     describe '.from_document' do
         context 'when the response does not contain any forms' do
             it 'returns an empty array' do
-                described_class.from_document( '', '' ).should be_empty
+                expect(described_class.from_document( '', '' )).to be_empty
             end
         end
 
@@ -682,8 +701,8 @@ EOHTML
                 Arachni::Options.scope.exclude_path_patterns = [/exclude/]
 
                 forms = described_class.from_document( url, form_html )
-                forms.size.should == 1
-                forms.first.action.should == utilities.normalize_url( url + '/form_action' )
+                expect(forms.size).to eq(1)
+                expect(forms.first.action).to eq(utilities.normalize_url( url + '/form_action' ))
             end
 
             context 'when ignore_scope is set' do
@@ -691,7 +710,7 @@ EOHTML
                     Arachni::Options.scope.exclude_path_patterns = [/exclude/]
 
                     forms = described_class.from_document( url, form_html, true )
-                    forms.size.should == 2
+                    expect(forms.size).to eq(2)
                 end
             end
         end
@@ -711,16 +730,16 @@ EOHTML
                     </html>'
 
                     form = described_class.from_document( url, html ).first
-                    form.action.should == utilities.normalize_url( url + '/form_action' )
-                    form.name.should == 'my_form'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.inputs.should == {
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                    expect(form.name).to eq('my_form')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.inputs).to eq({
                         'my_first_input'  => 'my_first_value',
                         'my_second_input' => 'my_second_value'
-                    }
+                    })
                     form.inputs.keys.each do |input|
-                        form.field_type_for( input ).should == :text
+                        expect(form.field_type_for( input )).to eq(:text)
                     end
                 end
             end
@@ -739,16 +758,16 @@ EOHTML
                     </html>'
 
                     form = described_class.from_document( url, html ).first
-                    form.action.should == utilities.normalize_url( url + '/form_action' )
-                    form.name.should == 'my_form'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.inputs.should == {
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                    expect(form.name).to eq('my_form')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.inputs).to eq({
                         'vehicle'  => 'Bike',
                         'stuff' => 'Car'
-                    }
+                    })
                     form.inputs.keys.each do |input|
-                        form.field_type_for( input ).should == :checkbox
+                        expect(form.field_type_for( input )).to eq(:checkbox)
                     end
                 end
             end
@@ -767,16 +786,16 @@ EOHTML
                     </html>'
 
                     form = described_class.from_document( url, html ).first
-                    form.action.should == utilities.normalize_url( url + '/form_action' )
-                    form.name.should == 'my_form'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.inputs.should == {
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                    expect(form.name).to eq('my_form')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.inputs).to eq({
                         'my_first_input'  => 'my_first_value',
                         'my_second_input' => 'my_second_value'
-                    }
+                    })
                     form.inputs.keys.each do |input|
-                        form.field_type_for( input ).should == :radio
+                        expect(form.field_type_for( input )).to eq(:radio)
                     end
                 end
             end
@@ -794,12 +813,12 @@ EOHTML
                     </html>'
 
                     form = described_class.from_document( url, html ).first
-                    form.action.should == utilities.normalize_url( url + '/form_action' )
-                    form.name.should == 'my_form'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.field_type_for( 'my_button' ).should == :submit
-                    form.inputs.should == { 'my_button'  => 'my_button_value' }
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                    expect(form.name).to eq('my_form')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.field_type_for( 'my_button' )).to eq(:submit)
+                    expect(form.inputs).to eq({ 'my_button'  => 'my_button_value' })
                 end
             end
 
@@ -816,23 +835,23 @@ EOHTML
                     </html>'
 
                     forms = described_class.from_document( url, html )
-                    forms.size.should == 2
+                    expect(forms.size).to eq(2)
 
                     form = forms.first
-                    form.action.should == utilities.normalize_url( url + '/form_action' )
-                    form.name.should == 'my_form'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.field_type_for( 'choice' ).should == :submit
-                    form.inputs['choice'].should == 'value 1'
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                    expect(form.name).to eq('my_form')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.field_type_for( 'choice' )).to eq(:submit)
+                    expect(form.inputs['choice']).to eq('value 1')
 
                     form = forms[1]
-                    form.action.should == utilities.normalize_url( url + '/form_action' )
-                    form.name.should == 'my_form'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.field_type_for( 'choice' ).should == :submit
-                    form.inputs['choice'].should == 'value 2'
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                    expect(form.name).to eq('my_form')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.field_type_for( 'choice' )).to eq(:submit)
+                    expect(form.inputs['choice']).to eq('value 2')
                 end
             end
 
@@ -859,16 +878,16 @@ EOHTML
                         </html>'
 
                         form = described_class.from_document( url, html ).first
-                        form.action.should == utilities.normalize_url( url + '/form_action' )
-                        form.name.should == 'my_form'
-                        form.url.should == url
-                        form.method.should == :get
-                        form.inputs.should == {
+                        expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                        expect(form.name).to eq('my_form')
+                        expect(form.url).to eq(url)
+                        expect(form.method).to eq(:get)
+                        expect(form.inputs).to eq({
                             'manufacturer'  => 'volvo',
                             'numbers'       => '1'
-                        }
+                        })
                         form.inputs.keys.each do |input|
-                            form.field_type_for( input ).should == :select
+                            expect(form.field_type_for( input )).to eq(:select)
                         end
                     end
                 end
@@ -893,16 +912,16 @@ EOHTML
                         </html>'
 
                         form = described_class.from_document( url, html ).first
-                        form.action.should == utilities.normalize_url( url + '/form_action' )
-                        form.name.should == 'my_form'
-                        form.url.should == url
-                        form.method.should == :get
-                        form.inputs.should == {
+                        expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                        expect(form.name).to eq('my_form')
+                        expect(form.url).to eq(url)
+                        expect(form.method).to eq(:get)
+                        expect(form.inputs).to eq({
                             'manufacturer'  => 'Volvo',
                             'numbers'       => 'One'
-                        }
+                        })
                         form.inputs.keys.each do |input|
-                            form.field_type_for( input ).should == :select
+                            expect(form.field_type_for( input )).to eq(:select)
                         end
                     end
                 end
@@ -929,16 +948,16 @@ EOHTML
                         </html>'
 
                         form = described_class.from_document( url, html ).first
-                        form.action.should == utilities.normalize_url( url + '/form_action' )
-                        form.name.should == 'my_form'
-                        form.url.should == url
-                        form.method.should == :get
-                        form.inputs.should == {
+                        expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                        expect(form.name).to eq('my_form')
+                        expect(form.url).to eq(url)
+                        expect(form.method).to eq(:get)
+                        expect(form.inputs).to eq({
                             'manufacturer'  => 'Saab',
                             'numbers'       => 'Two'
-                        }
+                        })
                         form.inputs.keys.each do |input|
-                            form.field_type_for( input ).should == :select
+                            expect(form.field_type_for( input )).to eq(:select)
                         end
                     end
                 end
@@ -956,13 +975,13 @@ EOHTML
                         </html>'
 
                         form = described_class.from_document( url, html ).first
-                        form.action.should == utilities.normalize_url( url + '/form_action' )
-                        form.name.should == 'my_form'
-                        form.url.should == url
-                        form.method.should == :get
-                        form.inputs.should == { 'manufacturer' => '' }
+                        expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                        expect(form.name).to eq('my_form')
+                        expect(form.url).to eq(url)
+                        expect(form.method).to eq(:get)
+                        expect(form.inputs).to eq({ 'manufacturer' => '' })
                         form.inputs.keys.each do |input|
-                            form.field_type_for( input ).should == :select
+                            expect(form.field_type_for( input )).to eq(:select)
                         end
                     end
                 end
@@ -988,29 +1007,29 @@ EOHTML
                     </html>'
 
                     forms = described_class.from_document( url, html )
-                    forms.size.should == 2
+                    expect(forms.size).to eq(2)
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( url + base_url + 'form_action/is/here')
-                    form.name.should == 'my_form!'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.inputs.should == {
+                    expect(form.action).to eq(utilities.normalize_url( url + base_url + 'form_action/is/here'))
+                    expect(form.name).to eq('my_form!')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.inputs).to eq({
                         'text_here' => '',
                         'ha'        => 'hoo'
-                    }
+                    })
                     form.inputs.keys.each do |input|
-                        form.field_type_for( input ).should == :text
+                        expect(form.field_type_for( input )).to eq(:text)
                     end
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( url + '/form_action' )
-                    form.name.should == 'my_second_form!'
-                    form.url.should == url
-                    form.method.should == :post
-                    form.inputs.should == { 'text_here' => "my value" }
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
+                    expect(form.name).to eq('my_second_form!')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:post)
+                    expect(form.inputs).to eq({ 'text_here' => "my value" })
                     form.inputs.keys.each do |input|
-                        form.field_type_for( input ).should == :text
+                        expect(form.field_type_for( input )).to eq(:text)
                     end
                 end
             end
@@ -1046,34 +1065,34 @@ EOHTML
                     </html>'
 
                     forms = described_class.from_document( url, html )
-                    forms.size.should == 3
+                    expect(forms.size).to eq(3)
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( base_url + 'form_2' )
-                    form.name.should == 'my_form_2'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.inputs.should == { 'text_here' => '' }
+                    expect(form.action).to eq(utilities.normalize_url( base_url + 'form_2' ))
+                    expect(form.name).to eq('my_form_2')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.inputs).to eq({ 'text_here' => '' })
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( url + '/form' )
-                    form.name.should == 'my_form'
-                    form.url.should == url
-                    form.method.should == :post
-                    form.inputs.should == {
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form' ))
+                    expect(form.name).to eq('my_form')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:post)
+                    expect(form.inputs).to eq({
                         'form_input_1' => 'form_val_1',
                         'form_input_2' => 'form_val_2'
-                    }
+                    })
 
                     form = forms.shift
-                    form.action.should == utilities.normalize_url( url + '/form_3' )
-                    form.name.should == 'my_form_3'
-                    form.url.should == url
-                    form.method.should == :get
-                    form.inputs.should == {
+                    expect(form.action).to eq(utilities.normalize_url( url + '/form_3' ))
+                    expect(form.name).to eq('my_form_3')
+                    expect(form.url).to eq(url)
+                    expect(form.method).to eq(:get)
+                    expect(form.inputs).to eq({
                         'form_3_input_1' => 'form_3_val_1',
                         'manufacturer'   => 'volvo'
-                    }
+                    })
                 end
             end
 
@@ -1096,8 +1115,8 @@ EOHTML
                     let(:size) { described_class::MAX_SIZE }
 
                     it 'returns empty array' do
-                        form.inputs['input_1'].should be_empty
-                        form.inputs['input_2'].should == 'val_2'
+                        expect(form.inputs['input_1']).to be_empty
+                        expect(form.inputs['input_2']).to eq('val_2')
                     end
                 end
 
@@ -1105,8 +1124,8 @@ EOHTML
                     let(:size) { described_class::MAX_SIZE + 1 }
 
                     it 'sets empty value' do
-                        form.inputs['input_1'].should be_empty
-                        form.inputs['input_2'].should == 'val_2'
+                        expect(form.inputs['input_1']).to be_empty
+                        expect(form.inputs['input_2']).to eq('val_2')
                     end
                 end
 
@@ -1114,8 +1133,8 @@ EOHTML
                     let(:size) { described_class::MAX_SIZE - 1 }
 
                     it 'leaves the values alone' do
-                        form.inputs['input_1'].should == value
-                        form.inputs['input_2'].should == 'val_2'
+                        expect(form.inputs['input_1']).to eq(value)
+                        expect(form.inputs['input_2']).to eq('val_2')
                     end
                 end
             end
@@ -1124,25 +1143,29 @@ EOHTML
 
     describe '.encode' do
         it 'form-encodes the passed string' do
-            described_class.encode( '% value\ +=&;' ).should == '%25%20value%5C%20%2B%3D%26%3B'
+            expect(described_class.encode( '% value\ +=&;' )).to eq('%25%20value%5C%20%2B%3D%26%3B')
         end
     end
     describe '#encode' do
         it 'form-encodes the passed string' do
             v = '% value\ +=&;'
-            subject.encode( v ).should == described_class.encode( v )
+            expect(subject.encode( v )).to eq(described_class.encode( v ))
         end
     end
 
     describe '.decode' do
         it 'form-decodes the passed string' do
-            described_class.decode( '%25%20value%5C%20%2B%3D%26%3B' ).should == '% value\ +=&;'
+            expect(described_class.decode( '%25%20value%5C%20%2B%3D%26%3B' )).to eq('% value\ +=&;')
+        end
+
+        it 'handles broken encodings' do
+            expect(described_class.decode( '%g' )).to eq('%g')
         end
     end
     describe '#decode' do
         it 'form-decodes the passed string' do
             v = '%25%20value%5C%20%2B%3D%26%3B'
-            subject.decode( v ).should == described_class.decode( v )
+            expect(subject.decode( v )).to eq(described_class.decode( v ))
         end
     end
 

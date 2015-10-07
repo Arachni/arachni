@@ -3,14 +3,14 @@ require 'spec_helper'
 shared_examples_for 'lookup' do
     subject { described_class.new }
 
-    it { should respond_to :collection }
+    it { is_expected.to respond_to :collection }
 
     describe '#<<' do
         it 'adds an object and return self' do
-            (subject << 'test').should == subject
+            expect(subject << 'test').to eq(subject)
         end
         it 'aliased to #add' do
-            subject.add( 'test2' ).should == subject
+            expect(subject.add( 'test2' )).to eq(subject)
         end
     end
 
@@ -20,13 +20,13 @@ shared_examples_for 'lookup' do
                 subject << 'test'
                 subject << 'test2'
 
-                subject.include?( 'test' ).should be_true
-                subject.include?( 'test2' ).should be_true
+                expect(subject.include?( 'test' )).to be_truthy
+                expect(subject.include?( 'test2' )).to be_truthy
             end
         end
         context 'when an object is not included' do
             it 'returns false' do
-                subject.include?( 'test3' ).should be_false
+                expect(subject.include?( 'test3' )).to be_falsey
             end
         end
     end
@@ -35,22 +35,22 @@ shared_examples_for 'lookup' do
         it 'deletes an object and return self' do
             subject << 'test'
 
-            subject.include?( 'test' ).should be_true
-            subject.delete( 'test' ).should be_true
-            subject.include?( 'test' ).should be_false
+            expect(subject.include?( 'test' )).to be_truthy
+            expect(subject.delete( 'test' )).to be_truthy
+            expect(subject.include?( 'test' )).to be_falsey
         end
     end
 
     describe '#empty?' do
         context 'when empty' do
             it 'returns true' do
-                subject.empty?.should be_true
+                expect(subject.empty?).to be_truthy
             end
         end
         context 'when not empty' do
             it 'returns false' do
                 subject << 'test'
-                subject.empty?.should be_false
+                expect(subject.empty?).to be_falsey
             end
         end
     end
@@ -58,13 +58,13 @@ shared_examples_for 'lookup' do
     describe '#any?' do
         context 'when empty' do
             it 'returns false' do
-                subject.any?.should be_false
+                expect(subject.any?).to be_falsey
             end
         end
         context 'when not empty' do
             it 'returns true' do
                 subject << 'test'
-                subject.any?.should be_true
+                expect(subject.any?).to be_truthy
             end
         end
     end
@@ -72,13 +72,13 @@ shared_examples_for 'lookup' do
     describe '#size' do
         it 'returns the size' do
             bf = described_class.new
-            bf.size.should == 0
+            expect(bf.size).to eq(0)
             bf << '1'
-            bf.size.should == 1
+            expect(bf.size).to eq(1)
             bf << '1'
-            bf.size.should == 1
+            expect(bf.size).to eq(1)
             bf << '2'
-            bf.size.should == 2
+            expect(bf.size).to eq(2)
         end
     end
 
@@ -87,9 +87,9 @@ shared_examples_for 'lookup' do
             bf = described_class.new
             bf << '1'
             bf << '2'
-            bf.size.should == 2
+            expect(bf.size).to eq(2)
             bf.clear
-            bf.size.should == 0
+            expect(bf.size).to eq(0)
         end
     end
 
@@ -101,7 +101,7 @@ shared_examples_for 'lookup' do
                 subject << 'test'
                 new     << 'test'
 
-                subject.should == new
+                expect(subject).to eq(new)
             end
         end
 
@@ -112,7 +112,7 @@ shared_examples_for 'lookup' do
                 subject << 'test'
                 new     << 'test2'
 
-                subject.should_not == new
+                expect(subject).not_to eq(new)
             end
         end
     end
@@ -125,7 +125,7 @@ shared_examples_for 'lookup' do
                 subject << 'test'
                 new     << 'test'
 
-                subject.hash.should == new.hash
+                expect(subject.hash).to eq(new.hash)
             end
         end
 
@@ -136,7 +136,7 @@ shared_examples_for 'lookup' do
                 subject << 'test'
                 new     << 'test2'
 
-                subject.hash.should_not == new.hash
+                expect(subject.hash).not_to eq(new.hash)
             end
         end
     end
@@ -146,11 +146,11 @@ shared_examples_for 'lookup' do
             subject << 'test'
             copy = subject.dup
 
-            copy.should == subject
+            expect(copy).to eq(subject)
 
             copy << 'test2'
 
-            copy.should_not == subject
+            expect(copy).not_to eq(subject)
         end
     end
 end

@@ -54,7 +54,7 @@ describe Arachni::RPC::Client::Base do
             it 'connects to a server' do
                 Server.new( options ) do |server|
                     client = described_class.new( options, server.url )
-                    client.call( "foo.bar" ).should == true
+                    expect(client.call( "foo.bar" )).to eq(true)
                 end
             end
         end
@@ -64,7 +64,7 @@ describe Arachni::RPC::Client::Base do
                 it 'connects successfully' do
                     Server.new( ssl_options ) do |server|
                         client = described_class.new( ssl_options, server.url )
-                        client.call( "foo.bar" ).should be_true
+                        expect(client.call( "foo.bar" )).to be_truthy
                     end
                 end
             end
@@ -83,7 +83,7 @@ describe Arachni::RPC::Client::Base do
                             raised = true
                         end
 
-                        raised.should be_true
+                        expect(raised).to be_truthy
                     end
                 end
             end
@@ -106,7 +106,7 @@ describe Arachni::RPC::Client::Base do
                             raised = true
                         end
 
-                        raised.should be_true
+                        expect(raised).to be_truthy
                     end
                 end
             end
@@ -121,7 +121,7 @@ describe Arachni::RPC::Client::Base do
 
                     Server.new( opts, token ) do |server|
                         client = described_class.new( opts, server.url, token )
-                        client.call( "foo.bar" ).should be_true
+                        expect(client.call( "foo.bar" )).to be_truthy
                     end
                 end
             end
@@ -140,7 +140,7 @@ describe Arachni::RPC::Client::Base do
                             raised = true
                         end
 
-                        raised.should be_true
+                        expect(raised).to be_truthy
                     end
                 end
             end

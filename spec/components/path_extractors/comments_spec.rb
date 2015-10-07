@@ -6,13 +6,17 @@ describe name_from_filename do
     def results
         [
             '/stuff/here.php',
-            '/stuff/here'
+            '/stuff/here',
+            '/other/stuff/here.php'
         ]
     end
 
     def text
         <<-HTML
             <!-- Blah blah: /stuff/here.php -->
+<!--
+/other/stuff/here.php
+-->
             <!-- <style type="text/css"> stuff: here; </style> -->
             Blah blah...
             <!--Pre blah /stuff/here post blah -->

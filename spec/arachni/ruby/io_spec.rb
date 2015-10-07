@@ -14,12 +14,12 @@ describe IO do
                 EOSTR
                 f.flush
 
-                f.tail( 4 ).should == [
+                expect(f.tail( 4 )).to eq([
                     '                    Test2',
                     '                    Test3',
                     '                    Test4',
                     '                    Test5'
-                ]
+                ])
             end
         end
     end

@@ -12,22 +12,22 @@ describe Arachni::HTTP::Response::Scope do
 
     describe '#out?' do
         it 'returns false' do
-            subject.out?.should be_false
+            expect(subject.out?).to be_falsey
         end
 
         context "when #{Arachni::URI::Scope}#out?" do
             context true do
                 it 'returns true' do
                     # We can't stub #out? because we also override it.
-                    Arachni::URI::Scope.any_instance.stub(:exclude?) { true }
-                    subject.out?.should be_true
+                    allow_any_instance_of(Arachni::URI::Scope).to receive(:exclude?) { true }
+                    expect(subject.out?).to be_truthy
                 end
             end
 
             context false do
                 it 'returns false' do
-                    Arachni::URI::Scope.any_instance.stub(:exclude?) { false }
-                    subject.out?.should be_false
+                    allow_any_instance_of(Arachni::URI::Scope).to receive(:exclude?) { false }
+                    expect(subject.out?).to be_falsey
                 end
             end
         end
@@ -35,15 +35,15 @@ describe Arachni::HTTP::Response::Scope do
         context 'when #exclude_as_binary?' do
             context true do
                 it 'returns true' do
-                    subject.stub(:exclude_as_binary?) { true }
-                    subject.out?.should be_true
+                    allow(subject).to receive(:exclude_as_binary?) { true }
+                    expect(subject.out?).to be_truthy
                 end
             end
 
             context false do
                 it 'returns false' do
-                    subject.stub(:exclude_as_binary?) { false }
-                    subject.out?.should be_false
+                    allow(subject).to receive(:exclude_as_binary?) { false }
+                    expect(subject.out?).to be_falsey
                 end
             end
         end
@@ -51,15 +51,15 @@ describe Arachni::HTTP::Response::Scope do
         context 'when #exclude_content?' do
             context true do
                 it 'returns true' do
-                    subject.stub(:exclude_content?) { true }
-                    subject.out?.should be_true
+                    allow(subject).to receive(:exclude_content?) { true }
+                    expect(subject.out?).to be_truthy
                 end
             end
 
             context false do
                 it 'returns false' do
-                    subject.stub(:exclude_content?) { false }
-                    subject.out?.should be_false
+                    allow(subject).to receive(:exclude_content?) { false }
+                    expect(subject.out?).to be_falsey
                 end
             end
         end
@@ -72,18 +72,18 @@ describe Arachni::HTTP::Response::Scope do
                     context true do
                         it 'returns false' do
                             scope.exclude_binaries = true
-                            response.stub(:text?) { true }
+                            allow(response).to receive(:text?) { true }
 
-                            subject.exclude_as_binary?.should be_false
+                            expect(subject.exclude_as_binary?).to be_falsey
                         end
                     end
 
                     context false do
                         it 'returns false' do
                             scope.exclude_binaries = false
-                            response.stub(:text?) { true }
+                            allow(response).to receive(:text?) { true }
 
-                            subject.exclude_as_binary?.should be_false
+                            expect(subject.exclude_as_binary?).to be_falsey
                         end
                     end
                 end
@@ -94,18 +94,18 @@ describe Arachni::HTTP::Response::Scope do
                     context true do
                         it 'returns true' do
                             scope.exclude_binaries = true
-                            response.stub(:text?) { false }
+                            allow(response).to receive(:text?) { false }
 
-                            subject.exclude_as_binary?.should be_true
+                            expect(subject.exclude_as_binary?).to be_truthy
                         end
                     end
 
                     context false do
                         it 'returns false' do
                             scope.exclude_binaries = false
-                            response.stub(:text?) { false }
+                            allow(response).to receive(:text?) { false }
 
-                            subject.exclude_as_binary?.should be_false
+                            expect(subject.exclude_as_binary?).to be_falsey
                         end
                     end
                 end
@@ -118,16 +118,16 @@ describe Arachni::HTTP::Response::Scope do
             context 'match the #body' do
                 it 'returns true' do
                     scope.exclude_content_patterns = /<a/
-                    subject.exclude_content?.should be_true
+                    expect(subject.exclude_content?).to be_truthy
                 end
             end
 
             context 'do not match the #body' do
                 it 'returns false' do
-                    subject.exclude_content?.should be_false
+                    expect(subject.exclude_content?).to be_falsey
 
                     scope.exclude_content_patterns = /<blah/
-                    subject.exclude_content?.should be_false
+                    expect(subject.exclude_content?).to be_falsey
                 end
             end
         end

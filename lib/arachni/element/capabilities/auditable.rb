@@ -6,9 +6,6 @@
     web site for more information on licensing and terms of use.
 =end
 
-require_relative 'inputtable'
-require_relative 'mutable'
-require_relative 'submittable'
 require_relative 'with_auditor'
 
 module Arachni
@@ -20,9 +17,6 @@ module Element::Capabilities
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Auditable
     include Utilities
-    include Inputtable
-    include Submittable
-    include Mutable
     include WithAuditor
 
     # Load and include all available analysis/audit techniques.

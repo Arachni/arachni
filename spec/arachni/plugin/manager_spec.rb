@@ -29,18 +29,18 @@ describe Arachni::Plugin::Manager do
         let(:state) { Arachni::State.plugins.runtime }
 
         it 'stores plugin options' do
-            state[:suspendable][:options].should == {
+            expect(state[:suspendable][:options]).to eq({
                 my_option: 'updated'
-            }
+            })
         end
 
         it 'stores plugin state' do
-            state.should include :suspendable
-            state[:suspendable][:data].should == 1
+            expect(state).to include :suspendable
+            expect(state[:suspendable][:data]).to eq(1)
         end
 
         it 'kills the running plugins' do
-            subject.jobs.should be_empty
+            expect(subject.jobs).to be_empty
         end
     end
 
@@ -63,45 +63,45 @@ describe Arachni::Plugin::Manager do
         it 'restores plugin options' do
             subject.restore
 
-            subject.jobs[:suspendable][:instance].options.should == {
+            expect(subject.jobs[:suspendable][:instance].options).to eq({
                 my_option: 'updated'
-            }
+            })
         end
 
         it 'restores plugin state' do
             subject.restore
-            subject.jobs[:suspendable][:instance].counter.should == 2
+            expect(subject.jobs[:suspendable][:instance].counter).to eq(2)
         end
 
         context 'when a loaded plugin has no associated state' do
             it "calls #{Arachni::Plugin::Base}#prepare instead of #{Arachni::Plugin::Base}#restore" do
                 subject.state.delete :suspendable
                 subject.restore
-                subject.jobs[:suspendable][:instance].counter.should == 1
+                expect(subject.jobs[:suspendable][:instance].counter).to eq(1)
             end
         end
     end
 
     describe '#load_default' do
         it 'loads default plugins' do
-            subject.should be_empty
+            expect(subject).to be_empty
             subject.load_default
-            subject.include?( 'default' ).should be_true
+            expect(subject.include?( 'default' )).to be_truthy
             subject.clear
         end
         it 'aliased to #load_defaults' do
-            subject.should be_empty
+            expect(subject).to be_empty
             subject.load_defaults
-            subject.include?( 'default' ).should be_true
+            expect(subject.include?( 'default' )).to be_truthy
         end
     end
 
     describe '#default' do
         it 'returns the default plugins' do
-            subject.default.include?( 'default' ).should be_true
+            expect(subject.default.include?( 'default' )).to be_truthy
         end
         it 'aliased to #defaults' do
-            subject.defaults.include?( 'default' ).should be_true
+            expect(subject.defaults.include?( 'default' )).to be_truthy
         end
     end
 
@@ -110,18 +110,18 @@ describe Arachni::Plugin::Manager do
             subject.load_default
             subject.run
             subject.block
-            subject.results[:default][:results].should be_true
+            expect(subject.results[:default][:results]).to be_truthy
         end
     end
 
     describe '#schedule' do
         it 'returns scheduled plugins' do
             subject.load_default
-            subject.schedule.should == {
+            expect(subject.schedule).to eq({
                 default: {
                     int_opt: 4
                 }
-            }
+            })
         end
 
         context 'when plugins have :priority' do
@@ -137,10 +137,10 @@ describe Arachni::Plugin::Manager do
             it 'orders them based on priority' do
                 subject.load '*'
                 scheduled = subject.schedule.keys
-                scheduled[0..1].sort.should == [:p0, :p00].sort
-                scheduled[2].should == :p1
-                scheduled[3..5].sort.should == [:p22, :p222, :p2].sort
-                scheduled[6..7].sort.should == [:p_nil, :p_nil2].sort
+                expect(scheduled[0..1].sort).to eq([:p0, :p00].sort)
+                expect(scheduled[2]).to eq(:p1)
+                expect(scheduled[3..5].sort).to eq([:p22, :p222, :p2].sort)
+                expect(scheduled[6..7].sort).to eq([:p_nil, :p_nil2].sort)
             end
         end
 
@@ -155,12 +155,12 @@ describe Arachni::Plugin::Manager do
     describe '#sane_env?' do
         context 'when gem dependencies are met' do
             it 'returns true' do
-                subject.sane_env?( subject['default'] ).should == true
+                expect(subject.sane_env?( subject['default'] )).to eq(true)
             end
         end
         context 'when gem dependencies are not met' do
             it 'returns a hash with errors' do
-                subject.sane_env?( subject['bad'] ).include?( :gem_errors ).should be_true
+                expect(subject.sane_env?( subject['bad'] ).include?( :gem_errors )).to be_truthy
                 subject.delete( 'bad' )
             end
         end
@@ -168,7 +168,7 @@ describe Arachni::Plugin::Manager do
 
     describe '#create' do
         it 'returns a plugin instance' do
-            subject.create( 'default' ).instance_of?( subject['default'] ).should be_true
+            expect(subject.create( 'default' ).instance_of?( subject['default'] )).to be_truthy
         end
     end
 
@@ -177,7 +177,7 @@ describe Arachni::Plugin::Manager do
             it 'returns true' do
                 subject.load :wait
                 subject.run
-                subject.busy?.should be_true
+                expect(subject.busy?).to be_truthy
                 framework.state.running = false
                 subject.block
             end
@@ -186,7 +186,7 @@ describe Arachni::Plugin::Manager do
             it 'returns false' do
                 subject.run
                 subject.block
-                subject.busy?.should be_false
+                expect(subject.busy?).to be_falsey
             end
         end
     end
@@ -195,7 +195,7 @@ describe Arachni::Plugin::Manager do
         context 'when plugins are running' do
             it 'returns the names of the running plugins' do
                 subject.run
-                subject.job_names.should == subject.keys
+                expect(subject.job_names).to eq(subject.keys)
                 subject.block
             end
         end
@@ -203,7 +203,7 @@ describe Arachni::Plugin::Manager do
             it 'returns an empty array' do
                 subject.run
                 subject.block
-                subject.job_names.should be_empty
+                expect(subject.job_names).to be_empty
             end
         end
     end
@@ -213,7 +213,7 @@ describe Arachni::Plugin::Manager do
             it 'returns the plugins threads' do
                 subject.load :wait
                 subject.run
-                subject.jobs[:wait].should be_instance_of Thread
+                expect(subject.jobs[:wait]).to be_instance_of Thread
 
                 framework.state.running = false
 
@@ -227,7 +227,7 @@ describe Arachni::Plugin::Manager do
                 framework.state.running = false
 
                 subject.block
-                subject.jobs.should be_empty
+                expect(subject.jobs).to be_empty
             end
         end
     end
@@ -240,7 +240,7 @@ describe Arachni::Plugin::Manager do
                 ret = subject.kill( 'loop' )
                 subject.block
 
-                ret.should be_true
+                expect(ret).to be_truthy
                 subject.delete( 'loop' )
             end
         end
@@ -249,31 +249,32 @@ describe Arachni::Plugin::Manager do
             it 'returns false' do
                 subject.run
                 subject.block
-                subject.kill( 'default' ).should be_false
+                expect(subject.kill( 'default' )).to be_falsey
             end
         end
     end
 
     describe '#results' do
         it "delegates to ##{Arachni::Data::Plugins}#results" do
-            Arachni::Data.plugins.results.object_id.should ==
+            expect(Arachni::Data.plugins.results.object_id).to eq(
                 subject.results.object_id
+            )
         end
     end
 
     describe '#reset' do
         it 'calls #kill' do
-            subject.should receive(:killall).at_least(1).times
+            expect(subject).to receive(:killall).at_least(1).times
             subject.reset
         end
 
         it 'calls #clear' do
-            subject.should receive(:clear).at_least(1).times
+            expect(subject).to receive(:clear).at_least(1).times
             subject.reset
         end
 
         it 'calls .reset' do
-            described_class.should receive(:reset).at_least(1).times
+            expect(described_class).to receive(:reset).at_least(1).times
             subject.reset
         end
     end

@@ -35,6 +35,10 @@ RSpec.configure do |config|
     config.add_formatter :documentation
     config.include PageHelpers
 
+    config.mock_with :rspec do |mocks|
+        mocks.yield_receiver_to_any_instance_implementation_blocks = true
+    end
+
     config.before( :all ) do
         killall
         reset_all

@@ -127,18 +127,15 @@ class Trainer
 
         [ :forms, :links ].each { |type| has_new_elements ||= has_new?( incoming_page, type ) }
 
+        incoming_page.paths.each do |path|
+            @framework.push_to_url_queue( path )
+        end
+
         if has_new_elements
             @trainings_per_url[incoming_page.url] += 1
 
             notify_on_new_page incoming_page
             @framework.push_to_page_queue( incoming_page )
-
-        # If the page is pushed, paths will be extracted eventually, if not, we
-        # need to do it now.
-        else
-            incoming_page.paths.each do |path|
-                @framework.push_to_url_queue( path )
-            end
         end
 
         incoming_page.clear_cache

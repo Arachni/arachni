@@ -131,16 +131,16 @@ get "/header" do
 end
 
 get "/header/straight" do
-    default = 'default'
+    default = 'arachni_user'
     return if !env['HTTP_USER_AGENT'] || env['HTTP_USER_AGENT'].start_with?( default ) ||
         !env['HTTP_USER_AGENT'].include?( '_arachni_trainer_' )
 
-    redirect "/header/straight/trained"
+    redirect "/header/straight/trained-redir"
 end
 
-get "/header/straight/trained" do
+get '/header/straight/trained-redir' do
     <<-EOHTML
-        <a href="boo"/>Stuff</a>
+        <a href="trained">Stuff</a>
     EOHTML
 end
 
@@ -149,11 +149,11 @@ get "/header/append" do
     return if !env['HTTP_USER_AGENT'] || !env['HTTP_USER_AGENT'].start_with?( default ) ||
         !env['HTTP_USER_AGENT'].include?( '_arachni_trainer_' )
 
-    redirect "/header/append/trained"
+    redirect "/header/append/trained-redir"
 end
 
-get "/header/append/trained" do
+get "/header/append/trained-redir" do
     <<-EOHTML
-        <a href="booaaaa"/>Stuff</a>
+        <a href="trained">Stuff</a>
     EOHTML
 end

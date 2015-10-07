@@ -147,6 +147,22 @@ class Audit < Arachni::OptionGroup
     #   Audit XML request inputs.
     attr_accessor :xmls
 
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit DOM inputs.
+    attr_accessor :ui_inputs
+    alias :ui_input_doms  :ui_inputs
+    alias :ui_input_doms=  :ui_inputs=
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Audit DOM UI forms -- i.e. combination or orphan inputs and buttons.
+    attr_accessor :ui_forms
+    alias :ui_form_doms  :ui_forms
+    alias :ui_form_doms=  :ui_forms=
+
     set_defaults(
         parameter_values:        true,
         exclude_vector_patterns: [],
@@ -235,6 +251,10 @@ class Audit < Arachni::OptionGroup
     #   * `:forms`
     #   * `:cookies`
     #   * `:headers`
+    #   * `:ui_inputs`
+    #   * `:ui_forms`
+    #   * `:xmls`
+    #   * `:jsons`
     #
     # @return   [Bool]
     #
@@ -250,8 +270,8 @@ class Audit < Arachni::OptionGroup
 
     [:links, :forms, :cookies, :headers, :cookies_extensively,
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
-     :jsons, :xmls, :parameter_values, :parameter_names, :with_extra_parameter
-    ].each do |attribute|
+     :jsons, :xmls, :ui_inputs, :ui_input_doms, :ui_forms, :ui_form_doms,
+     :parameter_values, :parameter_names, :with_extra_parameter].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )
         end

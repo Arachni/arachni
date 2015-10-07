@@ -7,7 +7,7 @@
 =end
 
 # @author  Tasos Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
+# @version 0.1.2
 class Arachni::Checks::Hsts < Arachni::Check::Base
 
     def run
@@ -19,7 +19,7 @@ class Arachni::Checks::Hsts < Arachni::Check::Base
 
         log(
             vector: Element::Server.new( page.url ),
-            proof:  page.response.headers_string
+            proof:  page.response.status_line
         )
     end
 
@@ -28,7 +28,7 @@ class Arachni::Checks::Hsts < Arachni::Check::Base
             name:        'HTTP Strict Transport Security',
             description: %q{Checks HTTPS pages for missing `Strict-Transport-Security` headers.},
             author:      'Tasos Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
             elements:    [ Element::Server ],
 
             issue:       {

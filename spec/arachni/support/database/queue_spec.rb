@@ -36,12 +36,12 @@ describe Arachni::Support::Database::Queue do
         consumed = []
         consumed << poped.pop while !poped.empty?
 
-        consumed.sort.should == (0...entries).map { |i| 'a' * i }
+        expect(consumed.sort).to eq((0...entries).map { |i| 'a' * i })
     end
 
     describe "#{described_class}::DEFAULT_MAX_BUFFER_SIZE" do
         it 'returns 100' do
-            described_class::DEFAULT_MAX_BUFFER_SIZE.should == 100
+            expect(described_class::DEFAULT_MAX_BUFFER_SIZE).to eq(100)
         end
     end
 
@@ -50,7 +50,7 @@ describe Arachni::Support::Database::Queue do
             subject << 1
             subject << 2
 
-            subject.buffer.should == [1, 2]
+            expect(subject.buffer).to eq([1, 2])
         end
     end
 
@@ -60,9 +60,9 @@ describe Arachni::Support::Database::Queue do
             subject << 1
             subject << 2
 
-            subject.disk.size.should == 2
+            expect(subject.disk.size).to eq(2)
             subject.disk.each do |path|
-                File.exists?( path ).should be_true
+                expect(File.exists?( path )).to be_truthy
             end
         end
     end
@@ -70,7 +70,7 @@ describe Arachni::Support::Database::Queue do
     describe '#max_buffer_size' do
         context 'by default' do
             it "returns #{described_class}::DEFAULT_MAX_BUFFER_SIZE" do
-                subject.max_buffer_size.should == described_class::DEFAULT_MAX_BUFFER_SIZE
+                expect(subject.max_buffer_size).to eq(described_class::DEFAULT_MAX_BUFFER_SIZE)
             end
         end
     end
@@ -78,21 +78,21 @@ describe Arachni::Support::Database::Queue do
     describe '#max_buffer_size=' do
         it 'sets #max_buffer_size' do
             subject.max_buffer_size = 10
-            subject.max_buffer_size.should == 10
+            expect(subject.max_buffer_size).to eq(10)
         end
     end
 
     describe '#empty?' do
         context 'when the queue is empty' do
             it 'returns true' do
-                subject.empty?.should be_true
+                expect(subject.empty?).to be_truthy
             end
         end
 
         context 'when the queue is not empty' do
             it 'returns false' do
                 subject << :stuff
-                subject.empty?.should be_false
+                expect(subject.empty?).to be_falsey
             end
         end
     end
@@ -104,7 +104,7 @@ describe Arachni::Support::Database::Queue do
             end
 
             sample_size.times do |i|
-                subject.pop.should == "stuff #{i}"
+                expect(subject.pop).to eq("stuff #{i}")
             end
         end
     end
@@ -112,14 +112,14 @@ describe Arachni::Support::Database::Queue do
     describe '#push' do
         it 'pushes an object' do
             subject.push :stuff
-            subject.pop.should == :stuff
+            expect(subject.pop).to eq(:stuff)
         end
     end
 
     describe '#enq' do
         it 'pushes an object' do
             subject.enq :stuff
-            subject.pop.should == :stuff
+            expect(subject.pop).to eq(:stuff)
         end
     end
 
@@ -130,7 +130,7 @@ describe Arachni::Support::Database::Queue do
             end
 
             sample_size.times do |i|
-                subject.pop.should == "stuff #{i}"
+                expect(subject.pop).to eq("stuff #{i}")
             end
         end
 
@@ -142,76 +142,76 @@ describe Arachni::Support::Database::Queue do
             Thread.new { subject << :stuff }
             t.join
 
-            val.should == :stuff
+            expect(val).to eq(:stuff)
         end
     end
 
     describe '#deq' do
         it 'removes an object' do
             subject << :stuff
-            subject.deq.should == :stuff
+            expect(subject.deq).to eq(:stuff)
         end
     end
 
     describe '#shift' do
         it 'removes an object' do
             subject << :stuff
-            subject.shift.should == :stuff
+            expect(subject.shift).to eq(:stuff)
         end
     end
 
     describe '#size' do
         it 'returns the size of the queue' do
             sample_size.times { |i| subject << i }
-            subject.size.should == sample_size
+            expect(subject.size).to eq(sample_size)
         end
     end
 
     describe '#free_buffer_size' do
         it 'returns the size of the available buffer' do
             (subject.max_buffer_size - 2).times { |i| subject << i }
-            subject.free_buffer_size.should == 2
+            expect(subject.free_buffer_size).to eq(2)
         end
     end
 
     describe '#buffer_size' do
         it 'returns the size of the in-memory entries' do
-            subject.buffer_size.should == 0
+            expect(subject.buffer_size).to eq(0)
 
             (subject.max_buffer_size - 1).times { |i| subject << i }
-            subject.buffer_size.should == subject.max_buffer_size - 1
+            expect(subject.buffer_size).to eq(subject.max_buffer_size - 1)
 
             subject.clear
 
             sample_size.times { |i| subject << i }
-            subject.buffer_size.should == subject.max_buffer_size
+            expect(subject.buffer_size).to eq(subject.max_buffer_size)
         end
     end
 
     describe '#disk_size' do
         it 'returns the size of the disk entries' do
-            subject.buffer_size.should == 0
+            expect(subject.buffer_size).to eq(0)
 
             (subject.max_buffer_size + 1).times { |i| subject << i }
-            subject.disk_size.should == 1
+            expect(subject.disk_size).to eq(1)
 
             subject.clear
 
             sample_size.times { |i| subject << i }
-            subject.disk_size.should == sample_size - subject.max_buffer_size
+            expect(subject.disk_size).to eq(sample_size - subject.max_buffer_size)
         end
     end
 
     describe '#num_waiting' do
         it 'returns the amount of threads waiting to pop' do
-            subject.num_waiting.should == 0
+            expect(subject.num_waiting).to eq(0)
 
             2.times do
                 Thread.new { subject.pop }
             end
             sleep 0.1
 
-            subject.num_waiting.should == 2
+            expect(subject.num_waiting).to eq(2)
         end
     end
 
@@ -219,7 +219,7 @@ describe Arachni::Support::Database::Queue do
         it 'empties the queue' do
             sample_size.times { |i| subject << i }
             subject.clear
-            subject.size.should == 0
+            expect(subject.size).to eq(0)
         end
     end
 

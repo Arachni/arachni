@@ -5,8 +5,8 @@ describe Arachni::OptionGroups::Input do
     subject { described_class.new }
 
     %w(values without_defaults).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     context '#values' do
@@ -15,9 +15,9 @@ describe Arachni::OptionGroups::Input do
                 'article' => 'my article'
             }
 
-            subject.values.should == {
+            expect(subject.values).to eq({
                 /article/ => 'my article'
-            }
+            })
         end
     end
 
@@ -27,23 +27,24 @@ describe Arachni::OptionGroups::Input do
                 'article' => 'my article'
             }
 
-            subject.default_values.should == {
+            expect(subject.default_values).to eq({
                 /article/ => 'my article'
-            }
+            })
         end
     end
 
     context '#without_defaults' do
         it 'returns false' do
-            subject.without_defaults.should be_false
+            expect(subject.without_defaults).to be_falsey
         end
     end
 
     describe '#effective_values' do
         it 'merges the #default_values with the configured #values' do
             subject.values = { /some stuff/ => '2' }
-            subject.effective_values.should ==
+            expect(subject.effective_values).to eq(
                 subject.default_values.merge( subject.values )
+            )
         end
 
         context '#without_defaults?' do
@@ -51,7 +52,7 @@ describe Arachni::OptionGroups::Input do
                 subject.without_defaults = true
 
                 subject.values = { /some stuff/ => '2' }
-                subject.effective_values.should == subject.values
+                expect(subject.effective_values).to eq(subject.values)
             end
         end
     end
@@ -61,10 +62,10 @@ describe Arachni::OptionGroups::Input do
 
         it 'updates #values from the given file' do
             subject.update_values_from_file( file )
-            subject.values.should == {
+            expect(subject.values).to eq({
                 /test/       => 'blah',
                 /other-test/ => 'blah2'
-            }
+            })
         end
     end
 
@@ -73,7 +74,7 @@ describe Arachni::OptionGroups::Input do
             subject.without_defaults = true
             subject.values = { /name/ => 'John Doe' }
 
-            subject.value_for_name( 'name' ).should == 'John Doe'
+            expect(subject.value_for_name( 'name' )).to eq('John Doe')
         end
 
         context 'when the value is a Proc' do
@@ -83,14 +84,14 @@ describe Arachni::OptionGroups::Input do
                 value = 'John Doe'
                 subject.values = { /name/ => proc{ value } }
 
-                subject.value_for_name( 'name' ).should == value
+                expect(subject.value_for_name( 'name' )).to eq(value)
             end
 
             it 'passes the input name as an argument' do
                 subject.without_defaults = true
                 subject.values = { /name/ => proc{ |name| name } }
 
-                subject.value_for_name( 'name' ).should == 'name'
+                expect(subject.value_for_name( 'name' )).to eq('name')
             end
         end
 
@@ -98,21 +99,23 @@ describe Arachni::OptionGroups::Input do
             context "and 'use_default' is set to" do
                 context true do
                     it 'returns the default' do
-                        subject.value_for_name( 'blahblah', true ).should ==
+                        expect(subject.value_for_name( 'blahblah', true )).to eq(
                             described_class::DEFAULT
+                        )
                     end
                 end
 
                 context false do
                     it 'returns nil' do
-                        subject.value_for_name( 'blahblah', false ).should == nil
+                        expect(subject.value_for_name( 'blahblah', false )).to eq(nil)
                     end
                 end
 
                 context 'by default' do
                     it 'returns the default' do
-                        subject.value_for_name( 'blahblah' ).should ==
+                        expect(subject.value_for_name( 'blahblah' )).to eq(
                             described_class::DEFAULT
+                        )
                     end
                 end
             end
@@ -123,7 +126,7 @@ describe Arachni::OptionGroups::Input do
         let(:inputs) { { 'name' => 'john' } }
 
         it 'fills in all empty inputs' do
-            subject.fill(
+            expect(subject.fill(
                 'nAMe'    => nil,
                 'usEr'    => nil,
                 'uSR'     => nil,
@@ -135,7 +138,7 @@ describe Arachni::OptionGroups::Input do
                 'aCcouNt' => nil,
                 'stuff'   => 'stuff value',
                 'iD'      => nil
-            ).should == {
+            )).to eq({
                 'nAMe'    => 'arachni_name',
                 'usEr'    => 'arachni_user',
                 'uSR'     => 'arachni_user',
@@ -147,28 +150,28 @@ describe Arachni::OptionGroups::Input do
                 'aCcouNt' => '12',
                 'stuff'   => 'stuff value',
                 'iD'      => '1'
-            }
+            })
         end
 
         context 'when no match could be found' do
             let(:inputs) { { 'stuff' => '' } }
 
             it 'does not overwrite it' do
-                subject.fill( inputs ).should == {
+                expect(subject.fill( inputs )).to eq({
                     'stuff' => described_class::DEFAULT
-                }
+                })
             end
         end
 
         context 'when there is a value' do
             it 'skips it' do
-                subject.fill( inputs ).should == inputs
+                expect(subject.fill( inputs )).to eq(inputs)
             end
 
             context '#force?' do
                 it 'overwrites it' do
                     subject.force = true
-                    subject.fill( inputs ).should == { 'name' => 'arachni_name' }
+                    expect(subject.fill( inputs )).to eq({ 'name' => 'arachni_name' })
                 end
 
                 context 'when no value could be found' do
@@ -176,7 +179,7 @@ describe Arachni::OptionGroups::Input do
 
                     it 'does not overwrite it' do
                         subject.force = true
-                        subject.fill( inputs ).should == inputs
+                        expect(subject.fill( inputs )).to eq(inputs)
                     end
                 end
             end
@@ -190,12 +193,13 @@ describe Arachni::OptionGroups::Input do
             values = { /article/ => 'my article' }
             subject.values = values
 
-            data['values'].should == { /article/.to_s => 'my article' }
+            expect(data['values']).to eq({ /article/.to_s => 'my article' })
         end
 
         it "converts 'default_values' to strings" do
-            data['default_values'].keys.should ==
+            expect(data['default_values'].keys).to eq(
                 subject.default_values.keys.map(&:to_s)
+            )
         end
     end
 

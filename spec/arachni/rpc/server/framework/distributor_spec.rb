@@ -112,18 +112,18 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
     describe '#calculate_workload_size' do
         it 'returns the amount of workload to gather for distribution' do
-            @distributor.calculate_workload_size( 99999 ).should == 30
+            expect(@distributor.calculate_workload_size( 99999 )).to eq(30)
         end
 
         it 'bases it on the amount of idle instances' do
             distributor = get_distributor
             distributor.done_slaves << distributor.slaves.first[:url]
-            distributor.calculate_workload_size( 99999 ).should == 20
+            expect(distributor.calculate_workload_size( 99999 )).to eq(20)
         end
 
         context 'when the calculated size exceeds the maximum' do
             it 'returns the maximum' do
-                @distributor.calculate_workload_size( 20 ).should == 20
+                expect(@distributor.calculate_workload_size( 20 )).to eq(20)
             end
         end
     end
@@ -207,7 +207,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     distributor.split_page_workload( pages ).map do |page_chunks|
                         workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
                     end
-                    workload.should == [
+                    expect(workload).to eq([
                         {
                             "#{@url}1" => [2720541242, 3706493238],
                             "#{@url}2" => [2299786370]
@@ -219,7 +219,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                             "#{@url}4" => [2195342275],
                             "#{@url}5" => [659674061]
                         }
-                    ]
+                    ])
 
                     Arachni::State.clear
                     Arachni::Data.clear
@@ -232,7 +232,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     distributor.split_page_workload( pages ).map do |page_chunks|
                         workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
                     end
-                    workload.should == [
+                    expect(workload).to eq([
                         {
                             'http://test.com/1' => [2720541242, 3706493238],
                             'http://test.com/2' => [2299786370],
@@ -243,7 +243,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                             'http://test.com/4' => [2444203185, 2195342275],
                             'http://test.com/5' => [659674061]
                         }
-                    ]
+                    ])
                 end
             end
 
@@ -260,11 +260,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     distributor.split_page_workload( pages ).map do |page_chunks|
                         workload << page_chunks.map(&:url)
                     end
-                    workload.should == [
+                    expect(workload).to eq([
                         ['http://test.com/1', 'http://test.com/2'],
                         ['http://test.com/3', 'http://test.com/4'],
                         ['http://test.com/5']
-                    ]
+                    ])
                 end
 
                 it 'does not audit them' do
@@ -280,11 +280,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
                         workload << page_chunks
                     end
                     workload.flatten!
-                    workload.size.should == 5
+                    expect(workload.size).to eq(5)
 
                     workload.each do |page|
-                        page.elements.should be_any
-                        page.elements.each { |e| page.audit_element?(e).should be_false }
+                        expect(page.elements).to be_any
+                        page.elements.each { |e| expect(page.audit_element?(e)).to be_falsey }
                     end
                 end
             end
@@ -301,7 +301,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     get_distributor.split_page_workload( pages ).map do |page_chunks|
                         workload << page_chunks.map(&:url)
                     end
-                    workload.should == [
+                    expect(workload).to eq([
                         [
                             'http://test.com/0',
                             'http://test.com/1',
@@ -328,7 +328,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                             'http://test.com/18',
                             'http://test.com/19'
                         ]
-                    ]
+                    ])
                 end
             end
         end
@@ -360,10 +360,10 @@ describe Arachni::RPC::Server::Framework::Distributor do
                         workload << Hash[page_chunks.map { |p| [p.url, p.element_audit_whitelist.to_a] }]
                     end
 
-                    workload.should == [
+                    expect(workload).to eq([
                         { 'http://test.com/1' => [2835048516] },
                         { 'http://test.com/5' => [1397105343] }
-                    ]
+                    ])
                 end
             end
 
@@ -377,7 +377,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     distributor.split_page_workload( pages ).map do |page_chunks|
                         workload << Hash[page_chunks.map { |p| [p.url, p.audit_whitelist.to_a] }]
                     end
-                    workload.should == []
+                    expect(workload).to eq([])
                 end
             end
         end
@@ -396,7 +396,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
     describe '#prepare_slave_options' do
         it 'returns a hash with options suitable for passing to slaves' do
             h = @distributor.prepare_slave_options
-            h['datastore'].should == { 'master_priv_token' => 'secret' }
+            expect(h['datastore']).to eq({ 'master_priv_token' => 'secret' })
         end
 
         it 'removes plugins which are not distributable'
@@ -413,11 +413,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { q.pop.should == [true, true] }
+                Timeout::timeout( 5 ) { expect(q.pop).to eq([true, true]) }
             rescue Timeout::Error
                 raised = true
             end
-            raised.should be_false
+            expect(raised).to be_falsey
         end
     end
 
@@ -435,11 +435,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { [q.pop, q.pop].should == [true, true] }
+                Timeout::timeout( 5 ) { expect([q.pop, q.pop]).to eq([true, true]) }
             rescue Timeout::Error
                 raised = true
             end
-            raised.should be_false
+            expect(raised).to be_falsey
         end
 
         context 'when passed an "after" block' do
@@ -458,11 +458,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 raised = false
                 begin
-                    Timeout::timeout( 5 ) { [q.pop, q.pop, q.pop].should == [true, true, :after] }
+                    Timeout::timeout( 5 ) { expect([q.pop, q.pop, q.pop]).to eq([true, true, :after]) }
                 rescue Timeout::Error
                     raised = true
                 end
-                raised.should be_false
+                expect(raised).to be_falsey
             end
 
         end
@@ -482,11 +482,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { [q.pop, q.pop].sort.should == urls }
+                Timeout::timeout( 5 ) { expect([q.pop, q.pop].sort).to eq(urls) }
             rescue Timeout::Error
                 raised = true
             end
-            raised.should be_false
+            expect(raised).to be_falsey
         end
     end
 
@@ -504,11 +504,11 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { [q.pop, q.pop].sort.should == urls }
+                Timeout::timeout( 5 ) { expect([q.pop, q.pop].sort).to eq(urls) }
             rescue Timeout::Error
                 raised = true
             end
-            raised.should be_false
+            expect(raised).to be_falsey
         end
     end
 
@@ -567,10 +567,10 @@ describe Arachni::RPC::Server::Framework::Distributor do
                 raised = true
             end
 
-            raised.should be_false
+            expect(raised).to be_falsey
 
-            pref_dispatchers.size.should == 4
-            pref_dispatchers.should == dispatchers
+            expect(pref_dispatchers.size).to eq(4)
+            expect(pref_dispatchers).to eq(dispatchers)
         end
     end
 
@@ -582,18 +582,18 @@ describe Arachni::RPC::Server::Framework::Distributor do
             dispatchers << { 'node' => { 'score' => 2 } }
             dispatchers << { 'node' => { 'score' => 1 } }
 
-            @distributor.pick_dispatchers( dispatchers ).
-                map { |d| d['node']['score'] }.should == [0, 1, 2, 3]
+            expect(@distributor.pick_dispatchers( dispatchers ).
+                map { |d| d['node']['score'] }).to eq([0, 1, 2, 3])
 
             @opts.spawns = 2
-            @distributor.pick_dispatchers( dispatchers ).
-                map { |d| d['node']['score'] }.should == [0, 1]
+            expect(@distributor.pick_dispatchers( dispatchers ).
+                map { |d| d['node']['score'] }).to eq([0, 1])
         end
     end
 
     describe '#initialize_slaves' do
         #before( :all ) do
-        #    @opts.paths.checks = fixtures_path + 'taint_check/'
+        #    @opts.paths.checks = fixtures_path + 'signature_check/'
         #
         #    @dispatcher_url = dispatcher_light_spawn.url
         #

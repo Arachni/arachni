@@ -19,7 +19,7 @@ shared_examples_for "path_extractor" do
         it "extracts the expected paths" do
             raise 'No paths provided via #results, use \':nil\' for \'nil\' results.' if !results
 
-            actual_results.sort.should == results.sort
+            expect(actual_results.sort).to eq results.sort
             instance_eval &block if block_given?
         end
     end

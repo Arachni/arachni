@@ -1,5 +1,71 @@
 # ChangeLog
 
+## 1.3 _(October 01, 2015)_
+
+- `UI`
+    - `CLI`
+        - Options
+            - `--browser-cluster-local-storage` -- Sets `localStorage` data from JSON file.
+- `Issue`
+    - `#variations` -- Removed, all issues now include full data.
+    - `#unique_id`, `#digest` -- In cases of passive issues, the associated
+        `#proof` is now taken into consideration.
+- `Data`
+    - `Framework`
+        - `#update_sitemap` -- Don't push URLs that include the
+            `Utilities.random_seed` to the sitemap to keep noise down.
+- `Element`
+    - `Cookie`
+        - `.encode` -- Updated list of reversed characters.
+        - `.decode` -- Handle broken encodings.
+    - `Form`
+        - `.decode` -- Handle broken encodings.
+    - `UIForm` -- Audits `<input>` and `<button>` groups which don't belong to
+        a `<form>` parent. Also covers cases of `<form>` submissions that occur
+        via elements other than a submit button.
+    - `UIInput` -- Audits individual `<input>` elements which have associated DOM events.
+    - `Capabilities` -- Refactored to allow for easier expansion of DOM capabilities.
+        - `Analyzable`
+            - `Differential` -- Updated to remove the injected seed from the response
+                bodies, echoed payloads can compromise the analysis.
+            - `Taint` => `Signature` -- Signature analysis better describes that
+                process and the "taint" terminology was overloaded by the browser's
+                taint tracing subsystems.
+- `Browser`
+    - Use the faster, native `#click` event on `Watir` elements, instead of `fire_event`.
+    - Sets `localStorage` data from `Arachni::OptionGroups::BrowserCluster#local_storage`.
+    - `Javascript`
+        - `TaintTracer`
+            - Updated sanitization of traced `Event` arguments to extract only
+                certain properties instead of iterating through the whole object.
+            - Limited the depth of the recursive taint search in argument objects.
+- `Components`
+    - Path extractors
+        - `comments`
+            - Small cleanup in acceptable paths.
+        - `script`
+            - Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
+            - Updated to require absolute paths to avoid processing junk.
+    - Reporters -- All reporters have been updated to remove `Issue#variations`.
+        - `xml` -- Updated schema to include the new `Element::UIForm::DOM` and
+            `Element::Input::DOM` elements.
+    - Plugins
+        - `proxy` -- Fixed bug causing the plugin to hang after proxy server shutdown.
+        - `login_script`
+            - Wait for the page to settle when using a JS login script.
+            - Catch script syntax errors.
+    - Checks
+        - Active
+            - Removed
+                `xss_dom_inputs` -- No longer necessary, covered by new DOM
+                    element abstractions and `xss_dom`.
+            - `unvalidated_redirect` -- Updated to use `Utilities.random_seed`
+                in the injected URL.
+            - `unvalidated_redirect_dom` -- Updated to use `Utilities.random_seed`
+                in the injected URL.
+        - Passive -- Reworked proofs to remove dynamic content which can interfere
+            with issue uniqueness or removed proofs altogether when not necessary.
+
 ## 1.2.1 _(July 25, 2015)_
 
 - HTTP

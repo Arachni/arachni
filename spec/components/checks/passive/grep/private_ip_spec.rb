@@ -13,10 +13,10 @@ describe name_from_filename do
 
     easy_test( false ) do
         header_issue = issues.select { |i| i.vector.class == Element::Header }.first
-        header_issue.vector.name.should == 'Disclosure'
-        header_issue.proof.should == '192.168.1.121'
+        expect(header_issue.vector.name).to eq 'Disclosure'
+        expect(header_issue.proof).to eq '192.168.1.121'
 
         body_issue  = issues.select { |i| i.vector.class == Element::Body }.first
-        body_issue.proof.should == '192.168.1.12'
+        expect(body_issue.proof).to eq '192.168.1.12'
     end
 end

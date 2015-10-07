@@ -10,24 +10,24 @@ describe Arachni::State::Options do
         @dump_directory = "#{Dir.tmpdir}/options-#{Arachni::Utilities.generate_token}"
     end
 
-    it { should respond_to :clear}
+    it { is_expected.to respond_to :clear}
 
     describe '#statistics' do
         let(:statistics) { subject.statistics }
 
         it 'includes :url' do
             Arachni::Options.url = 'http://test/'
-            statistics[:url].should == Arachni::Options.url
+            expect(statistics[:url]).to eq(Arachni::Options.url)
         end
 
         it 'includes :checks' do
             Arachni::Options.checks = %w(xss* sql_injection)
-            statistics[:checks].should == Arachni::Options.checks
+            expect(statistics[:checks]).to eq(Arachni::Options.checks)
         end
 
         it 'includes :plugins' do
             Arachni::Options.plugins = { 'autologin' => {} }
-            statistics[:plugins].should == %w(autologin)
+            expect(statistics[:plugins]).to eq(%w(autologin))
         end
     end
 
@@ -36,8 +36,8 @@ describe Arachni::State::Options do
             Arachni::Options.datastore.my_custom_option = 'my value'
             subject.dump( dump_directory )
 
-            Arachni::Options.load( "#{dump_directory}/options" ).
-                datastore.my_custom_option.should == 'my value'
+            expect(Arachni::Options.load( "#{dump_directory}/options" ).
+                datastore.my_custom_option).to eq('my value')
         end
     end
 
@@ -48,7 +48,7 @@ describe Arachni::State::Options do
 
             described_class.load( dump_directory )
 
-            Arachni::Options.datastore.my_custom_option.should == 'my value'
+            expect(Arachni::Options.datastore.my_custom_option).to eq('my value')
         end
     end
 

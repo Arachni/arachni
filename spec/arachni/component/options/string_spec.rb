@@ -8,7 +8,7 @@ describe Arachni::Component::Options::String do
         it 'returns true' do
             ['test', 999, true].each do |value|
                 subject.value = value
-                subject.valid?.should be_true
+                expect(subject.valid?).to be_truthy
             end
         end
     end
@@ -16,13 +16,13 @@ describe Arachni::Component::Options::String do
     describe '#normalize' do
         it 'returns a string representation of the value' do
             subject.value = 'test'
-            subject.normalize.should == 'test'
+            expect(subject.normalize).to eq('test')
         end
     end
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == :string
+            expect(subject.type).to eq(:string)
         end
     end
 

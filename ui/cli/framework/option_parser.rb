@@ -208,6 +208,15 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.xmls = true
         end
 
+        on( '--audit-ui-inputs', 'Audit orphan Input elements with events.' ) do
+            options.audit.ui_inputs = true
+        end
+
+        on( '--audit-ui-forms', 'Audit UI Forms.',
+            'Input and button groups that do not belong to a parent <form> element.' ) do
+            options.audit.ui_forms = true
+        end
+
         on( '--audit-parameter-names',
             'Inject payloads into parameter names.'
         ) do
@@ -520,6 +529,12 @@ class OptionParser < UI::CLI::OptionParser
     def browser_cluster
         separator ''
         separator 'Browser cluster'
+
+        on( '--browser-cluster-local-storage FILE',
+            "Sets the browsers' local storage using the JSON data in FILE."
+        ) do |file|
+            options.browser_cluster.local_storage = ::JSON.load( IO.read( file ) )
+        end
 
         on( '--browser-cluster-wait-for-element PATTERN:CSS',
             'Wait for element matching CSS to appear when visiting a page whose' <<

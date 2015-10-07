@@ -1,34 +1,16 @@
-shared_examples_for 'auditable' do |options = {}|
-    it_should_behave_like 'inputtable', options
-    it_should_behave_like 'submittable'
-    it_should_behave_like 'mutable', options
-    it_should_behave_like 'with_auditor'
-
-    let(:opts) do
-        {
-            single_input:   false,
-            supports_nulls: true
-        }.merge( options )
-    end
+shared_examples_for 'auditable' do
 
     before :each do
         begin
             Arachni::Options.audit.elements described_class.type
-        rescue Arachni::OptionGroups::Audit::Error
+        rescue Arachni::OptionGroups::Audit::Error => e
         end
-
-        @framework ||= Arachni::Framework.new
-        @page      = Arachni::Page.from_url( url )
-        @auditor   = Auditor.new( @page, @framework )
     end
 
     after :each do
-        @framework.clean_up
-        @framework.reset
         reset_options
     end
 
-    let(:auditor) { @auditor }
     let(:seed) { 'my_seed' }
 
     let(:auditable) do
@@ -40,12 +22,6 @@ shared_examples_for 'auditable' do |options = {}|
             s.inputs = { subject.inputs.keys.first => '1' }
             s
         end
-    end
-
-    let(:other) do
-        new = auditable.dup
-        new.inputs = { stuff: 'blah' }
-        new
     end
 
     def has_parameter_extractor?
@@ -60,14 +36,14 @@ shared_examples_for 'auditable' do |options = {}|
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        auditable.should == Arachni::RPC::Serializer.deep_clone( auditable )
+        expect(auditable).to eq(Arachni::RPC::Serializer.deep_clone( auditable ))
     end
 
     describe '#to_rpc_data' do
         let(:data) { auditable.to_rpc_data }
 
         it 'excludes #audit_options' do
-            data.should_not include 'audit_options'
+            expect(data).not_to include 'audit_options'
         end
     end
 
@@ -75,7 +51,7 @@ shared_examples_for 'auditable' do |options = {}|
         it 'clears #audit_options' do
             auditable.audit_options[:stuff] = true
             auditable.reset
-            auditable.audit_options.should be_empty
+            expect(auditable.audit_options).to be_empty
         end
     end
 
@@ -87,14 +63,14 @@ shared_examples_for 'auditable' do |options = {}|
             dupped.audit( seed ) { |_, m| audited = m }
             run
 
-            audited.audit_options.should be_any
+            expect(audited.audit_options).to be_any
             dupped = audited.dup
-            dupped.audit_options.should == audited.audit_options
+            expect(dupped.audit_options).to eq(audited.audit_options)
 
             dupped2 = dupped.dup
             dupped.audit_options.clear
 
-            dupped2.audit_options.should == audited.audit_options
+            expect(dupped2.audit_options).to eq(audited.audit_options)
         end
     end
 
@@ -103,7 +79,7 @@ shared_examples_for 'auditable' do |options = {}|
             audited = false
             auditable.audit( 'seed' ){ audited = true }
             run
-            audited.should be_true
+            expect(audited).to be_truthy
 
             Arachni::Element::Capabilities::Auditable.reset
             Arachni::Element::Capabilities::Auditable.skip_like do
@@ -113,14 +89,14 @@ shared_examples_for 'auditable' do |options = {}|
             audited = false
             auditable.audit( 'seed' ){ audited = true }
             run
-            audited.should be_false
+            expect(audited).to be_falsey
         end
 
         it 'skips element mutations based on the block\'s return value' do
             called = false
             auditable.audit( 'seed' ){ called = true }
             run
-            called.should be_true
+            expect(called).to be_truthy
 
             Arachni::Element::Capabilities::Auditable.reset
             Arachni::Element::Capabilities::Auditable.skip_like do |element|
@@ -130,7 +106,7 @@ shared_examples_for 'auditable' do |options = {}|
             i = 0
             auditable.audit( 'seed' ){ i += 1 }
             run
-            i.should == 0
+            expect(i).to eq(0)
         end
     end
 
@@ -142,55 +118,55 @@ shared_examples_for 'auditable' do |options = {}|
             id = auditable.audit_id
 
             auditable.auditor = '2'
-            auditable.audit_id.should_not == id
+            expect(auditable.audit_id).not_to eq(id)
 
             auditable.auditor = 1
             id = auditable.audit_id
 
             auditable.auditor = 2
-            auditable.audit_id.should == id
+            expect(auditable.audit_id).to eq(id)
         end
 
         it 'takes into account #action' do
             e = auditable.dup
-            e.stub(:action) { action }
+            allow(e).to receive(:action) { action }
 
             c = auditable.dup
-            c.stub(:action) { "#{action}2" }
+            allow(c).to receive(:action) { "#{action}2" }
 
-            e.audit_id.should_not == c.audit_id
+            expect(e.audit_id).not_to eq(c.audit_id)
         end
 
         it 'takes into account #type' do
             e = auditable.dup
-            e.stub(:type) { :blah }
+            allow(e).to receive(:type) { :blah }
 
             c = auditable.dup
-            c.stub(:type) { :blooh }
+            allow(c).to receive(:type) { :blooh }
 
-            e.audit_id.should_not == c.audit_id
+            expect(e.audit_id).not_to eq(c.audit_id)
         end
 
         it 'takes into account #inputs names' do
             e = auditable.dup
-            e.stub(:inputs) { {input1: 'stuff' } }
+            allow(e).to receive(:inputs) { {input1: 'stuff' } }
 
             c = auditable.dup
-            c.stub(:inputs) { {input1: 'stuff2' } }
-            e.audit_id.should == c.audit_id
+            allow(c).to receive(:inputs) { {input1: 'stuff2' } }
+            expect(e.audit_id).to eq(c.audit_id)
 
             e = auditable.dup
-            e.stub(:inputs) { {input1: 'stuff' } }
+            allow(e).to receive(:inputs) { {input1: 'stuff' } }
 
             c = auditable.dup
-            c.stub(:inputs) { {input2: 'stuff' } }
+            allow(c).to receive(:inputs) { {input2: 'stuff' } }
 
-            e.audit_id.should_not == c.audit_id
+            expect(e.audit_id).not_to eq(c.audit_id)
         end
 
         it 'takes into account the given payload' do
             id = auditable.audit_id( '1' )
-            auditable.audit_id( '2' ).should_not == id
+            expect(auditable.audit_id( '2' )).not_to eq(id)
         end
     end
 
@@ -199,45 +175,45 @@ shared_examples_for 'auditable' do |options = {}|
 
         it 'takes into account #action' do
             e = auditable.dup
-            e.stub(:action) { action }
+            allow(e).to receive(:action) { action }
 
             c = auditable.dup
-            c.stub(:action) { "#{action}2" }
+            allow(c).to receive(:action) { "#{action}2" }
 
-            e.coverage_id.should_not == c.coverage_id
+            expect(e.coverage_id).not_to eq(c.coverage_id)
         end
 
         it 'takes into account #type' do
             e = auditable.dup
-            e.stub(:type) { :blah }
+            allow(e).to receive(:type) { :blah }
 
             c = auditable.dup
-            c.stub(:type) { :blooh }
+            allow(c).to receive(:type) { :blooh }
 
-            e.coverage_id.should_not == c.coverage_id
+            expect(e.coverage_id).not_to eq(c.coverage_id)
         end
 
         it 'takes into account #inputs names' do
             e = auditable.dup
-            e.stub(:inputs) { {input1: 'stuff' } }
+            allow(e).to receive(:inputs) { {input1: 'stuff' } }
 
             c = auditable.dup
-            c.stub(:inputs) { {input1: 'stuff2' } }
-            e.coverage_id.should == c.coverage_id
+            allow(c).to receive(:inputs) { {input1: 'stuff2' } }
+            expect(e.coverage_id).to eq(c.coverage_id)
 
             e = auditable.dup
-            e.stub(:inputs) { {input1: 'stuff' } }
+            allow(e).to receive(:inputs) { {input1: 'stuff' } }
 
             c = auditable.dup
-            c.stub(:inputs) { {input2: 'stuff' } }
+            allow(c).to receive(:inputs) { {input2: 'stuff' } }
 
-            e.coverage_id.should_not == c.coverage_id
+            expect(e.coverage_id).not_to eq(c.coverage_id)
         end
     end
 
     describe '#coverage_hash' do
         it 'returns the String#persistent_hash of #coverage_id' do
-            auditable.coverage_hash.should == auditable.coverage_id.persistent_hash
+            expect(auditable.coverage_hash).to eq(auditable.coverage_id.persistent_hash)
         end
     end
 
@@ -262,7 +238,7 @@ shared_examples_for 'auditable' do |options = {}|
                     end
 
                     run
-                    injected.should == payload
+                    expect(injected).to eq(payload)
                 end
 
                 context 'with invalid data' do
@@ -270,7 +246,7 @@ shared_examples_for 'auditable' do |options = {}|
                         payload = 'stuff-here'
                         called  = 0
 
-                        auditable.class.any_instance.stub(:valid_input_data?) { |i| i != payload }
+                        allow_any_instance_of(auditable.class).to receive(:valid_input_data?) { |instance, i| i != payload }
 
                         auditable.audit( payload,
                                          format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
@@ -278,7 +254,7 @@ shared_examples_for 'auditable' do |options = {}|
                         ) { |_, element| called += 1 }
                         run
 
-                        called.should == 0
+                        expect(called).to eq(0)
                     end
                 end
             end
@@ -295,21 +271,21 @@ shared_examples_for 'auditable' do |options = {}|
                     end
 
                     run
-                    injected.uniq.sort.should == payloads.sort
+                    expect(injected.uniq.sort).to eq(payloads.sort)
                 end
 
                 context 'and is empty' do
                     it 'returns nil' do
                         injected = []
-                        auditable.audit( [],
+                        expect(auditable.audit( [],
                                           format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                                           skip_original: true
                         ) do |_, element|
                             injected << element.affected_input_value
-                        end.should be_nil
+                        end).to be_nil
 
                         run
-                        injected.should be_empty
+                        expect(injected).to be_empty
                     end
                 end
             end
@@ -327,31 +303,31 @@ shared_examples_for 'auditable' do |options = {}|
                     injected = []
 
                     auditable.platforms.update %w(unix php apache)
-                    auditable.audit( payloads,
+                    expect(auditable.audit( payloads,
                                       format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                                       skip_original: true
                     ) do |_, element|
                         injected << element.affected_input_value
-                    end.should be_true
+                    end).to be_truthy
 
                     run
 
                     payloads.delete( :windows )
                     payloads.delete( :aspx )
 
-                    injected.uniq.sort.should == payloads.values.flatten.sort
+                    expect(injected.uniq.sort).to eq(payloads.values.flatten.sort)
                 end
 
                 context 'and is empty' do
                     it 'returns nil' do
                         injected = []
-                        auditable.audit( {},
+                        expect(auditable.audit( {},
                                           format: [ Arachni::Check::Auditor::Format::STRAIGHT ] ) do |_, element|
                             injected << element.affected_input_value
-                        end.should be_nil
+                        end).to be_nil
 
                         run
-                        injected.should be_empty
+                        expect(injected).to be_empty
                     end
                 end
 
@@ -369,16 +345,16 @@ shared_examples_for 'auditable' do |options = {}|
                         injected = []
 
                         auditable.platforms.clear
-                        auditable.audit( payloads,
+                        expect(auditable.audit( payloads,
                                           format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                                           skip_original: true
                         ) do |_, element|
                             injected << element.affected_input_value
-                        end.should be_true
+                        end).to be_truthy
 
                         run
 
-                        injected.uniq.sort.should == payloads.values.flatten.sort
+                        expect(injected.uniq.sort).to eq(payloads.values.flatten.sort)
                     end
                 end
 
@@ -392,17 +368,17 @@ shared_examples_for 'auditable' do |options = {}|
                         injected = []
 
                         auditable.platforms.update %w(unix php apache)
-                        auditable.audit( payloads,
+                        expect(auditable.audit( payloads,
                                           format: [ Arachni::Check::Auditor::Format::STRAIGHT ] ) do |_, element|
                             injected << element.affected_input_value
-                        end.should be_nil
+                        end).to be_nil
 
                         run
 
                         payloads.delete( :windows )
                         payloads.delete( :aspx )
 
-                        injected.should be_empty
+                        expect(injected).to be_empty
                     end
                 end
             end
@@ -426,18 +402,18 @@ shared_examples_for 'auditable' do |options = {}|
 
                     called = false
                     each = proc do |mutation|
-                        mutation.should receive(:submit).with(options)
+                        expect(mutation).to receive(:submit).with(options)
                         called = true
                     end
                     auditable.audit( seed, each_mutation: each, submit: options ){}
 
-                    called.should be_true
+                    expect(called).to be_truthy
                 end
             end
 
             describe :each_mutation do
                 it 'is passed each generated mutation' do
-                    pending if !has_parameter_extractor?
+                    skip if !has_parameter_extractor?
 
                     submitted = nil
                     cnt = 0
@@ -451,12 +427,12 @@ shared_examples_for 'auditable' do |options = {}|
                     end
 
                     run
-                    cnt.should == 1
+                    expect(cnt).to eq(1)
                     auditable.inputs == submitted
                 end
 
                 it 'is able to modify mutations on the fly' do
-                    pending if !has_parameter_extractor?
+                    skip if !has_parameter_extractor?
 
                     submitted = nil
 
@@ -472,12 +448,12 @@ shared_examples_for 'auditable' do |options = {}|
                     end
 
                     run
-                    submitted.values.first.should == modified_seed
+                    expect(submitted.values.first).to eq(modified_seed)
                 end
 
                 context 'when it returns one or more elements of the same type' do
                     it 'audits those elements too' do
-                        pending if !has_parameter_extractor?
+                        skip if !has_parameter_extractor?
 
                         injected = []
                         cnt = 0
@@ -500,8 +476,8 @@ shared_examples_for 'auditable' do |options = {}|
                         end
 
                         run
-                        cnt.should == 3
-                        injected.sort.should == [ seed, 'houa', 'houa2'].sort
+                        expect(cnt).to eq(3)
+                        expect(injected.sort).to eq([ seed, 'houa', 'houa2'].sort)
                     end
                 end
             end
@@ -519,8 +495,8 @@ shared_examples_for 'auditable' do |options = {}|
                         run
 
                         audited.uniq!
-                        audited.size.should == 1
-                        audited.should == [auditable.inputs.keys.first]
+                        expect(audited.size).to eq(1)
+                        expect(audited).to eq([auditable.inputs.keys.first])
                     end
                 end
 
@@ -537,8 +513,8 @@ shared_examples_for 'auditable' do |options = {}|
                         run
 
                         audited.uniq!
-                        audited.size.should == 1
-                        audited.should      == [auditable.inputs.keys.first]
+                        expect(audited.size).to eq(1)
+                        expect(audited).to      eq([auditable.inputs.keys.first])
                     end
                 end
             end
@@ -546,7 +522,7 @@ shared_examples_for 'auditable' do |options = {}|
             describe :format do
                 describe 'Arachni::Check::Auditor::Format::STRAIGHT' do
                     it 'injects the seed as is' do
-                        pending if !has_parameter_extractor?
+                        skip if !has_parameter_extractor?
 
                         injected = nil
                         cnt = 0
@@ -559,14 +535,14 @@ shared_examples_for 'auditable' do |options = {}|
                         end
 
                         run
-                        cnt.should == 1
-                        injected.should == seed
+                        expect(cnt).to eq(1)
+                        expect(injected).to eq(seed)
                     end
                 end
 
                 describe 'Arachni::Check::Auditor::Format::APPEND' do
                     it 'appends the seed to the existing value of the input' do
-                        pending if !has_parameter_extractor?
+                        skip if !has_parameter_extractor?
 
                         injected = nil
                         cnt = 0
@@ -579,16 +555,16 @@ shared_examples_for 'auditable' do |options = {}|
                         end
 
                         run
-                        cnt.should == 1
-                        injected.should == auditable.inputs.values.first + seed
+                        expect(cnt).to eq(1)
+                        expect(injected).to eq(auditable.inputs.values.first + seed)
                     end
                 end
 
                 describe 'Arachni::Check::Auditor::Format::NULL' do
                     it 'terminates the seed with a null character',
                        if: described_class != Arachni::Element::Header &&
-                               described_class.is_a?( Arachni::Element::Capabilities::Auditable::DOM ) do
-                        pending if !has_parameter_extractor?
+                               described_class.is_a?( Arachni::Element::DOM ) do
+                        skip if !has_parameter_extractor?
 
                         injected = nil
                         cnt = 0
@@ -600,14 +576,14 @@ shared_examples_for 'auditable' do |options = {}|
                         end
 
                         run
-                        cnt.should == 1
-                        auditable.decode( injected ).should == seed + "\0"
+                        expect(cnt).to eq(1)
+                        expect(auditable.decode( injected )).to eq(seed + "\0")
                     end
                 end
 
                 describe 'Arachni::Check::Auditor::Format::SEMICOLON' do
                     it 'prepends the seed with a semicolon' do
-                        pending if !has_parameter_extractor?
+                        skip if !has_parameter_extractor?
 
                         injected = nil
                         cnt = 0
@@ -618,9 +594,9 @@ shared_examples_for 'auditable' do |options = {}|
                             cnt += 1
                         end
                         run
-                        cnt.should == 1
+                        expect(cnt).to eq(1)
 
-                        auditable.decode( injected ).should == ";" + seed
+                        expect(auditable.decode( injected )).to eq(";" + seed)
                     end
                 end
             end
@@ -640,7 +616,7 @@ shared_examples_for 'auditable' do |options = {}|
                             auditable.audit( seed, @audit_opts.merge( redundant: true )){ cnt += 1 }
                         end
                         run
-                        cnt.should == 5
+                        expect(cnt).to eq(5)
                     end
                 end
 
@@ -651,7 +627,7 @@ shared_examples_for 'auditable' do |options = {}|
                             auditable.audit( seed, @audit_opts.merge( redundant: false )){ cnt += 1 }
                         end
                         run
-                        cnt.should == 1
+                        expect(cnt).to eq(1)
                     end
                 end
 
@@ -662,7 +638,7 @@ shared_examples_for 'auditable' do |options = {}|
                             auditable.audit( seed, @audit_opts ){ cnt += 1 }
                         end
                         run
-                        cnt.should == 1
+                        expect(cnt).to eq(1)
                     end
                 end
             end
@@ -673,41 +649,41 @@ shared_examples_for 'auditable' do |options = {}|
                 Arachni::Options.audit.exclude_vector_patterns = auditable.inputs.keys
 
                 audited = []
-                auditable.audit( seed, skip_original: true ) do |_, elem|
+                expect(auditable.audit( seed, skip_original: true ) do |_, elem|
                     audited << elem.affected_input_name
-                end.should be_true
+                end).to be_truthy
 
                 run
-                audited.should be_empty
+                expect(audited).to be_empty
             end
         end
 
         context "when #{Arachni::OptionGroups::Audit}#vector?" do
             context 'returns true' do
                 it 'audits the input' do
-                    Arachni::Options.audit.stub(:vector?){ true }
+                    allow(Arachni::Options.audit).to receive(:vector?){ true }
 
                     audited = []
-                    auditable.audit( seed, skip_original: true ) do |_, elem|
+                    expect(auditable.audit( seed, skip_original: true ) do |_, elem|
                         audited << elem.affected_input_name
-                    end.should be_true
+                    end).to be_truthy
 
                     run
-                    audited.should_not be_empty
+                    expect(audited).not_to be_empty
                 end
             end
 
             context 'returns false' do
                 it 'skips the input' do
-                    Arachni::Options.audit.stub(:vector?){ false }
+                    allow(Arachni::Options.audit).to receive(:vector?){ false }
 
                     audited = []
-                    auditable.audit( seed, skip_original: true ) do |_, elem|
+                    expect(auditable.audit( seed, skip_original: true ) do |_, elem|
                         audited << elem.affected_input_name
-                    end.should be_true
+                    end).to be_truthy
 
                     run
-                    audited.should be_empty
+                    expect(audited).to be_empty
                 end
             end
         end
@@ -715,12 +691,12 @@ shared_examples_for 'auditable' do |options = {}|
         context "when #{described_class::Scope}#out?" do
             context true do
                 it 'returns immediately' do
-                    described_class::Scope.any_instance.stub(:out?) { true }
+                    allow_any_instance_of(described_class::Scope).to receive(:out?) { true }
 
                     ran = false
-                    auditable.audit( seed ) { ran = true }.should be_false
+                    expect(auditable.audit( seed ) { ran = true }).to be_falsey
                     run
-                    ran.should be_false
+                    expect(ran).to be_falsey
                 end
             end
         end
@@ -729,19 +705,19 @@ shared_examples_for 'auditable' do |options = {}|
             it 'returns immediately' do
                 ran = false
                 auditable.inputs = {}
-                auditable.audit( seed ) { ran = true }.should be_false
+                expect(auditable.audit( seed ) { ran = true }).to be_falsey
                 run
 
-                ran.should be_false
+                expect(ran).to be_falsey
             end
         end
 
         context 'when the auditor\'s #skip? method returns true for a mutation' do
             it 'is skipped' do
                 ran = false
-                auditable.audit( seed ) { ran = true }.should be_true
+                expect(auditable.audit( seed ) { ran = true }).to be_truthy
                 run
-                ran.should be_true
+                expect(ran).to be_truthy
 
                 Arachni::Element::Capabilities::Auditable.reset
 
@@ -750,9 +726,9 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 ran = false
-                auditable.audit( seed ) { ran = true }.should be_true
+                expect(auditable.audit( seed ) { ran = true }).to be_truthy
                 run
-                ran.should be_false
+                expect(ran).to be_falsey
 
                 Arachni::Element::Capabilities::Auditable.reset
 
@@ -761,18 +737,18 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 ran = false
-                auditable.audit( seed ) { ran = true }.should be_true
+                expect(auditable.audit( seed ) { ran = true }).to be_truthy
                 run
-                ran.should be_true
+                expect(ran).to be_truthy
             end
         end
 
         context 'when the element\'s #skip? method returns true for a mutation' do
             it 'is skipped' do
                 ran = false
-                auditable.audit( seed ) { ran = true }.should be_true
+                expect(auditable.audit( seed ) { ran = true }).to be_truthy
                 run
-                ran.should be_true
+                expect(ran).to be_truthy
 
                 Arachni::Element::Capabilities::Auditable.reset
 
@@ -781,9 +757,9 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 ran = false
-                auditable.audit( seed ) { ran = true }.should be_true
+                expect(auditable.audit( seed ) { ran = true }).to be_truthy
                 run
-                ran.should be_false
+                expect(ran).to be_falsey
 
                 Arachni::Element::Capabilities::Auditable.reset
 
@@ -792,9 +768,9 @@ shared_examples_for 'auditable' do |options = {}|
                 end
 
                 ran = false
-                auditable.audit( seed ) { ran = true }.should be_true
+                expect(auditable.audit( seed ) { ran = true }).to be_truthy
                 run
-                ran.should be_true
+                expect(ran).to be_truthy
             end
         end
     end

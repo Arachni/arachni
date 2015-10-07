@@ -29,33 +29,33 @@ describe Arachni::BrowserCluster::Worker do
         describe :job_timeout do
             it 'sets how much time to allow each job to run' do
                 @worker = described_class.new( job_timeout: 10 )
-                @worker.job_timeout.should == 10
+                expect(@worker.job_timeout).to eq(10)
             end
 
             it "defaults to #{Arachni::OptionGroups::BrowserCluster}#job_timeout" do
                 Arachni::Options.browser_cluster.job_timeout = 5
                 @worker = described_class.new
-                @worker.job_timeout.should == 5
+                expect(@worker.job_timeout).to eq(5)
             end
         end
 
         describe :max_time_to_live do
             it 'sets how many jobs should be run before respawning' do
                 @worker = described_class.new( max_time_to_live: 10 )
-                @worker.max_time_to_live.should == 10
+                expect(@worker.max_time_to_live).to eq(10)
             end
 
             it "defaults to #{Arachni::OptionGroups::BrowserCluster}#worker_time_to_live" do
                 Arachni::Options.browser_cluster.worker_time_to_live = 5
                 @worker = described_class.new
-                @worker.max_time_to_live.should == 5
+                expect(@worker.max_time_to_live).to eq(5)
             end
         end
     end
 
     describe '#run_job' do
         it 'processes jobs from #master' do
-            subject.should receive(:run_job).with(custom_job)
+            expect(subject).to receive(:run_job).with(custom_job)
             @cluster.queue( custom_job ){}
             @cluster.wait
         end
@@ -66,7 +66,7 @@ describe Arachni::BrowserCluster::Worker do
                 job = subject.job
             end
             @cluster.wait
-            job.should == custom_job
+            expect(job).to eq(custom_job)
         end
 
         context 'before running the job' do
@@ -78,24 +78,24 @@ describe Arachni::BrowserCluster::Worker do
                 @cluster.queue( custom_job ){}
                 @cluster.wait
 
-                subject.pid.should_not == dead_pid
-                Process.getpgid( subject.pid ).should be_true
+                expect(subject.pid).not_to eq(dead_pid)
+                expect(Process.getpgid( subject.pid )).to be_truthy
             end
         end
 
         context 'when a job fails' do
             it 'ignores it' do
-                custom_job.stub(:configure_and_run){ raise 'stuff' }
-                subject.run_job( custom_job ).should be_true
+                allow(custom_job).to receive(:configure_and_run){ raise 'stuff' }
+                expect(subject.run_job( custom_job )).to be_truthy
             end
 
             context Selenium::WebDriver::Error::WebDriverError do
                 it 'respawns' do
-                    subject.watir.stub(:cookies) do
+                    allow(subject.watir).to receive(:cookies) do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
-                    subject.watir.stub(:close) do
+                    allow(subject.watir).to receive(:close) do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
@@ -104,14 +104,137 @@ describe Arachni::BrowserCluster::Worker do
 
                     subject.run_job( custom_job )
 
-                    watir.should_not == subject.watir
-                    pid.should_not == subject.pid
+                    expect(watir).not_to eq(subject.watir)
+                    expect(pid).not_to eq(subject.pid)
                 end
             end
         end
 
         context 'when the job finishes' do
             let(:page) { Arachni::Page.from_url(url) }
+
+            it "clears the #{Arachni::Browser::Javascript}#taint" do
+                subject.javascript.taint = 'stuff'
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                expect(subject.javascript.taint).to be_nil
+            end
+
+            it 'clears #cookies' do
+                subject.preload page
+                expect(subject.preloads).to be_any
+
+                @cluster.with_browser do |browser|
+                    browser.load page
+                    expect(subject.cookies).to be_any
+                end
+                @cluster.wait
+
+                expect(subject.cookies).to be_empty
+            end
+
+            it 'clears #preloads' do
+                subject.preload page
+                expect(subject.preloads).to be_any
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                expect(subject.preloads).to be_empty
+            end
+
+            it 'clears #cache' do
+                subject.cache page
+                expect(subject.cache).to be_any
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                expect(subject.cache).to be_empty
+            end
+
+            it 'clears #captured_pages' do
+                subject.captured_pages << page
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                expect(subject.captured_pages).to be_empty
+            end
+
+            it 'clears #page_snapshots' do
+                subject.page_snapshots << page
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                expect(subject.page_snapshots).to be_empty
+            end
+
+            it 'clears #page_snapshots_with_sinks' do
+                subject.page_snapshots_with_sinks << page
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                expect(subject.page_snapshots_with_sinks).to be_empty
+            end
+
+            it 'clears #on_new_page callbacks' do
+                subject.on_new_page{}
+
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+
+                expect(subject.observer_count_for(:on_new_page)).to eq(0)
+            end
+
+            it 'clears #on_new_page_with_sink callbacks' do
+                subject.on_new_page_with_sink{}
+
+                @cluster.queue( custom_job ){}
+                @cluster.wait
+
+                expect(subject.observer_count_for(:on_new_page_with_sink)).to eq(0)
+            end
+
+            it 'clears #on_response callbacks' do
+                subject.on_response{}
+
+                @cluster.queue( custom_job ){}
+                @cluster.wait
+
+                expect(subject.observer_count_for(:on_response)).to eq(0)
+            end
+
+            it 'clears #on_fire_event callbacks' do
+                subject.on_fire_event{}
+
+                @cluster.queue( custom_job ){}
+                @cluster.wait
+
+                expect(subject.observer_count_for(:on_fire_event)).to eq(0)
+            end
+
+            it 'removes #job' do
+                @cluster.queue( custom_job ){}
+                @cluster.wait
+                expect(subject.job).to be_nil
+            end
+
+            it 'decrements #time_to_live' do
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+                expect(subject.time_to_live).to eq(subject.max_time_to_live - 1)
+            end
+
+            it 'sets Job#time' do
+                @cluster.queue( custom_job ) {}
+                @cluster.wait
+                expect(custom_job.time).to be > 0
+            end
 
             context 'when there are 5 or more windows open' do
                 before(:each) do
@@ -124,143 +247,26 @@ describe Arachni::BrowserCluster::Worker do
                     watir         = subject.watir
                     pid = subject.pid
 
-                    subject.watir.windows.size.should > 5
+                    expect(subject.watir.windows.size).to be > 5
                     @cluster.explore( page ) {}
                     @cluster.wait
 
-                    watir.should_not == subject.watir
-                    pid.should_not == subject.pid
-                    subject.watir.windows.size.should == 2
+                    expect(watir).not_to eq(subject.watir)
+                    expect(pid).not_to eq(subject.pid)
+                    expect(subject.watir.windows.size).to eq(2)
                 end
 
                 it 'clears the cached HTTP responses' do
                     subject.preload page
-                    subject.preloads.should be_any
+                    expect(subject.preloads).to be_any
                     subject.instance_variable_get(:@window_responses)
 
-                    subject.watir.windows.size.should > 5
+                    expect(subject.watir.windows.size).to be > 5
                     @cluster.queue( custom_job ) {}
                     @cluster.wait
 
-                    subject.instance_variable_get(:@window_responses).should be_empty
+                    expect(subject.instance_variable_get(:@window_responses)).to be_empty
                 end
-            end
-
-            it "clears the #{Arachni::Browser::Javascript}#taint" do
-                subject.javascript.taint = 'stuff'
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                subject.javascript.taint.should be_nil
-            end
-
-            it 'clears #cookies' do
-                subject.preload page
-                subject.preloads.should be_any
-
-                @cluster.with_browser do |browser|
-                    browser.load page
-                    subject.cookies.should be_any
-                end
-                @cluster.wait
-
-                subject.cookies.should be_empty
-            end
-
-            it 'clears #preloads' do
-                subject.preload page
-                subject.preloads.should be_any
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                subject.preloads.should be_empty
-            end
-
-            it 'clears #cache' do
-                subject.cache page
-                subject.cache.should be_any
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                subject.cache.should be_empty
-            end
-
-            it 'clears #captured_pages' do
-                subject.captured_pages << page
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                subject.captured_pages.should be_empty
-            end
-
-            it 'clears #page_snapshots' do
-                subject.page_snapshots << page
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                subject.page_snapshots.should be_empty
-            end
-
-            it 'clears #page_snapshots_with_sinks' do
-                subject.page_snapshots_with_sinks << page
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                subject.page_snapshots_with_sinks.should be_empty
-            end
-
-            it 'clears #on_new_page callbacks' do
-                subject.on_new_page{}
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                subject.observer_count_for(:on_new_page).should == 0
-            end
-
-            it 'clears #on_new_page_with_sink callbacks' do
-                subject.on_new_page_with_sink{}
-
-                @cluster.queue( custom_job ){}
-                @cluster.wait
-
-                subject.observer_count_for(:on_new_page_with_sink).should == 0
-            end
-
-            it 'clears #on_response callbacks' do
-                subject.on_response{}
-
-                @cluster.queue( custom_job ){}
-                @cluster.wait
-
-                subject.observer_count_for(:on_response).should == 0
-            end
-
-            it 'clears #on_fire_event callbacks' do
-                subject.on_fire_event{}
-
-                @cluster.queue( custom_job ){}
-                @cluster.wait
-
-                subject.observer_count_for(:on_fire_event).should == 0
-            end
-
-            it 'removes #job' do
-                @cluster.queue( custom_job ){}
-                @cluster.wait
-                subject.job.should be_nil
-            end
-
-            it 'decrements #time_to_live' do
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-                subject.time_to_live.should == subject.max_time_to_live - 1
             end
 
             context 'when #time_to_live reaches 0' do
@@ -278,15 +284,15 @@ describe Arachni::BrowserCluster::Worker do
                     @cluster.queue( custom_job ) {}
                     @cluster.wait
 
-                    watir.should_not == subject.watir
-                    pid.should_not == subject.pid
+                    expect(watir).not_to eq(subject.watir)
+                    expect(pid).not_to eq(subject.pid)
                 end
             end
 
             context 'when cookie clearing raises' do
                 context Selenium::WebDriver::Error::NoSuchWindowError do
                     it 'respawns' do
-                        subject.watir.stub(:cookies) do
+                        allow(subject.watir).to receive(:cookies) do
                             raise Selenium::WebDriver::Error::NoSuchWindowError
                         end
 
@@ -295,18 +301,29 @@ describe Arachni::BrowserCluster::Worker do
 
                         subject.run_job( custom_job )
 
-                        watir.should_not == subject.watir
-                        pid.should_not == subject.pid
+                        expect(watir).not_to eq(subject.watir)
+                        expect(pid).not_to eq(subject.pid)
                     end
                 end
             end
         end
 
         context 'when the job takes more than #job_timeout' do
-            it 'aborts it' do
+            before do
                 subject.job_timeout = 1
+            end
+
+            it 'sets Job#time' do
                 @cluster.queue( sleep_job ) {}
                 @cluster.wait
+                expect(sleep_job.time).to be > 1
+                expect(sleep_job.time).to be < 1.1
+            end
+
+            it 'sets Job#timed_out?' do
+                @cluster.queue( sleep_job ) {}
+                @cluster.wait
+                expect(sleep_job).to be_timed_out
             end
         end
     end

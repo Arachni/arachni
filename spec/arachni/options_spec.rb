@@ -11,52 +11,53 @@ describe Arachni::Options do
 
     it 'proxies missing class methods to instance methods' do
         url = 'http://test.com/'
-        subject.url.should_not == url
+        expect(subject.url).not_to eq(url)
         subject.url = url
-        subject.url.should == url
+        expect(subject.url).to eq(url)
     end
 
     %w(checks platforms plugins authorized_by no_fingerprinting spawns).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     groups.each do |group|
         describe "##{group}" do
             it 'is an OptionGroup' do
-                subject.send( group ).should be_kind_of Arachni::OptionGroup
-                subject.send( group ).class.to_s.downcase.should ==
+                expect(subject.send( group )).to be_kind_of Arachni::OptionGroup
+                expect(subject.send( group ).class.to_s.downcase).to eq(
                     "arachni::optiongroups::#{group}"
+                )
             end
         end
     end
 
     describe '#spawns' do
         it 'defaults to 0' do
-            subject.spawns.should == 0
+            expect(subject.spawns).to eq(0)
         end
 
         it 'converts its argument to Integer' do
             subject.spawns = '5'
-            subject.spawns.should == 5
+            expect(subject.spawns).to eq(5)
         end
     end
 
     describe '#do_not_fingerprint' do
         it 'disables fingerprinting' do
-            subject.no_fingerprinting.should be_false
+            expect(subject.no_fingerprinting).to be_falsey
             subject.do_not_fingerprint
-            subject.no_fingerprinting.should be_true
+            expect(subject.no_fingerprinting).to be_truthy
         end
     end
 
     describe '#fingerprint' do
         it 'enables fingerprinting' do
             subject.do_not_fingerprint
-            subject.no_fingerprinting.should be_true
+            expect(subject.no_fingerprinting).to be_truthy
 
             subject.fingerprint
-            subject.no_fingerprinting.should be_false
+            expect(subject.no_fingerprinting).to be_falsey
         end
     end
 
@@ -64,14 +65,14 @@ describe Arachni::Options do
         context 'when fingerprinting is enabled' do
             it 'returns true' do
                 subject.no_fingerprinting = false
-                subject.fingerprint?.should be_true
+                expect(subject.fingerprint?).to be_truthy
             end
         end
 
         context 'when fingerprinting is disabled' do
             it 'returns false' do
                 subject.no_fingerprinting = true
-                subject.fingerprint?.should be_false
+                expect(subject.fingerprint?).to be_falsey
             end
         end
     end
@@ -79,18 +80,18 @@ describe Arachni::Options do
     describe '#validate' do
         context 'when valid' do
             it 'returns nil' do
-                subject.validate.should be_empty
+                expect(subject.validate).to be_empty
             end
         end
 
         context 'when invalid' do
             it 'returns errors by group' do
                 subject.session.check_pattern = /test/
-                subject.validate.should == {
+                expect(subject.validate).to eq({
                     session: {
                         check_url: "Option is missing."
                     }
-                }
+                })
             end
         end
     end
@@ -98,17 +99,17 @@ describe Arachni::Options do
     describe '#url=' do
         it 'normalizes its argument' do
             subject.url = 'http://test.com/my path'
-            subject.url.should == @utils.normalize_url( subject.url )
+            expect(subject.url).to eq(@utils.normalize_url( subject.url ))
         end
 
         it 'accepts the HTTP scheme' do
             subject.url = 'http://test.com'
-            subject.url.should == 'http://test.com/'
+            expect(subject.url).to eq('http://test.com/')
         end
 
         it 'accepts the HTTPS scheme' do
             subject.url = 'https://test.com'
-            subject.url.should == 'https://test.com/'
+            expect(subject.url).to eq('https://test.com/')
         end
 
         context 'when passed reserved host' do
@@ -158,7 +159,7 @@ describe Arachni::Options do
             context 'and an HTTPS url is provided' do
                 it 'accepts the HTTPS scheme' do
                     subject.url = 'https://test.com'
-                    subject.url.should == 'https://test.com/'
+                    expect(subject.url).to eq('https://test.com/')
                 end
             end
 
@@ -177,7 +178,7 @@ describe Arachni::Options do
             opts = { url: 'http://blah2.com' }
 
             subject.update( opts )
-            subject.url.to_s.should == @utils.normalize_url( opts[:url] )
+            expect(subject.url.to_s).to eq(@utils.normalize_url( opts[:url] ))
         end
 
         context 'when key refers to an OptionGroup' do
@@ -195,10 +196,10 @@ describe Arachni::Options do
 
                 subject.update( opts )
 
-                subject.scope.exclude_path_patterns.should == [/exclude me2/]
-                subject.scope.include_path_patterns.should == [/include me2/]
-                subject.scope.redundant_path_patterns.should == { /redundant/ => 4 }
-                subject.datastore.to_h.should == opts[:datastore]
+                expect(subject.scope.exclude_path_patterns).to eq([/exclude me2/])
+                expect(subject.scope.include_path_patterns).to eq([/include me2/])
+                expect(subject.scope.redundant_path_patterns).to eq({ /redundant/ => 4 })
+                expect(subject.datastore.to_h).to eq(opts[:datastore])
             end
         end
     end
@@ -215,7 +216,7 @@ describe Arachni::Options do
             rescue
                 raised = true
             end
-            raised.should be_false
+            expect(raised).to be_falsey
         end
 
         it 'returns the file location'do
@@ -229,7 +230,7 @@ describe Arachni::Options do
             rescue
                 raised = true
             end
-            raised.should be_false
+            expect(raised).to be_falsey
         end
     end
 
@@ -241,8 +242,8 @@ describe Arachni::Options do
             subject.save( f )
 
             options = subject.load( f )
-            options.should == subject
-            options.scope.restrict_paths.should == ['test']
+            expect(options).to eq(subject)
+            expect(options.scope.restrict_paths).to eq(['test'])
 
             raised = false
             begin
@@ -250,7 +251,7 @@ describe Arachni::Options do
             rescue
                 raised = true
             end
-            raised.should be_false
+            expect(raised).to be_falsey
         end
     end
 
@@ -259,18 +260,18 @@ describe Arachni::Options do
         ignore = [:instance, :rpc, :dispatcher, :paths, :spawns, :snapshot, :output]
 
         it 'converts self to a serializable hash' do
-            data.should be_kind_of Hash
+            expect(data).to be_kind_of Hash
 
-            Arachni::RPC::Serializer.load(
+            expect(Arachni::RPC::Serializer.load(
                 Arachni::RPC::Serializer.dump( data )
-            ).should == data
+            )).to eq(data)
         end
 
         (groups - ignore).each do |k|
             k = k.to_s
 
             it "includes the '#{k}' group" do
-                data[k].should == subject.send(k).to_rpc_data
+                expect(data[k]).to eq(subject.send(k).to_rpc_data)
             end
         end
 
@@ -278,7 +279,7 @@ describe Arachni::Options do
             k = k.to_s
 
             it "does not include the '#{k}' group" do
-                subject.to_rpc_data.should_not include k
+                expect(subject.to_rpc_data).not_to include k
             end
         end
     end
@@ -290,7 +291,7 @@ describe Arachni::Options do
             subject.datastore.stuff      = 'test2'
 
             h = subject.to_hash
-            h.should be_kind_of Hash
+            expect(h).to be_kind_of Hash
 
             h.each do |k, v|
                 next if k == :instance
@@ -298,13 +299,13 @@ describe Arachni::Options do
 
                 case v
                     when nil
-                        v.should be_nil
+                        expect(v).to be_nil
 
                     when Array
-                        subject_value.should == v
+                        expect(subject_value).to eq(v)
 
                     else
-                        (subject_value.respond_to?( :to_h ) ? subject_value.to_h : v).should == v
+                        expect(subject_value.respond_to?( :to_h ) ? subject_value.to_h : v).to eq(v)
                 end
             end
         end
@@ -312,7 +313,7 @@ describe Arachni::Options do
 
     describe '#to_h' do
         it 'aliased to to_hash' do
-            subject.to_hash.should == subject.to_h
+            expect(subject.to_hash).to eq(subject.to_h)
         end
     end
 
@@ -324,8 +325,8 @@ describe Arachni::Options do
                 }
             )
 
-            normalized[:http][:request_timeout].should == 90_000
-            subject.http.request_timeout.should_not == 90_000
+            expect(normalized[:http][:request_timeout]).to eq(90_000)
+            expect(subject.http.request_timeout).not_to eq(90_000)
         end
     end
 
@@ -335,8 +336,8 @@ describe Arachni::Options do
                 http: { request_timeout: 90_000 }
             )
 
-            normalized['http']['request_timeout'].should == 90_000
-            subject.http.request_timeout.should_not == 90_000
+            expect(normalized['http']['request_timeout']).to eq(90_000)
+            expect(subject.http.request_timeout).not_to eq(90_000)
         end
     end
 

@@ -5,41 +5,41 @@ describe Arachni::Framework::Parts::State do
 
     describe '#scanning?' do
         it "delegates to #{Arachni::State::Framework}#scanning?" do
-            subject.state.stub(:scanning?) { :stuff }
-            subject.scanning?.should == :stuff
+            allow(subject.state).to receive(:scanning?) { :stuff }
+            expect(subject.scanning?).to eq(:stuff)
         end
     end
 
     describe '#done?' do
         it "delegates to #{Arachni::State::Framework}#done?" do
-            subject.state.stub(:done?) { :stuff }
-            subject.done?.should == :stuff
+            allow(subject.state).to receive(:done?) { :stuff }
+            expect(subject.done?).to eq(:stuff)
         end
     end
 
     describe '#paused?' do
         it "delegates to #{Arachni::State::Framework}#paused?" do
-            subject.state.stub(:paused?) { :stuff }
-            subject.paused?.should == :stuff
+            allow(subject.state).to receive(:paused?) { :stuff }
+            expect(subject.paused?).to eq(:stuff)
         end
     end
 
     describe '#state' do
         it "returns #{Arachni::State::Framework}" do
-            subject.state.should be_kind_of Arachni::State::Framework
+            expect(subject.state).to be_kind_of Arachni::State::Framework
         end
     end
 
     describe '#abort' do
         it 'aborts the system' do
-            @options.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/signature_check/'
 
             Arachni::Framework.new do |f|
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
 
                 f.plugins.load :wait
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
@@ -50,7 +50,7 @@ describe Arachni::Framework::Parts::State do
                 f.abort
                 t.join
 
-                Arachni::Data.issues.size.should < 500
+                expect(Arachni::Data.issues.size).to be < 500
             end
         end
 
@@ -58,7 +58,7 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
@@ -66,24 +66,24 @@ describe Arachni::Framework::Parts::State do
                 sleep 0.1 while f.status != :scanning
 
                 f.abort
-                f.status.should == :aborted
+                expect(f.status).to eq(:aborted)
 
                 t.join
-                f.status.should == :aborted
+                expect(f.status).to eq(:aborted)
             end
         end
     end
 
     describe '#suspend' do
         it 'suspends the system' do
-            @options.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/signature_check/'
 
             Arachni::Framework.new do |f|
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
 
                 f.plugins.load :wait
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
@@ -94,17 +94,17 @@ describe Arachni::Framework::Parts::State do
                 @snapshot = f.suspend
                 t.join
 
-                Arachni::Data.issues.size.should < 500
+                expect(Arachni::Data.issues.size).to be < 500
             end
 
-            Arachni::Snapshot.load( @snapshot ).should be_true
+            expect(Arachni::Snapshot.load( @snapshot )).to be_truthy
         end
 
         it 'sets #status to :suspended' do
             Arachni::Framework.new do |f|
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
@@ -112,10 +112,10 @@ describe Arachni::Framework::Parts::State do
                 sleep 0.1 while f.status != :scanning
 
                 @snapshot = f.suspend
-                f.status.should == :suspended
+                expect(f.status).to eq(:suspended)
 
                 t.join
-                f.status.should == :suspended
+                expect(f.status).to eq(:suspended)
             end
         end
 
@@ -128,7 +128,7 @@ describe Arachni::Framework::Parts::State do
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
 
-                f.checks.load  :taint
+                f.checks.load :signature
                 f.plugins.load :suspendable
 
                 t = Thread.new do
@@ -140,7 +140,7 @@ describe Arachni::Framework::Parts::State do
                 f.suspend
                 t.join
 
-                Arachni::State.plugins.runtime[:suspendable][:data].should == 1
+                expect(Arachni::State.plugins.runtime[:suspendable][:data]).to eq(1)
             end
         end
 
@@ -149,7 +149,7 @@ describe Arachni::Framework::Parts::State do
         context "when #{Arachni::OptionGroups::Snapshot}#save_path" do
             context 'is a directory' do
                 it 'stores the snapshot under it' do
-                    @options.paths.checks       = fixtures_path + '/taint_check/'
+                    @options.paths.checks       = fixtures_path + '/signature_check/'
                     @options.snapshot.save_path = Dir.tmpdir
 
                     Arachni::Framework.new do |f|
@@ -157,7 +157,7 @@ describe Arachni::Framework::Parts::State do
                         f.options.audit.elements :links
 
                         f.plugins.load :wait
-                        f.checks.load :taint
+                        f.checks.load :signature
 
                         t = Thread.new do
                             f.run
@@ -168,17 +168,17 @@ describe Arachni::Framework::Parts::State do
                         @snapshot = f.suspend
                         t.join
 
-                        Arachni::Data.issues.size.should < 500
+                        expect(Arachni::Data.issues.size).to be < 500
                     end
 
-                    File.dirname( @snapshot ).should == Dir.tmpdir
-                    Arachni::Snapshot.load( @snapshot ).should be_true
+                    expect(File.dirname( @snapshot )).to eq(Dir.tmpdir)
+                    expect(Arachni::Snapshot.load( @snapshot )).to be_truthy
                 end
             end
 
             context 'is a file path' do
                 it 'stores the snapshot there' do
-                    @options.paths.checks       = fixtures_path + '/taint_check/'
+                    @options.paths.checks       = fixtures_path + '/signature_check/'
                     @options.snapshot.save_path = "#{Dir.tmpdir}/snapshot"
 
                     Arachni::Framework.new do |f|
@@ -186,7 +186,7 @@ describe Arachni::Framework::Parts::State do
                         f.options.audit.elements :links
 
                         f.plugins.load :wait
-                        f.checks.load :taint
+                        f.checks.load :signature
 
                         t = Thread.new do
                             f.run
@@ -197,11 +197,11 @@ describe Arachni::Framework::Parts::State do
                         @snapshot = f.suspend
                         t.join
 
-                        Arachni::Data.issues.size.should < 500
+                        expect(Arachni::Data.issues.size).to be < 500
                     end
 
-                    @snapshot.should == "#{Dir.tmpdir}/snapshot"
-                    Arachni::Snapshot.load( @snapshot ).should be_true
+                    expect(@snapshot).to eq("#{Dir.tmpdir}/snapshot")
+                    expect(Arachni::Snapshot.load( @snapshot )).to be_truthy
                 end
             end
         end
@@ -209,7 +209,7 @@ describe Arachni::Framework::Parts::State do
 
     describe '#restore' do
         it 'restores a suspended scan' do
-            @options.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/signature_check/'
 
             logged_issues = 0
             Arachni::Framework.new do |f|
@@ -217,7 +217,7 @@ describe Arachni::Framework::Parts::State do
                 f.options.audit.elements :links
 
                 f.plugins.load :wait
-                f.checks.load :taint
+                f.checks.load :signature
 
                 Arachni::Data.issues.on_new do
                     logged_issues += 1
@@ -232,11 +232,11 @@ describe Arachni::Framework::Parts::State do
                 @snapshot = f.suspend
                 t.join
 
-                logged_issues.should < 500
+                expect(logged_issues).to be < 500
             end
 
             reset_options
-            @options.paths.checks  = fixtures_path + '/taint_check/'
+            @options.paths.checks  = fixtures_path + '/signature_check/'
 
             Arachni::Framework.new do |f|
                 f.restore @snapshot
@@ -246,10 +246,9 @@ describe Arachni::Framework::Parts::State do
                 end
                 f.run
 
-                # logged_issues.should == 500
-                Arachni::Data.issues.size.should == 500
+                expect(Arachni::Data.issues.size).to eq(500)
 
-                f.report.plugins[:wait][:results].should == { 'stuff' => true }
+                expect(f.report.plugins[:wait][:results]).to eq({ 'stuff' => true })
             end
         end
 
@@ -262,7 +261,7 @@ describe Arachni::Framework::Parts::State do
                 f.options.datastore.my_custom_option = 'my custom value'
                 options_hash = f.options.update( f.options.to_rpc_data ).to_h.deep_clone
 
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new { f.run }
 
@@ -273,8 +272,8 @@ describe Arachni::Framework::Parts::State do
             end
 
             Arachni::Framework.restore( @snapshot ) do |f|
-                f.options.to_h.should == options_hash.merge( checks: ['taint'] )
-                f.browser_cluster_job_skip_states.should be_any
+                expect(f.options.to_h).to eq(options_hash.merge( checks: ['signature'] ))
+                expect(f.browser_cluster_job_skip_states).to be_any
             end
         end
 
@@ -283,7 +282,7 @@ describe Arachni::Framework::Parts::State do
                 f.options.url = @url + '/with_ajax'
                 f.options.audit.elements :links, :forms, :cookies
 
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new { f.run }
 
@@ -294,14 +293,14 @@ describe Arachni::Framework::Parts::State do
             end
 
             Arachni::Framework.restore( @snapshot ) do |f|
-                f.browser_cluster_job_skip_states.should be_any
+                expect(f.browser_cluster_job_skip_states).to be_any
             end
         end
 
         it 'restores loaded checks' do
             Arachni::Framework.new do |f|
                 f.options.url = @url
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new { f.run }
                 sleep 0.1 while f.status != :scanning
@@ -312,7 +311,7 @@ describe Arachni::Framework::Parts::State do
             end
 
             Arachni::Framework.restore( @snapshot ) do |f|
-                f.checks.loaded.should == ['taint']
+                expect(f.checks.loaded).to eq(['signature'])
             end
         end
 
@@ -329,7 +328,7 @@ describe Arachni::Framework::Parts::State do
             end
 
             Arachni::Framework.restore( @snapshot ) do |f|
-                f.plugins.loaded.should == ['wait']
+                expect(f.plugins.loaded).to eq(['wait'])
             end
         end
 
@@ -342,7 +341,7 @@ describe Arachni::Framework::Parts::State do
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
 
-                f.checks.load  :taint
+                f.checks.load :signature
                 f.plugins.load :suspendable
 
                 t = Thread.new do
@@ -354,7 +353,7 @@ describe Arachni::Framework::Parts::State do
                 @snapshot = f.suspend
                 t.join
 
-                Arachni::State.plugins.runtime[:suspendable][:data].should == 1
+                expect(Arachni::State.plugins.runtime[:suspendable][:data]).to eq(1)
             end
 
             Arachni::Framework.restore( @snapshot ) do |f|
@@ -364,7 +363,7 @@ describe Arachni::Framework::Parts::State do
 
                 sleep 0.1 while f.status != :scanning
 
-                f.plugins.jobs[:suspendable][:instance].counter.should == 2
+                expect(f.plugins.jobs[:suspendable][:instance].counter).to eq(2)
 
                 f.abort
                 t.join
@@ -377,7 +376,7 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
@@ -387,7 +386,7 @@ describe Arachni::Framework::Parts::State do
 
                 sleep 10
 
-                f.running?.should be_true
+                expect(f.running?).to be_truthy
                 t.kill
             end
         end
@@ -396,17 +395,17 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
                 end
 
-                f.pause.should be_kind_of Integer
+                expect(f.pause).to be_kind_of Integer
 
                 sleep 10
 
-                f.running?.should be_true
+                expect(f.running?).to be_truthy
                 t.kill
             end
         end
@@ -415,7 +414,7 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
@@ -423,7 +422,7 @@ describe Arachni::Framework::Parts::State do
                 sleep 0.1 while f.status != :scanning
 
                 f.pause
-                f.status.should == :paused
+                expect(f.status).to eq(:paused)
 
                 t.kill
             end
@@ -435,7 +434,7 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
@@ -445,7 +444,7 @@ describe Arachni::Framework::Parts::State do
 
                 sleep 10
 
-                f.running?.should be_true
+                expect(f.running?).to be_truthy
                 f.resume id
                 t.join
             end
@@ -455,14 +454,14 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new do
                     f.run
                 end
 
                 id = f.pause
-                f.status.should == :paused
+                expect(f.status).to eq(:paused)
 
                 f.resume id
                 Timeout.timeout( 5 ) do
@@ -478,7 +477,7 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'
 
-                f.browser_cluster.should receive(:shutdown)
+                expect(f.browser_cluster).to receive(:shutdown)
                 f.clean_up
             end
         end
@@ -490,7 +489,7 @@ describe Arachni::Framework::Parts::State do
 
                 f.plugins.run
                 f.clean_up
-                f.plugins.jobs.should be_empty
+                expect(f.plugins.jobs).to be_empty
             end
         end
 
@@ -499,7 +498,7 @@ describe Arachni::Framework::Parts::State do
                 f.options.url = @url + '/elem_combo'
 
                 f.clean_up
-                f.status.should == :cleanup
+                expect(f.status).to eq(:cleanup)
             end
         end
 
@@ -508,9 +507,9 @@ describe Arachni::Framework::Parts::State do
                 f.options.url = @url + '/elem_combo'
                 f.push_to_page_queue Arachni::Page.from_url( f.options.url )
 
-                f.data.page_queue.should_not be_empty
+                expect(f.data.page_queue).not_to be_empty
                 f.clean_up
-                f.data.page_queue.should be_empty
+                expect(f.data.page_queue).to be_empty
             end
         end
 
@@ -519,9 +518,9 @@ describe Arachni::Framework::Parts::State do
                 f.options.url = @url + '/elem_combo'
                 f.push_to_url_queue f.options.url
 
-                f.data.url_queue.should_not be_empty
+                expect(f.data.url_queue).not_to be_empty
                 f.clean_up
-                f.data.url_queue.should be_empty
+                expect(f.data.url_queue).to be_empty
             end
         end
 
@@ -529,7 +528,7 @@ describe Arachni::Framework::Parts::State do
             Arachni::Framework.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.clean_up
-                f.should_not be_running
+                expect(f).not_to be_running
             end
         end
     end

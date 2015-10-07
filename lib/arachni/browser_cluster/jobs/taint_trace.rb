@@ -42,8 +42,9 @@ class TaintTrace < ResourceExploration
     end
 
     def to_s
-        "#<#{self.class}:#{object_id} @resource=#{@resource} " +
-            "@taint=#{@taint.inspect} @injector=#{@injector.inspect}>"
+        "#<#{self.class}:#{object_id} @resource=#{@resource} " <<
+            "@taint=#{@taint.inspect} @injector=#{@injector.inspect} " <<
+            "time=#{@time} timed_out=#{timed_out?}>"
     end
     alias :inspect :to_s
 

@@ -17,7 +17,7 @@ describe name_from_filename do
             mongodb: {
                 Element::Form         => 2,
                 Element::Link         => 2,
-                Element::Cookie       => 1,
+                Element::Cookie       => 2,
                 Element::Header       => 1,
                 Element::LinkTemplate => 1,
                 Element::JSON         => 2,

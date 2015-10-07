@@ -8,21 +8,21 @@ describe Arachni::Component::Options::Path do
         context 'when the path exists' do
             it 'returns true' do
                 subject.value = __FILE__
-                subject.valid?.should be_true
+                expect(subject.valid?).to be_truthy
             end
         end
 
         context 'when the path does not exist' do
             it 'returns false' do
                 subject.value = __FILE__ + '22'
-                subject.valid?.should be_false
+                expect(subject.valid?).to be_falsey
             end
         end
     end
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == :path
+            expect(subject.type).to eq(:path)
         end
     end
 

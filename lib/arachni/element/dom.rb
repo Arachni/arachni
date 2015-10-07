@@ -6,20 +6,18 @@
     web site for more information on licensing and terms of use.
 =end
 
-require 'forwardable'
+require_relative 'base'
 
-module Arachni
-module Element::Capabilities
-module Auditable
+module Arachni::Element
 
-# Provides access to DOM operations for {Element elements}.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-module DOM
-    include Auditable
-    extend ::Forwardable
+class DOM < Base
 
-    INVALID_INPUT_DATA = [ "\0" ]
+    # load and include all available capabilities
+    lib = File.dirname( __FILE__ ) + '/dom/capabilities/*.rb'
+    Dir.glob( lib ).each { |f| require f }
+
+    include Arachni::Element::Capabilities::WithSource
 
     # @return   [Element::Base]
     attr_accessor :parent
@@ -29,26 +27,6 @@ module DOM
 
     attr_reader   :action
 
-    # @!method with_browser_cluster( &block )
-    def_delegator :auditor, :with_browser_cluster
-
-    # @!method with_browser( &block )
-    def_delegator :auditor, :with_browser
-
-    def self.included( parent )
-        parent.extend ClassMethods
-    end
-
-    module ClassMethods
-        def encode( string )
-            string
-        end
-
-        def decode( string )
-            string
-        end
-    end
-
     def initialize( options )
         options = options.dup
         @parent = options.delete(:parent)
@@ -57,7 +35,7 @@ module DOM
             @url    = parent.url.dup.freeze    if parent.url
             @action = parent.action.dup.freeze if parent.action
             @page   = parent.page              if parent.page
-            @source = parent.source.dup.freeze   if parent.respond_to?(:source) && parent.source
+            @source = parent.source.dup.freeze if parent.respond_to?(:source) && parent.source
         else
             @url    = options[:url].freeze
             @action = options[:action].freeze
@@ -76,10 +54,6 @@ module DOM
         # NOP
     end
 
-    def valid_input_data?( data )
-        !INVALID_INPUT_DATA.find { |c| data.include? c }
-    end
-
     def page
         return @page if @page
         @page = parent.page if parent
@@ -90,29 +64,8 @@ module DOM
         @element ||= locate
     end
 
-    # @param  [Hash]  options
-    # @param  [Block]  block
-    #   Callback to be passed the evaluated {Page}.
-    def submit( options = {}, &block )
-        with_browser do |browser|
-            prepare_browser( browser, options )
-
-            # If we've wondered to an out-of-scope resource don't bother calling.
-            # Can be caused by a JS redirect or something akin to that.
-            if (transition = trigger)
-                page = browser.to_page
-                page.dom.transitions << transition
-                block.call page.tap { |p| p.request.performer = self }
-            end
-
-            @element = nil
-            @browser = nil
-        end
-        nil
-    end
-
     def locator
-        @locator ||= Browser::ElementLocator.from_node( node )
+        @locator ||= Arachni::Browser::ElementLocator.from_node( node )
     end
 
     # Locates the element in the page.
@@ -122,6 +75,8 @@ module DOM
 
     # Triggers the event on the subject {#element}.
     #
+    # @return   [Array<Page::DOM::Transition>]
+    #
     # @abstract
     def trigger
         fail NotImplementedError
@@ -130,6 +85,7 @@ module DOM
     # Removes the associated {#page}, {#parent} and {#browser}
     def prepare_for_report
         super
+
         @page    = nil
         @parent  = nil
         @element = nil
@@ -146,9 +102,9 @@ module DOM
 
     def initialization_options
         options = {}
-        options[:url]    = url.dup     if @url
+        options[:url]    = @url.dup    if @url
         options[:action] = @action.dup if @action
-        options[:page]   = page        if page
+        # options[:page]   = @page       if @page
         options[:source] = @source.dup if @source
         options
     end
@@ -161,18 +117,14 @@ module DOM
         self.class.decode( string )
     end
 
-    private
+    def self.encode( string )
+        string
+    end
 
-    def prepare_browser( browser, options )
-        @browser = browser
-        browser.javascript.custom_code = options[:custom_code]
-        browser.javascript.taint       = options[:taint]
-
-        browser.load page
+    def self.decode( string )
+        string
     end
 
 end
 
-end
-end
 end

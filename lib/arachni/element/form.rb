@@ -21,6 +21,8 @@ class Form < Base
     Dir.glob( lib ).each { |f| require f }
 
     # Generic element capabilities.
+    include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::Capabilities::Inputtable
     include Arachni::Element::Capabilities::Analyzable
     include Arachni::Element::Capabilities::Refreshable
 
@@ -403,7 +405,16 @@ class Form < Base
         #
         # @return   [String]
         def decode( string )
-            ::URI.decode_www_form_component string.to_s
+            string = string.to_s
+
+            # Fast, but could throw error.
+            begin
+                ::URI.decode_www_form_component string
+
+            # Slower, but reliable.
+            rescue ArgumentError
+                URI.decode( string.gsub( '+', ' ' ) )
+            end
         end
 
     end

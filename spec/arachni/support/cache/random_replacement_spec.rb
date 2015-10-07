@@ -11,9 +11,9 @@ describe Arachni::Support::Cache::RandomReplacement do
         subject[k[1]] = '2'
         subject[k[2]] = '3'
         subject[k[3]] = '4'
-        subject.size.should == 3
+        expect(subject.size).to eq(3)
 
-        k.map { |key| subject[key] }.count( nil ).should == 1
+        expect(k.map { |key| subject[key] }.count( nil )).to eq(1)
 
         subject.clear
 
@@ -21,21 +21,21 @@ describe Arachni::Support::Cache::RandomReplacement do
         subject[k[0]]  = '1'
         subject[k[1]] = '3'
         subject[k[2]] = '4'
-        subject.size.should == 1
+        expect(subject.size).to eq(1)
 
-        k[0...3].map { |key| subject[key] }.count( nil ).should == 2
+        expect(k[0...3].map { |key| subject[key] }.count( nil )).to eq(2)
     end
 
     describe '#[]=' do
         it 'stores an object' do
             v = 'val'
-            (subject[:key] = v).should == v
-            subject[:key].should == v
+            expect(subject[:key] = v).to eq(v)
+            expect(subject[:key]).to eq(v)
         end
         it 'alias of #store' do
             v = 'val2'
-            subject.store( :key2, v ).should == v
-            subject[:key2].should == v
+            expect(subject.store( :key2, v )).to eq(v)
+            expect(subject[:key2]).to eq(v)
         end
     end
 

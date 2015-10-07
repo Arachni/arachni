@@ -22,17 +22,15 @@ class LinkTemplate < Base
     Dir.glob( lib ).each { |f| require f }
 
     # Generic element capabilities.
+    include Arachni::Element::Capabilities::WithNode
+    include Arachni::Element::Capabilities::Mutable
+    include Arachni::Element::Capabilities::Submittable
     include Arachni::Element::Capabilities::Analyzable
 
     # LinkTemplate-specific overrides.
     include Capabilities::WithDOM
     include Capabilities::Inputtable
     include Capabilities::Auditable
-
-    INVALID_INPUT_DATA = [
-        # Protocol URLs require a // which we can't preserve.
-        '://'
-    ]
 
     # @return   [Regexp]
     #   Regular expressions with named captures, serving as templates used to

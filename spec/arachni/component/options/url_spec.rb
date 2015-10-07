@@ -7,7 +7,7 @@ describe Arachni::Component::Options::URL do
     describe '#normalize' do
         it "returns #{Arachni::URI}" do
             subject.value = 'http://localhost'
-            subject.normalize.should == Arachni::URI('http://localhost')
+            expect(subject.normalize).to eq(Arachni::URI('http://localhost'))
         end
     end
 
@@ -15,7 +15,7 @@ describe Arachni::Component::Options::URL do
         context 'when the value is valid' do
             it 'returns true' do
                 subject.value = 'http://localhost'
-                subject.valid?.should be_true
+                expect(subject.valid?).to be_truthy
             end
         end
 
@@ -23,7 +23,7 @@ describe Arachni::Component::Options::URL do
             it 'returns false' do
                 ['http://localhost22', 'localhost', 11, '#$#$c3c43', true].each do |value|
                     subject.value = value
-                    subject.valid?.should be_false
+                    expect(subject.valid?).to be_falsey
                 end
             end
         end
@@ -31,7 +31,7 @@ describe Arachni::Component::Options::URL do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == :url
+            expect(subject.type).to eq(:url)
         end
     end
 

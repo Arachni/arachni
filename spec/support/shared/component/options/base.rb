@@ -10,7 +10,7 @@ shared_examples_for 'component_option' do
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+        expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
     describe '#to_rpc_data' do
@@ -18,16 +18,16 @@ shared_examples_for 'component_option' do
 
         %w(name description default value type).each do |attribute|
             it "includes '#{attribute}'" do
-                data[attribute].should == subject.send( attribute )
+                expect(data[attribute]).to eq(subject.send( attribute ))
             end
         end
 
         it "includes 'class'" do
-            data['class'].should == subject.class.to_s
+            expect(data['class']).to eq(subject.class.to_s)
         end
 
         it "includes 'required'" do
-            data['required'].should == subject.required?
+            expect(data['required']).to eq(subject.required?)
         end
     end
 
@@ -37,12 +37,12 @@ shared_examples_for 'component_option' do
 
         %w(name description default value type class).each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == subject.send( attribute )
+                expect(restored.send( attribute )).to eq(subject.send( attribute ))
             end
         end
 
         it "restores 'required'" do
-            restored.required?.should == subject.required?
+            expect(restored.required?).to eq(subject.required?)
         end
     end
 
@@ -57,40 +57,40 @@ shared_examples_for 'component_option' do
     describe '#name' do
         it 'returns the name of the option' do
             name = 'myname'
-            described_class.new( name ).name.should == name.to_sym
+            expect(described_class.new( name ).name).to eq(name.to_sym)
         end
     end
 
     describe '#description' do
         it 'returns the description' do
             description = 'a description'
-            described_class.new( '', description: description ).description.should == description
+            expect(described_class.new( '', description: description ).description).to eq(description)
         end
     end
 
     describe '#default' do
         it 'returns the default value' do
             default = 'default value'
-            described_class.new( '', default: default ).default.should == default
+            expect(described_class.new( '', default: default ).default).to eq(default)
         end
     end
 
     describe '#required?' do
         context 'when the option is mandatory' do
             it 'returns true' do
-                described_class.new( '', required: true ).required?.should be_true
+                expect(described_class.new( '', required: true ).required?).to be_truthy
             end
         end
 
         context 'when the option is not mandatory' do
             it 'returns false' do
-                described_class.new( '', required: false ).required?.should be_false
+                expect(described_class.new( '', required: false ).required?).to be_falsey
             end
         end
 
         context 'by default' do
             it 'returns false' do
-                described_class.new( '' ).required?.should be_false
+                expect(described_class.new( '' ).required?).to be_falsey
             end
         end
     end
@@ -99,13 +99,13 @@ shared_examples_for 'component_option' do
         context 'when the option is required' do
             context 'and the value is not empty' do
                 it 'returns false' do
-                    described_class.new( '', required: true, value: 'stuff' ).missing_value?.should be_false
+                    expect(described_class.new( '', required: true, value: 'stuff' ).missing_value?).to be_falsey
                 end
             end
 
             context 'and the value is nil' do
                 it 'returns true' do
-                    described_class.new( '', required: true ).missing_value?.should be_true
+                    expect(described_class.new( '', required: true ).missing_value?).to be_truthy
                 end
             end
         end
@@ -113,13 +113,13 @@ shared_examples_for 'component_option' do
         context 'when the option is not required' do
             context 'and the value is not empty' do
                 it 'returns false' do
-                    described_class.new( '', value: 'true' ).missing_value?.should be_false
+                    expect(described_class.new( '', value: 'true' ).missing_value?).to be_falsey
                 end
             end
 
             context 'and the value is empty' do
                 it 'returns false' do
-                    described_class.new( '' ).missing_value?.should be_false
+                    expect(described_class.new( '' ).missing_value?).to be_falsey
                 end
             end
         end
@@ -129,7 +129,7 @@ shared_examples_for 'component_option' do
         it 'sets #value' do
             option = described_class.new( '' )
             option.value = 1
-            option.value.should == 1
+            expect(option.value).to eq(1)
         end
     end
 
@@ -137,7 +137,7 @@ shared_examples_for 'component_option' do
         it 'returns the set value' do
             option = described_class.new( '' )
             option.value = 1
-            option.value.should == 1
+            expect(option.value).to eq(1)
         end
     end
 
@@ -145,18 +145,18 @@ shared_examples_for 'component_option' do
         it 'returns the set value' do
             option = described_class.new( '' )
             option.value = 1
-            option.value.should == 1
+            expect(option.value).to eq(1)
         end
     end
 
     describe '#effective_value' do
         it 'returns the value as is' do
-            described_class.new( '', value: 'blah' ).effective_value.should == 'blah'
+            expect(described_class.new( '', value: 'blah' ).effective_value).to eq('blah')
         end
 
         context 'when no #value is set' do
             it 'returns #default' do
-                described_class.new( '', default: 'test' ).effective_value.should == 'test'
+                expect(described_class.new( '', default: 'test' ).effective_value).to eq('test')
             end
         end
     end
@@ -172,16 +172,16 @@ shared_examples_for 'component_option' do
 
         %w(name description value default type).each do |m|
             it "includes :#{m}" do
-                option.to_h[m.to_sym].should == option.send(m)
+                expect(option.to_h[m.to_sym]).to eq(option.send(m))
             end
         end
 
         it 'includes :required' do
-            option.to_h[:required].should == option.required?
+            expect(option.to_h[:required]).to eq(option.required?)
         end
 
         it 'is aliased to #to_hash' do
-            option.to_hash.should == option.to_h
+            expect(option.to_hash).to eq(option.to_h)
         end
     end
 end

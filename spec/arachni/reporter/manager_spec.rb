@@ -15,7 +15,7 @@ describe Arachni::Reporter::Manager do
         it 'runs a reporter by name' do
             @reporters.run( 'foo', report )
 
-            File.exist?( 'foo' ).should be_true
+            expect(File.exist?( 'foo' )).to be_truthy
         end
 
         context 'when options are given' do
@@ -23,7 +23,7 @@ describe Arachni::Reporter::Manager do
                 options = { 'outfile' => 'stuff' }
                 reporter = @reporters.run( :foo, report, options )
 
-                reporter.options.should == options.my_symbolize_keys(false)
+                expect(reporter.options).to eq(options.my_symbolize_keys(false))
             end
         end
 
@@ -56,8 +56,8 @@ describe Arachni::Reporter::Manager do
 
     describe '#reset' do
         it "delegates to #{described_class}.reset" do
-            described_class.stub(:reset) { :stuff }
-            @reporters.reset.should == :stuff
+            allow(described_class).to receive(:reset) { :stuff }
+            expect(@reporters.reset).to eq(:stuff)
         end
     end
 

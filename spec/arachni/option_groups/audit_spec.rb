@@ -6,8 +6,8 @@ describe Arachni::OptionGroups::Audit do
 
     %w(with_both_http_methods exclude_vector_patterns include_vector_patterns
         links forms cookies cookies_extensively headers link_templates).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     describe '#link_templates=' do
@@ -15,27 +15,27 @@ describe Arachni::OptionGroups::Audit do
             templates = %w(/param\/(?<param>\w+)/ /param2\/(?<param2>\w+)/)
 
             subject.link_templates = templates.first
-            subject.link_templates.should == [Regexp.new( templates.first )]
+            expect(subject.link_templates).to eq([Regexp.new( templates.first )])
 
             subject.link_templates = templates
-            subject.link_templates.should == templates.map { |p| Regexp.new( p ) }
+            expect(subject.link_templates).to eq(templates.map { |p| Regexp.new( p ) })
         end
 
         context 'when given nil' do
             it 'empties the templates' do
                 subject.link_templates = /param\/(?<param>\w+)/
-                subject.link_templates.should be_any
+                expect(subject.link_templates).to be_any
                 subject.link_templates = nil
-                subject.link_templates.should be_empty
+                expect(subject.link_templates).to be_empty
             end
         end
 
         context 'when given false' do
             it 'empties the templates' do
                 subject.link_templates = /param\/(?<param>\w+)/
-                subject.link_templates.should be_any
+                expect(subject.link_templates).to be_any
                 subject.link_templates = false
-                subject.link_templates.should be_empty
+                expect(subject.link_templates).to be_empty
             end
         end
 
@@ -51,13 +51,13 @@ describe Arachni::OptionGroups::Audit do
         context 'when templates are available' do
             it 'returns true' do
                 subject.link_templates << /param\/(?<param>\w+)/
-                subject.link_templates?.should == true
+                expect(subject.link_templates?).to eq(true)
             end
         end
 
         context 'when templates not available' do
             it 'returns false' do
-                subject.link_templates?.should == false
+                expect(subject.link_templates?).to eq(false)
             end
         end
     end
@@ -69,21 +69,21 @@ describe Arachni::OptionGroups::Audit do
                 context true do
                     it 'returns true' do
                         subject.send "#{attribute}=", true
-                        subject.send("#{attribute}?").should == true
+                        expect(subject.send("#{attribute}?")).to eq(true)
                     end
                 end
 
                 context false do
                     it 'returns false' do
                         subject.send "#{attribute}=", false
-                        subject.send("#{attribute}?").should == false
+                        expect(subject.send("#{attribute}?")).to eq(false)
                     end
                 end
 
                 context 'nil' do
                     it 'returns false' do
                         subject.send "#{attribute}=", false
-                        subject.send("#{attribute}?").should == false
+                        expect(subject.send("#{attribute}?")).to eq(false)
                     end
                 end
             end
@@ -93,14 +93,14 @@ describe Arachni::OptionGroups::Audit do
     describe '#exclude_vector_patterns=' do
         it 'converts the argument to a flat array of Regexp' do
             subject.exclude_vector_patterns = [ [:test], 'string' ]
-            subject.exclude_vector_patterns.should == [/test/, /string/]
+            expect(subject.exclude_vector_patterns).to eq([/test/, /string/])
         end
     end
 
     describe '#include_vector_patterns=' do
         it 'converts the argument to a flat array of Regexp' do
             subject.include_vector_patterns = [ [:test], 'string' ]
-            subject.include_vector_patterns.should == [/test/, /string/]
+            expect(subject.include_vector_patterns).to eq([/test/, /string/])
         end
     end
 
@@ -108,7 +108,7 @@ describe Arachni::OptionGroups::Audit do
         context 'when #include_vector_patterns' do
             context 'is empty' do
                 it 'returns true' do
-                    subject.vector?( 'blah' ).should be_true
+                    expect(subject.vector?( 'blah' )).to be_truthy
                 end
             end
 
@@ -116,8 +116,8 @@ describe Arachni::OptionGroups::Audit do
                 it 'returns true' do
                     subject.include_vector_patterns = [/stuff/, /blah/]
 
-                    subject.vector?( 'stufferson' ).should be_true
-                    subject.vector?( 'blaherson' ).should be_true
+                    expect(subject.vector?( 'stufferson' )).to be_truthy
+                    expect(subject.vector?( 'blaherson' )).to be_truthy
                 end
             end
 
@@ -125,7 +125,7 @@ describe Arachni::OptionGroups::Audit do
                 it 'returns false' do
                     subject.include_vector_patterns = [/stuff/, /blah/]
 
-                    subject.vector?( 'mooh' ).should be_false
+                    expect(subject.vector?( 'mooh' )).to be_falsey
                 end
             end
         end
@@ -133,7 +133,7 @@ describe Arachni::OptionGroups::Audit do
         context 'when #exclude_vector_patterns' do
             context 'is empty' do
                 it 'returns true' do
-                    subject.vector?( 'blah' ).should be_true
+                    expect(subject.vector?( 'blah' )).to be_truthy
                 end
             end
 
@@ -141,8 +141,8 @@ describe Arachni::OptionGroups::Audit do
                 it 'returns true' do
                     subject.exclude_vector_patterns = [/stuff/, /blah/]
 
-                    subject.vector?( 'stufferson' ).should be_false
-                    subject.vector?( 'blaherson' ).should be_false
+                    expect(subject.vector?( 'stufferson' )).to be_falsey
+                    expect(subject.vector?( 'blaherson' )).to be_falsey
                 end
             end
 
@@ -150,7 +150,7 @@ describe Arachni::OptionGroups::Audit do
                 it 'returns false' do
                     subject.exclude_vector_patterns = [/stuff/, /blah/]
 
-                    subject.vector?( 'mooh' ).should be_true
+                    expect(subject.vector?( 'mooh' )).to be_truthy
                 end
             end
         end
@@ -158,17 +158,17 @@ describe Arachni::OptionGroups::Audit do
 
     describe '#elements' do
         it 'enables auditing of the given element types' do
-            subject.links.should be_false
-            subject.forms.should be_false
-            subject.cookies.should be_false
-            subject.headers.should be_false
+            expect(subject.links).to be_falsey
+            expect(subject.forms).to be_falsey
+            expect(subject.cookies).to be_falsey
+            expect(subject.headers).to be_falsey
 
             subject.elements :links, :forms, :cookies, :headers
 
-            subject.links.should be_true
-            subject.forms.should be_true
-            subject.cookies.should be_true
-            subject.headers.should be_true
+            expect(subject.links).to be_truthy
+            expect(subject.forms).to be_truthy
+            expect(subject.cookies).to be_truthy
+            expect(subject.headers).to be_truthy
         end
 
         context 'when given an invalid element type' do
@@ -182,17 +182,17 @@ describe Arachni::OptionGroups::Audit do
 
     describe '#elements=' do
         it 'enables auditing of the given element types' do
-            subject.links.should be_false
-            subject.forms.should be_false
-            subject.cookies.should be_false
-            subject.headers.should be_false
+            expect(subject.links).to be_falsey
+            expect(subject.forms).to be_falsey
+            expect(subject.cookies).to be_falsey
+            expect(subject.headers).to be_falsey
 
             subject.elements = :links, :forms, :cookies, :headers
 
-            subject.links.should be_true
-            subject.forms.should be_true
-            subject.cookies.should be_true
-            subject.headers.should be_true
+            expect(subject.links).to be_truthy
+            expect(subject.forms).to be_truthy
+            expect(subject.cookies).to be_truthy
+            expect(subject.headers).to be_truthy
         end
 
         context 'when given an invalid element type' do
@@ -209,19 +209,19 @@ describe Arachni::OptionGroups::Audit do
             subject.elements :links, :forms, :cookies, :headers
             subject.link_templates = /param\/(?<param>\w+)/
 
-            subject.links?.should be_true
-            subject.forms?.should be_true
-            subject.cookies?.should be_true
-            subject.headers?.should be_true
-            subject.link_templates?.should be_true
+            expect(subject.links?).to be_truthy
+            expect(subject.forms?).to be_truthy
+            expect(subject.cookies?).to be_truthy
+            expect(subject.headers?).to be_truthy
+            expect(subject.link_templates?).to be_truthy
 
             subject.skip_elements :links, :forms, :cookies, :headers, :link_templates
 
-            subject.links?.should be_false
-            subject.forms?.should be_false
-            subject.cookies?.should be_false
-            subject.headers?.should be_false
-            subject.link_templates?.should be_false
+            expect(subject.links?).to be_falsey
+            expect(subject.forms?).to be_falsey
+            expect(subject.cookies?).to be_falsey
+            expect(subject.headers?).to be_falsey
+            expect(subject.link_templates?).to be_falsey
         end
 
         context 'when given an invalid element type' do
@@ -239,74 +239,74 @@ describe Arachni::OptionGroups::Audit do
                 subject.elements :links, :forms, :cookies, :headers
                 subject.link_templates << /param\/(?<param>\w+)/
 
-                subject.links.should be_true
-                subject.elements?( :links ).should be_true
-                subject.elements?( :link ).should be_true
-                subject.elements?( 'links' ).should be_true
-                subject.elements?( 'link' ).should be_true
+                expect(subject.links).to be_truthy
+                expect(subject.elements?( :links )).to be_truthy
+                expect(subject.elements?( :link )).to be_truthy
+                expect(subject.elements?( 'links' )).to be_truthy
+                expect(subject.elements?( 'link' )).to be_truthy
 
-                subject.forms.should be_true
-                subject.elements?( :forms ).should be_true
-                subject.elements?( :form ).should be_true
-                subject.elements?( 'forms' ).should be_true
-                subject.elements?( 'form' ).should be_true
+                expect(subject.forms).to be_truthy
+                expect(subject.elements?( :forms )).to be_truthy
+                expect(subject.elements?( :form )).to be_truthy
+                expect(subject.elements?( 'forms' )).to be_truthy
+                expect(subject.elements?( 'form' )).to be_truthy
 
-                subject.cookies.should be_true
-                subject.elements?( :cookies ).should be_true
-                subject.elements?( :cookie ).should be_true
-                subject.elements?( 'cookies' ).should be_true
-                subject.elements?( 'cookie' ).should be_true
+                expect(subject.cookies).to be_truthy
+                expect(subject.elements?( :cookies )).to be_truthy
+                expect(subject.elements?( :cookie )).to be_truthy
+                expect(subject.elements?( 'cookies' )).to be_truthy
+                expect(subject.elements?( 'cookie' )).to be_truthy
 
-                subject.headers.should be_true
-                subject.elements?( :headers ).should be_true
-                subject.elements?( :header ).should be_true
-                subject.elements?( 'headers' ).should be_true
-                subject.elements?( 'header' ).should be_true
+                expect(subject.headers).to be_truthy
+                expect(subject.elements?( :headers )).to be_truthy
+                expect(subject.elements?( :header )).to be_truthy
+                expect(subject.elements?( 'headers' )).to be_truthy
+                expect(subject.elements?( 'header' )).to be_truthy
 
-                subject.link_templates.should be_any
-                subject.elements?( :link_templates ).should be_true
-                subject.elements?( :link_template ).should be_true
-                subject.elements?( 'link_templates' ).should be_true
-                subject.elements?( 'link_template' ).should be_true
+                expect(subject.link_templates).to be_any
+                expect(subject.elements?( :link_templates )).to be_truthy
+                expect(subject.elements?( :link_template )).to be_truthy
+                expect(subject.elements?( 'link_templates' )).to be_truthy
+                expect(subject.elements?( 'link_template' )).to be_truthy
 
-                subject.elements?( :header, :link, :form, :cookie, :link_template ).should be_true
-                subject.elements?( [:header, :link, :form, :cookie, :link_template] ).should be_true
+                expect(subject.elements?( :header, :link, :form, :cookie, :link_template )).to be_truthy
+                expect(subject.elements?( [:header, :link, :form, :cookie, :link_template] )).to be_truthy
             end
         end
         context 'if the given element is not to be audited' do
             it 'returns false' do
-                subject.links.should be_false
-                subject.elements?( :links ).should be_false
-                subject.elements?( :link ).should be_false
-                subject.elements?( 'links' ).should be_false
-                subject.elements?( 'link' ).should be_false
+                expect(subject.links).to be_falsey
+                expect(subject.elements?( :links )).to be_falsey
+                expect(subject.elements?( :link )).to be_falsey
+                expect(subject.elements?( 'links' )).to be_falsey
+                expect(subject.elements?( 'link' )).to be_falsey
 
-                subject.forms.should be_false
-                subject.elements?( :forms ).should be_false
-                subject.elements?( :form ).should be_false
-                subject.elements?( 'forms' ).should be_false
-                subject.elements?( 'form' ).should be_false
+                expect(subject.forms).to be_falsey
+                expect(subject.elements?( :forms )).to be_falsey
+                expect(subject.elements?( :form )).to be_falsey
+                expect(subject.elements?( 'forms' )).to be_falsey
+                expect(subject.elements?( 'form' )).to be_falsey
 
-                subject.cookies.should be_false
-                subject.elements?( :cookies ).should be_false
-                subject.elements?( :cookie ).should be_false
-                subject.elements?( 'cookies' ).should be_false
-                subject.elements?( 'cookie' ).should be_false
+                expect(subject.cookies).to be_falsey
+                expect(subject.elements?( :cookies )).to be_falsey
+                expect(subject.elements?( :cookie )).to be_falsey
+                expect(subject.elements?( 'cookies' )).to be_falsey
+                expect(subject.elements?( 'cookie' )).to be_falsey
 
-                subject.headers.should be_false
-                subject.elements?( :headers ).should be_false
-                subject.elements?( :header ).should be_false
-                subject.elements?( 'headers' ).should be_false
-                subject.elements?( 'header' ).should be_false
+                expect(subject.headers).to be_falsey
+                expect(subject.elements?( :headers )).to be_falsey
+                expect(subject.elements?( :header )).to be_falsey
+                expect(subject.elements?( 'headers' )).to be_falsey
+                expect(subject.elements?( 'header' )).to be_falsey
 
-                subject.link_templates.should be_empty
-                subject.elements?( :link_templates ).should be_false
-                subject.elements?( :link_template ).should be_false
-                subject.elements?( 'link_templates' ).should be_false
-                subject.elements?( 'link_template' ).should be_false
+                expect(subject.link_templates).to be_empty
+                expect(subject.elements?( :link_templates )).to be_falsey
+                expect(subject.elements?( :link_template )).to be_falsey
+                expect(subject.elements?( 'link_templates' )).to be_falsey
+                expect(subject.elements?( 'link_template' )).to be_falsey
 
-                subject.elements?( :header, :link, :form, :cookie, :link_templates ).should be_false
-                subject.elements?( [:header, :link, :form, :cookie, :link_templates] ).should be_false
+                expect(subject.elements?( :header, :link, :form, :cookie, :link_templates )).to be_falsey
+                expect(subject.elements?( [:header, :link, :form, :cookie, :link_templates] )).to be_falsey
             end
         end
 
@@ -324,7 +324,7 @@ describe Arachni::OptionGroups::Audit do
 
         it "converts 'link_templates' to strings" do
             subject.link_templates << /param\/(?<param>\w+)/
-            data['link_templates'].should == subject.link_templates.map(&:to_s)
+            expect(data['link_templates']).to eq(subject.link_templates.map(&:to_s))
         end
     end
 end

@@ -12,26 +12,26 @@ describe Arachni::Component::Manager do
 
     describe '#lib' do
         it 'returns the component library' do
-            @components.lib.should == @lib
+            expect(@components.lib).to eq(@lib)
         end
     end
 
     describe '#namespace' do
         it 'returns the namespace under which all components are defined' do
-            @components.namespace.should == @namespace
+            expect(@components.namespace).to eq(@namespace)
         end
     end
 
     describe '#available' do
         it 'returns all available components' do
-            @components.available.sort.should == available
+            expect(@components.available.sort).to eq(available)
         end
     end
 
     describe '#load_all' do
         it 'loads all components' do
             @components.load_all
-            @components.loaded.sort.should == @components.available.sort
+            expect(@components.loaded.sort).to eq(@components.available.sort)
         end
     end
 
@@ -41,21 +41,21 @@ describe Arachni::Component::Manager do
             context String do
                 it 'loads the component by name' do
                     @components.load( 'wait' )
-                    @components.loaded.should == %w(wait)
+                    expect(@components.loaded).to eq(%w(wait))
                 end
             end
 
             context Symbol do
                 it 'loads the component by name' do
                     @components.load( :wait )
-                    @components.loaded.should == %w(wait)
+                    expect(@components.loaded).to eq(%w(wait))
                 end
             end
 
             context Array do
                 it 'loads the components by name' do
                     @components.load( %w(bad distributable) )
-                    @components.loaded.sort.should == %w(bad distributable).sort
+                    expect(@components.loaded.sort).to eq(%w(bad distributable).sort)
                 end
             end
 
@@ -63,21 +63,21 @@ describe Arachni::Component::Manager do
                 context String do
                     it 'loads components by name' do
                         @components.load( 'wait', 'bad' )
-                        @components.loaded.sort.should == %w(bad wait).sort
+                        expect(@components.loaded.sort).to eq(%w(bad wait).sort)
                     end
                 end
 
                 context Symbol do
                     it 'loads components by name' do
                         @components.load :wait, :distributable
-                        @components.loaded.sort.should == %w(wait distributable).sort
+                        expect(@components.loaded.sort).to eq(%w(wait distributable).sort)
                     end
                 end
 
                 context Array do
                     it 'loads components by name' do
                         @components.load( :wait, %w(bad distributable) )
-                        @components.loaded.sort.should == %w(bad distributable wait).sort
+                        expect(@components.loaded.sort).to eq(%w(bad distributable wait).sort)
                     end
                 end
             end
@@ -86,14 +86,14 @@ describe Arachni::Component::Manager do
                 context 'alone' do
                     it 'loads all components' do
                         @components.load( '*' )
-                        @components.loaded.sort.should == @components.available.sort
+                        expect(@components.loaded.sort).to eq(@components.available.sort)
                     end
                 end
 
                 context 'with a category name' do
                     it 'loads all of its components' do
                         @components.load( 'plugins/*' )
-                        @components.loaded.sort.should == @components.available.sort
+                        expect(@components.loaded.sort).to eq(@components.available.sort)
                     end
                 end
 
@@ -103,7 +103,7 @@ describe Arachni::Component::Manager do
                 context 'alone' do
                     it 'loads nothing' do
                         @components.load( '-' )
-                        @components.loaded.sort.should be_empty
+                        expect(@components.loaded.sort).to be_empty
                     end
                 end
                 context 'with a name' do
@@ -111,7 +111,7 @@ describe Arachni::Component::Manager do
                         @components.load( %w(* -wait) )
                         loaded = @components.available
                         loaded.delete( 'wait' )
-                        @components.loaded.sort.should == loaded.sort
+                        expect(@components.loaded.sort).to eq(loaded.sort)
                     end
                 end
                 context 'with a partial name and a wildcard' do
@@ -120,7 +120,7 @@ describe Arachni::Component::Manager do
                         loaded = @components.available
                         loaded.delete( 'wait' )
                         loaded.delete( 'distributable' )
-                        @components.loaded.sort.should == loaded.sort
+                        expect(@components.loaded.sort).to eq(loaded.sort)
                     end
                 end
             end
@@ -141,79 +141,79 @@ describe Arachni::Component::Manager do
         context 'when passed' do
             context 'nil' do
                 it 'returns an empty array' do
-                    @components.empty?.should be_true
-                    @components.load_by_tags( nil ).should == []
+                    expect(@components.empty?).to be_truthy
+                    expect(@components.load_by_tags( nil )).to eq([])
                 end
             end
 
             context '[]' do
                 it 'returns an empty array' do
-                    @components.empty?.should be_true
-                    @components.load_by_tags( [] ).should == []
+                    expect(@components.empty?).to be_truthy
+                    expect(@components.load_by_tags( [] )).to eq([])
                 end
             end
 
             context String do
                 it 'loads components whose tags include the given tag (as either a String or a Symbol)' do
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( 'wait_string' ).should == %w(wait)
+                    expect(@components.load_by_tags( 'wait_string' )).to eq(%w(wait))
                     @components.delete( 'wait' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( 'wait_sym' ).should == %w(wait)
+                    expect(@components.load_by_tags( 'wait_sym' )).to eq(%w(wait))
                     @components.delete( 'wait' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( 'distributable_string' ).should == %w(distributable)
+                    expect(@components.load_by_tags( 'distributable_string' )).to eq(%w(distributable))
                     @components.delete( 'distributable' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( 'distributable_sym' ).should == %w(distributable)
+                    expect(@components.load_by_tags( 'distributable_sym' )).to eq(%w(distributable))
                     @components.delete( 'distributable' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
                 end
             end
 
             context Symbol do
                 it 'loads components whose tags include the given tag (as either a String or a Symbol)' do
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( :wait_string ).should == %w(wait)
+                    expect(@components.load_by_tags( :wait_string )).to eq(%w(wait))
                     @components.delete( 'wait' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( :wait_sym ).should == %w(wait)
+                    expect(@components.load_by_tags( :wait_sym )).to eq(%w(wait))
                     @components.delete( 'wait' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( :distributable_string ).should == %w(distributable)
+                    expect(@components.load_by_tags( :distributable_string )).to eq(%w(distributable))
                     @components.delete( 'distributable' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( :distributable_sym ).should == %w(distributable)
+                    expect(@components.load_by_tags( :distributable_sym )).to eq(%w(distributable))
                     @components.delete( 'distributable' )
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
                 end
             end
 
             context Array do
                 it 'loads components which include any of the given tags (as either Strings or a Symbols)' do
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
                     expected = %w(wait distributable).sort
-                    @components.load_by_tags( [ :wait_string, 'distributable_string' ] ).sort.should == expected
+                    expect(@components.load_by_tags( [ :wait_string, 'distributable_string' ] ).sort).to eq(expected)
                     @components.clear
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( [ 'wait_string', :distributable_string ] ).sort.should == expected
+                    expect(@components.load_by_tags( [ 'wait_string', :distributable_string ] ).sort).to eq(expected)
                     @components.clear
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
 
-                    @components.load_by_tags( [ 'wait_sym', :distributable_sym ] ).sort.should == expected
+                    expect(@components.load_by_tags( [ 'wait_sym', :distributable_sym ] ).sort).to eq(expected)
                     @components.clear
-                    @components.empty?.should be_true
+                    expect(@components.empty?).to be_truthy
                 end
 
             end
@@ -225,33 +225,34 @@ describe Arachni::Component::Manager do
 
             context String do
                 it 'returns an array including the component\'s name' do
-                    @components.parse( 'wait' ).should == %w(wait)
+                    expect(@components.parse( 'wait' )).to eq(%w(wait))
                 end
             end
 
             context Symbol do
                 it 'returns an array including the component\'s name' do
-                    @components.parse( :wait ).should == %w(wait)
+                    expect(@components.parse( :wait )).to eq(%w(wait))
                 end
             end
 
             context Array do
                 it 'loads the component by name' do
-                    @components.parse( %w(bad distributable) ).sort.should ==
+                    expect(@components.parse( %w(bad distributable) ).sort).to eq(
                         %w(bad distributable).sort
+                    )
                 end
             end
 
             context 'wildcard (*)' do
                 context 'alone' do
                     it 'returns all components' do
-                        @components.parse( '*' ).sort.should == @components.available.sort
+                        expect(@components.parse( '*' ).sort).to eq(@components.available.sort)
                     end
                 end
 
                 context 'with a category name' do
                     it 'returns all of its components' do
-                        @components.parse( 'plugins/*' ).sort.should == @components.available.sort
+                        expect(@components.parse( 'plugins/*' ).sort).to eq(@components.available.sort)
                     end
                 end
 
@@ -260,7 +261,7 @@ describe Arachni::Component::Manager do
             context 'exclusion filter (-)' do
                 context 'alone' do
                     it 'returns nothing' do
-                        @components.parse( '-' ).sort.should be_empty
+                        expect(@components.parse( '-' ).sort).to be_empty
                     end
                 end
                 context 'with a name' do
@@ -268,7 +269,7 @@ describe Arachni::Component::Manager do
                         @components.parse( %w(* -wait) )
                         loaded = @components.available
                         loaded.delete( 'wait' )
-                        loaded.sort.should == loaded.sort
+                        expect(loaded.sort).to eq(loaded.sort)
                     end
                 end
                 context 'with a partial name and a wildcard' do
@@ -277,7 +278,7 @@ describe Arachni::Component::Manager do
                         loaded = @components.available
                         loaded.delete( 'wait' )
                         loaded.delete( 'distributable' )
-                        parsed.sort.should == loaded.sort
+                        expect(parsed.sort).to eq(loaded.sort)
                     end
                 end
             end
@@ -289,19 +290,19 @@ describe Arachni::Component::Manager do
             c = 'with_options'
 
             @components.load( c )
-            @components.prepare_options( c, @components[c],
+            expect(@components.prepare_options( c, @components[c],
                 { 'req_opt' => 'my value' }
-            ).should == {
+            )).to eq({
                 req_opt:     'my value',
                 default_opt: 'value'
-            }
+            })
 
             opts = {
                 'req_opt'     => 'req_opt value',
                 'opt_opt'     => 'opt_opt value',
                 'default_opt' => 'value2'
             }
-            @components.prepare_options( c, @components[c], opts ).should == opts.my_symbolize_keys
+            expect(@components.prepare_options( c, @components[c], opts )).to eq(opts.my_symbolize_keys)
         end
 
         context 'with missing options' do
@@ -347,16 +348,16 @@ describe Arachni::Component::Manager do
         context 'when passed a' do
             context String do
                 it 'should load and return the component' do
-                    @components.loaded.should be_empty
-                    @components['wait'].name.should == 'Arachni::Plugins::Wait'
-                    @components.loaded.should == %w(wait)
+                    expect(@components.loaded).to be_empty
+                    expect(@components['wait'].name).to eq('Arachni::Plugins::Wait')
+                    expect(@components.loaded).to eq(%w(wait))
                 end
             end
             context Symbol do
                 it 'should load and return the component' do
-                    @components.loaded.should be_empty
-                    @components[:wait].name.should == 'Arachni::Plugins::Wait'
-                    @components.loaded.should == %w(wait)
+                    expect(@components.loaded).to be_empty
+                    expect(@components[:wait].name).to eq('Arachni::Plugins::Wait')
+                    expect(@components.loaded).to eq(%w(wait))
                 end
             end
         end
@@ -367,36 +368,36 @@ describe Arachni::Component::Manager do
             context String do
                 context 'when the component has been loaded' do
                     it 'returns true' do
-                        @components.loaded.should be_empty
-                        @components['wait'].name.should == 'Arachni::Plugins::Wait'
-                        @components.loaded.should == %w(wait)
-                        @components.loaded?( 'wait' ).should be_true
-                        @components.include?( 'wait' ).should be_true
+                        expect(@components.loaded).to be_empty
+                        expect(@components['wait'].name).to eq('Arachni::Plugins::Wait')
+                        expect(@components.loaded).to eq(%w(wait))
+                        expect(@components.loaded?( 'wait' )).to be_truthy
+                        expect(@components.include?( 'wait' )).to be_truthy
                     end
                 end
                 context 'when the component has not been loaded' do
                     it 'returns false' do
-                        @components.loaded.should be_empty
-                        @components.loaded?( 'wait' ).should be_false
-                        @components.include?( 'wait' ).should be_false
+                        expect(@components.loaded).to be_empty
+                        expect(@components.loaded?( 'wait' )).to be_falsey
+                        expect(@components.include?( 'wait' )).to be_falsey
                     end
                 end
             end
             context Symbol do
                 context 'when the component has been loaded' do
                     it 'returns true' do
-                        @components.loaded.should be_empty
-                        @components[:wait].name.should == 'Arachni::Plugins::Wait'
-                        @components.loaded.should == %w(wait)
-                        @components.loaded?( :wait ).should be_true
-                        @components.include?( :wait ).should be_true
+                        expect(@components.loaded).to be_empty
+                        expect(@components[:wait].name).to eq('Arachni::Plugins::Wait')
+                        expect(@components.loaded).to eq(%w(wait))
+                        expect(@components.loaded?( :wait )).to be_truthy
+                        expect(@components.include?( :wait )).to be_truthy
                     end
                 end
                 context 'when the component has not been loaded' do
                     it 'returns false' do
-                        @components.loaded.should be_empty
-                        @components.loaded?( :wait ).should be_false
-                        @components.include?( :wait ).should be_false
+                        expect(@components.loaded).to be_empty
+                        expect(@components.loaded?( :wait )).to be_falsey
+                        expect(@components.include?( :wait )).to be_falsey
                     end
                 end
             end
@@ -405,86 +406,86 @@ describe Arachni::Component::Manager do
 
     describe '#delete' do
         it 'removes a component' do
-            @components.loaded.should be_empty
+            expect(@components.loaded).to be_empty
 
             @components.load( 'wait' )
             klass = @components['wait']
 
             sym = klass.name.split( ':' ).last.to_sym
-            @components.namespace.constants.include?( sym ).should be_true
-            @components.loaded.should be_any
+            expect(@components.namespace.constants.include?( sym )).to be_truthy
+            expect(@components.loaded).to be_any
 
             @components.delete( 'wait' )
-            @components.loaded.should be_empty
+            expect(@components.loaded).to be_empty
 
             sym = klass.name.split( ':' ).last.to_sym
-            @components.namespace.constants.include?( sym ).should be_false
+            expect(@components.namespace.constants.include?( sym )).to be_falsey
         end
         it 'unloads a component' do
-            @components.loaded.should be_empty
+            expect(@components.loaded).to be_empty
 
             @components.load( 'wait' )
             klass = @components['wait']
 
             sym = klass.name.split( ':' ).last.to_sym
-            @components.namespace.constants.include?( sym ).should be_true
-            @components.loaded.should be_any
+            expect(@components.namespace.constants.include?( sym )).to be_truthy
+            expect(@components.loaded).to be_any
 
             @components.delete( 'wait' )
-            @components.loaded.should be_empty
+            expect(@components.loaded).to be_empty
 
             sym = klass.name.split( ':' ).last.to_sym
-            @components.namespace.constants.include?( sym ).should be_false
+            expect(@components.namespace.constants.include?( sym )).to be_falsey
         end
     end
 
     describe '#loaded' do
         it 'returns all loaded components' do
             @components.load( '*' )
-            @components.loaded.sort.should == available
+            expect(@components.loaded.sort).to eq(available)
         end
     end
 
     describe '#name_to_path' do
         it 'returns a component\'s path from its name' do
             path = @components.name_to_path( 'wait' )
-            File.exists?( path ).should be_true
-            File.basename( path ).should == 'wait.rb'
+            expect(File.exists?( path )).to be_truthy
+            expect(File.basename( path )).to eq('wait.rb')
         end
     end
 
     describe '#path_to_name' do
         it 'returns a component\'s name from its path' do
             path = @components.name_to_path( 'wait' )
-            @components.path_to_name( path ).should == 'wait'
+            expect(@components.path_to_name( path )).to eq('wait')
         end
     end
 
     describe '#paths' do
         it 'returns all component paths' do
             paths = @components.paths
-            paths.each { |p| File.exists?( p ).should be_true }
-            paths.size.should == @components.available.size
+            paths.each { |p| expect(File.exists?( p )).to be_truthy }
+            expect(paths.size).to eq(@components.available.size)
         end
     end
 
     describe '#clear' do
         it 'unloads all components' do
-            @components.loaded.should be_empty
+            expect(@components.loaded).to be_empty
             @components.load( '*' )
-            @components.loaded.sort.should == @components.available.sort
+            expect(@components.loaded.sort).to eq(@components.available.sort)
 
             symbols = @components.values.map do |klass|
                 sym = klass.name.split( ':' ).last.to_sym
-                @components.namespace.constants.include?( sym ).should be_true
+                expect(@components.namespace.constants.include?( sym )).to be_truthy
                 sym
             end
 
             @components.clear
             symbols.each do |sym|
-                @components.namespace.constants.include?( sym ).should be_false
+                expect(@components.namespace.constants.include?( sym )).to be_falsey
             end
-            @components.loaded.should be_empty
+            expect(@components.loaded).to be_empty
         end
     end
 end

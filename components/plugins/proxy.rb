@@ -78,10 +78,11 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         end
 
         wait_while_framework_running
-        @server.shutdown
     end
 
     def clean_up
+        @server.shutdown
+
         @pages.each { |p| framework.push_to_page_queue( p, true ) }
         framework_resume
     end
@@ -191,7 +192,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         if shutdown?( url )
             print_status 'Shutting down...'
             set_response_body( res, erb( :shutdown_message ) )
-            @server.shutdown
+            clean_up
             return
         end
 
@@ -497,7 +498,7 @@ a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.4',
+            version:     '0.3.5',
             options:     [
                 Options::Port.new( :port,
                     description: 'Port to bind to.',

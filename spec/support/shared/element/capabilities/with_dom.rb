@@ -16,7 +16,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
 
                 it 'forces #dom to return nil' do
-                    with_dom.dom.should be_nil
+                    expect(with_dom.dom).to be_nil
                 end
             end
 
@@ -26,7 +26,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
 
                 it 'forces #dom to return nil' do
-                    with_dom.dom.should be_true
+                    expect(with_dom.dom).to be_truthy
                 end
             end
         end
@@ -40,7 +40,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
 
                 it 'returns true' do
-                    with_dom.skip_dom?.should be_true
+                    expect(with_dom.skip_dom?).to be_truthy
                 end
             end
 
@@ -50,7 +50,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
 
                 it 'forces #dom to return nil' do
-                    with_dom.skip_dom?.should be_false
+                    expect(with_dom.skip_dom?).to be_falsey
                 end
             end
         end
@@ -59,7 +59,7 @@ shared_examples_for 'with_dom' do |html = nil|
         let(:data) { with_dom.to_rpc_data }
 
         it "includes 'dom'" do
-            data['dom'].should == with_dom.dom.to_rpc_data
+            expect(data['dom']).to eq(with_dom.dom.to_rpc_data)
         end
     end
 
@@ -68,13 +68,13 @@ shared_examples_for 'with_dom' do |html = nil|
         let(:data) { Arachni::RPC::Serializer.rpc_data( with_dom ) }
 
         it "restores 'dom'" do
-            restored.dom.should == with_dom.dom
+            expect(restored.dom).to eq(with_dom.dom)
         end
     end
 
     describe '#dom' do
         it "returns #{described_class::DOM}" do
-            with_dom.dom.should be_kind_of described_class::DOM
+            expect(with_dom.dom).to be_kind_of described_class::DOM
         end
     end
 
@@ -82,7 +82,7 @@ shared_examples_for 'with_dom' do |html = nil|
         let(:dupped) { with_dom.dup }
 
         it 'preserves #dom' do
-            dupped.dom.should == with_dom.dom
+            expect(dupped.dom).to eq(with_dom.dom)
         end
     end
 end

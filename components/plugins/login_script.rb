@@ -14,7 +14,7 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
     STATUSES  = {
         success:         'Login was successful.',
         failure:         'The script was executed successfully, but the login check failed.',
-        error:           'A runtime error was encountered while executing the login script.',
+        error:           'An error was encountered while executing the login script.',
         missing_browser: 'A browser is required for this operation but is not available.',
         missing_check:   'No session check was provided, either via interface options or the script.'
     }
@@ -43,12 +43,18 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
         session.record_login_sequence do |browser|
             print_info 'Running the script.'
             @script.call browser ? browser.watir : nil
+
+            # JS run async so we need to wait for the page to settle after
+            # execution.
+            session.browser.wait_till_ready if javascript?
+
             print_info 'Execution completed.'
         end
 
         begin
             session.login( true )
-        rescue => e
+        rescue Exception => e
+            print_exception e
             set_status :error
             return
         end
@@ -171,7 +177,7 @@ in the browser, within the page of the target URL.
 
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.2',
             options:     [
                 Options::Path.new( :script,
                     required:    true,

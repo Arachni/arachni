@@ -1,18 +1,18 @@
 shared_examples_for 'sink' do
     %w(trace).each do |m|
-        it { should respond_to m }
-        it { should respond_to "#{m}=" }
+        it { is_expected.to respond_to m }
+        it { is_expected.to respond_to "#{m}=" }
     end
 
     it "supports #{Arachni::RPC::Serializer}" do
-        subject.should == Arachni::RPC::Serializer.deep_clone( subject )
+        expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
         it "includes 'trace'" do
-            data[:trace].should == subject.trace.map(&:to_rpc_data)
+            expect(data[:trace]).to eq(subject.trace.map(&:to_rpc_data))
         end
     end
 
@@ -22,14 +22,14 @@ shared_examples_for 'sink' do
 
         %w(trace).each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == subject.send( attribute )
+                expect(restored.send( attribute )).to eq(subject.send( attribute ))
             end
         end
     end
 
     describe '#to_h' do
         it 'converts #trace data to hashes' do
-            subject.to_h[:trace].should == [Factory[:frame_data]]
+            expect(subject.to_h[:trace]).to eq([Factory[:frame_data]])
         end
     end
 

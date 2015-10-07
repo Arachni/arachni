@@ -80,7 +80,6 @@ module Audit
 
         state.audited_page_count += 1
         add_to_sitemap( page )
-        sitemap.merge!( browser_sitemap )
 
         print_line
         print_status "[HTTP: #{page.code}] #{page.dom.url}"

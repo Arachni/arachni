@@ -69,9 +69,9 @@ shared_examples_for 'wavsep' do
                         test_cases( http_method ).each do |description, info|
                             context description do
                                 it "logs #{(info[:vulnerable] || []).size + (info[:vulnerable_absolute] || []).size} unique resources using #{[info[:checks]].flatten.join( ', ' )}" do
-                                    pending "'WAVSEP_URL' env variable has not been set." if !wavsep_url
+                                    skip "'WAVSEP_URL' env variable has not been set." if !wavsep_url
 
-                                    Arachni::Data.issues.should be_empty
+                                    expect(Arachni::Data.issues).to be_empty
 
                                     if info[:root_url]
                                         @framework.options.url = wavsep_url
@@ -96,7 +96,7 @@ shared_examples_for 'wavsep' do
                                     # pp resources.map { |u| u.gsub( @framework.options.url, '' ) }
                                     # puts format_error( urls, resources, expected )
 
-                                    resources.should eq(expected), format_error( urls, resources, expected )
+                                    expect(resources).to eq(expected), format_error( urls, resources, expected )
 
                                     instance_eval &block if block_given?
                                 end

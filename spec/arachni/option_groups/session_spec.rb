@@ -12,14 +12,14 @@ describe Arachni::OptionGroups::Session do
     end
 
     %w(check_url check_pattern).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     describe '#validate' do
         context 'when valid' do
             it 'returns nil' do
-                valid.validate.should be_empty
+                expect(valid.validate).to be_empty
             end
         end
 
@@ -30,8 +30,9 @@ describe Arachni::OptionGroups::Session do
                         context attribute do
                             it 'returns errors' do
                                 valid.send( "#{attribute}=", nil )
-                                valid.validate.should ==
+                                expect(valid.validate).to eq(
                                     { attribute.to_sym => 'Option is missing.'}
+                                )
                             end
                         end
                     end
@@ -45,7 +46,7 @@ describe Arachni::OptionGroups::Session do
 
         it "converts 'check_pattern' to strings" do
             subject.check_pattern = /test/
-            data['check_pattern'].should == subject.check_pattern.to_s
+            expect(data['check_pattern']).to eq(subject.check_pattern.to_s)
         end
     end
 end

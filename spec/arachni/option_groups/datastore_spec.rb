@@ -6,7 +6,7 @@ describe Arachni::OptionGroups::Datastore do
 
     it 'creates attribute accessors on the fly' do
         subject.test = 1
-        subject.test.should == 1
+        expect(subject.test).to eq(1)
     end
 
     describe '#to_h' do
@@ -16,7 +16,7 @@ describe Arachni::OptionGroups::Datastore do
             subject.instance_variable_set( :@blah, true )
 
             value = subject.send( method, 'stuff' )
-            subject.to_h.should == { method.to_s[0...-1].to_sym => value }
+            expect(subject.to_h).to eq({ method.to_s[0...-1].to_sym => value })
         end
     end
 
@@ -26,11 +26,11 @@ describe Arachni::OptionGroups::Datastore do
             value  = 'stuff'
 
             subject.update( { method => value } )
-            subject.send( method ).should include value
+            expect(subject.send( method )).to include value
         end
 
         it 'returns self' do
-            subject.update({}).should == subject
+            expect(subject.update({})).to eq(subject)
         end
     end
 
@@ -43,12 +43,12 @@ describe Arachni::OptionGroups::Datastore do
             group.update( { method => value } )
 
             subject.merge( group )
-            subject.send( method ).should include value
+            expect(subject.send( method )).to include value
         end
 
         it 'returns self' do
             group = described_class.new
-            subject.merge( group ).should == subject
+            expect(subject.merge( group )).to eq(subject)
         end
     end
 end

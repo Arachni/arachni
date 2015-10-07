@@ -32,9 +32,9 @@ YAML
         actual_map   = results.delete( 'map' )
         expected_map = exp_results.delete( 'map' )
 
-        actual_map.select { |k, v| k == 'without_issues' }.should be_eql expected_map.select { |k, v| k == 'without_issues' }
-        actual_map.select { |k, v| k == 'with_issues' }.should be_eql expected_map.select { |k, v| k == 'with_issues' }
+        expect(actual_map.select { |k, v| k == 'without_issues' }).to be_eql expected_map.select { |k, v| k == 'without_issues' }
+        expect(actual_map.select { |k, v| k == 'with_issues' }).to be_eql expected_map.select { |k, v| k == 'with_issues' }
 
-        results.should be_eql exp_results
+        expect(results).to be_eql exp_results
     end
 end

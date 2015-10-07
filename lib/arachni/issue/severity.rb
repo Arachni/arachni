@@ -32,3 +32,5 @@ module Severity
 end
 end
 end
+
+Arachni::Severity = Arachni::Issue::Severity

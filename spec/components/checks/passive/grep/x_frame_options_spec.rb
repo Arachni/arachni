@@ -14,12 +14,12 @@ describe name_from_filename do
     it 'logs hosts missing the header' do
         options.url = "#{url}/vulnerable"
         run
-        issues.should be_any
+        expect(issues).to be_any
     end
 
     it 'does not log hosts with the header' do
         options.url = "#{url}/safe"
         run
-        issues.should be_empty
+        expect(issues).to be_empty
     end
 end

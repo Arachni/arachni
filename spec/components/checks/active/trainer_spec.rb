@@ -17,8 +17,8 @@ describe name_from_filename do
             audit element, false
 
             urls = framework.sitemap
-            urls.should include options.url + "#{element}/straight/trained"
-            urls.should include options.url + "#{element}/append/trained"
+            expect(urls).to include options.url + "#{element}/straight/trained"
+            expect(urls).to include options.url + "#{element}/append/trained"
         end
     end
 
@@ -28,8 +28,8 @@ describe name_from_filename do
             audit :form, false
 
             urls = framework.sitemap
-            urls.should_not include "#{options.url}form/straight/trained"
-            urls.should_not include "#{options.url}form/append/trained"
+            expect(urls).not_to include "#{options.url}header/straight/trained"
+            expect(urls).not_to include "#{options.url}header/append/trained"
         end
     end
 

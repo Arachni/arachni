@@ -11,5 +11,5 @@ describe name_from_filename do
         2
     end
 
-    easy_test { issues.map { |i| i.vector.name }.sort.should == %w(cookie cookie2).sort }
+    easy_test { expect(issues.map { |i| i.vector.name }.sort).to eq %w(cookie cookie2).sort }
 end

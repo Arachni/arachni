@@ -9,16 +9,16 @@
 # Unvalidated redirect DOM check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
-#
 # @see https://www.owasp.org/index.php/Top_10_2010-A10-Unvalidated_Redirects_and_Forwards
 class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
 
+    BASE_URL = "www.#{Utilities.random_seed}.com"
+
     def self.payloads
         @payloads ||= [
-            'www.arachni-boogie-woogie.com',
-            'https://www.arachni-boogie-woogie.com',
-            'http://www.arachni-boogie-woogie.com'
+            BASE_URL,
+            "https://#{BASE_URL}",
+            "http://#{BASE_URL}"
         ].map { |url| Arachni::URI( url ).to_s }
     end
 
@@ -54,9 +54,12 @@ class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
             description: %q{
 Injects URLs and checks the browser URL to determine whether the attack was successful.
 },
-            elements:    DOM_ELEMENTS_WITH_INPUTS - [Element::LinkTemplate::DOM],
+            elements:    DOM_ELEMENTS_WITH_INPUTS - [
+                Element::LinkTemplate::DOM,
+                Element::UIInput::DOM
+            ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
 
             issue:       {
                 name:            %q{Unvalidated DOM redirect},

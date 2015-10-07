@@ -244,6 +244,16 @@ class Parser
         @link_vars ||= parsed.rewrite.query_parameters.freeze
     end
 
+    # Dummy method, only the {Browser#to_page browser} can fill this in.
+    def ui_inputs
+        []
+    end
+
+    # Dummy method, only the {Browser#to_page browser} can fill this in.
+    def ui_forms
+        []
+    end
+
     # @return   [Array<Element::Cookie>]
     #   Cookies from HTTP headers and response body.
     def cookies
@@ -320,16 +330,25 @@ class Parser
     #   Paths.
     def run_extractors
         begin
-            self.class.extractors.available.map do |name|
+            unsanitized_paths = Set.new
+            self.class.extractors.available.each do |name|
                 exception_jail false do
-                    self.class.extractors[name].new(
+                    unsanitized_paths.merge self.class.extractors[name].new(
                         document: document,
                         html:     body
                     ).run
                 end
-            end.flatten.uniq.compact.
-                map { |path| to_absolute( path ) }.compact.uniq.
-                reject { |path| skip?( path ) }
+            end
+
+            sanitized_paths = Set.new
+            unsanitized_paths.map do |path|
+                abs = to_absolute( path )
+                next if !abs || skip?( abs )
+
+                sanitized_paths << abs
+            end
+
+            sanitized_paths.to_a
         rescue => e
             print_exception e
             []

@@ -13,12 +13,12 @@ describe Arachni::RPC::Client::Dispatcher do
 
     it 'maps the remote handlers to local objects' do
         args = [ 'stuff', 'here', { 'blah' => true } ]
-        @dispatcher.echo.echo( *args ).should == args
+        expect(@dispatcher.echo.echo( *args )).to eq(args)
     end
 
     describe '#node' do
         it 'provides access to the node data' do
-            @dispatcher.node.info.is_a?( Hash ).should be_true
+            expect(@dispatcher.node.info.is_a?( Hash )).to be_truthy
         end
     end
 

@@ -1045,3 +1045,142 @@ end
 get '/clear-hit-count' do
     @@image_hit_count = @@hit_count = 0
 end
+
+get '/to_page/input/with_events' do
+    <<-EOHTML
+    <html>
+        <script>
+            function handleOnInput() {
+                document.getElementById("container").innerHTML =
+                    document.getElementById("my-input").value;
+            }
+        </script>
+
+        <body>
+            <input oninput="handleOnInput();" id="my-input" name="my-input" value="1" />
+
+            <div id="container">
+            </div>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/to_page/input/without_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" name="my-input" value="1" />
+
+            <div id="container">
+            </div>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/to_page/textarea/with_events' do
+    <<-EOHTML
+    <html>
+        <script>
+            function handleOnInput() {
+                document.getElementById("container").innerHTML =
+                    document.getElementById("my-input").value;
+            }
+        </script>
+
+        <body>
+            <textarea oninput="handleOnInput();" id="my-input" name="my-input">
+            </textarea>
+
+            <div id="container">
+            </div>
+        </body>
+    </html>
+    EOHTML
+end
+
+
+get '/to_page/textarea/without_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <textarea id="my-input" name="my-input">
+            </textarea>
+
+            <div id="container">
+            </div>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/to_page/input/button/with_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text">
+            <input type="button" id="insert">Insert into DOM</button>
+
+            <div id="container">
+            </div>
+
+            <script>
+               document.getElementById('insert').addEventListener('click', function() {
+                    document.getElementById("container").innerHTML =
+                        document.getElementById("my-input").value;
+               });
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/to_page/input/button/without_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text">
+            <input type="button" id="insert">Insert into DOM</button>
+
+            <div id="container">
+            </div>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/to_page/button/with_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text">
+            <button id="insert">Insert into DOM</button>
+
+            <div id="container">
+            </div>
+
+            <script>
+               document.getElementById('insert').addEventListener('click', function() {
+                    document.getElementById("container").innerHTML =
+                        document.getElementById("my-input").value;
+               });
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/to_page/button/without_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text">
+            <button id="insert">Insert into DOM</button>
+
+            <div id="container">
+            </div>
+        </body>
+    </html>
+    EOHTML
+end

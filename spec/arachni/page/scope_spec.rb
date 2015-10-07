@@ -12,22 +12,22 @@ describe Arachni::Page::Scope do
 
     describe '#out?' do
         it 'returns false' do
-            subject.out?.should be_false
+            expect(subject.out?).to be_falsey
         end
 
         context "when #{Arachni::HTTP::Response::Scope}#out?" do
             context true do
                 it 'returns true' do
                     # We can't stub #out? because we also override it.
-                    Arachni::HTTP::Response::Scope.any_instance.stub(:exclude?) { true }
-                    subject.out?.should be_true
+                    allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:exclude?) { true }
+                    expect(subject.out?).to be_truthy
                 end
             end
 
             context false do
                 it 'returns false' do
-                    Arachni::HTTP::Response::Scope.any_instance.stub(:exclude?) { false }
-                    subject.out?.should be_false
+                    allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:exclude?) { false }
+                    expect(subject.out?).to be_falsey
                 end
             end
         end
@@ -35,15 +35,15 @@ describe Arachni::Page::Scope do
         context 'when #dom_depth_limit_reached?' do
             context true do
                 it 'returns true' do
-                    subject.stub(:dom_depth_limit_reached?) { true }
-                    subject.out?.should be_true
+                    allow(subject).to receive(:dom_depth_limit_reached?) { true }
+                    expect(subject.out?).to be_truthy
                 end
             end
 
             context false do
                 it 'returns false' do
-                    subject.stub(:dom_depth_limit_reached?) { false }
-                    subject.out?.should be_false
+                    allow(subject).to receive(:dom_depth_limit_reached?) { false }
+                    expect(subject.out?).to be_falsey
                 end
             end
         end
@@ -54,24 +54,24 @@ describe Arachni::Page::Scope do
             context 'been exceeded' do
                 it 'returns true' do
                     scope.dom_depth_limit = 2
-                    page.dom.stub(:depth) { 3 }
+                    allow(page.dom).to receive(:depth) { 3 }
 
-                    subject.dom_depth_limit_reached?.should be_true
+                    expect(subject.dom_depth_limit_reached?).to be_truthy
                 end
             end
 
             context 'not been exceeded' do
                 it 'returns false' do
                     scope.dom_depth_limit = 2
-                    page.dom.stub(:depth) { 1 }
-                    subject.dom_depth_limit_reached?.should be_false
+                    allow(page.dom).to receive(:depth) { 1 }
+                    expect(subject.dom_depth_limit_reached?).to be_falsey
                 end
             end
 
             context 'not been set' do
                 it 'returns false' do
-                    page.dom.stub(:depth) { 3 }
-                    subject.dom_depth_limit_reached?.should be_false
+                    allow(page.dom).to receive(:depth) { 3 }
+                    expect(subject.dom_depth_limit_reached?).to be_falsey
                 end
             end
         end

@@ -19,12 +19,12 @@ shared_examples_for 'plugin' do
     def results
     end
 
-    def self.easy_test( &block )
+    def self.easy_test( match = true, &block )
         it 'logs the expected results' do
             raise 'No results provided via #results, use \':nil\' for \'nil\' results.' if !results
 
             run
-            actual_results.should be_eql( expected_results )
+            expect(actual_results).to eq( expected_results ) if match
 
             instance_eval &block if block_given?
         end

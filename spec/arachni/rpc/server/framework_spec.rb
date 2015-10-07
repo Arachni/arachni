@@ -20,7 +20,7 @@ describe 'Arachni::RPC::Server::Framework' do
             it 'returns all logged errors' do
                 test = 'Test'
                 @instance.framework.error_test test
-                @instance.framework.errors.last.should end_with test
+                expect(@instance.framework.errors.last).to end_with test
             end
         end
         context 'when a start line-range has been provided' do
@@ -28,7 +28,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 initial_errors = @instance.framework.errors
                 errors = @instance.framework.errors( 10 )
 
-                initial_errors[10..-1].should == errors
+                expect(initial_errors[10..-1]).to eq(errors)
             end
         end
     end
@@ -36,77 +36,77 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#busy?' do
         context 'when the scan is not running' do
             it 'returns false' do
-                @framework_clean.busy?.should be_false
+                expect(@framework_clean.busy?).to be_falsey
             end
         end
         context 'when the scan is running' do
             it 'returns true' do
                 @instance.options.url = web_server_url_for( :auditor ) + '/sleep'
                 @checks.load( 'test' )
-                @framework.run.should be_true
-                @framework.busy?.should be_true
+                expect(@framework.run).to be_truthy
+                expect(@framework.busy?).to be_truthy
             end
         end
     end
     describe '#version' do
         it 'returns the system version' do
-            @framework_clean.version.should == Arachni::VERSION
+            expect(@framework_clean.version).to eq(Arachni::VERSION)
         end
     end
     describe '#master?' do
         it 'returns false' do
-            @framework_clean.master?.should be_false
+            expect(@framework_clean.master?).to be_falsey
         end
     end
     describe '#slave?' do
         it 'returns false' do
-            @framework_clean.slave?.should be_false
+            expect(@framework_clean.slave?).to be_falsey
         end
     end
     describe '#solo?' do
         it 'returns true' do
-            @framework_clean.solo?.should be_true
+            expect(@framework_clean.solo?).to be_truthy
         end
     end
     describe '#list_plugins' do
         it 'lists all available plugins' do
             plugins = @framework_clean.list_plugins
-            plugins.size.should == 7
+            expect(plugins.size).to eq(7)
             plugin = plugins.select { |i| i[:name] =~ /default/i }.first
-            plugin[:name].should == 'Default'
-            plugin[:description].should == 'Some description'
-            plugin[:author].size.should == 1
-            plugin[:author].first.should == 'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>'
-            plugin[:version].should == '0.1'
-            plugin[:shortname].should == 'default'
-            plugin[:options].size.should== 1
+            expect(plugin[:name]).to eq('Default')
+            expect(plugin[:description]).to eq('Some description')
+            expect(plugin[:author].size).to eq(1)
+            expect(plugin[:author].first).to eq('Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>')
+            expect(plugin[:version]).to eq('0.1')
+            expect(plugin[:shortname]).to eq('default')
+            expect(plugin[:options].size).to eq(1)
 
             opt = plugin[:options].first
-            opt[:name].should == :int_opt
-            opt[:required].should == false
-            opt[:description].should == 'An integer.'
-            opt[:default].should == 4
-            opt[:type].should == :integer
+            expect(opt[:name]).to eq(:int_opt)
+            expect(opt[:required]).to eq(false)
+            expect(opt[:description]).to eq('An integer.')
+            expect(opt[:default]).to eq(4)
+            expect(opt[:type]).to eq(:integer)
         end
     end
     describe '#list_reporters' do
         it 'lists all available reporters' do
             reporters = @framework_clean.list_reporters
-            reporters.should be_any
+            expect(reporters).to be_any
             report_with_opts = reporters.select{ |r| r[:options].any? }.first
-            report_with_opts[:options].first.should be_kind_of( Hash )
+            expect(report_with_opts[:options].first).to be_kind_of( Hash )
         end
     end
 
     describe '#list_checks' do
         it 'lists all available checks' do
-            @framework_clean.list_checks.should be_any
+            expect(@framework_clean.list_checks).to be_any
         end
     end
 
     describe '#list_platforms' do
         it 'lists all available platforms' do
-            @framework_clean.list_platforms.should == Arachni::Framework.new.list_platforms
+            expect(@framework_clean.list_platforms).to eq(Arachni::Framework.new.list_platforms)
         end
     end
 
@@ -117,38 +117,38 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.checks.load( 'test' )
             instance.framework.run
             sleep( 1 ) while instance.framework.busy?
-            instance.framework.issues.should be_any
+            expect(instance.framework.issues).to be_any
         end
 
         it 'handles pages with JavaScript code' do
-            @opts.paths.checks = fixtures_path + '/taint_check/'
+            @opts.paths.checks = fixtures_path + '/signature_check/'
 
             instance = instance_spawn
             instance.options.url = web_server_url_for( :auditor ) + '/with_javascript'
             instance.options.set audit: { elements: [:links, :forms, :cookies] }
-            instance.checks.load :taint
+            instance.checks.load :signature
 
             instance.framework.run
             sleep 0.1 while instance.framework.busy?
 
-            instance.framework.issues.
-                map { |i| i.vector.affected_input_name }.uniq.should be
+            expect(instance.framework.issues.
+                map { |i| i.vector.affected_input_name }.uniq).to be
                 %w(link_input form_input cookie_input).sort
         end
 
         it 'handles AJAX' do
-            @opts.paths.checks = fixtures_path + '/taint_check/'
+            @opts.paths.checks = fixtures_path + '/signature_check/'
 
             instance = instance_spawn
             instance.options.url = web_server_url_for( :auditor ) + '/with_ajax'
             instance.options.set audit: { elements: [:links, :forms, :cookies] }
-            instance.checks.load :taint
+            instance.checks.load :signature
 
             instance.framework.run
             sleep 0.1 while instance.framework.busy?
 
-            instance.framework.issues.
-                map { |i| i.vector.affected_input_name }.uniq.should be
+            expect(instance.framework.issues.
+                map { |i| i.vector.affected_input_name }.uniq).to be
                 %w(link_input form_input cookie_taint).sort
         end
 
@@ -156,8 +156,8 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#report' do
         it 'returns an report object' do
             report = @instance_clean.framework.report
-            report.is_a?( Arachni::Report ).should be_true
-            report.issues.should be_any
+            expect(report.is_a?( Arachni::Report )).to be_truthy
+            expect(report.issues).to be_any
         end
     end
     describe '#statistics' do
@@ -165,9 +165,9 @@ describe 'Arachni::RPC::Server::Framework' do
             instance = @instance_clean
             instance.options.url = web_server_url_for( :framework )
             instance.checks.load( 'test' )
-            instance.framework.run.should be_true
+            expect(instance.framework.run).to be_truthy
 
-            instance.framework.statistics.should be_kind_of Hash
+            expect(instance.framework.statistics).to be_kind_of Hash
         end
     end
     describe '#status' do
@@ -178,14 +178,14 @@ describe 'Arachni::RPC::Server::Framework' do
         end
         context 'after initialization' do
             it 'returns :ready' do
-                @instance.framework.status.should == :ready
+                expect(@instance.framework.status).to eq(:ready)
             end
         end
         context 'after #run has been called' do
             it 'returns :scanning' do
-                @instance.framework.run.should be_true
+                expect(@instance.framework.run).to be_truthy
                 sleep 2
-                @instance.framework.status.should == :scanning
+                expect(@instance.framework.status).to eq(:scanning)
             end
         end
         context 'once the scan had completed' do
@@ -195,7 +195,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 instance.checks.load( 'test' )
                 instance.framework.run
                 sleep 1 while instance.framework.busy?
-                instance.framework.status.should == :done
+                expect(instance.framework.status).to eq(:done)
             end
         end
     end
@@ -205,32 +205,33 @@ describe 'Arachni::RPC::Server::Framework' do
             instance.options.url = web_server_url_for( :framework_multi )
             instance.checks.load( 'test' )
             instance.plugins.load( { 'wait' => {} } )
-            instance.framework.run.should be_true
-            instance.framework.busy?.should be_true
-            instance.framework.report.plugins.should be_empty
-            instance.framework.clean_up.should be_true
+            expect(instance.framework.run).to be_truthy
+            expect(instance.framework.busy?).to be_truthy
+            expect(instance.framework.report.plugins).to be_empty
+            expect(instance.framework.clean_up).to be_truthy
             results = instance.framework.report.plugins
-            results.should be_any
-            results[:wait].should be_any
-            results[:wait][:results].should == { 'stuff' => true }
+            expect(results).to be_any
+            expect(results[:wait]).to be_any
+            expect(results[:wait][:results]).to eq({ 'stuff' => true })
         end
     end
     describe '#progress' do
-        before { @progress_keys = %W(statistics status busy messages issues).sort.map(&:to_sym) }
+        before { @progress_keys = %W(seed statistics status busy messages issues).sort.map(&:to_sym) }
 
         context 'when called without options' do
             it 'returns all progress data' do
                 instance = @instance_clean
 
                 data = instance.framework.progress
-                data.keys.sort.should == @progress_keys
+                expect(data.keys.sort).to eq(@progress_keys)
 
-                data[:statistics].keys.should == instance.framework.statistics.keys
-                data[:messages].should be_empty
-                data[:status].should be_true
-                data[:busy].nil?.should be_false
-                data[:issues].should be_any
-                data.should_not include :errors
+                expect(data[:statistics].keys).to eq(instance.framework.statistics.keys)
+                expect(data[:messages]).to be_empty
+                expect(data[:status]).to be_truthy
+                expect(data[:busy].nil?).to be_falsey
+                expect(data[:issues]).to be_any
+                expect(data[:seed]).not_to be_empty
+                expect(data).not_to include :errors
             end
         end
 
@@ -238,15 +239,15 @@ describe 'Arachni::RPC::Server::Framework' do
             describe :errors do
                 context 'when set to true' do
                     it 'includes all error messages' do
-                        @instance_clean.framework.
-                            progress( errors: true )[:errors].should be_empty
+                        expect(@instance_clean.framework.
+                            progress( errors: true )[:errors]).to be_empty
 
                         test = 'Test'
                         @instance_clean.framework.error_test test
 
-                        @instance_clean.framework.
-                            progress( errors: true )[:errors].last.
-                                should end_with test
+                        expect(@instance_clean.framework.
+                            progress( errors: true )[:errors].last).
+                                to end_with test
                     end
                 end
                 context 'when set to an Integer' do
@@ -259,7 +260,7 @@ describe 'Arachni::RPC::Server::Framework' do
                         errors = @instance_clean.framework.
                             progress( errors: 10 )[:errors]
 
-                        errors.should == initial_errors[10..-1]
+                        expect(errors).to eq(initial_errors[10..-1])
                     end
                 end
             end
@@ -267,9 +268,10 @@ describe 'Arachni::RPC::Server::Framework' do
             describe :sitemap do
                 context 'when set to true' do
                     it 'returns entire sitemap' do
-                        @instance_clean.framework.
-                            progress( sitemap: true )[:sitemap].should ==
+                        expect(@instance_clean.framework.
+                            progress( sitemap: true )[:sitemap]).to eq(
                             @instance_clean.framework.sitemap
+                        )
                     end
                 end
 
@@ -285,8 +287,9 @@ describe 'Arachni::RPC::Server::Framework' do
                         instance.framework.run
                         sleep 0.1 while instance.framework.busy?
 
-                        instance.framework.progress( sitemap: 10 )[:sitemap].should ==
+                        expect(instance.framework.progress( sitemap: 10 )[:sitemap]).to eq(
                             instance.framework.sitemap_entries( 10 )
+                        )
                     end
                 end
             end
@@ -294,18 +297,18 @@ describe 'Arachni::RPC::Server::Framework' do
             describe :issue do
                 context 'when set to false' do
                     it 'excludes issues' do
-                        @instance_clean.framework.progress(
+                        expect(@instance_clean.framework.progress(
                             issues: false
-                        ).should_not include :issues
+                        )).not_to include :issues
                     end
                 end
             end
             describe :as_hash do
                 context 'when set to true' do
                     it 'includes issues as a hash' do
-                        @instance_clean.framework.progress(
+                        expect(@instance_clean.framework.progress(
                             as_hash: true
-                        )[:issues].first.is_a?( Hash ).should be_true
+                        )[:issues].first.is_a?( Hash )).to be_truthy
                     end
                 end
             end
@@ -315,8 +318,9 @@ describe 'Arachni::RPC::Server::Framework' do
     describe '#sitemap_entries' do
         context 'when no argument has been provided' do
             it 'returns entire sitemap' do
-                @instance_clean.framework.sitemap_entries.should ==
+                expect(@instance_clean.framework.sitemap_entries).to eq(
                     @instance_clean.framework.sitemap
+                )
             end
         end
 
@@ -333,21 +337,22 @@ describe 'Arachni::RPC::Server::Framework' do
                 sleep 0.1 while instance.framework.busy?
 
                 sitemap = instance.framework.sitemap
-                instance.framework.sitemap_entries( 10 ).should ==
+                expect(instance.framework.sitemap_entries( 10 )).to eq(
                     Hash[sitemap.to_a[10..-1]]
+                )
             end
         end
     end
 
     describe '#self_url' do
         it 'returns the RPC URL' do
-            @instance_clean.framework.self_url.should == @instance_clean.url
+            expect(@instance_clean.framework.self_url).to eq(@instance_clean.url)
         end
     end
 
     describe '#token' do
         it 'returns the RPC token' do
-            @instance_clean.framework.token.should == instance_token_for( @instance_clean )
+            expect(@instance_clean.framework.token).to eq(instance_token_for( @instance_clean ))
         end
     end
 
@@ -355,8 +360,9 @@ describe 'Arachni::RPC::Server::Framework' do
         context 'when passed a valid reporter name' do
             it 'returns the report as a string' do
                 json = @instance_clean.framework.report_as( :json )
-                JSON.load( json )['issues'].size.should ==
+                expect(JSON.load( json )['issues'].size).to eq(
                     @instance_clean.framework.report.issues.size
+                )
             end
 
             context 'which does not support the \'outfile\' option' do
@@ -374,23 +380,22 @@ describe 'Arachni::RPC::Server::Framework' do
     end
 
     describe '#issues' do
-        it 'returns an array of issues without variations' do
+        it 'returns an array of issues' do
             issues = @instance_clean.framework.issues
-            issues.should be_any
+            expect(issues).to be_any
 
             issue = issues.first
-            issue.is_a?( Arachni::Issue ).should be_true
-            issue.variations.should be_empty
+            expect(issue.is_a?( Arachni::Issue )).to be_truthy
         end
     end
+
     describe '#issues_as_hash' do
-        it 'returns an array of issues (as hash) without variations' do
+        it 'returns an array of issues as hash' do
             issues = @instance_clean.framework.issues_as_hash
-            issues.should be_any
+            expect(issues).to be_any
 
             issue = issues.first
-            issue.is_a?( Hash ).should be_true
-            issue['variations'].should be_empty
+            expect(issue.is_a?( Hash )).to be_truthy
         end
     end
 end

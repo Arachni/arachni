@@ -13,9 +13,9 @@ describe Arachni::Support::Cache::Preference do
         subject[k[1]] = '2'
         subject[k[2]] = '3'
         subject[k[3]] = '4'
-        subject.size.should == 3
+        expect(subject.size).to eq(3)
 
-        k.map { |key| subject[key] }.count( nil ).should == 1
+        expect(k.map { |key| subject[key] }.count( nil )).to eq(1)
 
         subject.clear
     end
@@ -29,9 +29,9 @@ describe Arachni::Support::Cache::Preference do
         subject[k[0]]  = '1'
         subject[k[1]] = '3'
         subject[k[2]] = '4'
-        subject.size.should == 2
+        expect(subject.size).to eq(2)
 
-        k[0...3].map { |key| subject[key] }.count( nil ).should == 1
+        expect(k[0...3].map { |key| subject[key] }.count( nil )).to eq(1)
     end
 
 end

@@ -24,47 +24,50 @@ describe Arachni::Browser::Javascript::Proxy::Stub do
     let(:data) { { 'test' => [1,'2'] } }
 
     it 'writes property getters' do
-        subject.my_property.should == "#{@proxy.js_object}.my_property"
+        expect(subject.my_property).to eq("#{@proxy.js_object}.my_property")
     end
 
     it 'writes function calls' do
-        subject.my_function( data ).should ==
+        expect(subject.my_function( data )).to eq(
             "#{@proxy.js_object}.my_function(#{data.to_json})"
+        )
     end
 
     describe '#property' do
         it 'writes property getters' do
-            subject.property(:my_property).should == "#{@proxy.js_object}.my_property"
+            expect(subject.property(:my_property)).to eq("#{@proxy.js_object}.my_property")
         end
     end
 
     describe '#function' do
         it 'writes function calls' do
-            subject.function(:my_function, data).should ==
+            expect(subject.function(:my_function, data)).to eq(
                 "#{@proxy.js_object}.my_function(#{data.to_json})"
+            )
         end
 
         it 'writes property setters' do
-            subject.function(:my_property=, 3).should == "#{@proxy.js_object}.my_property=3"
+            expect(subject.function(:my_property=, 3)).to eq("#{@proxy.js_object}.my_property=3")
         end
     end
 
     describe '#write' do
         it 'writes property getters' do
-            subject.write(:my_property).should == "#{@proxy.js_object}.my_property"
+            expect(subject.write(:my_property)).to eq("#{@proxy.js_object}.my_property")
         end
 
         it 'writes property setters' do
-            subject.write(:my_property=, 3).should == "#{@proxy.js_object}.my_property=3"
+            expect(subject.write(:my_property=, 3)).to eq("#{@proxy.js_object}.my_property=3")
         end
 
         it 'writes function calls' do
-            subject.write(:my_function, data).should ==
+            expect(subject.write(:my_function, data)).to eq(
                 "#{@proxy.js_object}.my_function(#{data.to_json})"
+            )
         end
 
         it 'automatically detects function calls' do
-            subject.write(:my_function).should == "#{@proxy.js_object}.my_function()"
+            expect(subject.write(:my_function)).to eq("#{@proxy.js_object}.my_function()")
         end
     end
 
@@ -72,19 +75,19 @@ describe Arachni::Browser::Javascript::Proxy::Stub do
         context 'when the JS object supports the given' do
             context 'property' do
                 it 'returns true' do
-                    subject.respond_to?(:my_property).should be_true
+                    expect(subject.respond_to?(:my_property)).to be_truthy
                 end
 
                 context 'setter' do
                     it 'returns true' do
-                        subject.respond_to?(:my_property=).should be_true
+                        expect(subject.respond_to?(:my_property=)).to be_truthy
                     end
                 end
             end
 
             context 'function' do
                 it 'returns true' do
-                    subject.respond_to?(:my_function).should be_true
+                    expect(subject.respond_to?(:my_function)).to be_truthy
                 end
             end
         end
@@ -92,12 +95,12 @@ describe Arachni::Browser::Javascript::Proxy::Stub do
         context 'when the JS object does not support the given' do
             context 'property' do
                 it 'returns true' do
-                    subject.respond_to?(:my_stuff).should be_false
+                    expect(subject.respond_to?(:my_stuff)).to be_falsey
                 end
 
                 context 'setter' do
                     it 'returns true' do
-                        subject.respond_to?(:my_stuff=).should be_false
+                        expect(subject.respond_to?(:my_stuff=)).to be_falsey
                     end
                 end
             end

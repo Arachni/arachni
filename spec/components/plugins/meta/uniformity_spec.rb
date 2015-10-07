@@ -23,7 +23,7 @@ describe name_from_filename do
     it 'logs digests of issues which affect similar parameters across multiple pages' do
         run
 
-        actual_results[0].sort.should == @uniformals[1].map(&:digest).sort
-        actual_results[1].sort.should == @uniformals[0].map(&:digest).sort
+        expect(actual_results[0].sort).to eq(@uniformals[1].map(&:digest).sort)
+        expect(actual_results[1].sort).to eq(@uniformals[0].map(&:digest).sort)
     end
 end

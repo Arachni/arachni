@@ -82,6 +82,7 @@ class Worker < Arachni::Browser
         # If we can't respawn, then bail out.
         return if browser_respawn_if_necessary.nil?
 
+        time = Time.now
         begin
             with_timeout @job_timeout do
                 exception_jail false do
@@ -98,7 +99,11 @@ class Worker < Arachni::Browser
                     end
                 end
             end
+
+            job.time = Time.now - time
         rescue TimeoutError => e
+            job.timed_out!( Time.now - time )
+
             print_bad "Job timed-out after #{@job_timeout} seconds: #{@job}"
 
             # Could have left us with a broken browser.

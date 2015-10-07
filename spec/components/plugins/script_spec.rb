@@ -8,6 +8,6 @@ describe name_from_filename do
         options.plugins[component_name] = { 'path' => fixtures_path + '/script_plugin.rb' }
 
         run
-        actual_results.should == 'I\'m a script!'
+        expect(actual_results).to eq('I\'m a script!')
     end
 end

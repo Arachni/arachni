@@ -18,7 +18,7 @@ describe Arachni::State::Plugins do
 
     describe '#runtime' do
         it 'returns a Hash' do
-            subject.runtime.should be_kind_of Hash
+            expect(subject.runtime).to be_kind_of Hash
         end
     end
 
@@ -29,7 +29,7 @@ describe Arachni::State::Plugins do
 
             subject.store( :distributable, result )
 
-            subject.statistics[:names].should == [:distributable]
+            expect(subject.statistics[:names]).to eq([:distributable])
         end
     end
 
@@ -39,7 +39,7 @@ describe Arachni::State::Plugins do
             result = { stuff: 1 }
 
             subject.store( :distributable, result )
-            subject[:distributable].should == result
+            expect(subject[:distributable]).to eq(result)
         end
     end
 
@@ -49,10 +49,10 @@ describe Arachni::State::Plugins do
             subject.dump( dump_directory )
 
             results_file = "#{dump_directory}/runtime/distributable"
-            File.exists?( results_file ).should be_true
-            subject.runtime.should == {
+            expect(File.exists?( results_file )).to be_truthy
+            expect(subject.runtime).to eq({
                 distributable: Marshal.load( IO.read( results_file ) )
-            }
+            })
         end
     end
 
@@ -61,14 +61,14 @@ describe Arachni::State::Plugins do
             subject.runtime[:distributable] = { stuff: 1 }
             subject.dump( dump_directory )
 
-            subject.runtime.should == described_class.load( dump_directory ).runtime
+            expect(subject.runtime).to eq(described_class.load( dump_directory ).runtime)
         end
     end
 
     describe '#clear' do
         %w(runtime).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end

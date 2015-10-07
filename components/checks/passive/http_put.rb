@@ -20,7 +20,7 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
     end
 
     def run
-        path = get_path( page.url ) + 'Arachni-' + random_seed.to_s[0..4].to_s
+        path = "#{get_path( page.url )}Arachni-#{random_seed}"
         return if audited?( path )
         audited( path )
 
@@ -44,7 +44,6 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
             response: put_response,
             proof:    put_response.status_line
         )
-        print_ok "File has been created: #{response.url}"
     end
 
     def self.info
@@ -53,7 +52,7 @@ class Arachni::Checks::HttpPut < Arachni::Check::Base
             description: %q{Checks if uploading files is possible using the HTTP PUT method.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.2',
+            version:     '0.2.3',
 
             issue:       {
                 name:            %q{Publicly writable directory},

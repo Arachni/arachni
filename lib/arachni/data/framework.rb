@@ -89,7 +89,19 @@ class Framework
     # @param    [Page]  page
     #   Page with which to update the {#sitemap}.
     def add_page_to_sitemap( page )
-        sitemap[page.dom.url] = page.code
+        update_sitemap( page.dom.url => page.code )
+    end
+
+    def update_sitemap( entries )
+        entries.each do |url, code|
+            # Feedback from the trainer or whatever, don't include it in the
+            # sitemap, it'll just add noise.
+            next if url.include?( Utilities.random_seed )
+
+            @sitemap[url] = code
+        end
+
+        @sitemap
     end
 
     def dump( directory )

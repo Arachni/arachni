@@ -101,7 +101,8 @@ class Page
     end
 
     ELEMENTS = [
-        :links, :forms, :cookies, :headers, :link_templates, :jsons, :xmls
+        :links, :forms, :cookies, :headers, :link_templates, :jsons, :xmls,
+        :ui_inputs, :ui_forms
     ]
 
     METADATA = [ :nonce_name, :skip_dom ]
@@ -274,7 +275,7 @@ class Page
         @has_javascript = nil
         clear_cache
 
-        @body = string.to_s.dup.freeze
+        @body = string.to_s.dup.recode.freeze
     end
 
     ELEMENTS.each do |type|

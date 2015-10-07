@@ -23,6 +23,8 @@ shared_examples_for 'check' do
         reset_framework
         options.url = @url
 
+        framework.http.headers['User-Agent'] = 'arachni_user'
+
         options.audit.parameter_names      = true
         options.audit.with_extra_parameter = true
 
@@ -53,12 +55,11 @@ shared_examples_for 'check' do
 
     describe '.info' do
         it 'holds the right platforms' do
-            current_check.platforms.sort.should == self.class.platforms.sort
+            expect(current_check.platforms.sort).to eq self.class.platforms.sort
         end
 
         it 'holds the right elements' do
-            current_check.info[:elements].map(&:to_s).sort.should ==
-                self.class.elements.map(&:to_s).sort
+            expect(current_check.info[:elements].map(&:to_s).sort).to eq(self.class.elements.map(&:to_s).sort)
         end
     end
 
@@ -102,21 +103,19 @@ shared_examples_for 'check' do
         audit element, run_checks
 
         if issue_count
-            issues.size.should == issue_count
+            expect(issues.size).to eq issue_count
         end
 
         if issue_count_per_platform
-            issues.size.should ==
-                issue_count_per_platform[platform]
+            expect(issues.size).to eq issue_count_per_platform[platform]
         end
 
         if issue_count_per_element
-            issues.size.should == issue_count_per_element[element]
+            expect(issues.size).to eq issue_count_per_element[element]
         end
 
         if issue_count_per_element_per_platform
-            issues.size.should ==
-                issue_count_per_element_per_platform[platform][element]
+            expect(issues.size).to eq issue_count_per_element_per_platform[platform][element]
         end
 
         instance_eval &block if block_given?
@@ -173,11 +172,10 @@ shared_examples_for 'check' do
 
         if logs_issues && issues.any?
             # make sure we ONLY got results for the requested element type
-            issues.map { |i| i.vector.class.type }.uniq.should == [e.to_sym]
+            expect(issues.map { |i| i.vector.class.type }.uniq).to eq [e.to_sym]
 
             if current_check.info[:issue]
-                issues.map { |i| i.severity }.uniq.should ==
-                    [current_check.info[:issue][:severity]]
+                expect(issues.map { |i| i.severity }.uniq).to eq [current_check.info[:issue][:severity]]
             end
         end
     end

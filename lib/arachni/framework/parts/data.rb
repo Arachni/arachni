@@ -184,6 +184,10 @@ module Data
         data.add_page_to_sitemap( page )
     end
 
+    def update_sitemap( entries )
+        data.update_sitemap( entries )
+    end
+
     def push_paths_from_page( page )
         page.paths.select { |path| push_to_url_queue( path ) }
     end

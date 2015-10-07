@@ -11,7 +11,7 @@ describe name_from_filename do
         it 'logs all headers' do
             run
 
-            actual_results.should == {
+            expect(actual_results).to eq({
                 url => {
                     "Content-Type" => "text/html;charset=utf-8",
                     "X-Xss-Protection" => "1; mode=block",
@@ -35,7 +35,7 @@ describe name_from_filename do
                     "X-Frame-Options" => "SAMEORIGIN",
                     "Content-Length" => "6"
                 }
-            }
+            })
         end
     end
 
@@ -47,7 +47,7 @@ describe name_from_filename do
 
             run
 
-            actual_results.should == {
+            expect(actual_results).to eq({
                 url => {
                     "X-Frame-Options" => "SAMEORIGIN"
                 },
@@ -59,7 +59,7 @@ describe name_from_filename do
                     "Weird2" => "Value2",
                     "X-Frame-Options" => "SAMEORIGIN"
                 }
-            }
+            })
         end
     end
 
@@ -71,7 +71,7 @@ describe name_from_filename do
 
             run
 
-            actual_results.should == {
+            expect(actual_results).to eq({
                 url => {
                     "Content-Type" => "text/html;charset=utf-8",
                     "X-Xss-Protection" => "1; mode=block",
@@ -90,7 +90,7 @@ describe name_from_filename do
                     "X-Content-Type-Options" => "nosniff",
                     "Content-Length" => "6"
                 }
-            }
+            })
         end
     end
 
@@ -112,7 +112,7 @@ describe name_from_filename do
                 },
             ]
 
-            framework.plugins[component_name].merge( results ).should == {
+            expect(framework.plugins[component_name].merge( results )).to eq({
                 "#{url}" => {
                     "Name" => "Value",
                     "Name2" => "Value2"
@@ -120,7 +120,7 @@ describe name_from_filename do
                 "#{url}2" => {
                     "Name22" => "Value22"
                 }
-            }
+            })
         end
     end
 end

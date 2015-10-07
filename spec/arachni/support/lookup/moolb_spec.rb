@@ -17,10 +17,10 @@ describe Arachni::Support::LookUp::Moolb do
                     lu << i
                 end
 
-                lu.include?( 0 ).should be_false
+                expect(lu.include?( 0 )).to be_falsey
 
                 1.upto( 3 ) do |i|
-                    lu.include?( i ).should be_true
+                    expect(lu.include?( i )).to be_truthy
                 end
             end
         end
@@ -34,7 +34,7 @@ describe Arachni::Support::LookUp::Moolb do
                     lu << i
                 end
 
-                lu.size.should == 3
+                expect(lu.size).to eq(3)
             end
         end
     end

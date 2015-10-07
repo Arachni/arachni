@@ -2,7 +2,26 @@ require 'spec_helper'
 
 describe Arachni::Element::JSON do
     it_should_behave_like 'element'
+
+    it_should_behave_like 'with_source'
+    it_should_behave_like 'with_auditor'
+
+    it_should_behave_like 'submittable'
+    it_should_behave_like 'inputtable'
+    it_should_behave_like 'mutable'
     it_should_behave_like 'auditable'
+
+    before :each do
+        @framework ||= Arachni::Framework.new
+        @auditor     = Auditor.new( Arachni::Page.from_url( url ), @framework )
+    end
+
+    after :each do
+        @framework.reset
+        reset_options
+    end
+
+    let(:auditor) { @auditor }
 
     def auditable_extract_parameters( resource )
         JSON.load( resource.body )
@@ -19,7 +38,7 @@ describe Arachni::Element::JSON do
     let(:utilities) { Arachni::Utilities }
 
     it 'is be assigned to Arachni::JSON for easy access' do
-        Arachni::JSON.should == described_class
+        expect(Arachni::JSON).to eq(described_class)
     end
 
     describe '#to_json' do
@@ -45,13 +64,13 @@ describe Arachni::Element::JSON do
         end
 
         it 'returns the input data as JSON' do
-            subject.to_json.should == inputs.to_json
+            expect(subject.to_json).to eq(inputs.to_json)
         end
     end
 
     describe '#inputs=' do
         it 'sets inputs' do
-            subject.inputs.should == inputs
+            expect(subject.inputs).to eq(inputs)
         end
 
         it 'recursively converts keys to string' do
@@ -62,12 +81,12 @@ describe Arachni::Element::JSON do
                 }
             }
 
-            subject.inputs.should == {
+            expect(subject.inputs).to eq({
                 'stuff'  => 1,
                 'stuff2' => {
                     'stuff2' => '2'
                 }
-            }
+            })
         end
 
         context 'when it has nested hashes' do
@@ -82,7 +101,7 @@ describe Arachni::Element::JSON do
             end
 
             it 'preserves them' do
-                subject.inputs.should == inputs
+                expect(subject.inputs).to eq(inputs)
             end
         end
 
@@ -98,7 +117,7 @@ describe Arachni::Element::JSON do
             end
 
             it 'preserves them' do
-                subject.inputs.should == inputs
+                expect(subject.inputs).to eq(inputs)
             end
         end
     end
@@ -109,7 +128,7 @@ describe Arachni::Element::JSON do
                 it 'stores the item as a String' do
                     affected_input_name = ['stuff']
                     subject.affected_input_name = affected_input_name
-                    subject.affected_input_name.should == affected_input_name.first
+                    expect(subject.affected_input_name).to eq(affected_input_name.first)
                 end
             end
 
@@ -117,7 +136,7 @@ describe Arachni::Element::JSON do
                 it 'sets the path to the fuzzed input' do
                     affected_input_name = ['stuff', 'stuff2']
                     subject.affected_input_name = affected_input_name
-                    subject.affected_input_name.should == affected_input_name
+                    expect(subject.affected_input_name).to eq(affected_input_name)
                 end
             end
         end
@@ -139,8 +158,9 @@ describe Arachni::Element::JSON do
                 end
 
                 it 'returns the input data at that path' do
-                    subject[['nested', 'nested-name', 'deep-nested']].should ==
+                    expect(subject[['nested', 'nested-name', 'deep-nested']]).to eq(
                         inputs['nested']['nested-name']['deep-nested']
+                    )
                 end
             end
 
@@ -162,8 +182,9 @@ describe Arachni::Element::JSON do
                 end
 
                 it 'returns the input data at that path' do
-                    subject[['nested', 'nested-name', 'deep-nested', 2]].should ==
+                    expect(subject[['nested', 'nested-name', 'deep-nested', 2]]).to eq(
                         inputs['nested']['nested-name']['deep-nested'][2]
+                    )
                 end
             end
         end
@@ -187,7 +208,7 @@ describe Arachni::Element::JSON do
                 it 'sets the input data at that path' do
                     subject[['nested', 'nested-name', 'deep-nested']] = 'foo'
 
-                    subject.inputs.should == {
+                    expect(subject.inputs).to eq({
                         'stuff' => 'blah',
                         'nested' => {
                             'nested-name'  => {
@@ -195,7 +216,7 @@ describe Arachni::Element::JSON do
                             },
                             'nested-name2' => true
                         }
-                    }
+                    })
                 end
             end
 
@@ -219,7 +240,7 @@ describe Arachni::Element::JSON do
                 it 'returns the input data at that path' do
                     subject[['nested', 'nested-name', 'deep-nested', 1]] = 'foo'
 
-                    subject.inputs.should ==
+                    expect(subject.inputs).to eq(
                         {
                             'stuff' => 'blah',
                             'nested' => {
@@ -233,6 +254,7 @@ describe Arachni::Element::JSON do
                                 'nested-name2' => true
                             }
                         }
+                    )
                 end
             end
         end
@@ -274,7 +296,7 @@ describe Arachni::Element::JSON do
                 }
             })
 
-            subject.inputs.should == {
+            expect(subject.inputs).to eq({
                 'stuff' => 'new stuff',
                 'nested' => {
                     'nested-name'  => {
@@ -291,7 +313,7 @@ describe Arachni::Element::JSON do
                     },
                     'nested-name2' => true
                 }
-            }
+            })
         end
     end
 
@@ -316,11 +338,11 @@ describe Arachni::Element::JSON do
                     )
 
                     mutations.each do |m|
-                        m[m.affected_input_name].should == 'seed'
-                        m.affected_input_value.should == 'seed'
+                        expect(m[m.affected_input_name]).to eq('seed')
+                        expect(m.affected_input_value).to eq('seed')
                     end
 
-                    mutations.map { |m| Hash[m.affected_input_name, m.inputs]}.should == [
+                    expect(mutations.map { |m| Hash[m.affected_input_name, m.inputs]}).to eq([
                         {
                             'stuff' => {
                                 'stuff'  => 'seed',
@@ -354,7 +376,7 @@ describe Arachni::Element::JSON do
                                 }
                             }
                         }
-                    ]
+                    ])
                 end
             end
 
@@ -381,11 +403,11 @@ describe Arachni::Element::JSON do
                     )
 
                     mutations.each do |m|
-                        m[m.affected_input_name].should == 'seed'
-                        m.affected_input_value.should == 'seed'
+                        expect(m[m.affected_input_name]).to eq('seed')
+                        expect(m.affected_input_value).to eq('seed')
                     end
 
-                    mutations.map { |m| Hash[m.affected_input_name, m.inputs]}.should == [
+                    expect(mutations.map { |m| Hash[m.affected_input_name, m.inputs]}).to eq([
                         {
                             'stuff' => {
                                 'stuff'  => 'seed',
@@ -461,7 +483,7 @@ describe Arachni::Element::JSON do
                                 }
                             }
                         }
-                    ]
+                    ])
                 end
             end
         end
@@ -469,41 +491,41 @@ describe Arachni::Element::JSON do
 
     describe '#simple' do
         it 'returns a simple Hash representation' do
-            subject.simple.should == { subject.action => subject.inputs }
+            expect(subject.simple).to eq({ subject.action => subject.inputs })
         end
     end
 
     describe '#valid_input_data?' do
         it 'returns true' do
-            subject.valid_input_data?( 'stuff' ).should be_true
+            expect(subject.valid_input_data?( 'stuff' )).to be_truthy
         end
     end
 
     describe '.encode' do
         it 'returns the string as is' do
-            described_class.encode( 'stuff' ).should == 'stuff'
+            expect(described_class.encode( 'stuff' )).to eq('stuff')
         end
     end
     describe '#encode' do
         it 'returns the string as is' do
-            subject.encode( 'stuff' ).should == 'stuff'
+            expect(subject.encode( 'stuff' )).to eq('stuff')
         end
     end
 
     describe '.decode' do
         it 'returns the string as is' do
-            described_class.decode( 'stuff' ).should == 'stuff'
+            expect(described_class.decode( 'stuff' )).to eq('stuff')
         end
     end
     describe '#decode' do
         it 'returns the string as is' do
-            subject.decode( 'stuff' ).should == 'stuff'
+            expect(subject.decode( 'stuff' )).to eq('stuff')
         end
     end
 
     describe '#type' do
         it 'is "json"' do
-            subject.type.should == :json
+            expect(subject.type).to eq(:json)
         end
     end
 

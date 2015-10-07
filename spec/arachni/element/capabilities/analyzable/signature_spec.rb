@@ -1,9 +1,9 @@
 require 'spec_helper'
 
-describe Arachni::Element::Capabilities::Analyzable::Taint do
+describe Arachni::Element::Capabilities::Analyzable::Signature do
 
     before :all do
-        Arachni::Options.url = @url = web_server_url_for( :taint )
+        Arachni::Options.url = @url = web_server_url_for( :signature )
         Arachni::Options.audit.elements :links
 
         @auditor = Auditor.new( Arachni::Page.from_url( @url ), Arachni::Framework.new )
@@ -17,7 +17,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
         @negative.auditor.page = Arachni::Page.from_url( @url )
     end
 
-    describe '#taint_analysis' do
+    describe '#signature_analysis' do
 
         before do
             @seed = 'my_seed'
@@ -30,15 +30,15 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                     url: 'http://stuff.com/',
                     inputs: { 'input' => '' }
                 )
-                auditable.taint_analysis( @seed ).should be_false
+                expect(auditable.signature_analysis( @seed )).to be_falsey
             end
         end
 
         context 'when called with no opts' do
             it 'uses the defaults' do
-                @positive.taint_analysis( @seed )
+                @positive.signature_analysis( @seed )
                 @auditor.http.run
-                issues.size.should == 1
+                expect(issues.size).to eq(1)
             end
         end
 
@@ -49,20 +49,20 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                     php:     @seed,
                 }
 
-                @positive.taint_analysis( payloads, substring: @seed )
+                @positive.signature_analysis( payloads, substring: @seed )
                 @auditor.http.run
-                issues.size.should == 1
+                expect(issues.size).to eq(1)
                 issue = issues.first
-                issue.platform_name.should == :php
-                issue.platform_type.should == :languages
+                expect(issue.platform_name).to eq(:php)
+                expect(issue.platform_type).to eq(:languages)
             end
         end
 
         context 'when called against non-vulnerable input' do
             it 'does not log an issue' do
-                @negative.taint_analysis( @seed )
+                @negative.signature_analysis( @seed )
                 @auditor.http.run
-                issues.should be_empty
+                expect(issues).to be_empty
             end
         end
 
@@ -70,25 +70,25 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
             describe :regexp do
                 context String do
                     it 'tries to match the provided pattern' do
-                        @positive.taint_analysis( @seed,
+                        @positive.signature_analysis( @seed,
                                                   regexp: @seed,
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
                     end
                 end
 
                 context Array do
                     it 'tries to match the provided patterns' do
-                        @positive.taint_analysis( @seed,
+                        @positive.signature_analysis( @seed,
                                                   regexp: [@seed],
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
                     end
                 end
 
@@ -99,7 +99,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                             php:     /#{@seed} p.*/,
                         }
 
-                        @positive.taint_analysis(
+                        @positive.signature_analysis(
                             "#{@seed} windows",
                             regexp: regexps.dup,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
@@ -107,9 +107,9 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                         @auditor.http.run
 
-                        issues.size.should == 1
-                        issues[0].platform_name.should == :windows
-                        issues[0].signature.should == regexps[:windows].source
+                        expect(issues.size).to eq(1)
+                        expect(issues[0].platform_name).to eq(:windows)
+                        expect(issues[0].signature).to eq(regexps[:windows].source)
                     end
 
                     context 'when the payloads are per platform' do
@@ -134,7 +134,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                 asp:     /#{@seed}/
                             }
 
-                            @positive.taint_analysis(
+                            @positive.signature_analysis(
                                 payloads.dup,
                                 regexp: regexps.dup,
                                 format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
@@ -142,13 +142,13 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                             @auditor.http.run
 
-                            issues.size.should == 3
+                            expect(issues.size).to eq(3)
                             payloads.keys.each do |platform|
                                 issue = issues.find{ |i| i.platform_name == platform }
 
-                                issue.vector.seed.should == payloads[platform]
-                                issue.platform_name.should == platform
-                                issue.signature.should == regexps[platform].source
+                                expect(issue.vector.seed).to eq(payloads[platform])
+                                expect(issue.platform_name).to eq(platform)
+                                expect(issue.signature).to eq(regexps[platform].source)
                             end
                         end
 
@@ -165,7 +165,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                     asp: /#{@seed}/
                                 }
 
-                                @positive.taint_analysis(
+                                @positive.signature_analysis(
                                     payloads.dup,
                                     regexp: regexps.dup,
                                     format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
@@ -173,11 +173,11 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                                 @auditor.http.run
 
-                                issues.size.should == 1
+                                expect(issues.size).to eq(1)
                                 issue = issues.first
 
-                                issue.platform_name.should == :asp
-                                issue.signature.should == regexps[:asp].source
+                                expect(issue.platform_name).to eq(:asp)
+                                expect(issue.signature).to eq(regexps[:asp].source)
                             end
                         end
                     end
@@ -185,12 +185,12 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                 context 'when the page matches the regexp even before we audit it' do
                     it 'does not log an issue' do
-                        @positive.taint_analysis( 'Inject here',
+                        @positive.signature_analysis( 'Inject here',
                             regexp: 'Inject he[er]',
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.should be_empty
+                        expect(issues).to be_empty
                     end
                 end
             end
@@ -198,27 +198,27 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
             describe :substring do
                 context String do
                     it 'tries to match the provided pattern' do
-                        @positive.taint_analysis( @seed,
+                        @positive.signature_analysis( @seed,
                                                   substring: @seed,
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
-                        issues.first.should be_trusted
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
+                        expect(issues.first).to be_trusted
                     end
                 end
 
                 context Array do
                     it 'tries to match the provided patterns' do
-                        @positive.taint_analysis( @seed,
+                        @positive.signature_analysis( @seed,
                                                   substring: [@seed],
                                                   format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.size.should == 1
-                        issues.first.vector.seed.should == @seed
-                        issues.first.should be_trusted
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
+                        expect(issues.first).to be_trusted
                     end
                 end
 
@@ -229,7 +229,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                             php:     "#{@seed} p",
                         }
 
-                        @positive.taint_analysis(
+                        @positive.signature_analysis(
                             "#{@seed} windows",
                             substring: substrings.dup,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
@@ -237,10 +237,10 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                         @auditor.http.run
 
-                        issues.size.should == 1
-                        issues[0].platform_name.should == :windows
-                        issues[0].signature.should == substrings[:windows].to_s
-                        issues[0].should be_trusted
+                        expect(issues.size).to eq(1)
+                        expect(issues[0].platform_name).to eq(:windows)
+                        expect(issues[0].signature).to eq(substrings[:windows].to_s)
+                        expect(issues[0]).to be_trusted
                     end
 
                     context 'when the payloads are per platform' do
@@ -265,7 +265,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                                 asp:     @seed
                             }
 
-                            @positive.taint_analysis(
+                            @positive.signature_analysis(
                                 payloads.dup,
                                 substring: substrings.dup,
                                 format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
@@ -273,14 +273,14 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                             @auditor.http.run
 
-                            issues.size.should == 3
+                            expect(issues.size).to eq(3)
                             payloads.keys.each do |platform|
                                 issue = issues.find{ |i| i.platform_name == platform }
 
-                                issue.vector.seed.should == payloads[platform]
-                                issue.platform_name.should == platform
-                                issue.signature.should == substrings[platform].to_s
-                                issue.should be_trusted
+                                expect(issue.vector.seed).to eq(payloads[platform])
+                                expect(issue.platform_name).to eq(platform)
+                                expect(issue.signature).to eq(substrings[platform].to_s)
+                                expect(issue).to be_trusted
                             end
                         end
                     end
@@ -288,12 +288,12 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                 context 'when the page includes the substring even before we audit it' do
                     it 'does not log any issues' do
-                        @positive.taint_analysis( 'Inject here',
+                        @positive.signature_analysis( 'Inject here',
                             regexp: 'Inject here',
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
-                        issues.should be_empty
+                        expect(issues).to be_empty
                     end
                 end
 
@@ -310,7 +310,7 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
                             asp: @seed
                         }
 
-                        @positive.taint_analysis(
+                        @positive.signature_analysis(
                             payloads.dup,
                             substring: substrings.dup,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
@@ -318,37 +318,37 @@ describe Arachni::Element::Capabilities::Analyzable::Taint do
 
                         @auditor.http.run
 
-                        issues.size.should == 1
+                        expect(issues.size).to eq(1)
                         issue = issues.first
 
-                        issue.platform_name.should == :asp
-                        issue.signature.should == substrings[:asp].to_s
-                        issue.should be_trusted
+                        expect(issue.platform_name).to eq(:asp)
+                        expect(issue.signature).to eq(substrings[:asp].to_s)
+                        expect(issue).to be_trusted
                     end
                 end
             end
 
             describe :ignore do
                 it 'ignores matches whose response also matches the ignore patterns' do
-                    @positive.taint_analysis( @seed,
+                    @positive.signature_analysis( @seed,
                         substring: @seed,
                         format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                         ignore: @seed
                     )
                     @auditor.http.run
-                    issues.should be_empty
+                    expect(issues).to be_empty
                 end
             end
 
             describe :longest_word_optimization do
                 it 'optimizes the pattern matching process by first matching against the largest word in the regexp' do
-                    @positive.taint_analysis(
+                    @positive.signature_analysis(
                         @seed,
                         regexp: @seed,
                         longest_word_optimization: true
                     )
                     @auditor.http.run
-                    issues.should be_any
+                    expect(issues).to be_any
                 end
             end
         end

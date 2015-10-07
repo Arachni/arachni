@@ -11,9 +11,9 @@ shared_examples_for 'refreshable' do
                     http.get( refreshable_url + '_disappear_clear', mode: :sync )
 
                     response = http.get( refreshable_url + '_disappear', mode: :sync )
-                    refreshable.from_response( response ).select do |f|
+                    expect(refreshable.from_response( response ).select do |f|
                         !!f.inputs['nonce']
-                    end.first.refresh.should be_nil
+                    end.first.refresh).to be_nil
                 end
             end
 
@@ -25,7 +25,7 @@ shared_examples_for 'refreshable' do
                     refreshable.from_response( response ).select do |f|
                         !!f.inputs['nonce']
                     end.first.refresh do |r|
-                        r.should be_nil
+                        expect(r).to be_nil
                     end
                 end
             end
@@ -44,11 +44,11 @@ shared_examples_for 'refreshable' do
                 f.update updates
 
                 refreshed = f.refresh
-                refreshed.inputs['nonce'].should_not     == nonce
-                refreshed.default_inputs['nonce'].should == nonce
+                expect(refreshed.inputs['nonce']).not_to     eq(nonce)
+                expect(refreshed.default_inputs['nonce']).to eq(nonce)
 
                 updates['nonce'] = f.refresh.inputs['nonce']
-                f.inputs.should == updates
+                expect(f.inputs).to eq(updates)
             end
         end
         context 'when called with a block' do
@@ -65,17 +65,17 @@ shared_examples_for 'refreshable' do
 
                 ran = false
                 f.refresh do |form|
-                    form.inputs['nonce'].should_not     == nonce
-                    form.default_inputs['nonce'].should == nonce
+                    expect(form.inputs['nonce']).not_to     eq(nonce)
+                    expect(form.default_inputs['nonce']).to eq(nonce)
 
                     updates['nonce'] = form.refresh.inputs['nonce']
-                    form.inputs.should == updates
+                    expect(form.inputs).to eq(updates)
 
                     ran = true
                 end
 
                 http.run
-                ran.should be_true
+                expect(ran).to be_truthy
             end
         end
     end

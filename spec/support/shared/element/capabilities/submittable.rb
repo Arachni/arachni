@@ -18,7 +18,7 @@ shared_examples_for 'submittable' do
 
         rpc_attributes.each do |attribute|
             it "includes '#{attribute}'" do
-                data[attribute].should == submittable.send( attribute )
+                expect(data[attribute]).to eq(submittable.send( attribute ))
             end
         end
     end
@@ -29,7 +29,7 @@ shared_examples_for 'submittable' do
 
         rpc_attributes.each do |attribute|
             it "restores '#{attribute}'" do
-                restored.send( attribute ).should == submittable.send( attribute )
+                expect(restored.send( attribute )).to eq(submittable.send( attribute ))
             end
         end
     end
@@ -37,34 +37,34 @@ shared_examples_for 'submittable' do
     describe '#method' do
         it 'returns the HTTP method' do
             submittable.method = :stuff
-            submittable.method.should == :stuff
+            expect(submittable.method).to eq(:stuff)
         end
     end
 
     describe '#http_method' do
         it 'is aliased to #method' do
             submittable.method = :stuff
-            submittable.http_method.should == :stuff
+            expect(submittable.http_method).to eq(:stuff)
         end
     end
 
     describe '#method=' do
         it 'returns the HTTP method' do
             submittable.method = :stuff
-            submittable.http_method.should == :stuff
+            expect(submittable.http_method).to eq(:stuff)
         end
     end
 
     describe '#http_method=' do
         it 'is aliased to #method=' do
             submittable.http_method = :stuff
-            submittable.method.should == :stuff
+            expect(submittable.method).to eq(:stuff)
         end
     end
 
     describe '#platforms' do
         it 'returns platforms for the given element' do
-            submittable.platforms.should be_kind_of Arachni::Platform::Manager
+            expect(submittable.platforms).to be_kind_of Arachni::Platform::Manager
         end
     end
 
@@ -77,7 +77,7 @@ shared_examples_for 'submittable' do
             end
 
             run
-            submittable.inputs.should == submitted
+            expect(submittable.inputs).to eq(submitted)
         end
 
         it 'assigns the auditable element as the request performer' do
@@ -85,46 +85,46 @@ shared_examples_for 'submittable' do
             submittable.submit { |res| response = res }
 
             run
-            response.request.performer.should == submittable
+            expect(response.request.performer).to eq(submittable)
         end
     end
 
     describe '#id' do
         before do
-            described_class.any_instance.stub(:valid_input_name?) { true }
-            described_class.any_instance.stub(:valid_input_value?) { true }
+            allow_any_instance_of(described_class).to receive(:valid_input_name?) { true }
+            allow_any_instance_of(described_class).to receive(:valid_input_value?) { true }
         end
 
         let(:action) { "#{url}/action" }
 
         it 'uniquely identifies the element based on #action' do
             e = submittable.dup
-            e.stub(:action) { action }
+            allow(e).to receive(:action) { action }
 
             c = submittable.dup
-            c.stub(:action) { "#{action}2" }
+            allow(c).to receive(:action) { "#{action}2" }
 
-            e.id.should_not == c.id
+            expect(e.id).not_to eq(c.id)
         end
 
         it 'uniquely identifies the element based on #method' do
             e = submittable.dup
-            e.stub(:method) { :get }
+            allow(e).to receive(:method) { :get }
 
             c = submittable.dup
-            c.stub(:method) { :post }
+            allow(c).to receive(:method) { :post }
 
-            e.id.should_not == c.id
+            expect(e.id).not_to eq(c.id)
         end
 
         it 'uniquely identifies the element based on #type' do
             e = submittable.dup
-            e.stub(:type) { :stuff }
+            allow(e).to receive(:type) { :stuff }
 
             c = submittable.dup
-            c.stub(:type) { :stoof }
+            allow(c).to receive(:type) { :stoof }
 
-            e.id.should_not == c.id
+            expect(e.id).not_to eq(c.id)
         end
 
         it 'uniquely identifies the element based on #inputs' do
@@ -134,7 +134,7 @@ shared_examples_for 'submittable' do
             c = submittable.dup
             c.inputs = { input1: 'stuff2' }
 
-            e.id.should_not == c.id
+            expect(e.id).not_to eq(c.id)
         end
     end
 
@@ -142,19 +142,19 @@ shared_examples_for 'submittable' do
         let(:dupped) { submittable.dup }
 
         it 'preserves #method' do
-            dupped.method.should == submittable.method
+            expect(dupped.method).to eq(submittable.method)
         end
         it 'preserves #action' do
-            dupped.action.should == submittable.action
+            expect(dupped.action).to eq(submittable.action)
         end
     end
 
     describe '#to_h' do
         it 'returns a hash representation of self' do
             hash = submittable.to_h
-            hash[:url].should    == submittable.url
-            hash[:action].should == submittable.action
-            hash[:method].should == submittable.method
+            expect(hash[:url]).to    eq(submittable.url)
+            expect(hash[:action]).to eq(submittable.action)
+            expect(hash[:method]).to eq(submittable.method)
         end
     end
 end

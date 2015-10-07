@@ -18,7 +18,8 @@ class XML < Base
     lib = "#{File.dirname( __FILE__ )}/#{File.basename(__FILE__, '.rb')}/capabilities/**/*.rb"
     Dir.glob( lib ).each { |f| require f }
 
-    # Generic element capabilities.
+    include Arachni::Element::Capabilities::Auditable
+    include Arachni::Element::Capabilities::Submittable
     include Arachni::Element::Capabilities::Analyzable
     include Arachni::Element::Capabilities::WithSource
 

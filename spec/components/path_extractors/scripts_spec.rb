@@ -8,14 +8,17 @@ describe name_from_filename do
             'http://test.com',
             'test',
             'test.com',
-            'test/stuff2.php'
+            '/test/stuff2.php'
         ]
     end
 
     def text
         s = <<SCRIPT
         <script>
-            var path = "test/stuff2.php"
+            /*Blah.1*/
+            //Blah.2
+            var path = "/test/stuff2.php"
+            var ignore = "test/stuff2"
         </script>
 SCRIPT
 

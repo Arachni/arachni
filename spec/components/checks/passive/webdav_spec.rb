@@ -11,5 +11,5 @@ describe name_from_filename do
         1
     end
 
-    easy_test { issues.first.vector.url.should == url }
+    easy_test { expect(issues.first.vector.url).to eq url }
 end

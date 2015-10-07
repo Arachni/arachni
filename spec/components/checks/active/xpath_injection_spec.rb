@@ -12,7 +12,7 @@ describe name_from_filename do
         {
             Element::Form         => 125,
             Element::Link         => 125,
-            Element::Cookie       => 75,
+            Element::Cookie       => 150,
             Element::Header       => 75,
             Element::LinkTemplate => 75,
             Element::JSON         => 75,

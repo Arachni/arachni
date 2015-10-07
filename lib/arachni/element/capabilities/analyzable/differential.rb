@@ -6,6 +6,8 @@
     web site for more information on licensing and terms of use.
 =end
 
+require_relative '../mutable'
+
 module Arachni
 module Element::Capabilities
 module Analyzable
@@ -28,7 +30,7 @@ module Differential
     end
 
     DIFFERENTIAL_OPTIONS =  {
-        format:         [Mutable::Format::STRAIGHT],
+        format:         [Arachni::Element::Capabilities::Mutable::Format::STRAIGHT],
 
         # Amount of refinement operations to remove context-irrelevant dynamic
         # content -- like banners etc.
@@ -104,6 +106,12 @@ module Differential
     def differential_analysis( opts = {} )
         return if self.inputs.empty?
 
+        with_missing_values = Set.new( self.inputs.select { |k, v| v.to_s.empty? }.keys )
+        if self.inputs.size == with_missing_values.size
+            print_debug 'Differential analysis: Inputs are missing default values.'
+            return false
+        end
+
         return false if audited? audit_id
         audited audit_id
 
@@ -115,6 +123,9 @@ module Differential
 
         @differential_analysis_options = opts.dup
         opts = self.class::MUTATION_OPTIONS.merge( DIFFERENTIAL_OPTIONS.merge( opts ) )
+        opts[:skip_like] = proc do |mutation|
+            with_missing_values.include? mutation.affected_input_name
+        end
 
         mutations_size = 0
         each_mutation( opts[:false], opts ) { mutations_size += 1 }
@@ -196,13 +207,15 @@ module Differential
                     @data_gathering[:controls][altered_hash] = true
                 end
 
+                body = res.body.gsub( elem.seed, '' )
+
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
                 signatures[:controls][altered_hash] =
                     signatures[:controls][altered_hash] ?
-                        signatures[:controls][altered_hash].refine!(res.body) :
-                        Support::Signature.new(res.body)
+                        signatures[:controls][altered_hash].refine!(body) :
+                        Support::Signature.new(body)
 
                 increase_received_responses( opts, signatures )
             end
@@ -264,13 +277,15 @@ module Differential
 
                     signatures[pair_hash][altered_hash][:injected_string] ||= expr
 
+                    body = res.body.gsub( elem.seed, '' )
+
                     # Create a signature from the response body and refine it with
                     # subsequent ones to remove noise (like context-irrelevant dynamic
                     # content such as banners etc.).
                     signatures[pair_hash][altered_hash][bool] =
                         signatures[pair_hash][altered_hash][bool] ?
-                            signatures[pair_hash][altered_hash][bool].refine!(res.body) :
-                            Support::Signature.new(res.body)
+                            signatures[pair_hash][altered_hash][bool].refine!(body) :
+                            Support::Signature.new(body)
 
                     signature_sieve( altered_hash, signatures, pair_hash )
 
@@ -326,13 +341,15 @@ module Differential
                         " action '#{elem.action}'."
                 end
 
+                body = res.body.gsub( elem.seed, '' )
+
                 # Create a signature from the response body and refine it with
                 # subsequent ones to remove noise (like context-irrelevant dynamic
                 # content such as banners etc.).
                 signatures[:controls_verification][altered_hash] =
                     signatures[:controls_verification][altered_hash] ?
-                        signatures[:controls_verification][altered_hash].refine!(res.body) :
-                        Support::Signature.new(res.body)
+                        signatures[:controls_verification][altered_hash].refine!(body) :
+                        Support::Signature.new(body)
 
                 received_responses += 1
                 next if received_responses != @data_gathering[:mutations_size]

@@ -10,12 +10,12 @@ describe Arachni::Support::Cache::LeastRecentlyPushed do
         subject[:k2] = '2'
         subject[:k3] = '3'
         subject[:k4] = '4'
-        subject.size.should == 3
+        expect(subject.size).to eq(3)
 
-        subject[:k4].should be_true
-        subject[:k3].should be_true
-        subject[:k2].should be_true
-        subject[:k].should be_nil
+        expect(subject[:k4]).to be_truthy
+        expect(subject[:k3]).to be_truthy
+        expect(subject[:k2]).to be_truthy
+        expect(subject[:k]).to be_nil
 
         subject.clear
 
@@ -23,23 +23,23 @@ describe Arachni::Support::Cache::LeastRecentlyPushed do
         subject[:k]  = '1'
         subject[:k2] = '3'
         subject[:k3] = '4'
-        subject.size.should == 1
+        expect(subject.size).to eq(1)
 
-        subject[:k3].should be_true
-        subject[:k2].should be_nil
-        subject[:k].should be_nil
+        expect(subject[:k3]).to be_truthy
+        expect(subject[:k2]).to be_nil
+        expect(subject[:k]).to be_nil
     end
 
     describe '#[]=' do
         it 'stores an object' do
             v = 'val'
-            (subject[:key] = v).should == v
-            subject[:key].should == v
+            expect(subject[:key] = v).to eq(v)
+            expect(subject[:key]).to eq(v)
         end
         it 'alias of #store' do
             v = 'val2'
-            subject.store( :key2, v ).should == v
-            subject[:key2].should == v
+            expect(subject.store( :key2, v )).to eq(v)
+            expect(subject[:key2]).to eq(v)
         end
     end
 
@@ -47,13 +47,13 @@ describe Arachni::Support::Cache::LeastRecentlyPushed do
         it 'retrieves an object by key' do
             v = 'val2'
             subject[:key] = v
-            subject[:key].should == v
-            subject.empty?.should be_false
+            expect(subject[:key]).to eq(v)
+            expect(subject.empty?).to be_falsey
         end
 
         context 'when the key does not exist' do
             it 'returns nil' do
-                subject[:some_key].should be_nil
+                expect(subject[:some_key]).to be_nil
             end
         end
     end
@@ -63,14 +63,14 @@ describe Arachni::Support::Cache::LeastRecentlyPushed do
             it 'deletes a key and return its value' do
                 v = 'my_val'
                 subject[:my_key] = v
-                subject.delete( :my_key ).should == v
-                subject[:my_key].should be_nil
-                subject.include?( :my_key ).should be_false
+                expect(subject.delete( :my_key )).to eq(v)
+                expect(subject[:my_key]).to be_nil
+                expect(subject.include?( :my_key )).to be_falsey
             end
         end
         context 'when the key does not exist' do
             it 'returns nil' do
-                subject.delete( :my_key2 ).should be_nil
+                expect(subject.delete( :my_key2 )).to be_nil
             end
         end
     end
@@ -78,12 +78,12 @@ describe Arachni::Support::Cache::LeastRecentlyPushed do
     describe '#clear' do
         it 'empties the cache' do
             subject[:my_key2] = 'v'
-            subject.size.should > 0
-            subject.empty?.should be_false
+            expect(subject.size).to be > 0
+            expect(subject.empty?).to be_falsey
             subject.clear
 
-            subject.size.should == 0
-            subject.empty?.should be_true
+            expect(subject.size).to eq(0)
+            expect(subject.empty?).to be_truthy
         end
     end
 

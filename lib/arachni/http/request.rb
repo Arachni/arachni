@@ -512,7 +512,7 @@ class Request < Message
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
         headers['Cookie'] = effective_cookies.
-            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
+            map { |k, v| "#{Cookie.encode( k, true )}=#{Cookie.encode( v )}" }.
             join( ';' )
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
 

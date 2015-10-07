@@ -11,18 +11,18 @@ describe Arachni::Framework do
                     ran = true
                 end
 
-                ran.should be_true
+                expect(ran).to be_truthy
             end
 
             it 'resets the framework' do
-                Arachni::Checks.constants.include?( :Taint ).should be_false
+                expect(Arachni::Checks.constants.include?( :Signature )).to be_falsey
 
                 Arachni::Framework.new do |f|
-                    f.checks.load_all.should == %w(taint)
-                    Arachni::Checks.constants.include?( :Taint ).should be_true
+                    expect(f.checks.load_all).to eq(%w(signature))
+                    expect(Arachni::Checks.constants.include?( :Signature )).to be_truthy
                 end
 
-                Arachni::Checks.constants.include?( :Taint ).should be_false
+                expect(Arachni::Checks.constants.include?( :Signature )).to be_falsey
             end
 
             context 'when an exception is raised' do
@@ -35,13 +35,13 @@ describe Arachni::Framework do
 
     describe '#version' do
         it "returns #{Arachni::VERSION}" do
-            subject.version.should == Arachni::VERSION
+            expect(subject.version).to eq(Arachni::VERSION)
         end
     end
 
     describe '#options' do
         it "provides access to #{Arachni::Options}" do
-            subject.options.should be_kind_of Arachni::Options
+            expect(subject.options).to be_kind_of Arachni::Options
         end
     end
 
@@ -49,29 +49,29 @@ describe Arachni::Framework do
         it 'follows redirects' do
             subject.options.url = @f_url + '/redirect'
             subject.run
-            subject.sitemap.should == {
+            expect(subject.sitemap).to eq({
                 "#{@f_url}/redirect"   => 302,
                 "#{@f_url}/redirected" => 200
-            }
+            })
         end
 
         it 'performs the scan' do
             subject.options.url = @url + '/elem_combo'
             subject.options.audit.elements :links, :forms, :cookies
-            subject.checks.load :taint
+            subject.checks.load :signature
             subject.plugins.load :wait
 
             subject.run
-            subject.report.issues.size.should == 3
+            expect(subject.report.issues.size).to eq(3)
 
-            subject.report.plugins[:wait][:results].should == { 'stuff' => true }
+            expect(subject.report.plugins[:wait][:results]).to eq({ 'stuff' => true })
         end
 
         it 'sets #status to scanning' do
             described_class.new do |f|
                 f.options.url = @url + '/elem_combo'
                 f.options.audit.elements :links, :forms, :cookies
-                f.checks.load :taint
+                f.checks.load :signature
 
                 t = Thread.new { f.run }
                 Timeout.timeout( 5 ) do
@@ -82,16 +82,16 @@ describe Arachni::Framework do
         end
 
         it 'handles heavy load' do
-            @options.paths.checks = fixtures_path + '/taint_check/'
+            @options.paths.checks = fixtures_path + '/signature_check/'
 
             Arachni::Framework.new do |f|
                 f.options.url = web_server_url_for :framework_multi
                 f.options.audit.elements :links
 
-                f.checks.load :taint
+                f.checks.load :signature
 
                 f.run
-                f.report.issues.size.should == 500
+                expect(f.report.issues.size).to eq(500)
             end
         end
 
@@ -100,12 +100,14 @@ describe Arachni::Framework do
                 f.options.url = @url + '/with_javascript'
                 f.options.audit.elements :links, :forms, :cookies
 
-                f.checks.load :taint
+                f.checks.load :signature
                 f.run
 
-                f.report.issues.
-                    map { |i| i.variations.first.vector.affected_input_name }.
-                    uniq.sort.should == %w(link_input form_input cookie_input).sort
+                expect(
+                    f.report.issues.
+                        map { |i| i.vector.affected_input_name }.
+                        uniq.sort
+                ).to eq(%w(link_input form_input cookie_input).sort)
             end
         end
 
@@ -114,12 +116,14 @@ describe Arachni::Framework do
                 f.options.url = @url + '/with_ajax'
                 f.options.audit.elements :links, :forms, :cookies
 
-                f.checks.load :taint
+                f.checks.load :signature
                 f.run
 
-                f.report.issues.
-                    map { |i| i.variations.first.vector.affected_input_name }.
-                    uniq.sort.should == %w(link_input form_input cookie_taint).sort
+                expect(
+                    f.report.issues.
+                        map { |i| i.vector.affected_input_name }.
+                        uniq.sort
+                ).to eq(%w(link_input form_input cookie_taint).sort)
             end
         end
 
@@ -128,10 +132,10 @@ describe Arachni::Framework do
                 described_class.new do |f|
                     f.options.url = @url + '/elem_combo'
                     f.options.audit.elements :links, :forms, :cookies
-                    f.checks.load :taint
+                    f.checks.load :signature
 
                     f.run
-                    f.status.should == :done
+                    expect(f.status).to eq(:done)
                 end
             end
         end
@@ -157,7 +161,7 @@ describe Arachni::Framework do
                     f.options.session.check_pattern = 'logged-in user'
 
                     f.run
-                    f.report.issues.size.should == 1
+                    expect(f.report.issues.size).to eq(1)
                 end
             end
         end
@@ -167,12 +171,16 @@ describe Arachni::Framework do
         let(:statistics) { subject.statistics }
 
         it 'includes http statistics' do
-            statistics[:http].should == subject.http.statistics
+            expect(statistics[:http]).to eq(subject.http.statistics)
+        end
+
+        it 'includes browser cluster statistics' do
+            expect(statistics[:browser_cluster]).to eq(Arachni::BrowserCluster.statistics)
         end
 
         [:found_pages, :audited_pages, :current_page].each  do |k|
             it "includes #{k}" do
-                statistics.should include k
+                expect(statistics).to include k
             end
         end
 
@@ -180,13 +188,13 @@ describe Arachni::Framework do
             context 'when the scan has been running' do
                 it 'returns the runtime in seconds' do
                     subject.run
-                    statistics[:runtime].should > 0
+                    expect(statistics[:runtime]).to be > 0
                 end
             end
 
             context 'when no scan has been running' do
                 it 'returns 0' do
-                    statistics[:runtime].should == 0
+                    expect(statistics[:runtime]).to eq(0)
                 end
             end
         end

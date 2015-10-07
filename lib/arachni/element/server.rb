@@ -139,12 +139,10 @@ class Server < Base
 
     def self.flag_issues_as_untrusted( issue_digests )
         issue_digests.uniq.each do |digest|
-            next if !Arachni::Data.issues[digest]
+            next if !(issue = Arachni::Data.issues[digest])
 
-            Arachni::Data.issues[digest].variations.each do |issue|
-                issue.add_remark :meta_analysis, REMARK
-                issue.trusted = false
-            end
+            issue.add_remark :meta_analysis, REMARK
+            issue.trusted = false
         end
     end
 

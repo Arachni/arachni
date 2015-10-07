@@ -6,19 +6,15 @@
     web site for more information on licensing and terms of use.
 =end
 
-require_relative 'auditable'
-
 module Arachni
 module Element::Capabilities
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Analyzable
-    include Auditable
-
-    # Load and include all available analysis/audit techniques.
+    # Load all available analysis techniques.
     Dir.glob( File.dirname( __FILE__ ) + '/analyzable/*.rb' ).each { |f| require f }
 
-    include Taint
+    include Signature
     include Timeout
     include Differential
 

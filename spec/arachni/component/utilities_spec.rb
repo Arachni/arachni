@@ -12,7 +12,7 @@ describe Arachni::Component::Utilities do
             filename = 'read_file.txt'
             filepath = File.expand_path( File.dirname( __FILE__ ) ) + '/utilities_spec/' + filename
 
-            @utils.read_file( filename ).join( "\n" ).should == IO.read( filepath ).strip
+            expect(@utils.read_file( filename ).join( "\n" )).to eq(IO.read( filepath ).strip)
         end
 
         context 'if a block is given' do
@@ -23,7 +23,7 @@ describe Arachni::Component::Utilities do
                 lines = []
                 @utils.read_file( filename ){ |line| lines << line }
 
-                lines.join( "\n" ).should == IO.read( filepath ).strip
+                expect(lines.join( "\n" )).to eq(IO.read( filepath ).strip)
             end
         end
     end

@@ -9,38 +9,38 @@ describe Arachni::OptionGroups::HTTP do
         response_max_size proxy_host proxy_port proxy_username proxy_password
         proxy_type proxy cookies cookie_jar_filepath cookie_string user_agent
         request_headers).each do |method|
-        it { should respond_to method }
-        it { should respond_to "#{method}=" }
+        it { is_expected.to respond_to method }
+        it { is_expected.to respond_to "#{method}=" }
     end
 
     describe '#user_agent' do
         it "defaults to Arachni/v#{Arachni::VERSION}" do
-            subject.user_agent.should == 'Arachni/v' + Arachni::VERSION.to_s
+            expect(subject.user_agent).to eq('Arachni/v' + Arachni::VERSION.to_s)
         end
     end
 
     describe '#request_concurrency' do
         it 'defaults to 20' do
-            subject.request_concurrency.should == 20
+            expect(subject.request_concurrency).to eq(20)
         end
     end
 
     describe '#request_timeout' do
         it 'defaults to 10000' do
-            subject.request_timeout.should == 10000
+            expect(subject.request_timeout).to eq(10000)
         end
     end
 
     describe '#response_max_size' do
         it 'defaults to 500000' do
-            subject.response_max_size.should == 500_000
+            expect(subject.response_max_size).to eq(500_000)
         end
     end
 
     describe '#proxy_type=' do
         it 'sets #proxy_type' do
             subject.proxy_type = 'http'
-            subject.proxy_type.should == 'http'
+            expect(subject.proxy_type).to eq('http')
         end
 
         context 'when given an invalid type' do
@@ -55,7 +55,7 @@ describe Arachni::OptionGroups::HTTP do
     describe '#ssl_certificate_type=' do
         it 'sets #ssl_certificate_type' do
             subject.ssl_certificate_type = 'pem'
-            subject.ssl_certificate_type.should == 'pem'
+            expect(subject.ssl_certificate_type).to eq('pem')
         end
 
         context 'when given an invalid type' do
@@ -70,7 +70,7 @@ describe Arachni::OptionGroups::HTTP do
     describe '#ssl_key_type=' do
         it 'sets #ssl_key_type' do
             subject.ssl_key_type = 'pem'
-            subject.ssl_key_type.should == 'pem'
+            expect(subject.ssl_key_type).to eq('pem')
         end
 
         context 'when given an invalid type' do
@@ -85,7 +85,7 @@ describe Arachni::OptionGroups::HTTP do
     describe '#ssl_version=' do
         it 'sets #ssl_version' do
             subject.ssl_version = 'TLSv1'
-            subject.ssl_version.should == 'TLSv1'
+            expect(subject.ssl_version).to eq('TLSv1')
         end
 
         context 'when given an invalid type' do
@@ -102,7 +102,7 @@ describe Arachni::OptionGroups::HTTP do
 
         it "does not include 'cookie_jar_filepath'" do
             subject.cookie_jar_filepath = 'stuff'
-            data.should_not include 'cookie_jar_filepath'
+            expect(data).not_to include 'cookie_jar_filepath'
         end
     end
 end

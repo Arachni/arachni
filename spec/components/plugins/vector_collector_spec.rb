@@ -38,6 +38,7 @@ __URL__:
     cookie1: val1
   action: __URL__
   method: get
+  source: cookie1=val1; domain=127.0.0.2; path=/; HttpOnly
 __URL__link?link_input=blah:
 - class: Arachni::Element::Cookie
   type: :cookie
@@ -46,8 +47,7 @@ __URL__link?link_input=blah:
     cookie1: val1
   action: __URL__link?link_input=blah
   method: get
-
-
+  source: cookie1=val1; domain=127.0.0.2; path=/; HttpOnly
 YAML
     end
 

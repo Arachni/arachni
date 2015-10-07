@@ -11,24 +11,24 @@ describe Arachni::Framework::Parts::Audit do
                     f.options.url = @url
                     f.options.scope.restrict_paths << @url + '/binary'
                     f.options.audit.elements :links, :forms, :cookies
-                    f.checks.load :taint
+                    f.checks.load :signature
 
                     f.on_page_audit { |p| audited << p.url }
                     f.run
                 end
-                audited.sort.should == [@url + '/binary'].sort
+                expect(audited.sort).to eq([@url + '/binary'].sort)
 
                 audited = []
                 Arachni::Framework.new do |f|
                     f.options.url = @url
                     f.options.scope.restrict_paths << @url + '/binary'
                     f.options.scope.exclude_binaries = true
-                    f.checks.load :taint
+                    f.checks.load :signature
 
                     f.on_page_audit { |p| audited << p.url }
                     f.run
                 end
-                audited.should be_empty
+                expect(audited).to be_empty
             end
         end
 
@@ -38,13 +38,13 @@ describe Arachni::Framework::Parts::Audit do
                     f.options.url = "#{@url}/elem_combo"
                     f.options.scope.extend_paths = %w(/some/stuff /more/stuff)
                     f.options.audit.elements :links, :forms, :cookies
-                    f.checks.load :taint
+                    f.checks.load :signature
 
                     f.run
 
-                    f.report.sitemap.should include "#{@url}/some/stuff"
-                    f.report.sitemap.should include "#{@url}/more/stuff"
-                    f.report.sitemap.size.should > 3
+                    expect(f.report.sitemap).to include "#{@url}/some/stuff"
+                    expect(f.report.sitemap).to include "#{@url}/more/stuff"
+                    expect(f.report.sitemap.size).to be > 3
                 end
             end
         end
@@ -55,13 +55,13 @@ describe Arachni::Framework::Parts::Audit do
                     f.options.url = "#{@url}/elem_combo"
                     f.options.scope.restrict_paths = %w(/log_remote_file_if_exists/true)
                     f.options.audit.elements :links, :forms, :cookies
-                    f.checks.load :taint
+                    f.checks.load :signature
 
                     f.run
 
                     sitemap = f.report.sitemap.map { |u, _| u.split( '?' ).first }
-                    sitemap.sort.uniq.should == f.options.scope.restrict_paths.
-                        map { |p| f.to_absolute( p ) }.sort
+                    expect(sitemap.sort.uniq).to eq(f.options.scope.restrict_paths.
+                        map { |p| f.to_absolute( p ) }.sort)
                 end
             end
         end
@@ -73,9 +73,9 @@ describe Arachni::Framework::Parts::Audit do
                 @options.url = 'http://blahaha'
                 @options.scope.restrict_paths = [@options.url]
 
-                subject.checks.load :taint
+                subject.checks.load :signature
                 subject.run
-                subject.failures.should be_any
+                expect(subject.failures).to be_any
             end
         end
 
@@ -84,9 +84,9 @@ describe Arachni::Framework::Parts::Audit do
                 @options.url = @f_url + '/fail'
                 @options.scope.restrict_paths = [@options.url]
 
-                subject.checks.load :taint
+                subject.checks.load :signature
                 subject.run
-                subject.failures.should be_any
+                expect(subject.failures).to be_any
             end
         end
 
@@ -94,15 +94,15 @@ describe Arachni::Framework::Parts::Audit do
             @options.url = @f_url + '/fail_4_times'
             @options.scope.restrict_paths = [@options.url]
 
-            subject.checks.load :taint
+            subject.checks.load :signature
             subject.run
-            subject.failures.should be_empty
+            expect(subject.failures).to be_empty
         end
     end
 
     describe '#http' do
         it 'provides access to the HTTP interface' do
-            subject.http.is_a?( Arachni::HTTP::Client ).should be_true
+            expect(subject.http.is_a?( Arachni::HTTP::Client )).to be_truthy
         end
     end
 
@@ -112,9 +112,9 @@ describe Arachni::Framework::Parts::Audit do
                 @options.url = @f_url
                 @options.scope.restrict_paths = [@options.url]
 
-                subject.checks.load :taint
+                subject.checks.load :signature
                 subject.run
-                subject.failures.should be_empty
+                expect(subject.failures).to be_empty
             end
         end
         context 'when there are failed requests' do
@@ -122,9 +122,9 @@ describe Arachni::Framework::Parts::Audit do
                 @options.url = @f_url + '/fail'
                 @options.scope.restrict_paths = [@options.url]
 
-                subject.checks.load :taint
+                subject.checks.load :signature
                 subject.run
-                subject.failures.should be_any
+                expect(subject.failures).to be_any
             end
         end
     end
@@ -138,7 +138,7 @@ describe Arachni::Framework::Parts::Audit do
 
                 f.audit_page Arachni::Page.from_url( @url + '/link' )
             end
-            ok.should be_true
+            expect(ok).to be_truthy
         end
     end
 
@@ -151,22 +151,22 @@ describe Arachni::Framework::Parts::Audit do
 
                 f.audit_page Arachni::Page.from_url( @url + '/link' )
             end
-            ok.should be_true
+            expect(ok).to be_truthy
         end
     end
 
     describe '#audit_page' do
         it 'updates the #sitemap with the DOM URL' do
             subject.options.audit.elements :links, :forms, :cookies
-            subject.checks.load :taint
+            subject.checks.load :signature
 
-            subject.sitemap.should be_empty
+            expect(subject.sitemap).to be_empty
 
             page = Arachni::Page.from_url( @url + '/link' )
             page.dom.url = @url + '/link/#/stuff'
 
             subject.audit_page page
-            subject.sitemap.should include @url + '/link/#/stuff'
+            expect(subject.sitemap).to include @url + '/link/#/stuff'
         end
 
         it "runs #{Arachni::Check::Manager}#without_platforms before #{Arachni::Check::Manager}#with_platforms" do
@@ -184,23 +184,24 @@ describe Arachni::Framework::Parts::Audit do
 
                 f.audit_page page
 
-                responses.should ==
+                expect(responses).to eq(
                     %w(http://localhost/test3 http://localhost/test
                         http://localhost/test2)
+                )
             end
         end
 
         context 'when checks were' do
             context 'ran against the page' do
                 it 'returns true' do
-                    subject.checks.load :taint
-                    subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_true
+                    subject.checks.load :signature
+                    expect(subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )).to be_truthy
                 end
             end
 
             context 'not ran against the page' do
                 it 'returns false' do
-                    subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+                    expect(subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )).to be_falsey
                 end
             end
         end
@@ -209,15 +210,15 @@ describe Arachni::Framework::Parts::Audit do
             it 'analyzes the DOM and pushes new pages to the page queue' do
                 Arachni::Framework.new do |f|
                     f.options.audit.elements :links, :forms, :cookies
-                    f.checks.load :taint
+                    f.checks.load :signature
 
-                    f.page_queue_total_size.should == 0
+                    expect(f.page_queue_total_size).to eq(0)
 
                     f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
                     sleep 0.1 while f.wait_for_browser_cluster?
 
-                    f.page_queue_total_size.should > 0
+                    expect(f.page_queue_total_size).to be > 0
                 end
             end
 
@@ -226,13 +227,13 @@ describe Arachni::Framework::Parts::Audit do
                     f.options.url = @url
                     f.options.audit.elements :links, :forms, :cookies
 
-                    f.url_queue_total_size.should == 0
+                    expect(f.url_queue_total_size).to eq(0)
 
                     f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )
 
                     f.run
 
-                    f.url_queue_total_size.should == 5
+                    expect(f.url_queue_total_size).to eq(3)
                 end
             end
 
@@ -242,26 +243,26 @@ describe Arachni::Framework::Parts::Audit do
                         f.options.url = @url
 
                         f.options.audit.elements :links, :forms, :cookies
-                        f.checks.load :taint
+                        f.checks.load :signature
                         f.options.scope.dom_depth_limit = 1
-                        f.url_queue_total_size.should == 0
-                        f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) ).should be_true
+                        expect(f.url_queue_total_size).to eq(0)
+                        expect(f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )).to be_truthy
                         f.run
-                        f.url_queue_total_size.should == 5
+                        expect(f.url_queue_total_size).to eq(3)
 
                         f.reset
 
                         f.options.audit.elements :links, :forms, :cookies
-                        f.checks.load :taint
+                        f.checks.load :signature
                         f.options.scope.dom_depth_limit = 1
-                        f.url_queue_total_size.should == 0
+                        expect(f.url_queue_total_size).to eq(0)
 
                         page = Arachni::Page.from_url( @url + '/with_javascript' )
                         page.dom.push_transition Arachni::Page::DOM::Transition.new( :page, :load )
 
-                        f.audit_page( page ).should be_true
+                        expect(f.audit_page( page )).to be_truthy
                         f.run
-                        f.url_queue_total_size.should == 1
+                        expect(f.url_queue_total_size).to eq(1)
                     end
                 end
 
@@ -278,13 +279,13 @@ describe Arachni::Framework::Parts::Audit do
                     )
 
                     Arachni::Framework.new do |f|
-                        f.checks.load :taint
+                        f.checks.load :signature
 
                         f.options.scope.dom_depth_limit = 10
-                        f.audit_page( page ).should be_true
+                        expect(f.audit_page( page )).to be_truthy
 
                         f.options.scope.dom_depth_limit = 2
-                        f.audit_page( page ).should be_false
+                        expect(f.audit_page( page )).to be_falsey
                     end
                 end
             end
@@ -295,15 +296,15 @@ describe Arachni::Framework::Parts::Audit do
                 subject.options.scope.exclude_path_patterns << /link/
                 subject.options.audit.elements :links, :forms, :cookies
 
-                subject.checks.load :taint
+                subject.checks.load :signature
 
                 subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
-                subject.report.issues.size.should == 0
+                expect(subject.report.issues.size).to eq(0)
             end
 
             it 'returns false' do
                 subject.options.scope.exclude_path_patterns << /link/
-                subject.audit_page( Arachni::Page.from_url( @url + '/link' ) ).should be_false
+                expect(subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )).to be_falsey
             end
         end
 
@@ -319,11 +320,11 @@ describe Arachni::Framework::Parts::Audit do
                         subject.options.platforms = [:unix]
                         subject.options.audit.elements :links, :forms, :cookies
 
-                        subject.checks.load :taint
-                        subject.checks[:taint].platforms << :unix
+                        subject.checks.load :signature
+                        subject.checks[:signature].platforms << :unix
 
                         subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
-                        subject.report.issues.should be_any
+                        expect(subject.report.issues).to be_any
                     end
                 end
 
@@ -333,11 +334,11 @@ describe Arachni::Framework::Parts::Audit do
 
                         subject.options.audit.elements :links, :forms, :cookies
 
-                        subject.checks.load :taint
-                        subject.checks[:taint].platforms << :unix
+                        subject.checks.load :signature
+                        subject.checks[:signature].platforms << :unix
 
                         subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
-                        subject.report.issues.should be_empty
+                        expect(subject.report.issues).to be_empty
                     end
                 end
             end
@@ -347,20 +348,20 @@ describe Arachni::Framework::Parts::Audit do
                     subject.options.platforms = []
                     subject.options.audit.elements :links, :forms, :cookies
 
-                    subject.checks.load :taint
-                    subject.checks[:taint].platforms << :unix
+                    subject.checks.load :signature
+                    subject.checks[:signature].platforms << :unix
 
                     subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
-                    subject.report.issues.should be_any
+                    expect(subject.report.issues).to be_any
                 end
             end
         end
 
         context "when #{Arachni::Check::Auditor}.has_timeout_candidates?" do
             it "calls #{Arachni::Check::Auditor}.timeout_audit_run" do
-                Arachni::Check::Auditor.stub(:has_timeout_candidates?){ true }
+                allow(Arachni::Check::Auditor).to receive(:has_timeout_candidates?){ true }
 
-                Arachni::Check::Auditor.should receive(:timeout_audit_run)
+                expect(Arachni::Check::Auditor).to receive(:timeout_audit_run)
                 subject.audit_page( Arachni::Page.from_url( @url + '/link' ) )
             end
         end
@@ -376,7 +377,7 @@ describe Arachni::Framework::Parts::Audit do
                 Arachni::Framework.new do |f|
                     f.checks.load_all
 
-                    f.checks[:test].any_instance.stub(:run) { raise }
+                    allow_any_instance_of(f.checks[:test]).to receive(:run) { raise }
 
                     page = Arachni::Page.from_url( @url + '/link' )
 
@@ -387,7 +388,7 @@ describe Arachni::Framework::Parts::Audit do
 
                     f.audit_page page
 
-                    responses.should == %w(http://localhost/test3 http://localhost/test2)
+                    expect(responses).to eq(%w(http://localhost/test3 http://localhost/test2))
                 end
             end
         end

@@ -271,14 +271,9 @@ access unauthorized pages.
         end
 
         def issue_id( issue )
-            # Trust evaluation needs to come from variations.
-            untrusted = issue.variation? ?
-                issue.untrusted? : issue.variations.first.untrusted?
+            issue = report.issue_by_digest( issue.digest )
 
-            # Generic issue data needs to come from the parent.
-            issue = report.issue_by_digest( issue.digest ) if issue.variation?
-
-            "issues-#{'un' if untrusted}trusted-severity-" <<
+            "issues-#{'un' if issue.untrusted?}trusted-severity-" <<
                 "#{issue.severity}-#{issue.check[:shortname]}-#{issue.digest}"
         end
 
@@ -367,7 +362,7 @@ access unauthorized pages.
 
             grouped_issues[:trusted][by_severity.first.severity] =
                 by_name.inject({}) do |h, (name, issues)|
-                    i = issues.select { |i| !i.variations.find(&:untrusted?) }
+                    i = issues.select(&:trusted?)
                     next h if i.empty?
 
                     h[name] = i
@@ -376,7 +371,7 @@ access unauthorized pages.
 
             grouped_issues[:untrusted][by_severity.first.severity] =
                 by_name.inject({}) do |h, (name, issues)|
-                    i = issues.select { |i| i.variations.find(&:untrusted?) }
+                    i = issues.select(&:untrusted?)
                     next h if i.empty?
 
                     h[name] = i
@@ -445,7 +440,7 @@ access unauthorized pages.
             description:  %q{Exports the audit results as a compressed HTML report.},
             content_type: 'application/zip',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.4.1',
+            version:      '0.4.2',
             options:      [
                 Options.outfile( '.html.zip' ),
                 Options.skip_responses
@@ -501,9 +496,11 @@ access unauthorized pages.
                 Element::Body.type   => 0,
                 Element::Path.type   => 0,
                 Element::Server.type => 0,
-                Element::GenericDOM.type => 0,
-                Element::JSON.type       => 0,
-                Element::XML.type        => 0
+                Element::GenericDOM.type  => 0,
+                Element::JSON.type        => 0,
+                Element::XML.type         => 0,
+                Element::UIInput::DOM.type  => 0,
+                Element::UIForm::DOM.type => 0
             },
             verification:     {
                 'Yes' => 0,
@@ -564,7 +561,7 @@ access unauthorized pages.
             graph_data[:severity_index_for_issue][issue.name] =
                 Issue::Severity::ORDER.reverse.index( issue.severity.to_sym ) + 1
 
-            if issue.variations.first.trusted?
+            if issue.trusted?
                 has_trusted_issues = true
                 graph_data[:trust]['Trusted'] += 1
                 graph_data[:trusted_severities][issue.severity.to_sym] += 1

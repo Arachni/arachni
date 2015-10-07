@@ -7,7 +7,7 @@ describe Arachni::Platform::List do
     describe '#initialize' do
         describe 'platforms' do
             it 'initializes the instance with the valid platforms' do
-                described_class.new( %w(php unix) ).valid.sort.should == [:php, :unix].sort
+                expect(described_class.new( %w(php unix) ).valid.sort).to eq([:php, :unix].sort)
             end
 
             context 'when invalid platforms are given' do
@@ -22,7 +22,7 @@ describe Arachni::Platform::List do
 
     describe '#valid' do
         it 'returns valid platforms' do
-            described_class.new( %w(php unix) ).valid.sort.should == [:php, :unix].sort
+            expect(described_class.new( %w(php unix) ).valid.sort).to eq([:php, :unix].sort)
         end
     end
 
@@ -35,7 +35,7 @@ describe Arachni::Platform::List do
             data = applicable_data.merge( windows: [ 'Windows stuff' ] )
 
             platforms << :unix << :php
-            platforms.pick( data ).should == applicable_data
+            expect(platforms.pick( data )).to eq(applicable_data)
         end
 
         context 'when a child has been specified' do
@@ -60,7 +60,7 @@ describe Arachni::Platform::List do
 
                         platforms << :child << :stuff
 
-                        platforms.pick( data ).should == applicable_data
+                        expect(platforms.pick( data )).to eq(applicable_data)
                     end
                 end
             end
@@ -87,7 +87,7 @@ describe Arachni::Platform::List do
 
                 platforms << :parent << :stuff
 
-                platforms.pick( data ).should == applicable_data
+                expect(platforms.pick( data )).to eq(applicable_data)
             end
 
             context 'and specific OS flavors are specified' do
@@ -127,7 +127,7 @@ describe Arachni::Platform::List do
                     applicable_data.delete( :parent )
                     applicable_data.delete( :another_parent )
 
-                    platforms.pick( data ).should == applicable_data
+                    expect(platforms.pick( data )).to eq(applicable_data)
                 end
             end
         end
@@ -146,12 +146,12 @@ describe Arachni::Platform::List do
             context 'Array' do
                 context 'with valid platforms' do
                     it 'returns true' do
-                        platforms.valid?( [:unix, :linux] ).should be_true
+                        expect(platforms.valid?( [:unix, :linux] )).to be_truthy
                     end
                 end
                 context 'with invalid platforms' do
                     it 'returns false' do
-                        platforms.valid?( [:unix, :blah] ).should be_false
+                        expect(platforms.valid?( [:unix, :blah] )).to be_falsey
                     end
                 end
             end
@@ -159,12 +159,12 @@ describe Arachni::Platform::List do
             context 'String' do
                 context 'with valid platform' do
                     it 'returns true' do
-                        platforms.valid?( :unix ).should be_true
+                        expect(platforms.valid?( :unix )).to be_truthy
                     end
                 end
                 context 'with invalid platform' do
                     it 'returns false' do
-                        platforms.valid?( :blah ).should be_false
+                        expect(platforms.valid?( :blah )).to be_falsey
                     end
                 end
             end
@@ -176,12 +176,12 @@ describe Arachni::Platform::List do
             context 'Array' do
                 context 'with valid platforms' do
                     it 'returns false' do
-                        platforms.invalid?( [:blah, :linux] ).should be_true
+                        expect(platforms.invalid?( [:blah, :linux] )).to be_truthy
                     end
                 end
                 context 'with invalid platforms' do
                     it 'returns false' do
-                        platforms.invalid?( [:unix, :php] ).should be_false
+                        expect(platforms.invalid?( [:unix, :php] )).to be_falsey
                     end
                 end
             end
@@ -189,12 +189,12 @@ describe Arachni::Platform::List do
             context 'String' do
                 context 'with valid platform' do
                     it 'returns true' do
-                        platforms.invalid?( :blah ).should be_true
+                        expect(platforms.invalid?( :blah )).to be_truthy
                     end
                 end
                 context 'with invalid platform' do
                     it 'returns false' do
-                        platforms.invalid?( :unix ).should be_false
+                        expect(platforms.invalid?( :unix )).to be_falsey
                     end
                 end
             end
@@ -204,11 +204,11 @@ describe Arachni::Platform::List do
     describe '#<<' do
         it 'adds a new platform' do
             platforms << :unix
-            platforms.to_a.should == [:unix]
+            expect(platforms.to_a).to eq([:unix])
         end
 
         it 'returns self' do
-            (platforms << :unix).should == platforms
+            expect(platforms << :unix).to eq(platforms)
         end
 
         context 'when an invalid platform is given' do
@@ -225,7 +225,7 @@ describe Arachni::Platform::List do
             it 'returns a copy of self including the given platforms' do
                 platforms << :unix
                 platforms.merge( [:php, :unix] ).to_a.sort == [:unix, :php].sort
-                platforms.to_a.should == [:unix]
+                expect(platforms.to_a).to eq([:unix])
             end
         end
         context 'with invalid platforms' do
@@ -242,7 +242,7 @@ describe Arachni::Platform::List do
             it 'updates self with the given platforms' do
                 platforms << :unix
                 platforms.merge!( [:php, :unix] )
-                platforms.to_a.sort.should == [:php, :unix].sort
+                expect(platforms.to_a.sort).to eq([:php, :unix].sort)
             end
         end
         context 'with invalid platforms' do
@@ -259,7 +259,7 @@ describe Arachni::Platform::List do
             it 'updates self with the given platforms' do
                 platforms << :unix
                 platforms.update( [:php, :unix] )
-                platforms.to_a.sort.should == [:php, :unix].sort
+                expect(platforms.to_a.sort).to eq([:php, :unix].sort)
             end
         end
         context 'with invalid platforms' do
@@ -280,7 +280,7 @@ describe Arachni::Platform::List do
                 union.sort == [:unix, :php, :freebsd].sort
                 union.is_a? described_class
 
-                platforms.to_a.should == [:unix].sort
+                expect(platforms.to_a).to eq([:unix].sort)
             end
         end
         context 'with invalid platforms' do
@@ -296,13 +296,13 @@ describe Arachni::Platform::List do
         context 'when it includes the given platform' do
             it 'returns true' do
                 platforms << :unix
-                platforms.include?( :unix ).should be_true
+                expect(platforms.include?( :unix )).to be_truthy
             end
         end
         context 'when it does not include the given platform' do
             it 'returns false' do
                 platforms << :asp
-                platforms.include?( :unix ).should be_false
+                expect(platforms.include?( :unix )).to be_falsey
             end
         end
         context 'when given an invalid platform' do
@@ -318,13 +318,13 @@ describe Arachni::Platform::List do
         context 'when it includes any of the given platforms' do
             it 'returns true' do
                 platforms << :unix
-                platforms.include_any?( [ :unix, :php ] ).should be_true
+                expect(platforms.include_any?( [ :unix, :php ] )).to be_truthy
             end
         end
         context 'when it does not include any of the given platforms' do
             it 'returns false' do
                 platforms << :asp
-                platforms.include_any?( [ :unix, :php ] ).should be_false
+                expect(platforms.include_any?( [ :unix, :php ] )).to be_falsey
             end
         end
         context 'when given an invalid platform' do
@@ -345,20 +345,20 @@ describe Arachni::Platform::List do
                 iterated << platform
             end
 
-            iterated.sort.should == included_platforms
+            expect(iterated.sort).to eq(included_platforms)
         end
     end
 
     describe '#empty?' do
         context 'when there are no platforms' do
             it 'returns true' do
-                platforms.empty?.should be_true
+                expect(platforms.empty?).to be_truthy
             end
         end
         context 'when there are platforms' do
             it 'returns false' do
                 platforms << :asp
-                platforms.empty?.should be_false
+                expect(platforms.empty?).to be_falsey
             end
         end
     end
@@ -366,13 +366,13 @@ describe Arachni::Platform::List do
     describe '#any?' do
         context 'when there are no platforms' do
             it 'returns false' do
-                platforms.any?.should be_false
+                expect(platforms.any?).to be_falsey
             end
         end
         context 'when there are platforms' do
             it 'returns true' do
                 platforms << :asp
-                platforms.any?.should be_true
+                expect(platforms.any?).to be_truthy
             end
         end
     end
@@ -380,9 +380,9 @@ describe Arachni::Platform::List do
     describe '#clear' do
         it 'clears the global platform DB' do
             platforms << :unix
-            platforms.empty?.should be_false
+            expect(platforms.empty?).to be_falsey
             platforms.clear
-            platforms.empty?.should be_true
+            expect(platforms.empty?).to be_truthy
         end
     end
 
@@ -392,8 +392,8 @@ describe Arachni::Platform::List do
             cplatforms = platforms.dup
             cplatforms << :php
 
-            cplatforms.sort.should == [:unix, :php].sort
-            platforms.to_a.should == [:unix]
+            expect(cplatforms.sort).to eq([:unix, :php].sort)
+            expect(platforms.to_a).to eq([:unix])
         end
     end
 end

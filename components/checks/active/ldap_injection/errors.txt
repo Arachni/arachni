@@ -1,5 +1,6 @@
 supplied argument is not a valid ldap
 javax.naming.NameNotFoundException
+javax.naming.directory.InvalidSearchFilterException
 LDAPException
 com.sun.jndi.ldap
 Search: Bad search filter

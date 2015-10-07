@@ -29,14 +29,14 @@ describe Arachni::RPC::Server::Base do
             raised = true
         end
 
-        server.ready?.should be_true
-        raised.should be_false
+        expect(server.ready?).to be_truthy
+        expect(raised).to be_falsey
     end
 
     describe '#ready?' do
         context 'when the server is not ready' do
             it 'returns false' do
-                @server.ready?.should be_false
+                expect(@server.ready?).to be_falsey
             end
         end
 
@@ -53,8 +53,8 @@ describe Arachni::RPC::Server::Base do
                     raised = true
                 end
 
-                @server.ready?.should be_true
-                raised.should be_false
+                expect(@server.ready?).to be_truthy
+                expect(raised).to be_falsey
             end
         end
     end

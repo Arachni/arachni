@@ -37,21 +37,21 @@ describe Arachni::Element::Body do
                 it 'logs an issue' do
                     auditable.match_and_log( valid_pattern )
 
-                    logged_issue = Arachni::Data.issues.flatten.first
-                    logged_issue.should be_true
+                    logged_issue = Arachni::Data.issues.first
+                    expect(logged_issue).to be_truthy
 
-                    logged_issue.vector.url.should == Arachni::Utilities.normalize_url( @url )
-                    logged_issue.vector.class.should == Arachni::Element::Body
-                    logged_issue.signature.should == valid_pattern.source
-                    logged_issue.proof.should == 'Match'
-                    logged_issue.trusted.should be_true
+                    expect(logged_issue.vector.url).to eq(Arachni::Utilities.normalize_url( @url ))
+                    expect(logged_issue.vector.class).to eq(Arachni::Element::Body)
+                    expect(logged_issue.signature).to eq(valid_pattern.source)
+                    expect(logged_issue.proof).to eq('Match')
+                    expect(logged_issue.trusted).to be_truthy
                 end
             end
 
             context 'and it does not matche the given pattern' do
                 it 'does not log an issue' do
                     auditable.match_and_log( invalid_pattern )
-                    Arachni::Data.issues.should be_empty
+                    expect(Arachni::Data.issues).to be_empty
                 end
             end
         end
@@ -60,8 +60,8 @@ describe Arachni::Element::Body do
     describe '#dup' do
         it 'duplicates self' do
             body = auditable.dup
-            body.should == auditable
-            body.object_id.should_not == auditable
+            expect(body).to eq(auditable)
+            expect(body.object_id).not_to eq(auditable)
         end
     end
 

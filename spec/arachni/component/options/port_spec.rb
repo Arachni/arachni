@@ -9,10 +9,10 @@ describe Arachni::Component::Options::Port do
             it 'returns true' do
                 (1..65535).each do |p|
                     subject.value = p
-                    subject.valid?.should be_true
+                    expect(subject.valid?).to be_truthy
 
                     subject.value = p.to_s
-                    subject.valid?.should be_true
+                    expect(subject.valid?).to be_truthy
                 end
             end
         end
@@ -20,10 +20,10 @@ describe Arachni::Component::Options::Port do
             it 'returns false' do
                 ['dd', -1, 0, 9999999].each do |p|
                     subject.value = p
-                    subject.valid?.should be_false
+                    expect(subject.valid?).to be_falsey
 
                     subject.value = p.to_s
-                    subject.valid?.should be_false
+                    expect(subject.valid?).to be_falsey
                 end
 
             end
@@ -32,7 +32,7 @@ describe Arachni::Component::Options::Port do
 
     describe '#type' do
         it 'returns the option type as a string' do
-            subject.type.should == :port
+            expect(subject.type).to eq(:port)
         end
     end
 

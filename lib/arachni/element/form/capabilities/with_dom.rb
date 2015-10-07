@@ -15,7 +15,6 @@ module Capabilities
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module WithDOM
-    include Arachni::Element::Capabilities::WithNode
     include Arachni::Element::Capabilities::WithDOM
 
     # @return   [DOM]

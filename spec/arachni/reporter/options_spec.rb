@@ -9,11 +9,11 @@ describe Arachni::Reporter::Options do
 
     describe '#outfile' do
         it 'returns an :outfile reporter option' do
-            subject.outfile.name.should == :outfile
+            expect(subject.outfile.name).to eq(:outfile)
         end
 
         it 'has a default value' do
-            subject.outfile.default.should be_true
+            expect(subject.outfile.default).to be_truthy
         end
 
         context 'when given an extension' do
@@ -26,22 +26,22 @@ describe Arachni::Reporter::Options do
         context 'when given a description' do
             it 'assigns it to the option' do
                 description = 'My description'
-                subject.outfile( '', description ).description.should == description
+                expect(subject.outfile( '', description ).description).to eq(description)
             end
         end
     end
 
     describe '#skip_responses' do
         it 'returns a :skip_responses reporter option' do
-            subject.skip_responses.name.should == :skip_responses
+            expect(subject.skip_responses.name).to eq(:skip_responses)
         end
 
         it "defaults to 'false'" do
-            subject.skip_responses.default.should == false
+            expect(subject.skip_responses.default).to eq(false)
         end
 
         it 'has a description' do
-            subject.skip_responses.description.should be_true
+            expect(subject.skip_responses.description).to be_truthy
         end
     end
 

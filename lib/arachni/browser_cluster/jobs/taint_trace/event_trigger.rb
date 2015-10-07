@@ -28,7 +28,7 @@ class EventTrigger < ResourceExploration::EventTrigger
     def to_s
         "#<#{self.class}:#{object_id} @resource=#{@resource} " +
             "@event=#{@event.inspect} @element=#{@element.inspect} " +
-            "@forwarder=#{@forwarder}>"
+            "@forwarder=#{@forwarder} time=#{@time} timed_out=#{timed_out?}>"
     end
 
 end

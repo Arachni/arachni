@@ -13,13 +13,13 @@ describe Arachni::State::HTTP do
 
     describe '#headers' do
         it 'returns a Hash' do
-            subject.headers.should be_kind_of Hash
+            expect(subject.headers).to be_kind_of Hash
         end
     end
 
     describe '#cookie_jar' do
         it "returns a #{Arachni::HTTP::CookieJar}" do
-            subject.cookie_jar.should be_kind_of Arachni::HTTP::CookieJar
+            expect(subject.cookie_jar).to be_kind_of Arachni::HTTP::CookieJar
         end
     end
 
@@ -28,7 +28,7 @@ describe Arachni::State::HTTP do
 
         it 'includes :cookies' do
             subject.cookie_jar << cookie
-            statistics[:cookies].should == [cookie.to_s]
+            expect(statistics[:cookies]).to eq([cookie.to_s])
         end
     end
 
@@ -46,15 +46,15 @@ describe Arachni::State::HTTP do
             subject.dump( dump_directory )
 
             http = described_class.load( dump_directory )
-            http.headers.should == subject.headers
-            http.cookie_jar.should == subject.cookie_jar
+            expect(http.headers).to eq(subject.headers)
+            expect(http.cookie_jar).to eq(subject.cookie_jar)
         end
     end
 
     describe '#clear' do
         it 'clears the list' do
-            subject.headers.should receive(:clear)
-            subject.cookie_jar.should receive(:clear)
+            expect(subject.headers).to receive(:clear)
+            expect(subject.cookie_jar).to receive(:clear)
 
             subject.clear
         end

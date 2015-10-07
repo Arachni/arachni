@@ -38,7 +38,7 @@
                                 </th>
                             <% end %>
 
-                            <% if group.first.variations.first.request %>
+                            <% if group.first.request %>
                                 <th>
                                     HTTP method
                                 </th>
@@ -69,9 +69,9 @@
                                     </td>
                                 <% end %>
 
-                                <% if issue.variations.first.request %>
+                                <% if issue.request %>
                                     <td>
-                                        <code><%= issue.variations.first.request.method.to_s.upcase %></code>
+                                        <code><%= issue.request.method.to_s.upcase %></code>
                                     </td>
                                 <% end %>
 

@@ -13,9 +13,10 @@ describe name_from_filename do
     context 'when issues have similar response bodies' do
         it 'marks them as untrusted and adds remarks' do
             run
+
             framework.report.issues.each do |issue|
-                issue.variations.map( &:untrusted? ).uniq == [true]
-                issue.variations.first.remarks[:meta_analysis].should be_true
+                expect(issue).to be_untrusted
+                expect(issue.remarks).to include :meta_analysis
             end
         end
     end

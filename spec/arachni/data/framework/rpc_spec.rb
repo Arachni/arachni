@@ -15,15 +15,16 @@ describe Arachni::Data::Framework::RPC do
 
     describe '#distributed_page_queue' do
         it "returns an instance of #{Arachni::Support::Database::Queue}" do
-            subject.distributed_page_queue.should be_kind_of Arachni::Support::Database::Queue
+            expect(subject.distributed_page_queue).to be_kind_of Arachni::Support::Database::Queue
         end
     end
 
     describe '#statistics' do
         it 'includes #distributed_page_queue size' do
             subject.distributed_page_queue << page
-            subject.statistics[:distributed_page_queue].should ==
+            expect(subject.statistics[:distributed_page_queue]).to eq(
                 subject.distributed_page_queue.size
+            )
         end
     end
 
@@ -33,8 +34,8 @@ describe Arachni::Data::Framework::RPC do
             subject.distributed_page_queue << page
             subject.distributed_page_queue << page
 
-            subject.distributed_page_queue.buffer.should include page
-            subject.distributed_page_queue.disk.size.should == 1
+            expect(subject.distributed_page_queue.buffer).to include page
+            expect(subject.distributed_page_queue.disk.size).to eq(1)
 
             subject.dump( dump_directory )
 
@@ -42,7 +43,7 @@ describe Arachni::Data::Framework::RPC do
             Dir["#{dump_directory}/distributed_page_queue/*"].each do |page_file|
                 pages << Marshal.load( IO.read( page_file ) )
             end
-            pages.should == [page, page]
+            expect(pages).to eq([page, page])
         end
     end
 
@@ -55,16 +56,16 @@ describe Arachni::Data::Framework::RPC do
             subject.dump( dump_directory )
 
             page_queue = described_class.load( dump_directory ).distributed_page_queue
-            page_queue.size.should == 2
-            page_queue.pop.should == page
-            page_queue.pop.should == page
+            expect(page_queue.size).to eq(2)
+            expect(page_queue.pop).to eq(page)
+            expect(page_queue.pop).to eq(page)
         end
     end
 
     describe '#clear' do
         %w(distributed_page_queue).each do |method|
             it "clears ##{method}" do
-                subject.send(method).should receive(:clear)
+                expect(subject.send(method)).to receive(:clear)
                 subject.clear
             end
         end

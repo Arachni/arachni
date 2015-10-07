@@ -28,17 +28,17 @@ describe String do
 
     describe '#scan_in_groups' do
         it 'returns regexp matches in named groups' do
-            path.scan_in_groups( regex_with_names ).should == {
+            expect(path.scan_in_groups( regex_with_names )).to eq({
                 'category'   => 'book',
                 'book-id'    => '12',
                 'chapter-id' => '3',
                 'stuff-id'   => '4'
-            }
+            })
         end
 
         context 'when there are no matches' do
             it 'returns an empty hash' do
-                'test'.scan_in_groups( regex_with_names ).should == {}
+                expect('test'.scan_in_groups( regex_with_names )).to eq({})
             end
         end
 
@@ -51,10 +51,10 @@ describe String do
 
     describe '#sub_in_groups' do
         it 'substitutes the named matches' do
-            path.sub_in_groups(
+            expect(path.sub_in_groups(
                 regex_with_names,
                 grouped_substitutions
-            ).should == '/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12'
+            )).to eq('/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12')
         end
 
         context 'when using invalid group names' do
@@ -71,7 +71,7 @@ describe String do
     describe '#sub_in_groups!' do
         it 'substitutes the named matches in place' do
             path.sub_in_groups!( regex_with_names, grouped_substitutions )
-            path.should == '/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12'
+            expect(path).to eq('/new-category/new-book-id/blahahaha/test/chapter-new-chapter-id/stuff-new-stuff-id/12')
         end
 
         context 'when using invalid group names' do
@@ -99,36 +99,36 @@ describe String do
                 Boo-Yah!
             END
 
-            str.rdiff( str2 ).should == "                This is the  test.\n" +
-                '                Not really sure what else to put here'
+            expect(str.rdiff( str2 )).to eq("                This is the  test.\n" +
+                '                Not really sure what else to put here')
         end
     end
 
     describe '#diff_ratio' do
         context 'when the strings are identical' do
             it 'returns 0.0' do
-                ''.diff_ratio( '' ).should == 0
-                'test'.diff_ratio( 'test' ).should == 0
-                'test this'.diff_ratio( 'test this' ).should == 0
+                expect(''.diff_ratio( '' )).to eq(0)
+                expect('test'.diff_ratio( 'test' )).to eq(0)
+                expect('test this'.diff_ratio( 'test this' )).to eq(0)
             end
         end
         context 'when the strings completely different' do
             it 'returns 1.0' do
-                ''.diff_ratio( 'toast' ).should == 1
-                'test'.diff_ratio( 'toast' ).should == 1
-                'test this'.diff_ratio( 'toast that' ).should == 1
+                expect(''.diff_ratio( 'toast' )).to eq(1)
+                expect('test'.diff_ratio( 'toast' )).to eq(1)
+                expect('test this'.diff_ratio( 'toast that' )).to eq(1)
             end
         end
         context 'when the strings share less than half of their words' do
             it 'returns < 0.5' do
-                'test this here now'.diff_ratio( 'test that here now' ).should > 0.0
-                'test this here now'.diff_ratio( 'test that here now' ).should < 0.5
+                expect('test this here now'.diff_ratio( 'test that here now' )).to be > 0.0
+                expect('test this here now'.diff_ratio( 'test that here now' )).to be < 0.5
             end
         end
         context 'when the strings share more than half of their words' do
             it 'returns > 0.5' do
-                'test this here now'.diff_ratio( 'test that here later' ).should > 0.0
-                'test this here now'.diff_ratio( 'test that here later' ).should > 0.5
+                expect('test this here now'.diff_ratio( 'test that here later' )).to be > 0.0
+                expect('test this here now'.diff_ratio( 'test that here later' )).to be > 0.5
             end
         end
     end
@@ -136,17 +136,17 @@ describe String do
     describe '#words' do
         context 'when strict is set to true' do
             it 'does not include boundaries' do
-                'blah.bloo<ha hoo'.words( true ).sort.should == %w(blah bloo ha hoo).sort
+                expect('blah.bloo<ha hoo'.words( true ).sort).to eq(%w(blah bloo ha hoo).sort)
             end
         end
         context 'when strict is set to false' do
             it 'includes boundaries' do
-                'blah.bloo<ha hoo'.words( false ).sort.should ==  [" ", ".", "<", "blah", "bloo", "ha", "hoo"] .sort
+                expect('blah.bloo<ha hoo'.words( false ).sort).to eq([" ", ".", "<", "blah", "bloo", "ha", "hoo"] .sort)
             end
         end
         context 'when strict is not specified' do
             it 'defaults to false' do
-                'blah.bloo<ha hoo'.words.sort.should == 'blah.bloo<ha hoo'.words( false ).sort
+                expect('blah.bloo<ha hoo'.words.sort).to eq('blah.bloo<ha hoo'.words( false ).sort)
             end
         end
     end
@@ -156,7 +156,7 @@ describe String do
 
         it 'removes invalid characters' do
             subject.recode!
-            subject.should == "abcあ�"
+            expect(subject).to eq("abcあ�")
         end
     end
 
@@ -164,23 +164,23 @@ describe String do
         subject { "abc\u3042\x81" }
 
         it 'returns a copy of the String without invalid characters' do
-            subject.recode.should == "abcあ�"
+            expect(subject.recode).to eq("abcあ�")
         end
     end
 
     describe '#persistent_hash' do
         it 'returns an Integer' do
-            'test'.persistent_hash.should be_kind_of Integer
+            expect('test'.persistent_hash).to be_kind_of Integer
         end
 
         context 'when two strings are equal' do
             it 'returns equal values' do
-                'test'.persistent_hash.should == 'test'.persistent_hash
+                expect('test'.persistent_hash).to eq('test'.persistent_hash)
             end
         end
         context 'when two strings are not equal' do
             it 'returns different values' do
-                'test'.persistent_hash.should_not == 'testa'.persistent_hash
+                expect('test'.persistent_hash).not_to eq('testa'.persistent_hash)
             end
         end
     end
@@ -189,12 +189,12 @@ describe String do
         context 'when the content is' do
             context 'binary' do
                 it 'returns true' do
-                    "\ff\ff\ff".binary?.should be_true
+                    expect("\ff\ff\ff".binary?).to be_truthy
                 end
             end
             context 'text' do
                 it 'returns false' do
-                    'test'.binary?.should be_false
+                    expect('test'.binary?).to be_falsey
                 end
             end
         end
@@ -202,13 +202,13 @@ describe String do
 
     describe '#longest_word' do
         it 'returns the longest word' do
-            'o tw longest'.longest_word.should == 'longest'
+            expect('o tw longest'.longest_word).to eq('longest')
         end
     end
 
     describe '#shortest_word' do
         it 'returns the longest word' do
-            'o tw longest'.shortest_word.should == 'o'
+            expect('o tw longest'.shortest_word).to eq('o')
         end
     end
 end

@@ -11,8 +11,8 @@ describe Arachni::Support::LookUp::HashSet do
             new     << 'test2'
 
             subject.merge new
-            subject.should include 'test'
-            subject.should include 'test2'
+            expect(subject).to include 'test'
+            expect(subject).to include 'test2'
         end
     end
 
@@ -24,8 +24,8 @@ describe Arachni::Support::LookUp::HashSet do
             new     << 'test2'
 
             subject.replace new
-            subject.should include 'test2'
-            subject.should_not include 'test'
+            expect(subject).to include 'test2'
+            expect(subject).not_to include 'test'
         end
     end
 
@@ -42,13 +42,13 @@ describe Arachni::Support::LookUp::HashSet do
 
         context 'when the set is a superset of another set' do
             it 'returns true' do
-                new.should be_superset subject
+                expect(new).to be_superset subject
             end
         end
 
         context 'when the set is not a superset of another set' do
             it 'returns true' do
-                subject.should be_superset new
+                expect(subject).to be_superset new
             end
         end
     end
@@ -66,13 +66,13 @@ describe Arachni::Support::LookUp::HashSet do
 
         context 'when the set is a subset of another set' do
             it 'returns true' do
-                subject.should be_subset new
+                expect(subject).to be_subset new
             end
         end
 
         context 'when the set is not a subset of another set' do
             it 'returns true' do
-                new.should be_subset subject
+                expect(new).to be_subset subject
             end
         end
     end

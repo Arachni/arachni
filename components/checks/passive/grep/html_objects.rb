@@ -9,11 +9,10 @@
 # Looks for HTML "object" tags.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.3
 class Arachni::Checks::HtmlObjects < Arachni::Check::Base
 
     def self.regexp
-        @regexp ||= /<object(?:.*?)>(?:.*?)<\/object>/im
+        @regexp ||= /<object.*?>.*?<\/object>/im
     end
 
     def run
@@ -30,7 +29,7 @@ class Arachni::Checks::HtmlObjects < Arachni::Check::Base
             description: description,
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
 
             issue:       {
                 name:        %q{HTML object},

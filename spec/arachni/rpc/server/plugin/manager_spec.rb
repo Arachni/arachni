@@ -5,14 +5,14 @@ describe 'Arachni::RPC::Server::Plugin::Manager' do
 
     describe '#available' do
         it 'returns an array of available plugins' do
-            instance_spawn.plugins.available.should be_any
+            expect(instance_spawn.plugins.available).to be_any
         end
     end
 
     describe '#loaded' do
         context 'when there are loaded plugins' do
             it 'returns an empty array' do
-                instance_spawn.plugins.loaded.should be_empty
+                expect(instance_spawn.plugins.loaded).to be_empty
             end
         end
         context 'when there are loaded plugins' do
@@ -20,7 +20,7 @@ describe 'Arachni::RPC::Server::Plugin::Manager' do
                 plugins = instance_spawn.plugins
 
                 plugins.load( { 'default' => {}} )
-                plugins.loaded.should be_any
+                expect(plugins.loaded).to be_any
             end
         end
     end
@@ -30,7 +30,7 @@ describe 'Arachni::RPC::Server::Plugin::Manager' do
             plugins = instance_spawn.plugins
 
             plugins.load( { 'default' => {}} )
-            plugins.loaded.should == ['default']
+            expect(plugins.loaded).to eq(['default'])
         end
 
         context 'with invalid options' do
@@ -41,7 +41,7 @@ describe 'Arachni::RPC::Server::Plugin::Manager' do
                 rescue Exception
                     raised = true
                 end
-                raised.should be_true
+                expect(raised).to be_truthy
             end
         end
     end
@@ -49,7 +49,7 @@ describe 'Arachni::RPC::Server::Plugin::Manager' do
     describe '#merge_results' do
         it "delegates to ##{Arachni::Data::Plugins}#merge_results" do
             plugins = Arachni::RPC::Server::Framework.new.plugins
-            Arachni::Data.plugins.should receive(:merge_results)
+            expect(Arachni::Data.plugins).to receive(:merge_results)
             plugins.merge_results( [ distributable: { results: { stuff: 2 } } ] )
         end
     end

@@ -16,14 +16,14 @@ describe Arachni::State::Audit do
 
         it 'includes the total audit operations' do
             subject << audit_id
-            statistics[:total].should == subject.size
+            expect(statistics[:total]).to eq(subject.size)
         end
     end
 
     describe '#<<' do
         it 'pushes a state' do
             subject << audit_id
-            subject.should include audit_id
+            expect(subject).to include audit_id
         end
     end
 
@@ -31,13 +31,13 @@ describe Arachni::State::Audit do
         context 'when an operation is included' do
             it 'returns true' do
                 subject << audit_id
-                subject.should include audit_id
+                expect(subject).to include audit_id
             end
         end
         context 'when an operation is not included' do
             it 'returns false' do
                 subject << audit_id
-                subject.should_not include "#{audit_id}2"
+                expect(subject).not_to include "#{audit_id}2"
             end
         end
     end
@@ -45,13 +45,13 @@ describe Arachni::State::Audit do
     describe '#empty?' do
         context 'when the list is empty' do
             it 'returns true' do
-                subject.should be_empty
+                expect(subject).to be_empty
             end
         end
         context 'when the list is not empty' do
             it 'returns false' do
                 subject << audit_id
-                subject.should_not be_empty
+                expect(subject).not_to be_empty
             end
         end
     end
@@ -59,13 +59,13 @@ describe Arachni::State::Audit do
     describe '#any?' do
         context 'when the list is empty' do
             it 'returns false' do
-                subject.should_not be_any
+                expect(subject).not_to be_any
             end
         end
         context 'when the list is not empty' do
             it 'returns true' do
                 subject << audit_id
-                subject.should be_any
+                expect(subject).to be_any
             end
         end
     end
@@ -74,7 +74,7 @@ describe Arachni::State::Audit do
         it 'returns the size of the list' do
             subject << audit_id
             subject << "#{audit_id}2"
-            subject.size.should == 2
+            expect(subject.size).to eq(2)
         end
     end
 
@@ -92,7 +92,7 @@ describe Arachni::State::Audit do
             subject << "#{audit_id}2"
             subject.dump( dump_directory )
 
-            subject.should == described_class.load( dump_directory )
+            expect(subject).to eq(described_class.load( dump_directory ))
         end
     end
 
@@ -100,7 +100,7 @@ describe Arachni::State::Audit do
         it 'clears the list' do
             subject << audit_id
             subject.clear
-            subject.should be_empty
+            expect(subject).to be_empty
         end
     end
 

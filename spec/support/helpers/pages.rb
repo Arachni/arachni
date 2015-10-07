@@ -14,11 +14,11 @@ module PageHelpers
         end
 
         define_method "pages_should_have_#{element}_with_input" do |pages, input_name|
-            send( "find_page_with_#{element}_with_input", pages, input_name ).should be_true
+            expect(send( "find_page_with_#{element}_with_input", pages, input_name )).to be_truthy
         end
 
         define_method "pages_should_not_have_#{element}_with_input" do |pages, input_name|
-            send( "find_page_with_#{element}_with_input", pages, input_name ).should be_false
+            expect(send( "find_page_with_#{element}_with_input", pages, input_name )).to be_falsey
         end
 
     end

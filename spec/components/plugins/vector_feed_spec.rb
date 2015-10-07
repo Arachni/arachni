@@ -67,96 +67,96 @@ describe name_from_filename do
             next if page.code != 200
 
             if page.response.headers.any?
-                page.url.should  == v.first['url']
-                page.code.should == v.first['code']
-                page.body.should == v.first['body']
+                expect(page.url).to  eq(v.first['url'])
+                expect(page.code).to eq(v.first['code'])
+                expect(page.body).to eq(v.first['body'])
 
-                page.response.headers.should == v.first['headers']
+                expect(page.response.headers).to eq(v.first['headers'])
 
                 oks += 1
             end
 
             if page.cookies.any?
-                page.cookies.size.should == 1
+                expect(page.cookies.size).to eq(1)
                 cookie = v.select { |vector| vector['type'] == 'cookie' }.first
-                page.cookies.first.action.should == cookie['action']
-                page.cookies.first.inputs.should == cookie['inputs']
+                expect(page.cookies.first.action).to eq(cookie['action'])
+                expect(page.cookies.first.inputs).to eq(cookie['inputs'])
 
-                page.url.should  == cookie['action']
-                page.code.should == 200
-                page.body.should == ''
+                expect(page.url).to  eq(cookie['action'])
+                expect(page.code).to eq(200)
+                expect(page.body).to eq('')
 
                 oks += 1
             end
 
             if page.links.any?
                 link = v.select { |vector| vector['type'] == 'link' }.first
-                page.links.first.action.should == link['action']
-                page.links.first.inputs.should == link['inputs']
+                expect(page.links.first.action).to eq(link['action'])
+                expect(page.links.first.inputs).to eq(link['inputs'])
 
-                page.url.should  == url
-                page.code.should == 200
-                page.body.should == ''
+                expect(page.url).to  eq(url)
+                expect(page.code).to eq(200)
+                expect(page.body).to eq('')
 
                 oks += 1
             end
 
             if page.forms.any?
                 form = v.select { |vector| vector['type'] == 'form' }.first
-                page.forms.first.action.should == form['action']
-                page.forms.first.inputs.should == form['inputs']
+                expect(page.forms.first.action).to eq(form['action'])
+                expect(page.forms.first.inputs).to eq(form['inputs'])
 
-                page.forms.first.immutables.include?( form['skip'].first ).should be_true
+                expect(page.forms.first.immutables.include?( form['skip'].first )).to be_truthy
 
-                page.url.should  == url
-                page.code.should == 200
-                page.body.should == ''
+                expect(page.url).to  eq(url)
+                expect(page.code).to eq(200)
+                expect(page.body).to eq('')
 
                 oks += 1
             end
 
             if page.headers.any?
                 header = v.select { |vector| vector['type'] == 'header' }.first
-                page.headers.first.action.should == header['action']
-                page.headers.first.inputs.should == header['inputs']
+                expect(page.headers.first.action).to eq(header['action'])
+                expect(page.headers.first.inputs).to eq(header['inputs'])
 
-                page.url.should  == header['action']
-                page.code.should == 200
-                page.body.should == ''
+                expect(page.url).to  eq(header['action'])
+                expect(page.code).to eq(200)
+                expect(page.body).to eq('')
 
                 oks += 1
             end
 
             if page.jsons.any?
                 json = v.select { |vector| vector['type'] == 'json' }.first
-                page.jsons.first.action.should == json['action']
-                page.jsons.first.source.should == json['source']
-                page.jsons.first.inputs.should == { 'name' => 'value' }
+                expect(page.jsons.first.action).to eq(json['action'])
+                expect(page.jsons.first.source).to eq(json['source'])
+                expect(page.jsons.first.inputs).to eq({ 'name' => 'value' })
 
-                page.url.should  == json['action']
-                page.code.should == 200
-                page.body.should == ''
+                expect(page.url).to  eq(json['action'])
+                expect(page.code).to eq(200)
+                expect(page.body).to eq('')
 
                 oks += 1
             end
 
             if page.xmls.any?
                 xml = v.select { |vector| vector['type'] == 'xml' }.first
-                page.xmls.first.action.should == xml['action']
-                page.xmls.first.source.should == xml['source']
-                page.xmls.first.inputs.should == {
+                expect(page.xmls.first.action).to eq(xml['action'])
+                expect(page.xmls.first.source).to eq(xml['source'])
+                expect(page.xmls.first.inputs).to eq({
                     'forgot > username > text()' => 'admin'
-                }
+                })
 
-                page.url.should  == xml['action']
-                page.code.should == 200
-                page.body.should == ''
+                expect(page.url).to  eq(xml['action'])
+                expect(page.code).to eq(200)
+                expect(page.body).to eq('')
 
                 oks += 1
             end
         end
 
-        oks.should == 7
+        expect(oks).to eq(7)
     end
 
     def run_test

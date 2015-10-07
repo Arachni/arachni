@@ -34,8 +34,7 @@ class Issues
     def initialize
         super
 
-        # Stores all issues with Issue#digest as the key as a way to deduplicate
-        # and group variations.
+        # Stores all issues with Issue#digest as the key as a way to deduplicate.
         @collection = {}
 
         # We also use this Set for deduplication in case #do_not_store has been
@@ -92,22 +91,9 @@ class Issues
     end
 
     # @return   [Array<Issue>]
-    #   All logged issues grouped as variations.
+    #   All logged issues.
     def all
         @collection.values
-    end
-
-    # @return   [Array<Issue>]
-    #   First variation of all issues (as solo issues) sorted by severity.
-    def summary
-        all.map { |issue| issue.variations.first.to_solo issue }.flatten.
-            sort_by(&:severity).reverse
-    end
-
-    # @return   [Array<Issue>]
-    #   All logged issues as solo objects, without variations.
-    def flatten
-        all.map { |issue| issue.variations.map { |v| v.to_solo issue } }.flatten
     end
 
     def each( &block )
@@ -124,7 +110,7 @@ class Issues
         @digests.include? issue.digest
     end
 
-    # @note Will deduplicate and group issues as variations.
+    # @note Will deduplicate issues.
     #
     # @param    [Issue] issue
     #   Issue to push to the collection.
@@ -133,18 +119,16 @@ class Issues
     def <<( issue )
         notify_on_new_pre_deduplication( issue )
 
-        # Only allow passive issues to have variations.
-        return self if include?( issue ) && issue.active?
+        return self if include?( issue )
 
-        @digests << issue.digest
+        digest = issue.digest
+        @digests << digest
 
         synchronize do
             notify_on_new( issue )
 
             if store?
-                id = issue.digest
-                @collection[id] ||= issue.with_variations
-                @collection[id].variations << issue.as_variation
+                @collection[digest] = issue
             end
         end
 
@@ -165,11 +149,11 @@ class Issues
     end
 
     def first
-        @collection.values.first
+        all.first
     end
 
     def last
-        @collection.values.last
+        all.last
     end
 
     def any?

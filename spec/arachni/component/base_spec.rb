@@ -18,46 +18,46 @@ describe Arachni::Component::Base do
     let(:info) { Subject.info }
 
     it "includes #{Arachni::Component::Output}" do
-        subject.should include Arachni::Component::Output
+        expect(subject).to include Arachni::Component::Output
     end
 
     it "includes #{Arachni::Component::Utilities}" do
-        subject.should include Arachni::Component::Utilities
+        expect(subject).to include Arachni::Component::Utilities
     end
 
     describe '.shortname=' do
         it 'sets the .shortname' do
             subject.shortname = :blah
-            subject.shortname.should == :blah
+            expect(subject.shortname).to eq(:blah)
         end
 
         it 'sets the #shortname' do
             subject.shortname = :blah
-            subject.new.shortname.should == :blah
+            expect(subject.new.shortname).to eq(:blah)
         end
     end
 
     describe '.fullname' do
         it 'returns the name' do
-            subject.fullname.should == info[:name]
+            expect(subject.fullname).to eq(info[:name])
         end
     end
 
     describe '.description' do
         it 'returns the description' do
-            subject.description.should == info[:description]
+            expect(subject.description).to eq(info[:description])
         end
     end
 
     describe '.author' do
         it 'returns the author' do
-            subject.author.should == info[:author]
+            expect(subject.author).to eq(info[:author])
         end
     end
 
     describe '.version' do
         it 'returns the version' do
-            subject.version.should == info[:version]
+            expect(subject.version).to eq(info[:version])
         end
     end
 

@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>1.2.1</td>
+        <td>1.3</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -196,6 +196,8 @@ Configuration options include:
  - Ability to disable loading images.
  - Adjustable screen width and height.
      - Can be used to analyze responsive and mobile applications.
+ - Ability to wait until certain elements appear in the page.
+ - Configurable local storage data.
 
 ### Coverage
 
@@ -211,7 +213,12 @@ By inspecting all possible pages and their states (when using client-side code)
 Arachni is able to extract and audit the following elements and their inputs:
 
  - Forms
-    - Along with ones that require interaction with a real browser due to DOM events.
+    - Along with ones that require interaction via a real browser due to DOM events.
+ - User-interface Forms
+    - Input and button groups which don't belong to an HTML `<form>` element but
+        are instead associated via JS code.
+ - User-interface Inputs
+    - Orphan `<input>` elements with associated DOM events.
  - Links
     - Along with ones that have client-side parameters in their fragment, i.e.:
         `http://example.com/#/?param=val&param2=val2`
@@ -222,7 +229,7 @@ Arachni is able to extract and audit the following elements and their inputs:
             `http://example.com/#/param/val/param2/val2`
  - Cookies
  - Headers
- - Generic client-side elements like `input`s which have associated DOM events.
+ - Generic client-side elements which have associated DOM events.
  - AJAX-request parameters.
  - JSON request data.
  - XML request data.
@@ -278,6 +285,11 @@ Arachni is able to extract and audit the following elements and their inputs:
     - Forms
         - Can automatically refresh nonce tokens.
         - Can submit them via the integrated browser environment.
+     - User-interface Forms
+        - Input and button groups which don't belong to an HTML `<form>` element
+            but are instead associated via JS code.
+    - User-interface Inputs
+        - Orphan `<input>` elements with associated DOM events.
     - Links
         - Can load them via the integrated browser environment.
     - LinkTemplates
@@ -285,7 +297,7 @@ Arachni is able to extract and audit the following elements and their inputs:
     - Cookies
         - Can load them via the integrated browser environment.
     - Headers
-    - Generic client-side DOM elements like `input`s.
+    - Generic client-side DOM elements.
     - JSON request data.
     - XML request data.
  - Can ignore binary/non-text pages.
@@ -433,7 +445,6 @@ Active checks engage the web application via its inputs.
 - XSS in HTML tags (`xss_tag`).
 - XSS in script context (`xss_script_context`).
 - DOM XSS (`xss_dom`).
-- DOM XSS inputs (`xss_dom_inputs`).
 - DOM XSS script context (`xss_dom_script_context`).
 - Source code disclosure (`source_code_disclosure`)
 - XML External Entity (`xxe`).

@@ -5,29 +5,30 @@ describe Arachni::Framework::Parts::Plugin do
 
     describe '#plugins' do
         it 'provides access to the plugin manager' do
-            subject.plugins.is_a?( Arachni::Plugin::Manager ).should be_true
-            subject.plugins.available.sort.should ==
+            expect(subject.plugins.is_a?( Arachni::Plugin::Manager )).to be_truthy
+            expect(subject.plugins.available.sort).to eq(
                 %w(wait bad with_options distributable loop default suspendable).sort
+            )
         end
     end
 
     describe '#list_plugins' do
         it 'returns info on all plugins' do
-            subject.list_plugins.size.should == subject.plugins.available.size
+            expect(subject.list_plugins.size).to eq(subject.plugins.available.size)
 
             info   = subject.list_plugins.find { |p| p[:options].any? }
             plugin = subject.plugins[info[:shortname]]
 
             plugin.info.each do |k, v|
                 if k == :author
-                    info[k].should == [v].flatten
+                    expect(info[k]).to eq([v].flatten)
                     next
                 end
 
-                info[k].should == v
+                expect(info[k]).to eq(v)
             end
 
-            info[:shortname].should == plugin.shortname
+            expect(info[:shortname]).to eq(plugin.shortname)
         end
 
         context 'when a pattern is given' do
