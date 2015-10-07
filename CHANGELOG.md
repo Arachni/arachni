@@ -36,8 +36,12 @@
         preliminary check for hints of vulnerability, only then is the more
         resource intensive `Regexp` matched.
 
-## Under development
+## 1.3 _(October 01, 2015)_
 
+- `UI`
+    - `CLI`
+        - Options
+            - `--browser-cluster-local-storage` -- Sets `localStorage` data from JSON file.
 - `Issue`
     - `#variations` -- Removed, all issues now include full data.
     - `#unique_id`, `#digest` -- In cases of passive issues, the associated
@@ -64,23 +68,28 @@
                 process and the "taint" terminology was overloaded by the browser's
                 taint tracing subsystems.
 - `Browser`
+    - Use the faster, native `#click` event on `Watir` elements, instead of `fire_event`.
+    - Sets `localStorage` data from `Arachni::OptionGroups::BrowserCluster#local_storage`.
     - `Javascript`
         - `TaintTracer`
             - Updated sanitization of traced `Event` arguments to extract only
                 certain properties instead of iterating through the whole object.
+            - Limited the depth of the recursive taint search in argument objects.
 - `Components`
     - Path extractors
         - `comments`
             - Small cleanup in acceptable paths.
         - `script`
             - Updated to not get fooled by comment strings (`/*Comment`, `//Comment`).
+            - Updated to require absolute paths to avoid processing junk.
     - Reporters -- All reporters have been updated to remove `Issue#variations`.
         - `xml` -- Updated schema to include the new `Element::UIForm::DOM` and
             `Element::Input::DOM` elements.
     - Plugins
         - `proxy` -- Fixed bug causing the plugin to hang after proxy server shutdown.
-        - `login_script` -- Updated to wait for the page to settle when using
-            a JS login script.
+        - `login_script`
+            - Wait for the page to settle when using a JS login script.
+            - Catch script syntax errors.
     - Checks
         - Active
             - Removed

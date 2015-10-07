@@ -2230,6 +2230,19 @@ describe Arachni::Browser do
             end
         end
 
+        context "with #{Arachni::OptionGroups::BrowserCluster}#local_storage" do
+            before do
+                Arachni::Options.browser_cluster.local_storage = {
+                    'name' => 'value'
+                }
+            end
+
+            it 'sets the data as local storage' do
+                subject.load @url
+                expect( subject.javascript.run( 'return localStorage.getItem( "name" )' ) ).to eq 'value'
+            end
+        end
+
         context "with #{Arachni::OptionGroups::BrowserCluster}#wait_for_elements" do
             before do
                 Arachni::Options.browser_cluster.wait_for_elements = {

@@ -134,6 +134,14 @@ describe Arachni::Browser::Javascript::TaintTracer do
         context 'when tainted data pass through' do
             before { @javascript.taint = taint }
 
+            it 'traces the taint up to a depth of 5' do
+                load_with_taint 'data_trace/taint_depth/4'
+                expect(subject.data_flow_sinks).to be_any
+
+                load_with_taint 'data_trace/taint_depth/5'
+                expect(subject.data_flow_sinks).to be_empty
+            end
+
             context 'user-defined global functions' do
                 it 'logs it' do
                     load_with_taint 'data_trace/user-defined-global-functions'

@@ -41,7 +41,14 @@ class OptionParser
     end
 
     def on( *args, &block )
-        parser.on( *args, &block )
+        parser.on( *args ) do |*bargs|
+            begin
+                block.call *bargs
+            rescue => e
+                print_bad "#{args.first.split( /\s/ ).first}: [#{e.class}] #{e}"
+                exit 1
+            end
+        end
     end
 
     def banner
