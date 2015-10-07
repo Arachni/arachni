@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Under development
+## 1.3 _(October 01, 2015)_
 
 - `UI`
     - `CLI`
@@ -32,6 +32,7 @@
                 process and the "taint" terminology was overloaded by the browser's
                 taint tracing subsystems.
 - `Browser`
+    - Use the faster, native `#click` event on `Watir` elements, instead of `fire_event`.
     - Sets `localStorage` data from `Arachni::OptionGroups::BrowserCluster#local_storage`.
     - `Javascript`
         - `TaintTracer`
