@@ -22,8 +22,6 @@ module Signature
     SIGNATURE_OPTIONS = {
         # The signatures to look for the response body, if `Regexp` it will be
         # matched against it, if `String` it'll be used as a needle.
-        #
-        # Alternatively, you can use the :regexp option.
         signatures: [],
 
         # Array of signatures to ignore.
