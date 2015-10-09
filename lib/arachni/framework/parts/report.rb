@@ -99,7 +99,7 @@ module Report
             @reporters.clear
             @reporters.available.map do |report|
                 path = @reporters.name_to_path( report )
-                next if !list_reporter?( path, patterns )
+                next if patterns && !@reporters.matches_globs?( path, patterns )
 
                 @reporters[report].info.merge(
                     options:   @reporters[report].info[:options] || [],
@@ -113,12 +113,6 @@ module Report
             @reporters.clear
             @reporters.load loaded
         end
-    end
-
-    private
-
-    def list_reporter?( path, patterns = nil )
-        regexp_array_match( patterns, path )
     end
 
 end

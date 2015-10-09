@@ -240,7 +240,7 @@ class Manager < Hash
                 component[0] = ''
 
                 if component[WILDCARD]
-                    unload |= wilcard_to_names( component )
+                    unload |= glob_to_names( component )
                 else
                     unload << component
                 end
@@ -255,7 +255,7 @@ class Manager < Hash
             components.each do |component|
 
                 if component.include?( WILDCARD )
-                    load |= wilcard_to_names( component )
+                    load |= glob_to_names( component )
                 else
 
                     if avail_components.include?( component )
@@ -360,12 +360,28 @@ class Manager < Hash
                 reject{ |path| helper?( path ) }
     end
 
+    def matches_globs?( path, globs )
+        !![globs].flatten.compact.find { |glob| matches_glob?( path, glob ) }
+    end
+
+    def matches_glob?( path, glob )
+        relative_path = File.dirname( path.gsub( @lib, '' ) )
+        relative_path << '/' if !relative_path.end_with?( '/' )
+
+        name = path_to_name( path )
+
+        Support::Glob.new( glob ) =~ name ||
+            Support::Glob.new( glob ) =~ relative_path
+    end
+
     private
 
-    def wilcard_to_names( name )
-        if name[WILDCARD]
+    def glob_to_names( glob )
+        if glob[WILDCARD]
             paths.map do |path|
-                path_to_name( path ) if path.match( name.gsub( '*', '(.*)' ) )
+                next if !matches_glob?( path, glob )
+
+                path_to_name( path )
             end.compact
         end
     end

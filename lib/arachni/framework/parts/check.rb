@@ -32,7 +32,7 @@ module Check
             @checks.clear
             @checks.available.map do |name|
                 path = @checks.name_to_path( name )
-                next if !list_check?( path, patterns )
+                next if patterns && !@checks.matches_globs?( path, patterns )
 
                 @checks[name].info.merge(
                     shortname: name,
@@ -84,10 +84,6 @@ module Check
             print_error_backtrace e
             false
         end
-    end
-
-    def list_check?( path, patterns = nil )
-        regexp_array_match( patterns, path )
     end
 
 end

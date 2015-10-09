@@ -16,6 +16,8 @@
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.
+    - Added
+        - `Glob` -- Glob matcher.
 - `RPC`
     - `Server`
         - `ActiveOptions#set` -- Allow options to be set during runtime and ajust

@@ -39,9 +39,9 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Reporters'
 
-        on( '--reporters-list [PATTERN]', Regexp,
-            'List available reporters based on the provided pattern.',
-            '(If no pattern is provided all will be listed.)'
+        on( '--reporters-list [GLOB]',
+            'List available reporters based on the provided glob.',
+            '(If no glob is provided all will be listed.)'
         ) do |pattern|
             list_reporters( framework.list_reporters( pattern ) )
             exit

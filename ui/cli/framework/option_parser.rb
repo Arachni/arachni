@@ -409,9 +409,9 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Checks'
 
-        on( '--checks-list [PATTERN]', Regexp,
-               'List available checks based on the provided pattern.',
-               '(If no pattern is provided all checks will be listed.)'
+        on( '--checks-list [GLOB]',
+               'List available checks based on the provided glob.',
+               '(If no glob is provided all checks will be listed.)'
         ) do |pattern|
             list_checks( framework.list_checks( pattern ) )
             exit
@@ -440,9 +440,9 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Plugins'
 
-        on( '--plugins-list [PATTERN]', Regexp,
-               'List available plugins based on the provided pattern.',
-               '(If no pattern is provided all plugins will be listed.)'
+        on( '--plugins-list [GLOB]',
+               'List available plugins based on the provided glob.',
+               '(If no glob is provided all plugins will be listed.)'
         ) do |pattern|
             list_plugins( framework.list_plugins( pattern ) )
             exit

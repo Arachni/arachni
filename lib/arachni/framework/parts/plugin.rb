@@ -32,7 +32,7 @@ module Plugin
             @plugins.clear
             @plugins.available.map do |plugin|
                 path = @plugins.name_to_path( plugin )
-                next if !list_plugin?( path, patterns )
+                next if patterns && !@plugins.matches_globs?( path, patterns )
 
                 @plugins[plugin].info.merge(
                     options:   @plugins[plugin].info[:options] || [],
@@ -46,12 +46,6 @@ module Plugin
             @plugins.clear
             @plugins.load loaded
         end
-    end
-
-    private
-
-    def list_plugin?( path, patterns = nil )
-        regexp_array_match( patterns, path )
     end
 
 end

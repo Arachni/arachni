@@ -92,8 +92,8 @@ describe Arachni::Component::Manager do
 
                 context 'with a category name' do
                     it 'loads all of its components' do
-                        @components.load( 'plugins/*' )
-                        expect(@components.loaded.sort).to eq(@components.available.sort)
+                        @components.load( 'defaults/*' )
+                        expect(@components.loaded.sort).to eq(%w(default))
                     end
                 end
 
@@ -252,10 +252,9 @@ describe Arachni::Component::Manager do
 
                 context 'with a category name' do
                     it 'returns all of its components' do
-                        expect(@components.parse( 'plugins/*' ).sort).to eq(@components.available.sort)
+                        expect(@components.parse( 'defaults/*' ).sort).to eq(%w(default))
                     end
                 end
-
             end
 
             context 'exclusion filter (-)' do
