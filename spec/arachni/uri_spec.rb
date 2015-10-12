@@ -356,6 +356,42 @@ describe Arachni::URI do
         end
     end
 
+    describe '#seed_in_host?' do
+        let(:parsed) { described_class.new( url ) }
+
+        context 'when the seed is in the domain' do
+            let(:url) { "http://www.#{Arachni::Utilities.random_seed}.com/stuff" }
+
+            it 'returns true' do
+                expect(parsed.seed_in_host?).to be_truthy
+            end
+        end
+
+        context 'when the seed is in the subdomain' do
+            let(:url) { "http://#{Arachni::Utilities.random_seed}.test.com" }
+
+            it 'returns true' do
+                expect(parsed.seed_in_host?).to be_truthy
+            end
+        end
+
+        context 'when the seed is in the TLD' do
+            let(:url) { "http://test.#{Arachni::Utilities.random_seed}" }
+
+            it 'returns true' do
+                expect(parsed.seed_in_host?).to be_truthy
+            end
+        end
+
+        context 'when the seed is not in the host' do
+            let(:url) { "http://test.com" }
+
+            it 'returns false' do
+                expect(parsed.seed_in_host?).to be_falsey
+            end
+        end
+    end
+
     describe '#relative?'
     describe '#absolute?'
 

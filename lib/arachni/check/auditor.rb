@@ -306,7 +306,7 @@ module Auditor
         # Don't check the page scope, the check may have exceeded the DOM depth
         # limit but the check is allowed to do that, only check for an out of
         # scope response.
-        return if page.response.scope.out?
+        return if !page.response.parsed_url.seed_in_host? && page.response.scope.out?
 
         msg = "In #{vector.type}"
 

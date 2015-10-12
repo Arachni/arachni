@@ -241,6 +241,26 @@ shared_examples_for 'auditable' do
                 run
                 expect(called).to be_falsey
             end
+
+            context 'but the host includes the seed' do
+                it 'does not log the issue' do
+                    called = nil
+
+                    allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:out?).and_return(true)
+                    allow_any_instance_of(Arachni::Page::Scope).to receive(:out?).and_return(true)
+                    allow_any_instance_of(Arachni::URI).to receive(:seed_in_host?).and_return(true)
+
+                    auditable.audit( 'stuff',
+                                     format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
+                                     skip_original: true
+                    ) do |_, element|
+                        called = true
+                    end
+
+                    run
+                    expect(called).to be_truthy
+                end
+            end
         end
 
         context 'when the payloads is' do

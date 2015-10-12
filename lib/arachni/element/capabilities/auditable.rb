@@ -237,7 +237,9 @@ module Auditable
     def submit_and_process( options = {}, &block )
         submit( options ) do |response|
             # In case of redirection or runtime scope changes.
-            next if response.scope.out?
+            if !response.parsed_url.seed_in_host? && response.scope.out?
+                next
+            end
 
             element = response.request.performer
             if !element.audit_options[:silent]

@@ -725,13 +725,29 @@ describe Arachni::Check::Auditor do
                 d
             end
 
-            it 'returns ni' do
+            it 'returns nil' do
                 expect(auditor.log( issue_data )).to be_nil
             end
 
             it 'does not log the issue' do
                 auditor.log( issue_data )
                 expect(issues).to be_empty
+            end
+
+            context 'and the host includes the seed' do
+                let(:issue_data) do
+                    d = super()
+
+                    d[:page].response.url = "http://#{Arachni::Utilities.random_seed}.com/"
+                    d.merge( page: d[:page] )
+
+                    d
+                end
+
+                it 'does not log the issue' do
+                    auditor.log( issue_data )
+                    expect(issues).to be_any
+                end
             end
         end
     end

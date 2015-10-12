@@ -524,6 +524,13 @@ class URI
         self
     end
 
+    # @return   [Bool]
+    #   `true` if the scan #{Utilities.random_seed seed} is included in the
+    #   domain, `false` otherwise.
+    def seed_in_host?
+        host.to_s.include?( Utilities.random_seed )
+    end
+
     def to_absolute( reference )
         dup.to_absolute!( reference )
     end
