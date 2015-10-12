@@ -181,8 +181,11 @@ class Connection < Arachni::Reactor::Connection
 
         return if !@ssl_tunnel
 
-        @ssl_interceptor.close reason
-        @ssl_tunnel.close reason
+        @ssl_interceptor.close_without_callback
+        @ssl_tunnel.close_without_callback
+
+        @ssl_tunnel      = nil
+        @ssl_interceptor = nil
     end
 
     def on_flush

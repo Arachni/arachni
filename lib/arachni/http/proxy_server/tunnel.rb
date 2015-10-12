@@ -37,7 +37,7 @@ class Tunnel < Arachni::Reactor::Connection
         # ap 'CLOSE'
         # ap reason
 
-        # @other_end.close reason
+        @client.close reason
     end
 
     def on_read( data )

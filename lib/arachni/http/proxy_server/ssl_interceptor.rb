@@ -33,6 +33,10 @@ class SSLInterceptor < Connection
         start_tls
     end
 
+    def on_close( reason = nil )
+        print_debug_level_3 "Closed because: [#{reason.class}] #{reason}"
+    end
+
     def start_tls
         if @socket.is_a? OpenSSL::SSL::SSLSocket
             @ssl_context = @socket.context
