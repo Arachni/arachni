@@ -1186,11 +1186,14 @@ class Browser
 
         ChildProcess.posix_spawn = true
 
-        port = nil
-        last_attempt_output = nil
+        port   = nil
+        output = ''
+
         10.times do |i|
-            done = false
-            port = Utilities.available_port
+            # Clear output of previous attempt.
+            output = ''
+            done   = false
+            port   = Utilities.available_port
 
             print_debug "Attempt ##{i}, chose port number #{port}"
 
@@ -1215,42 +1218,34 @@ class Browser
                     # @process.leader = true
                     @process.detach = true
 
-                    @process.io.stdout = Tempfile.new( 'phantomjs-out' )
-                    @process.io.stderr = @process.io.stdout
+                    r, w = IO.pipe
+
+                    @process.io.stderr = @process.io.stdout = w
                     @process.io.stderr.sync = @process.io.stdout.sync = true
 
                     @process.start
                     print_debug 'Process spawned, waiting for it to boot-up...'
 
-                    File.open( @process.io.stdout.path, 'r' ) do |out|
-                        buff = ''
-
-                        # Wait for PhantomJS to initialize.
-                         while !buff.include?( 'running on port' )
-                             # This can be problematic on something other than
-                             # MRI.
-                             begin
-                                 buff << out.readline
-                             # EOF or something, take a breather before retrying.
-                             rescue
-                                 sleep 0.05
-                             end
-
+                    # Wait for PhantomJS to initialize.
+                     while !output.include?( 'running on port' )
+                         begin
+                             output << r.readpartial( 8192 )
+                         # EOF or something, take a breather before retrying.
+                         rescue
+                             sleep 0.05
                          end
 
-                        buff = nil
-                        print_debug 'Boot-up complete.'
-                        done = true
-                    end
+                     end
+
+                    print_debug 'Boot-up complete.'
+                    done = true
                 end
             rescue Timeout::Error
                 print_debug 'Spawn timed-out.'
             end
 
             if @process.io.stdout
-                last_attempt_output = IO.read( @process.io.stdout )
-                print_debug last_attempt_output
-                @process.io.stdout.close!
+                print_debug output
             end
 
             if done
@@ -1269,7 +1264,7 @@ class Browser
         # another process ass needed.
         if !@process
             log_error 'Could not spawn browser process.'
-            log_error last_attempt_output
+            log_error output
             return
         end
 
