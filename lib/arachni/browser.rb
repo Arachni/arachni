@@ -1224,14 +1224,18 @@ class Browser
 
                     File.open( @process.io.stdout.path, 'r' ) do |out|
                         buff = ''
+
                         # Wait for PhantomJS to initialize.
                          while !buff.include?( 'running on port' )
                              # This can be problematic on something other than
                              # MRI.
-                             buff << (out.readline rescue '').to_s
+                             begin
+                                 buff << out.readline
+                             # EOF or something, take a breather before retrying.
+                             rescue
+                                 sleep 0.05
+                             end
 
-                             # 100% CPU isn't nice, take a breather.
-                             sleep 0.1
                          end
 
                         buff = nil

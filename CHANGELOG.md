@@ -13,6 +13,7 @@
 - `Browser`
     - Replaced internal use of `Watir` with direct access to `Selenium`, resulting
         in much better performance and lower CPU utilization.
+    - Sped up process spawning,
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.
