@@ -39,6 +39,13 @@
         preliminary check for hints of vulnerability, only then is the more
         resource intensive `Regexp` matched.
 
+## 1.3.1 _(October 13, 2015)_
+
+- `UI`
+    - `CLI`
+        - Options
+            - `--http-ssl-key` -- Fixed typo causing option to raise error.
+
 ## 1.3 _(October 01, 2015)_
 
 - `UI`
