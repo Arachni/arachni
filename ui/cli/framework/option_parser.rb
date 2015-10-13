@@ -372,7 +372,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--http-ssl-key PATH', 'SSL private key to use.' ) do |file|
-            options.http.ssl_key = file
+            options.http.ssl_key_filepath = file
         end
 
         on( "--http-ssl-key-type #{OptionGroups::HTTP::SSL_KEY_TYPES.join(',')}",
