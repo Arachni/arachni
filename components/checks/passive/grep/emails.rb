@@ -9,13 +9,95 @@
 # Looks for and logs e-mail addresses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.1
 class Arachni::Checks::Emails < Arachni::Check::Base
 
+    PATTERN = /[A-Z0-9._%+-]+(?:@|\s*\[at\]\s*)[A-Z0-9.-]+(?:\.|\s*\[dot\]\s*)[A-Z]{2,4}/i
+
+    def self.existing_domains
+        @existing_domains ||= {}
+    end
+
+    def pool
+        @pool ||= Concurrent::FixedThreadPool.new( 5 )
+    end
+
+    def if_exists( email, &block )
+        print_info "Verifying: #{email}"
+
+        domain = deobfuscate( email ).split( '@', 2 ).last
+
+        # Same domain as the current page, gets a pass.
+        if page.parsed_url.host == domain
+            block.call true
+            return
+        end
+
+        if self.class.existing_domains.include?( domain )
+            if self.class.existing_domains[domain]
+                print_info "Resolved: #{domain}"
+                block.call
+                return
+            end
+
+            print_info "Could not resolve: #{domain}"
+            return
+        end
+
+        @resolution_callbacks ||= {}
+        @resolution_callbacks[domain] ||= []
+        @resolution_callbacks[domain] << block
+
+        if @resolution_callbacks[domain].size > 1
+            return
+        end
+
+        pool.post do
+            begin
+                Resolv.getaddress domain
+
+                print_info "Resolved: #{domain}"
+
+                while cb = @resolution_callbacks[domain].pop
+                    cb.call true
+                end
+
+                self.class.existing_domains[domain] = true
+            rescue Resolv::ResolvError
+                print_info "Could not resolve: #{domain}"
+
+                @resolution_callbacks.delete domain
+                self.class.existing_domains[domain] = false
+            end
+        end
+    end
+
+    def deobfuscate( email )
+        email = email.dup
+        email.gsub!( '[at]', '@' )
+        email.gsub!( '[dot]', '.' )
+        email.gsub!( ' ', '' )
+        email
+    end
+
     def run
-        match_and_log( /[A-Z0-9._%+-]+(?:@|\s*\[at\]\s*)[A-Z0-9.-]+(?:\.|\s*\[dot\]\s*)[A-Z]{2,4}/i ) do |email|
-            return false if audited?( email )
-            audited( email )
+        body = Element::Body.new( self.page.url ).tap { |b| b.auditor = self }
+
+        page.body.scan( PATTERN ).flatten.uniq.compact.each do |email|
+            next if audited?( email )
+
+            if_exists email do
+                log(
+                    signature: PATTERN,
+                    proof:     email,
+                    vector:    body
+                )
+
+                audited( email )
+            end
+        end
+
+        http.after_run do
+            pool.shutdown
         end
     end
 
@@ -25,7 +107,7 @@ class Arachni::Checks::Emails < Arachni::Check::Base
             description: %q{Greps pages for disclosed e-mail addresses.},
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.1',
+            version:     '0.3',
 
             issue:       {
                 name:            %q{E-mail address disclosure},
@@ -45,8 +127,7 @@ addresses that were stored within the affected page.
                 severity:        Severity::INFORMATIONAL,
                 remedy_guidance: %q{E-mail addresses should be presented in such
                     a way that it is hard to process them automatically.}
-            },
-            max_issues: 25
+            }
         }
     end
 

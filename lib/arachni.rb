@@ -9,6 +9,8 @@
 require 'rubygems'
 require 'bundler/setup'
 
+require 'concurrent'
+
 if RUBY_PLATFORM != 'java'
     require 'oj_mimic_json'
 end

@@ -38,6 +38,9 @@
         signature generation based on the current response and perform a lightweight
         preliminary check for hints of vulnerability, only then is the more
         resource intensive `Regexp` matched.
+        - Passive
+            - Grep
+                - `emails` -- Verify e-mail addresses by resolving the identified domains.
 
 ## 1.3.1 _(October 13, 2015)_
 
