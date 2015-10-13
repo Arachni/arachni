@@ -20,10 +20,10 @@ module Mutable
     # Overrides {Capabilities::Mutable#each_mutation} to handle header-specific
     # limitations.
     #
-    # @param (see Capabilities::Mutable#each_mutation)
-    # @return (see Capabilities::Mutable#each_mutation)
-    # @yield (see Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Capabilities::Mutable#each_mutation)
+    # @param (see Arachni::Element::Capabilities::Mutable#each_mutation)
+    # @return (see Arachni::Element::Capabilities::Mutable#each_mutation)
+    # @yield (see Arachni::Element::Capabilities::Mutable#each_mutation)
+    # @yieldparam (see Arachni::Element::Capabilities::Mutable#each_mutation)
     #
     # @see Capabilities::Mutable#each_mutation
     def each_mutation( payload, options = {}, &block )
