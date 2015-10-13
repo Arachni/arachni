@@ -11,16 +11,54 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Checks::Emails < Arachni::Check::Base
 
-    PATTERN = /[A-Z0-9._%+-]+(?:@|\s*\[at\]\s*)[A-Z0-9.-]+(?:\.|\s*\[dot\]\s*)[A-Z]{2,4}/i
+    PATTERN     =
+        /[A-Z0-9._%+-]+(?:@|\s*\[at\]\s*)[A-Z0-9.-]+(?:\.|\s*\[dot\]\s*)[A-Z]{2,4}/i
 
-    def self.existing_domains
-        @existing_domains ||= {}
+    MIN_THREADS = 0
+    MAX_THREADS = 10
+
+    # @return   [Hash<String, Bool>]
+    #   Cached results for domain resolutions through the entire scan.
+    def self.cache
+        @cache ||= Concurrent::Hash.new
     end
 
-    def pool
-        @pool ||= Concurrent::FixedThreadPool.new( 5 )
+    # @return   [Hash<String, Array<Block>]
+    #   Callers waiting for the results of a resolution per domain.
+    def waiting
+        @waiting ||= {}
     end
 
+    # If there are multiple checks for the same domain queue them,
+    # we can perform only one and notify the rest.
+    #
+    # @param    [String]    domain
+    # @param    [Block]    block
+    #   Callback to notify, will only be called if the domain exists.
+    def wait_for( domain, &block )
+        waiting[domain] ||= []
+        waiting[domain] << block
+    end
+
+    def pool( min_threads = nil )
+        @pool ||= Concurrent::ThreadPoolExecutor.new(
+            # Only spawn threads when necessary, not from the get go.
+            min_threads: min_threads || MIN_THREADS,
+
+            max_threads: MAX_THREADS,
+
+            # No bounds on the amount of domains to be checked.
+            max_queue:   0
+        )
+    end
+
+    # Checks whether or not an e-mail exists by resolving the domain.
+    # {#resolve} will need to be called after all callbacks have been queued.
+    #
+    # @param    [String]    email
+    #   E-mail to check.
+    # @param    [Block]    block
+    #   Callback to notify, will only be called if the e-mail exists.
     def if_exists( email, &block )
         print_info "Verifying: #{email}"
 
@@ -32,8 +70,9 @@ class Arachni::Checks::Emails < Arachni::Check::Base
             return
         end
 
-        if self.class.existing_domains.include?( domain )
-            if self.class.existing_domains[domain]
+        # In the cache, yay!
+        if self.class.cache.include?( domain )
+            if self.class.cache[domain]
                 print_info "Resolved: #{domain}"
                 block.call
                 return
@@ -43,30 +82,39 @@ class Arachni::Checks::Emails < Arachni::Check::Base
             return
         end
 
-        @resolution_callbacks ||= {}
-        @resolution_callbacks[domain] ||= []
-        @resolution_callbacks[domain] << block
+        wait_for( domain, &block )
+    end
 
-        if @resolution_callbacks[domain].size > 1
-            return
+    # Process the {#if_exists} queue.
+    def resolve
+        return if waiting.empty?
+
+        p = pool( [waiting.size, MAX_THREADS].min )
+
+        waiting.each do |domain, _|
+            p.post do
+                begin
+                    Resolv.getaddress domain
+
+                    print_info "Resolved: #{domain}"
+                    self.class.cache[domain] = true
+                rescue Resolv::ResolvError
+                    print_info "Could not resolve: #{domain}"
+                    self.class.cache[domain] = false
+                end
+            end
         end
 
-        pool.post do
-            begin
-                Resolv.getaddress domain
+        http.after_run do
+            pool.shutdown
+            pool.wait_for_termination
 
-                print_info "Resolved: #{domain}"
+            waiting.each do |domain, callbacks|
+                next if !self.class.cache[domain]
 
-                while cb = @resolution_callbacks[domain].pop
-                    cb.call true
+                while (cb = callbacks.pop)
+                    cb.call
                 end
-
-                self.class.existing_domains[domain] = true
-            rescue Resolv::ResolvError
-                print_info "Could not resolve: #{domain}"
-
-                @resolution_callbacks.delete domain
-                self.class.existing_domains[domain] = false
             end
         end
     end
@@ -96,9 +144,7 @@ class Arachni::Checks::Emails < Arachni::Check::Base
             end
         end
 
-        http.after_run do
-            pool.shutdown
-        end
+        resolve
     end
 
     def self.info
