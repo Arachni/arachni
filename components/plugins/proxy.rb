@@ -88,15 +88,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         framework_resume
     end
 
-    def prepare_pages_for_inspection
-        (@pages.select do |p|
-            next if !p.text?
-
-            p.forms.any? || p.links.any? || p.cookies.any? || p.jsons.any? ||
-                p.xmls.any?
-        end).to_a
-    end
-
     def vectors_yaml
         vectors = []
         prepare_pages_for_inspection.each do |page|
@@ -207,6 +198,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         if url.start_with? url_for( :panel )
             body =  case '/' + res.parsed_url.path.split( '/' )[2..-1].join( '/' )
                         when '/'
+                            TemplateScope.get.set :pages, prepare_pages_for_inspection
                             erb :panel
 
                         when '/vectors.yml'
@@ -216,10 +208,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                                 layout:  false,
                                 format:  :yml,
                                 vectors: vectors_yaml
-
-                        when '/inspect'
-                            erb :inspect,
-                                pages: prepare_pages_for_inspection
 
                         when '/help'
                             erb :help
@@ -286,6 +274,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         end
 
         true
+
+    rescue => e
+        ap e
+        ap e.backtrace
     end
 
     def requires_token?( url )
@@ -352,9 +344,31 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         @pages.map { |p| p.forms.select { |f| f.requires_password? } }.flatten
     end
 
+    def prepare_pages_for_inspection
+        (@pages.map do |p|
+            next if !p.text?
+            p = p.dup
+
+            %w(links forms cookies jsons xmls).each do |type|
+                p.send(
+                    "#{type}=",
+                    p.send(type).reject { |e| e.inputs.empty? }
+                )
+            end
+
+            if !(p.forms.any? || p.links.any? || p.cookies.any? || p.jsons.any? ||
+                p.xmls.any?)
+                next
+            end
+
+            p
+        end).compact
+    end
+
     # Called by the proxy for each response.
     def response_handler( request, response )
-        return response if response.scope.out?
+        return response if response.scope.out? || !response.text? ||
+            response.code == 304
 
         if ignore_responses?
             page = Page.from_data(
@@ -394,6 +408,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             inputs: request_parse_body( request.body.to_s )
         )]
         page
+
+    rescue => e
+        ap e
+        ap e.backtrace
     end
 
     def panel_iframe
@@ -418,6 +436,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
     def erb( *args )
         TemplateScope.get.erb( *args )
+    rescue => e
+        ap e
+        ap e.backtrace
     end
 
     def ignore_responses?

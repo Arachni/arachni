@@ -44,6 +44,7 @@
 - Plugins
     - `proxy`
         - Removed injection of control toolbar to each response.
+        - Cleaned up control panel design.
         - Updated description to list management URLs and SSL interception info.
 
 ## 1.3.1 _(October 13, 2015)_

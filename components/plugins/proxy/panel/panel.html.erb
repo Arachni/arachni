@@ -22,13 +22,6 @@
                         <i class="faded icon-download icon-white"></i>
                     </a>
                 </li>
-                <li id='inspect'>
-                    <a title="Inspect logged pages and their elements -- <%= page_count %> pages thus far"
-                       class="newWindow" href="<%= inspect_url %>">
-                        <i class="faded icon-eye-open icon-white"></i>
-                        <span class="faded badge"><%= page_count %></span>
-                    </a>
-                </li>
                 <li id='loading'>
                     <div class="progress progress-striped active">
                         <div class="bar"></div>
@@ -67,3 +60,5 @@
 <% end %>
     })
 </script>
+
+<%= erb :inspect, layout: false %>
