@@ -53,7 +53,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         framework_pause
         print_info 'System paused.'
 
-        print_status "Listening on: http://#{@server[:BindAddress]}:#{@server[:Port]}"
+        print_status "Listening on: #{@server.url}"
 
         print_info "Control panel URL: #{url_for( :panel )}"
         print_info "Shutdown URL:      #{url_for( :shutdown )}"
@@ -61,7 +61,7 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info
         print_info 'When browsing HTTPS sites, please accept the Arachni SSL certificate' +
             ' or install the CA certificate manually from:'
-        print_info "    #{Arachni::HTTP::ProxyServer::INTERCEPTOR_CA_CERTIFICATE}"
+        print_info "    #{Arachni::HTTP::ProxyServer::SSLInterceptor::CA_CERTIFICATE}"
         print_info
         print_bad '**DO NOT** forget to revoke it after using the proxy, as it' +
             ' can be used by anyone to impersonate 3rd party servers.'
@@ -73,14 +73,15 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         TemplateScope.get.set :params, {}
 
-        Thread.new do
-            @server.start
-        end
+        @server.start_async
 
         wait_while_framework_running
     end
 
     def clean_up
+        return if @cleaned_up
+        @cleaned_up = true
+
         @server.shutdown
 
         @pages.each { |p| framework.push_to_page_queue( p, true ) }
@@ -201,6 +202,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         # Avoid propagating the proxy's session cookie to the webapp.
         req.cookies.delete SESSION_TOKEN_COOKIE
 
+        res.code = 200
+
         if url.start_with? url_for( :panel )
             body =  case '/' + res.parsed_url.path.split( '/' )[2..-1].join( '/' )
                         when '/'
@@ -228,8 +231,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                         when '/record/stop'
                             record_stop
                             erb :verify_login_check, verify_fail: false, params: {
-                                'url'     => framework.options.login.check_url,
-                                'pattern' => framework.options.login.check_pattern
+                                'url'     => framework.options.session.check_url,
+                                'pattern' => framework.options.session.check_pattern
                             }
 
                         when '/verify/login_check'
@@ -237,8 +240,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
                             if req.method != :post
                                 erb :verify_login_check, verify_fail: false
                             else
-                                framework.options.login.check_url     = params['url']
-                                framework.options.login.check_pattern = params['pattern']
+                                framework.options.session.check_url     = params['url']
+                                framework.options.session.check_pattern = params['pattern']
 
                                 if !session.logged_in?
                                     erb :verify_login_check,
@@ -371,15 +374,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info " *  #{page.xmls.size} XML"
 
         @pages << page.dup
-
-        inject_panel response
-    rescue => e
-        ap e
-        ap e.backtrace
     end
 
     def update_forms( page, request, response )
-
         if (json = Arachni::Element::JSON.from_request( response.url, request ))
             page.jsons |= [json]
             return page
@@ -397,17 +394,6 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
             inputs: request_parse_body( request.body.to_s )
         )]
         page
-    end
-
-    def inject_panel( response )
-        if !response.headers.content_type.to_s.start_with?( 'text/html' ) ||
-            !(body_tag = response.body.match( /<(\s*)body(.*)>/i ))
-            return response
-        end
-
-        response.body.gsub!( body_tag.to_s, "#{body_tag}#{panel_iframe}" )
-        response.headers['content-length'] = response.body.size.to_s
-        response
     end
 
     def panel_iframe
@@ -482,23 +468,41 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 * Supports SSL interception.
 * Authorization via a configurable session token.
 
+**MANAGEMENT**
+
+* [Control panel](http://arachni.proxy/panel)
+* [Shutdown URL](http://arachni.proxy/shutdown)
+
+_The above URLs will only work from a browser configured to use the proxy._
+
+**SSL**
+
+When browsing HTTPS sites, please accept the Arachni SSL certificate or install
+the CA certificate manually from:
+
+    %s
+
+**INFO**
+
 To skip crawling and only audit elements discovered by using the proxy
 set the scope page-limit option to '0'.
 
-**NOTICE**:
+**NOTICE**
+
 The `session_token` will be looked for in a cookie named
 `arachni.proxy.session_token`, so if you choose to use a token to restrict
 access to the proxy and need to pass traffic through the proxy programmatically
 please configure your HTTP client with a cookie named `arachni.proxy.session_token`
 with the value of the 'session_token' option.
 
-**WARNING**:
+**WARNING**
+
 The `session_token` option is not a way to secure usage of this proxy but rather
 a way to restrict usage enough to avoid users unwittingly interfering with each
 others' sessions.
-},
+} % Arachni::HTTP::ProxyServer::SSLInterceptor::CA_CERTIFICATE,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.5',
+            version:     '0.4',
             options:     [
                 Options::Port.new( :port,
                     description: 'Port to bind to.',

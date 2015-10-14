@@ -41,6 +41,10 @@
         - Passive
             - Grep
                 - `emails` -- Verify e-mail addresses by resolving the identified domains.
+- Plugins
+    - `proxy`
+        - Removed injection of control toolbar to each response.
+        - Updated description to list management URLs and SSL interception info.
 
 ## 1.3.1 _(October 13, 2015)_
 

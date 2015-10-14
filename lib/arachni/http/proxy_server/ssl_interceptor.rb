@@ -16,11 +16,8 @@ class SSLInterceptor < Connection
 
     include TLS
 
-    INTERCEPTOR_CA_CERTIFICATE =
-        File.dirname( __FILE__ ) + '/ssl-interceptor-cacert.pem'
-
-    INTERCEPTOR_CA_KEY =
-        File.dirname( __FILE__ ) + '/ssl-interceptor-cakey.pem'
+    CA_CERTIFICATE = File.dirname( __FILE__ ) + '/ssl-interceptor-cacert.pem'
+    CA_KEY         = File.dirname( __FILE__ ) + '/ssl-interceptor-cakey.pem'
 
     def initialize( options )
         super
@@ -44,8 +41,8 @@ class SSLInterceptor < Connection
         end
 
         if @role == :server
-            ca     = OpenSSL::X509::Certificate.new( File.read( INTERCEPTOR_CA_CERTIFICATE ) )
-            ca_key = OpenSSL::PKey::RSA.new( File.read( INTERCEPTOR_CA_KEY ) )
+            ca     = OpenSSL::X509::Certificate.new( File.read( CA_CERTIFICATE ) )
+            ca_key = OpenSSL::PKey::RSA.new( File.read( CA_KEY ) )
 
             keypair = OpenSSL::PKey::RSA.new( 1024 )
 
