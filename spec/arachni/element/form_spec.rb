@@ -1141,6 +1141,69 @@ EOHTML
         end
     end
 
+    describe '.parse_data' do
+        let(:body) do
+            "--myboundary\r\nContent-Disposition: form-data; name=\"name1\"\r\n\r\nval1\r\n--myboundary\r\nContent-Disposition: form-data; name=\"name2\"\r\n\r\nval2\r\n--myboundary--\r\n"
+        end
+
+        it 'parses the #body' do
+            expect(described_class.parse_data( body, 'myboundary' )).to eq({
+                'name1'    => 'val1',
+                'name2'    => 'val2'
+            })
+        end
+
+        context 'when boundary is' do
+            context 'nil' do
+                it 'returns empty hash' do
+                    expect(described_class.parse_data( body, nil )).to be_empty
+                end
+            end
+
+            context 'empty' do
+                it 'returns empty hash' do
+                    expect(described_class.parse_data( body, '' )).to be_empty
+                end
+            end
+        end
+
+        context 'when the body is incomplete' do
+            let(:body) do
+                "--myboundary\r\nContent-Disposition: form-data; name=\"name1\"\r\n\r\nval1\r\n--myboundary\r\nContent-Disposition: form-data; name=\"name2\"\r\n\r\nval2\r\n"
+            end
+
+            it 'returns partial data' do
+                expect(described_class.parse_data( body, 'myboundary' )).to eq({
+                    'name1' => 'val1'
+                })
+            end
+        end
+
+        context 'when there are multiple identical names' do
+            let(:body) do
+                "--myboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nval1\r\n--myboundary\r\nContent-Disposition: form-data; name=\"name\"\r\n\r\nval2\r\n--myboundary--\r\n"
+            end
+
+            it 'keeps the first value' do
+                expect(described_class.parse_data( body, 'myboundary' )).to eq({
+                    'name' => 'val1'
+                })
+            end
+        end
+
+        context 'when there is an array param' do
+            let(:body) do
+                "--myboundary\r\nContent-Disposition: form-data; name=\"name[]\"\r\n\r\nval1\r\n--myboundary\r\nContent-Disposition: form-data; name=\"name[]\"\r\n\r\nval2\r\n--myboundary--\r\n"
+            end
+
+            it 'keeps the first value' do
+                expect(described_class.parse_data( body, 'myboundary' )).to eq({
+                    'name[]' => 'val1'
+                })
+            end
+        end
+    end
+
     describe '.encode' do
         it 'form-encodes the passed string' do
             expect(described_class.encode( '% value\ +=&;' )).to eq('%25%20value%5C%20%2B%3D%26%3B')

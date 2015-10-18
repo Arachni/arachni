@@ -392,6 +392,17 @@ class Form < Base
             attributes.inject( {} ){ |h, (k, v)| h[k.to_sym] = v.to_s; h }
         end
 
+        # @param    [String]    data
+        #   `multipart/form-data` text.
+        # @param    [String]    boundary
+        #   `multipart/form-data` boundary.
+        #
+        # @return   [Hash]
+        #   Name-value pairs.
+        def parse_data( data, boundary )
+            WEBrick::HTTPUtils.parse_form_data( data, boundary.to_s ).my_stringify
+        end
+
         # Encodes a {String}'s reserved characters in order to prepare it
         # to be included in a request body.
         #

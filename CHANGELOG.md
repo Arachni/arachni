@@ -70,6 +70,7 @@
     - `UIForm`
         - `.from_browser` -- Include `<input type="submit">` buttons.
 
+
 ## 1.3.1 _(October 13, 2015)_
 
 - `UI`
