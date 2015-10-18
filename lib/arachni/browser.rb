@@ -1150,7 +1150,13 @@ class Browser
                         self.class.executable,
                         "--webdriver=#{port}",
                         "--proxy=http://#{@proxy.address}/",
+
+                        # As lax as possible to allow for easy SSL interception.
+                        # The actual request to the origin server will obey
+                        # the system-side SSL options.
                         '--ignore-ssl-errors=true',
+                        '--ssl-protocol=any',
+
                         '--disk-cache=true',
                         "--debug=#{!!debug?}"
                     )

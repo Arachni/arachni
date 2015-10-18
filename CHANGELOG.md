@@ -1,5 +1,10 @@
 # ChangeLog
 
+## 1.3.2 _(October 19, 2015)_
+
+- Browser
+    - Configure PhantomJS to accept any SSL version to allow for easier interception.
+
 ## 1.3.1 _(October 13, 2015)_
 
 - `UI`
