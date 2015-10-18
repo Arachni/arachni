@@ -10,7 +10,7 @@ end
 group :spec do
     gem 'simplecov', require: false, group: :test
 
-    gem 'rspec'
+    gem 'rspec', '2.99'
     gem 'faker'
 
     gem 'puma' if !Gem.win_platform? || RUBY_PLATFORM == 'java'
