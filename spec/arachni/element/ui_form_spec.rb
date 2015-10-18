@@ -236,6 +236,73 @@ describe Arachni::Element::UIForm do
                     end
                 end
             end
+
+            context 'as <input type="submit">' do
+                let(:url) { "#{super()}/input-submit" }
+                let(:source) { '<input type="submit" id="insert" value="Insert into DOM">' }
+
+                context 'without inputs' do
+                    let(:url) { "#{super()}/without-inputs" }
+
+                    it 'returns empty array' do
+                        expect(described_class.from_browser( @browser, page )).to be_empty
+                    end
+                end
+
+                context 'with inputs as' do
+                    context '<input>' do
+                        let(:url) { "#{super()}/input" }
+
+                        context 'and buttons with events' do
+                            let(:url) { "#{super()}/with_events" }
+
+                            it 'returns array of elements' do
+                                form = described_class.from_browser( @browser, page ).first
+
+                                expect(form.source).to eq source
+                                expect(form.url).to eq page.url
+                                expect(form.action).to eq page.url
+                                expect(form.method).to eq :click
+                                expect(form.inputs).to eq( 'my-input' => 'stuff' )
+                            end
+                        end
+
+                        context 'and buttons without events' do
+                            let(:url) { "#{super()}/without_events" }
+
+                            it 'returns array of elements' do
+                                expect(described_class.from_browser( @browser, page )).to be_empty
+                            end
+                        end
+                    end
+
+                    context '<textarea>' do
+                        let(:url) { "#{super()}/textarea" }
+
+                        context 'and buttons with events' do
+                            let(:url) { "#{super()}/with_events" }
+
+                            it 'returns array of elements' do
+                                form = described_class.from_browser( @browser, page ).first
+
+                                expect(form.source).to eq source
+                                expect(form.url).to eq page.url
+                                expect(form.action).to eq page.url
+                                expect(form.method).to eq :click
+                                expect(form.inputs).to eq( 'my-input' => 'stuff' )
+                            end
+                        end
+
+                        context 'and buttons without events' do
+                            let(:url) { "#{super()}/without_events" }
+
+                            it 'returns array of elements' do
+                                expect(described_class.from_browser( @browser, page )).to be_empty
+                            end
+                        end
+                    end
+                end
+            end
         end
     end
 

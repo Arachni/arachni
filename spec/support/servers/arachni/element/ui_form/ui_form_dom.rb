@@ -236,3 +236,87 @@ get '/input-button/textarea/without_events' do
     </html>
     EOHTML
 end
+
+get '/input-submit/without-input' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input type="submit" id="insert" value="Insert into DOM" />
+
+            <div id="container">
+            </div>
+
+            <script>
+               document.getElementById('insert').addEventListener('click', function() {
+                    document.getElementById("container").innerHTML =
+                        document.getElementById("my-input").value;
+               });
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/input-submit/input/with_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text" value="stuff" />
+            <input type="submit" id="insert" value="Insert into DOM" />
+
+            <div id="container">
+            </div>
+
+            <script>
+               document.getElementById('insert').addEventListener('click', function() {
+                    document.getElementById("container").innerHTML =
+                        document.getElementById("my-input").value;
+               });
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/input-submit/input/without_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <input id="my-input" type="text" value="stuff" />
+            <input type="submit" id="insert" value="Insert into DOM" />
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/input-submit/textarea/with_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <textarea id="my-input" type="text">stuff</textarea>
+            <input type="submit" id="insert" value="Insert into DOM" />
+
+            <div id="container">
+            </div>
+
+            <script>
+               document.getElementById('insert').addEventListener('click', function() {
+                    document.getElementById("container").innerHTML =
+                        document.getElementById("my-input").value;
+               });
+            </script>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/input-submit/textarea/without_events' do
+    <<-EOHTML
+    <html>
+        <body>
+            <textarea id="my-input" type="text">stuff</textarea>
+            <input type="submit" id="insert" value="Insert into DOM" />
+        </body>
+    </html>
+    EOHTML
+end

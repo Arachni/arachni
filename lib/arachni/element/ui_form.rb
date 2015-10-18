@@ -44,7 +44,8 @@ class UIForm < Base
 
         # Does the page have any buttons at all?
         if !page.has_elements?( :button ) &&
-            !page.document.xpath( "//input[@type='button']" )
+            !page.document.xpath( "//input[@type='button']" )&&
+            !page.document.xpath( "//input[@type='submit']" )
             return ui_forms
         end
 
@@ -56,7 +57,8 @@ class UIForm < Base
         browser.each_element_with_events false do |locator, events|
             next if !SUPPORTED_TYPES.include?( locator.tag_name )
             next if locator.tag_name == :input &&
-                locator.attributes['type'] != 'button'
+                locator.attributes['type'] != 'button' &&
+                locator.attributes['type'] != 'submit'
 
             browser.filter_events( locator.tag_name, events ).each do |event, _|
                 ui_forms << new(

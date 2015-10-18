@@ -4,6 +4,9 @@
 
 - Browser
     - Configure PhantomJS to accept any SSL version to allow for easier interception.
+- `Element`
+    - `UIForm`
+        - `.from_browser` -- Include `<input type="submit">` buttons.
 
 ## 1.3.1 _(October 13, 2015)_
 
