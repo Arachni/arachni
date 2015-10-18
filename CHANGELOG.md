@@ -4,9 +4,15 @@
 
 - Browser
     - Configure PhantomJS to accept any SSL version to allow for easier interception.
+- `HTTP`
+    - `Request`
+        - `#body_parameters` -- Added support for `multipart/form-data`.
 - `Element`
+    - `Form`
+        - `.parse_data` -- Parse `multipart/form-data`.
     - `UIForm`
         - `.from_browser` -- Include `<input type="submit">` buttons.
+
 
 ## 1.3.1 _(October 13, 2015)_
 

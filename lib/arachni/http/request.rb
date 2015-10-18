@@ -220,8 +220,19 @@ class Request < Message
     end
 
     def body_parameters
-        return {} if method != :post
-        parameters.any? ? parameters : self.class.parse_body( body )
+        return {}         if method != :post
+        return parameters if parameters.any?
+
+        if headers.content_type.to_s.start_with?( 'multipart/form-data' )
+            return {} if !headers.content_type.include?( 'boundary=' )
+
+            return Form.parse_data(
+                body,
+                headers.content_type.match( /boundary=(.*)/i )[1].to_s
+            )
+        end
+
+        self.class.parse_body( body )
     end
 
     # @return   [String]

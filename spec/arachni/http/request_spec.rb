@@ -718,6 +718,58 @@ describe Arachni::HTTP::Request do
                             'and_here' => 'too'
                         })
                     end
+
+                    context 'and content-type is multipart/form-data' do
+                        let(:body) do
+                            "--myboundary\r\nContent-Disposition: form-data; name=\"name1\"\r\n\r\nval1\r\n--myboundary\r\nContent-Disposition: form-data; name=\"name2\"\r\n\r\nval2\r\n--myboundary--\r\n"
+                        end
+
+                        it 'parses the #body' do
+                            expect(described_class.new(
+                                url:    url,
+                                body:   body,
+                                method: :post,
+                                headers: {
+                                    'Content-Type' => 'multipart/form-data; boundary=myboundary'
+                                }
+                            ).body_parameters).to eq({
+                                'name1'    => 'val1',
+                                'name2'    => 'val2'
+                            })
+                        end
+
+                        context 'but is missing a boundary' do
+                            it 'returns empty hash' do
+                                expect(described_class.new(
+                                    url:    url,
+                                    body:   body,
+                                    method: :post,
+                                    headers: {
+                                        'Content-Type' => 'multipart/form-data'
+                                    }
+                                ).body_parameters).to be_empty
+                            end
+                        end
+
+                        context 'and the body is incomplete' do
+                            let(:body) do
+                                "--myboundary\r\nContent-Disposition: form-data; name=\"name1\"\r\n\r\nval1\r\n--myboundary\r\nContent-Disposition: form-data; name=\"name2\"\r\n\r\nval2\r\n"
+                            end
+
+                            it 'returns partial data' do
+                                expect(described_class.new(
+                                    url:    url,
+                                    body:   body,
+                                    method: :post,
+                                    headers: {
+                                        'Content-Type' => 'multipart/form-data; boundary=myboundary'
+                                    }
+                                ).body_parameters).to eq({
+                                    'name1' => 'val1'
+                                })
+                            end
+                        end
+                    end
                 end
             end
 
