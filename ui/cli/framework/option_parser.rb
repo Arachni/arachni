@@ -144,8 +144,8 @@ class OptionParser < UI::CLI::OptionParser
 
         on( '--scope-url-rewrite PATTERN:SUBSTITUTION',
             'Rewrite URLs based on the given PATTERN and SUBSTITUTION.',
-            'To convert:  http://test.com/articles/some-stuff/23 to http://test.com/articles.php?id=23',
-            'Use:         /articles\/[\w-]+\/(\d+)/:articles.php?id=\1'
+            'To convert:  http://example.com/articles/some-stuff/23 to http://example.com/articles.php?id=23',
+            'Use:         articles/[\w-]+/(\d+):articles.php?id=\1'
         ) do |rule|
             pattern, substitution = rule.split( ':', 2 )
             options.scope.url_rewrites[ Regexp.new( pattern ) ] =
@@ -197,9 +197,9 @@ class OptionParser < UI::CLI::OptionParser
         on( '--audit-link-template TEMPLATE', Regexp,
             'Regular expression with named captures to use to extract input information from generic paths.',
             "To extract the 'input1' and 'input2' inputs from:",
-            '  http://test.com/input1/value1/input2/value2',
+            '  http://example.com/input1/value1/input2/value2',
             'Use:',
-            '  /input1\/(?<input1>\w+)\/input2\/(?<input2>\w+)/',
+            '  input1/(?<input1>\w+)/input2/(?<input2>\w+)',
             '(Can be used multiple times.)'
         ) do |pattern|
             # We merge this way to enforce validation from the options group.
