@@ -49,6 +49,8 @@
         - Removed injection of control toolbar to each response.
         - Cleaned up control panel design.
         - Updated description to list management URLs and SSL interception info.
+    - `defaults/meta/remedy/`
+        - `discovery` -- Updated similarity check to prevent analysis of singular issues.
 
 ## 1.3.1 _(October 13, 2015)_
 
