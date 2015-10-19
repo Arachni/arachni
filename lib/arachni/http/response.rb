@@ -77,6 +77,16 @@ class Response < Message
         @time = t.to_f
     end
 
+    # @return   [Boolean]
+    #   `true` if the client could not read the entire response, `false` otherwise.
+    def partial?
+        # Streamed response which was aborted before completing.
+        return_code == :partial_file ||
+            # Normal response with some data written, but without reaching
+            # content-length.
+            (code != 0 && timed_out?)
+    end
+
     # @return   [Platform]
     #   Applicable platforms for the page.
     def platforms

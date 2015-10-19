@@ -114,6 +114,38 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#partial?' do
+        context 'when the response body does not match the content-lenth' do
+            it 'returns true' do
+                response = @http.get( "#{@url}/partial", mode: :sync )
+                expect(response).to be_partial
+            end
+        end
+
+        context 'when the response body matches the content-lenth' do
+            it 'returns false' do
+                response = @http.get( @url, mode: :sync )
+                expect(response).to_not be_partial
+            end
+        end
+
+        context 'when dealing with a stream' do
+            context 'that does not complete' do
+                it 'returns true' do
+                    response = @http.get( "#{@url}/partial_stream", mode: :sync )
+                    expect(response).to be_partial
+                end
+            end
+
+            context 'that completes' do
+                it 'returns false' do
+                    response = @http.get( "#{@url}/stream", mode: :sync )
+                    expect(response).to_not be_partial
+                end
+            end
+        end
+    end
+
     describe '#text?' do
         context 'when the content-type is' do
             context 'text/*' do

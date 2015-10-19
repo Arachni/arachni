@@ -429,6 +429,13 @@ module Differential
             corrupted = true
         end
 
+        if !corrupted && response.partial?
+            print_status "Server returned partial response, aborting analysis " <<
+                "for #{elem.type} variable '#{elem.affected_input_name}' with " <<
+                "action '#{elem.action}'."
+            corrupted = true
+        end
+
         if !corrupted && response.body.empty?
             print_status 'Server returned empty response body,' <<
                 " aborting analysis for #{elem.type} variable " <<

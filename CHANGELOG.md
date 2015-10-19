@@ -31,6 +31,9 @@
                     type of matching depends on `signature` type.
                 - Allow `signature` to be generated dynamically based on the
                     `HTTP::Response` about to be checked, from a `#call`able object.
+            - `Differential`
+                - Abort on partial responses to avoid FPs caused by server stress
+                    or Firewall/IDS/IPS.
 - Checks
     - Active -- Updated all checks that make use of `Element::Capabilities::Analyzable::Signature`
         to provide simple substring signatures whenever possible.
