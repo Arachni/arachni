@@ -2,6 +2,11 @@
 
 ## 1.3.2 _(October 19, 2015)_
 
+- `UI`
+    - `CLI`
+        - Help output
+            - Simplified `PATTERN` examples.
+            - Replaced `test.com` with `example.com`.
 - Browser
     - Configure PhantomJS to accept any SSL version to allow for easier interception.
 - `HTTP`
