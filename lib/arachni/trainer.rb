@@ -102,7 +102,7 @@ class Trainer
     # @param    [Arachni::Page]    page
     def page=( page )
         ElementFilter.update_from_page page
-        @page = page.dup
+        @page = page
     end
 
     private
