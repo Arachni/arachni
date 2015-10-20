@@ -34,12 +34,7 @@ class String
             attributes = ".*#{attributes}"
         end
 
-        dc_self = self.downcase
-        dc_tag  = tag.downcase
-
-        return false if !dc_self.include?( dc_tag )
-
-        dc_self =~ /<\s*#{dc_tag}#{attributes}.*?>/m
+        self =~ /<\s*#{tag}#{attributes}.*?>/mi
     end
 
     # @param    [Regexp]    regexp
