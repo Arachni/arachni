@@ -45,12 +45,13 @@ class UIForm < Base
         body = page.body
 
         if !(body.has_html_tag?( 'button' ) ||
-            body.has_html_tag?( 'input', 'button' ))
+            body.has_html_tag?( 'input', 'button|submit' ))
             return ui_forms
         end
 
         if !page.has_elements?( :button ) &&
-            page.document.xpath( "//input[@type='button']" ).empty?
+            page.document.xpath( "//input[@type='button']" ).empty? &&
+            page.document.xpath( "//input[@type='submit']" ).empty?
             return ui_forms
         end
 
@@ -62,7 +63,8 @@ class UIForm < Base
         browser.elements_with_events.each do |locator, events|
             next if !SUPPORTED_TYPES.include?( locator.tag_name )
             next if locator.tag_name == :input &&
-                locator.attributes['type'] != 'button'
+                locator.attributes['type'] != 'button' &&
+                locator.attributes['type'] != 'submit'
 
             browser.javascript.class.select_events( locator.tag_name, events ).each do |event, _|
                 ui_forms << new(
