@@ -304,7 +304,7 @@ class Page
     #
     # @see Parser#paths
     def paths
-        @cache[:paths] ||= parser ? parser.paths : []
+        @cache[:paths] ||= (parser ? parser.paths : [])
     end
 
     # @return   [Platform]
