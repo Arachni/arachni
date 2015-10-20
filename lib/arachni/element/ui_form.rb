@@ -39,21 +39,7 @@ class UIForm < Base
     def self.from_browser( browser, page )
         ui_forms = []
 
-        # JS not supported on page, no sense in continuing...
-        return ui_forms if !browser.javascript.supported?
-
-        body = page.body
-
-        if !(body.has_html_tag?( 'button' ) ||
-            body.has_html_tag?( 'input', 'button|submit' ))
-            return ui_forms
-        end
-
-        if !page.has_elements?( :button ) &&
-            page.document.xpath( "//input[@type='button']" ).empty? &&
-            page.document.xpath( "//input[@type='submit']" ).empty?
-            return ui_forms
-        end
+        return ui_forms if !browser.javascript.supported? || !in_html?( page.body )
 
         # Does the page have any text inputs?
         inputs, opening_tags = inputs_from_page( page )
@@ -78,6 +64,11 @@ class UIForm < Base
         end
 
         ui_forms
+    end
+
+    def self.in_html?( html )
+        html.has_html_tag?( 'button' ) ||
+            html.has_html_tag?( 'input', /button|submit/ )
     end
 
     def self.inputs_from_page( page )

@@ -25,20 +25,7 @@ class UIInput < Base
     def self.from_browser( browser, page )
         inputs = []
 
-        return inputs if !browser.javascript.supported?
-
-        body = page.body
-        if !(body.has_html_tag?( 'textarea' ) ||
-            body.has_html_tag?( 'input', 'text' ) ||
-            body.has_html_tag?( 'input', /(?!type=)/))
-            return inputs
-        end
-
-        if !page.has_elements?( 'textarea' ) &&
-            page.document.xpath( '//input[@type="text"]' ).empty? &&
-            page.document.xpath( '//input[not(@type)]' ).empty?
-            return inputs
-        end
+        return inputs if !browser.javascript.supported? || !in_html?( page.body )
 
         browser.elements_with_events.each do |locator, events|
             next if !SUPPORTED_TYPES.include?( locator.tag_name )
@@ -72,8 +59,7 @@ class UIInput < Base
     end
 
     def self.with_input_in_html?( html )
-        html.has_html_tag?( 'input', 'text' ) ||
-            html.has_html_tag?( 'input', /(?!type=)/)
+        html.has_html_tag?( 'input', /text|(?!type=)/ )
     end
 
 end
