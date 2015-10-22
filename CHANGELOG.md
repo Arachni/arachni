@@ -42,9 +42,11 @@
         signature generation based on the current response and perform a lightweight
         preliminary check for hints of vulnerability, only then is the more
         resource intensive `Regexp` matched.
-        - Passive
-            - Grep
-                - `emails` -- Verify e-mail addresses by resolving the identified domains.
+        - `xss`, `xss_dom`, `xss_tag`, `xss_script_context` --
+            Optimized identification of tainted responses.
+    - Passive
+        - Grep
+            - `emails` -- Verify e-mail addresses by resolving the identified domains.
 - Plugins
     - `proxy`
         - Removed injection of control toolbar to each response.

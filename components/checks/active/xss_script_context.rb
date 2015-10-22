@@ -114,8 +114,27 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     def tainted?( response, seed )
         return if seed.to_s.empty? || !response.body.to_s.include?( seed )
 
+        # Quick check to see if the payload landed in a <script>.
+        in_script = (response.body =~ /<script.*?>.*#{Regexp.escape seed}.*?<\/script>/im)
+
+        # Quick check to see if the payload landed in an attribute.
+        pure_seed = self.class.seed % browser_cluster.javascript_token
+        in_attribute = !!ATTRIBUTES.find do |attribute|
+            !!response.body.scan( /#{attribute}=(.*?)>/im ).flatten.find do |match|
+                match.include? pure_seed
+            end
+        end
+
+        # Nowhere to be seen, bail out early.
+        return if !in_attribute && !in_script
+
+        # More comprehensive checks by searching the document.
         doc = Nokogiri::HTML( response.body )
-        return true if doc.css('script').to_s.include?( seed )
+
+        return true if in_script && doc.css('script').to_s.include?( seed )
+
+        # Not in attribute, no need to check.
+        return false if !in_attribute
 
         ATTRIBUTES.each do |attribute|
             doc.xpath( "//*[@#{attribute}]" ).each do |elem|
@@ -143,7 +162,7 @@ Injects JS taint code and check to see if it gets executed as proof of vulnerabi
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.1',
+            version:     '0.2.2',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in script context},

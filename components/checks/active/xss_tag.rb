@@ -30,11 +30,11 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
-        body = response.body.downcase
-
         # if we have no body or it doesn't contain the ATTRIBUTE_NAME under any
         # context there's no point in parsing the HTML to verify the vulnerability
-        return if !body.include?( ATTRIBUTE_NAME )
+        return if !(response.body =~ /#{ATTRIBUTE_NAME}/i)
+
+        body = response.body.downcase
 
         # see if we managed to inject a working HTML attribute to any
         # elements
@@ -60,7 +60,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.9',
+            version:     '0.1.10',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},

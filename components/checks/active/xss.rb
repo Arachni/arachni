@@ -85,6 +85,8 @@ class Arachni::Checks::Xss < Arachni::Check::Base
     end
 
     def find_proof( resource )
+        return if !resource.body.has_html_tag?( self.class.tag_name )
+
         proof_nodes = Nokogiri::HTML( resource.body ).css( self.class.tag_name )
         return if proof_nodes.empty?
 
@@ -110,7 +112,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.4',
+            version:     '0.4.5',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},

@@ -50,6 +50,8 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
     end
 
     def find_proof( page )
+        return if !page.body.has_html_tag?( self.class.tag_name )
+
         proof = page.document.css( self.class.tag_name )
         return if proof.empty?
         proof.to_s
@@ -64,7 +66,7 @@ tainted responses to look for proof of vulnerability.
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS)},
