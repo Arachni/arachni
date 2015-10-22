@@ -9,14 +9,30 @@
 require 'rubygems'
 require 'bundler/setup'
 
+require 'pp'
+
+begin
+
+    # Only for development, intercepts certain method calls to assist with
+    # formatting and introduces latency.
+    require 'ap'
+
+    def ap( obj )
+        super obj, raw: true
+    end
+
+rescue LoadError
+
+    def ap( obj )
+        pp obj
+    end
+
+end
+
 require 'concurrent'
 
 if RUBY_PLATFORM != 'java'
     require 'oj_mimic_json'
-end
-
-def ap( obj )
-    super obj, raw: true
 end
 
 module Arachni

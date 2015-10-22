@@ -12,9 +12,6 @@ require 'rubygems'
 require 'monitor'
 require 'bundler/setup'
 
-require 'ap'
-require 'pp'
-
 require_relative 'options'
 
 module Arachni
