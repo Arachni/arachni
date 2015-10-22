@@ -148,7 +148,7 @@ get '/elements_with_events/jQuery.on-object-types' do
     <script>
         $('#my-button').on({
             click: function (){},
-            hover: function (){}
+            mouseover: function (){}
         });
     </script>
 HTML
@@ -164,7 +164,7 @@ get '/elements_with_events/jQuery.on-selector' do
 
             });
 
-            $('body').on( 'hover', '#my-button', function (){
+            $('body').on( 'mouseover', '#my-button', function (){
 
             });
 
@@ -187,7 +187,7 @@ get '/elements_with_events/jQuery.on-object-types-selector' do
         <script>
             $('body').on({
                 click: function (){},
-                hover: function (){}
+                mouseover: function (){}
             }, '#my-button');
         </script>
 
@@ -219,7 +219,7 @@ get '/elements_with_events/jQuery.delegate-object-types' do
         <script>
             $('body').delegate( '#my-button', {
                 click: function (){},
-                hover: function (){}
+                mouseover: function (){}
             });
         </script>
 

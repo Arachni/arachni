@@ -148,16 +148,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
             expect(subject.elements_with_events).to eq([
                 {
-                    'tag_name' => 'html',
-                    'events' => [],
-                    'attributes' => {}
-                },
-                {
-                    'tag_name' => 'body',
-                    'events' => [],
-                    'attributes' => {}
-                },
-                {
                     'tag_name' => 'button',
                     'events' => [
                         [
@@ -178,18 +168,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                 load '/elements_with_events/custom-dot-delimited'
 
                 expect(subject.elements_with_events).to eq([
-                    {
-                        "tag_name"   => "html",
-                        "events"     => [],
-                        "attributes" => {}
-                    },
-                    {
-                        "tag_name"   => "body",
-                        "events"     => [],
-                        "attributes" => {
-                            "style" => ""
-                        }
-                    },
                     {
                         "tag_name"   => "button",
                         "events"     =>
@@ -213,11 +191,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     load '/elements_with_events/attributes'
 
                     expect(subject.elements_with_events).to eq([
-                        { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
-                        },
-                        {
-                            'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                        },
                         {
                             'tag_name'   => 'button',
                             'events'     => [],
@@ -242,11 +215,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     load '/elements_with_events/listeners'
 
                     expect(subject.elements_with_events).to eq([
-                        { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
-                        },
-                        {
-                            'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                        },
                         {
                             'tag_name'   => 'button',
                             'events'     => [
@@ -262,11 +230,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                 ['click', 'function (my_button2_click) {}']
                             ],
                             'attributes' => { 'id' => 'my-button2' }
-                        },
-                        {
-                            'tag_name' => 'button',
-                            'events' => [],
-                            'attributes' => { 'id' => 'my-button3' }
                         }
                     ])
                 end
@@ -278,18 +241,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                         load '/elements_with_events/jQuery.on'
 
                         expect(subject.elements_with_events).to eq([
-                            {
-                                'tag_name'   => 'html',
-                                'events'     => [],
-                                'attributes' => {}
-                            },
-                            {
-                                'tag_name'   => 'body',
-                                'events'     => [],
-                                'attributes' => {
-                                    'style' => ''
-                                }
-                            },
                             {
                                 'tag_name'   => 'button',
                                 'events'     => [
@@ -311,11 +262,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
                             expect(subject.elements_with_events).to eq([
                                 {
-                                    "tag_name"   => "html",
-                                    "events"     => [],
-                                    "attributes" => {}
-                                },
-                                {
                                     "tag_name"   => "body",
                                     "events"     =>
                                         [
@@ -324,7 +270,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                                 "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
                                             ],
                                             [
-                                                "hover",
+                                                "mouseover",
                                                 "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
                                             ]
                                         ],
@@ -342,7 +288,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                                 "function () {\n\n            }"
                                             ],
                                             [
-                                                "hover",
+                                                "mouseover",
                                                 "function () {\n\n            }"
                                             ]
                                         ],
@@ -372,18 +318,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
                             expect(subject.elements_with_events).to eq([
                                 {
-                                    "tag_name"   => "html",
-                                    "events"     => [],
-                                    "attributes" => {}
-                                },
-                                {
-                                    "tag_name"   => "body",
-                                    "events"     => [],
-                                    "attributes" => {
-                                        "style" => ""
-                                    }
-                                },
-                                {
                                     "tag_name"   => "button",
                                     "events"     =>
                                         [
@@ -392,7 +326,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                                 "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
                                             ],
                                             [
-                                                "hover",
+                                                "mouseover",
                                                 "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
                                             ]
                                         ],
@@ -408,12 +342,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                             it 'assigns the events to elements that match it' do
                                 load '/elements_with_events/jQuery.on-object-types-selector'
 
-                                pp expect(subject.elements_with_events).to eq([
-                                    {
-                                        "tag_name"   => "html",
-                                        "events"     => [],
-                                        "attributes" => {}
-                                    },
+                                expect(subject.elements_with_events).to eq([
                                     {
                                         "tag_name"   => "body",
                                         "events"     => [
@@ -421,7 +350,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                              "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
                                             ],
                                             [
-                                                "hover",
+                                                "mouseover",
                                                 "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
                                             ]
                                         ],
@@ -437,18 +366,11 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                                 "click", "function () {}"
                                             ],
                                             [
-                                                "hover", "function () {}"
+                                                "mouseover", "function () {}"
                                             ]
                                         ],
                                         "attributes" => {
                                             "id" => "my-button"
-                                        }
-                                    },
-                                    {
-                                        "tag_name"   => "button",
-                                        "events"     => [],
-                                        "attributes" => {
-                                            "id" => "my-button-2"
                                         }
                                     }
                                 ])
@@ -463,11 +385,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                         load '/elements_with_events/jQuery.delegate'
 
                         expect(subject.elements_with_events).to eq([
-                            {
-                                "tag_name"   => "html",
-                                "events"     => [],
-                                "attributes" => {}
-                            },
                             {
                                 "tag_name"   => "body",
                                 "events"     =>
@@ -503,11 +420,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                             load '/elements_with_events/jQuery.delegate'
 
                             expect(subject.elements_with_events).to eq([
-                                {
-                                    "tag_name"   => "html",
-                                    "events"     => [],
-                                    "attributes" => {}
-                                },
                                 {
                                     "tag_name"   => "body",
                                     "events"     =>

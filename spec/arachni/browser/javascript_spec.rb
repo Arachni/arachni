@@ -172,9 +172,6 @@ describe Arachni::Browser::Javascript do
 
                 expect(subject.dom_elements_with_events).to eq([
                     {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
                         'tag_name'   => 'button',
                         'events'     => [
                             [:onclick, 'handler_1()']
@@ -205,9 +202,6 @@ describe Arachni::Browser::Javascript do
 
                 expect(subject.dom_elements_with_events).to eq([
                     {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
                         'tag_name'   => 'button',
                         'events'     => [
                             [:click, 'function (my_button_click) {}'],
@@ -220,28 +214,13 @@ describe Arachni::Browser::Javascript do
                         'events'     => [
                             [:click, 'function (my_button2_click) {}']
                         ],
-                        'attributes' => { 'id' => 'my-button2' } },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [],
-                        'attributes' => { 'id' => 'my-button3' }
-                    }
+                        'attributes' => { 'id' => 'my-button2' } }
                 ])
             end
 
             it 'does not include custom events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/listeners/custom'
-
-                expect(subject.dom_elements_with_events).to eq([
-                    {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [],
-                        'attributes' => { 'id' => 'my-button' }
-                    }
-                ])
+                expect(subject.dom_elements_with_events).to be_empty
             end
         end
     end
