@@ -543,8 +543,7 @@ class Browser
         javascript.dom_elements_with_events.each do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
-            events     = element['events'] +
-                Javascript.select_event_attributes( attributes ).to_a
+            events     = element['events']
             element_id = attributes['id'].to_s
 
             case tag_name
