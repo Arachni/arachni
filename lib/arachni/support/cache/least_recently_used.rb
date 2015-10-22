@@ -17,18 +17,17 @@ module Support::Cache
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class LeastRecentlyUsed < LeastRecentlyPushed
 
-    # @see Arachni::Cache::Base#[]
-    def []( k )
-        return if !include? k
-
-        renew( k )
-        super( k )
-    end
-
     private
 
-    def renew( k )
-        @cache[make_key( k )] = @cache.delete( make_key( k ) )
+    def get_with_internal_key( k )
+        return if !@cache.include? k
+        renew( k )
+
+        super k
+    end
+
+    def renew( internal_key )
+        @cache[internal_key] = @cache.delete( internal_key )
     end
 
 end

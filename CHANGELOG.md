@@ -17,6 +17,7 @@
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.
+    - `Cache` -- Minimized calls to `Base#make_key`.
     - Added
         - `Glob` -- Glob matcher.
 - `RPC`
