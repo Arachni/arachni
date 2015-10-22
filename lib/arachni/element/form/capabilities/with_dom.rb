@@ -19,6 +19,7 @@ module WithDOM
 
     # @return   [DOM]
     def dom
+        return if skip_dom?
         return @dom if @dom
         return if !node || inputs.empty?
         super
