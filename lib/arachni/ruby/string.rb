@@ -13,6 +13,9 @@ require 'zlib'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class String
 
+    HAS_HTML_TAG_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
+    BINARY_CACHE       = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
+
     # @param    [Regexp]    regexp
     #   Regular expression with named captures.
     #
@@ -30,11 +33,13 @@ class String
     # @param    [String,Regexp] attributes
     #   Content to look for in attributes, in lower case.
     def has_html_tag?( tag, attributes = nil )
-        if attributes
-            attributes = ".*#{attributes}"
-        end
+        HAS_HTML_TAG_CACHE.fetch [self, tag, attributes] do
+            if attributes
+                attributes = ".*#{attributes}"
+            end
 
-        self =~ /<\s*#{tag}#{attributes}.*?>/mi
+            self =~ /<\s*#{tag}#{attributes}.*?>/mi
+        end
     end
 
     # @param    [Regexp]    regexp
@@ -168,9 +173,11 @@ class String
 
     def binary?
         # Stolen from YAML.
-        encoding == Encoding::ASCII_8BIT ||
-            index("\x00") ||
-            count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3
+        BINARY_CACHE.fetch self do
+            (encoding == Encoding::ASCII_8BIT ||
+                index("\x00") ||
+                count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3)
+        end
     end
 
 end

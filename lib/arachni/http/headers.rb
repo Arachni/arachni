@@ -138,8 +138,9 @@ class Headers < Hash
         # audit payload.
         return field if field.include?( '--' )
 
-        FORMATTED_NAMES_CACHE[field] ||=
+        FORMATTED_NAMES_CACHE.fetch field do
             field.split( '-' ).map( &:capitalize ).join( '-' )
+        end
     end
 
 end

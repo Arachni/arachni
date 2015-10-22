@@ -231,8 +231,9 @@ module Capabilities::Inputtable
     end
 
     def self.inputtable_id( inputs )
-        INPUTTABLE_CACHE[:inputtable_id][inputs] ||=
+        INPUTTABLE_CACHE[:inputtable_id].fetch inputs do
             inputs ? inputs.sort_by { |k, _| k }.hash.to_s : ''
+        end
     end
 
     def to_h

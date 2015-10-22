@@ -79,8 +79,9 @@ class URI
         # @return   [String]
         #   Encoded string.
         def encode( string, good_characters = nil )
-            CACHE[__method__][[string, good_characters]] ||=
+            CACHE[__method__].fetch [string, good_characters] do
                 Addressable::URI.encode_component( *[string, good_characters].compact )
+            end
         end
 
         # URL decodes a string.
@@ -89,7 +90,7 @@ class URI
         #
         # @return   [String]
         def decode( string )
-            CACHE[__method__][string] ||= Addressable::URI.unencode( string )
+            CACHE[__method__].fetch( string ) { Addressable::URI.unencode( string ) }
         end
 
         # @note This method's results are cached for performance reasons.
@@ -102,13 +103,16 @@ class URI
         # @see URI#initialize
         def parse( url )
             return url if !url || url.is_a?( Arachni::URI )
-            CACHE[__method__][url] ||= begin
-                new( url )
-            rescue => e
-                print_debug "Failed to parse '#{url}'."
-                print_debug "Error: #{e}"
-                print_debug_backtrace( e )
-                nil
+
+            CACHE[__method__].fetch url do
+                begin
+                    new( url )
+                rescue => e
+                    print_debug "Failed to parse '#{url}'."
+                    print_debug "Error: #{e}"
+                    print_debug_backtrace( e )
+                    nil
+                end
             end
         end
 

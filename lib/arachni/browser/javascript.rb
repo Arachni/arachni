@@ -145,9 +145,11 @@ class Javascript
     # @return   [Set<Symbol>]
     #   Events for `element`.
     def self.events_for( tag_name )
-        CACHE[:events_for][tag_name.to_sym] ||= Set.new(
-            GLOBAL_EVENTS + (EVENTS_PER_ELEMENT[tag_name.to_sym] || [])
-        ).freeze
+        CACHE[:events_for].fetch tag_name.to_sym do
+            Set.new(
+                GLOBAL_EVENTS + (EVENTS_PER_ELEMENT[tag_name.to_sym] || [])
+            ).freeze
+        end
     end
 
     # @param    [Symbol]    tag_name
@@ -157,13 +159,14 @@ class Javascript
     # @return   [Hash]
     #   `events` filtered to only include valid events for the given element type.
     def self.select_events( tag_name, events )
-        k = [tag_name, events]
-        return CACHE[:filter_events][k] if CACHE[:filter_events][k]
+        CACHE[:filter_events].fetch [tag_name, events] do
 
-        supported = events_for( tag_name )
-        CACHE[:filter_events][k] = events.reject do |name, _|
-            !supported.include?( ('on' + name.to_s.gsub( /^on/, '' )).to_sym )
-        end.freeze
+            supported = events_for( tag_name )
+            events.reject do |name, _|
+                !supported.include?( ('on' + name.to_s.gsub( /^on/, '' )).to_sym )
+            end.freeze
+
+        end
     end
 
     # @param    [Hash]  attributes
@@ -172,11 +175,14 @@ class Javascript
     # @return   [Hash]
     #   `attributes` that include {.events}.
     def self.select_event_attributes( attributes = {} )
-        CACHE[:select_event_attributes][attributes] ||=
+        CACHE[:select_event_attributes].fetch attributes do
+
             attributes.inject({}) do |h, (event, handler)|
                 next h if !event_whitelist.include?( event.to_s )
                 h.merge!( event.to_sym => handler )
             end.freeze
+
+        end
     end
 
     # @param    [Browser]   browser

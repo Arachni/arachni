@@ -290,7 +290,7 @@ class Manager
         end
 
         return new_from_options if !(key = make_key( uri ))
-        synchronize { @platforms[key] ||= new_from_options }
+        synchronize { @platforms.fetch(key) { new_from_options } }
     end
 
     # Sets platform manager for the given `uri`.

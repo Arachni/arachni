@@ -21,11 +21,11 @@ module Arachni
 
 lib = Options.paths.lib
 require lib + 'version'
+require lib + 'support'
 require lib + 'ruby'
 require lib + 'error'
 require lib + 'scope'
 require lib + 'utilities'
-require lib + 'support'
 require lib + 'uri'
 require lib + 'component'
 require lib + 'platform'
