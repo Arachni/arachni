@@ -26,6 +26,13 @@ group :prof do
     gem 'benchmark-ips'
 end
 
+gem 'awesome_print'
+
 gemspec
+
+# gem 'ethon', github: 'zapotek/ethon', branch: 'optional-escaping'
+# gem 'typhoeus', github: 'zapotek/typhoeus', branch: 'object-allocation-optimization'
+gem 'ethon', path: '../ethon'
+gem 'typhoeus', path: '../typhoeus'
 
 gem 'arachni-reactor', github: 'arachni/arachni-reactor', branch: 'slice-to-byteslice'

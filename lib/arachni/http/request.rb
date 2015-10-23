@@ -15,6 +15,8 @@ module HTTP
 class Request < Message
     require_relative 'request/scope'
 
+    ENCODE_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
+
     # Default redirect limit, RFC says 5 max.
     REDIRECT_LIMIT = 5
 
@@ -125,6 +127,7 @@ class Request < Message
 
         super( options )
 
+        @encode          = true  if @encode.nil?
         @train           = false if @train.nil?
         @fingerprint     = true  if @fingerprint.nil?
         @update_cookies  = false if @update_cookies.nil?
@@ -306,6 +309,10 @@ class Request < Message
         @update_cookies = true
     end
 
+    def encode?
+        !!@encode
+    end
+
     # @note Will call {#on_complete} callbacks.
     #
     # Performs the {Request} without going through {HTTP::Client}.
@@ -337,12 +344,28 @@ class Request < Message
         max_size = 1   if max_size == 0
         max_size = nil if max_size < 0
 
+        ep = self.effective_parameters
+
+        # Encode query parameters if we've been instructed to do so or if we're
+        # performing a POST request.
+        if (encode? || method == :post) && ep.any?
+            ep = self.class.encode_hash( ep )
+        end
+
+        eb = self.body
+        if encode? && eb.is_a?( Hash )
+            eb = self.class.encode_hash( eb )
+        end
+
         options = {
             method:          method,
             headers:         headers,
-            body:            body,
-            params:          effective_parameters,
+
+            body:            eb,
+            params:          ep,
+
             userpwd:         userpwd,
+
             followlocation:  follow_location?,
             maxredirs:       @max_redirects,
 
@@ -368,7 +391,14 @@ class Request < Message
             # Don't keep the socket alive if this is a blocking request because
             # it's going to be performed by an one-off Hydra.
             forbid_reuse:    blocking?,
-            verbose:         true
+
+            # Enable debugging messages in order to capture raw traffic data.
+            verbose:         true,
+
+            # We're going to be escaping **a lot** of the same strings during
+            # the scan, so bypass Ethon's encoding and do our own cache-based
+            # encoding.
+            escape:          false
         }
 
         options[:timeout_ms] = timeout if timeout
@@ -404,8 +434,10 @@ class Request < Message
             end
         end
 
-        curl             = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
-        typhoeus_request = Typhoeus::Request.new( curl, options )
+        typhoeus_request = Typhoeus::Request.new(
+            url.split( '?', 2 ).first,
+            options
+        )
 
         if @on_complete.any?
             response_body_buffer = ''
@@ -509,9 +541,17 @@ class Request < Message
             end
         end
 
+        def encode_hash( hash )
+            hash.inject({}) do |h, (k, v)|
+                h.merge!( encode( k ) => encode( v ) )
+                h
+            end
+        end
+
         def encode( string )
+            string = string.to_s
             @easy ||= Ethon::Easy.new( url: 'www.example.com' )
-            @easy.escape string
+            ENCODE_CACHE.fetch( string ) { @easy.escape( string ) }
         end
     end
 
