@@ -6,15 +6,15 @@ describe Arachni::Element::Form do
                 <input type=radio name="my_second_input" value="my_second_value"" />
             </form>'
 
-    it_should_behave_like 'element'
-    it_should_behave_like 'with_node'
-    it_should_behave_like 'with_dom',  html
-    it_should_behave_like 'refreshable'
-    it_should_behave_like 'with_source'
-    it_should_behave_like 'with_auditor'
-
-    it_should_behave_like 'submittable'
-    it_should_behave_like 'inputtable'
+    # it_should_behave_like 'element'
+    # it_should_behave_like 'with_node'
+    # it_should_behave_like 'with_dom',  html
+    # it_should_behave_like 'refreshable'
+    # it_should_behave_like 'with_source'
+    # it_should_behave_like 'with_auditor'
+    #
+    # it_should_behave_like 'submittable'
+    # it_should_behave_like 'inputtable'
     it_should_behave_like 'mutable'
     it_should_behave_like 'auditable'
 

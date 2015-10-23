@@ -17,21 +17,15 @@ module Capabilities
 module Mutable
     include Arachni::Element::Capabilities::Mutable
 
-    # Overrides {Arachni::Element::Capabilities::Mutable#each_mutation} to handle
-    # XML-specific limitations.
-    #
-    # @param (see Arachni::Element::Capabilities::Mutable#each_mutation)
-    # @return (see Arachni::Element::Capabilities::Mutable#each_mutation)
-    # @yield (see Arachni::Element::Capabilities::Mutable#each_mutation)
-    # @yieldparam (see Arachni::Element::Capabilities::Mutable#each_mutation)
-    #
-    # @see Arachni::Element::Capabilities::Mutable#each_mutation
-    def each_mutation( payload, options = {}, &block )
+    private
+
+    def prepare_mutation_options( options )
+        options = super( options )
+        options.delete( :with_raw_payloads )
         options.delete( :parameter_names )
         options.delete( :with_extra_parameter )
-        super( payload, options, &block )
+        options
     end
-
 end
 
 end

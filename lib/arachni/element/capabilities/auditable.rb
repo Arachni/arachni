@@ -234,8 +234,8 @@ module Auditable
     #
     # @param  [Block]   block
     #   Block to be used for analysis of the response.
-    def submit_and_process( options = {}, &block )
-        submit( options ) do |response|
+    def submit_and_process( &block )
+        submit( @audit_options[:submit] || {} ) do |response|
             # In case of redirection or runtime scope changes.
             if !response.parsed_url.seed_in_host? && response.scope.out?
                 next
@@ -320,8 +320,6 @@ module Auditable
         skip_like_option = [@audit_options.delete(:skip_like)].flatten.compact
         each_mutation    = @audit_options.delete(:each_mutation)
 
-        submit_options = @audit_options[:submit] || {}
-
         # Iterate over all fuzz variations and audit each one.
         each_mutation( payload, @audit_options ) do |elem|
             if !audit_input?( elem.affected_input_name )
@@ -365,11 +363,11 @@ module Auditable
                 [elements].flatten.compact.each do |e|
                     next if !e.is_a?( self.class )
 
-                    e.submit_and_process( submit_options, &block )
+                    e.submit_and_process( &block )
                 end
             end
 
-            elem.submit_and_process( submit_options, &block )
+            elem.submit_and_process( &block )
         end
 
         true

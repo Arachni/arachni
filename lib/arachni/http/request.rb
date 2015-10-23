@@ -103,6 +103,10 @@ class Request < Message
     #   Maximum HTTP response size to accept, in bytes.
     attr_accessor :response_max_size
 
+    # @return   [Array]
+    #   Parameters which should not be encoded, by name.
+    attr_accessor :raw_parameters
+
     # @param  [Hash]  options
     #   Request options.
     # @option options [String] :url
@@ -127,7 +131,6 @@ class Request < Message
 
         super( options )
 
-        @encode          = true  if @encode.nil?
         @train           = false if @train.nil?
         @fingerprint     = true  if @fingerprint.nil?
         @update_cookies  = false if @update_cookies.nil?
@@ -135,10 +138,19 @@ class Request < Message
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
         @on_complete     = []
 
-        @timeout       ||= Options.http.request_timeout
-        @mode          ||= :async
-        @parameters    ||= {}
-        @cookies       ||= {}
+        @raw_parameters ||= []
+        @timeout        ||= Options.http.request_timeout
+        @mode           ||= :async
+        @parameters     ||= {}
+        @cookies        ||= {}
+    end
+
+    def raw_parameters=( names )
+        if names
+            @raw_parameters.merge names
+        else
+            @raw_parameters.clear
+        end
     end
 
     def high_priority?
@@ -309,10 +321,6 @@ class Request < Message
         @update_cookies = true
     end
 
-    def encode?
-        !!@encode
-    end
-
     # @note Will call {#on_complete} callbacks.
     #
     # Performs the {Request} without going through {HTTP::Client}.
@@ -344,17 +352,11 @@ class Request < Message
         max_size = 1   if max_size == 0
         max_size = nil if max_size < 0
 
-        ep = self.effective_parameters
-
-        # Encode query parameters if we've been instructed to do so or if we're
-        # performing a POST request.
-        if (encode? || method == :post) && ep.any?
-            ep = self.class.encode_hash( ep )
-        end
+        ep = self.class.encode_hash( self.effective_parameters, @raw_parameters )
 
         eb = self.body
-        if encode? && eb.is_a?( Hash )
-            eb = self.class.encode_hash( eb )
+        if eb.is_a?( Hash )
+            eb = self.class.encode_hash( eb, @raw_parameters )
         end
 
         options = {
@@ -541,11 +543,24 @@ class Request < Message
             end
         end
 
-        def encode_hash( hash )
+        def encode_hash( hash, skip = [] )
             hash.inject({}) do |h, (k, v)|
-                h.merge!( encode( k ) => encode( v ) )
+
+                if skip.include?( k )
+                    # We need to at least encode null-bytes since they can't
+                    # be transported at all.
+                    # If we don't Typhoeus/Ethon will raise errors.
+                    h.merge!( encode_null_byte( k ) => encode_null_byte( v ) )
+                else
+                    h.merge!( encode( k ) => encode( v ) )
+                end
+
                 h
             end
+        end
+
+        def encode_null_byte( string )
+            string.to_s.gsub "\0", '%00'
         end
 
         def encode( string )

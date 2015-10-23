@@ -36,8 +36,9 @@ module Differential
         # content -- like banners etc.
         precision:      2,
 
-        # Override global fuzzing settings and only use the default method of the
-        # element under audit.
+        # Override global fuzzing settings and only use the default method of
+        # the element under audit.
+        with_raw_payloads:      false,
         with_both_http_methods: false,
         parameter_names:        false,
         with_extra_parameter:   false,

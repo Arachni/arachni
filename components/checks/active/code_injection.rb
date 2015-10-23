@@ -30,7 +30,7 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            signatures: (rand1.to_i + rand2.to_i).to_s,
+            signatures: (rand1.to_i * rand2.to_i).to_s,
             format:     [Format::STRAIGHT]
         }
     end
@@ -38,10 +38,10 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
     def self.code_strings
         # code strings to be injected to the webapp
         @code_strings ||= {
-            php:    "print #{rand1}+#{rand2};",
-            perl:   "print #{rand1}+#{rand2};",
-            python: "print #{rand1}+#{rand2}",
-            asp:    "Response.Write\x28#{rand1}+#{rand2}\x29"
+            php:    "print #{rand1}*#{rand2};",
+            perl:   "print #{rand1}*#{rand2};",
+            python: "print #{rand1}*#{rand2}",
+            asp:    "Response.Write\x28#{rand1}*#{rand2}\x29"
         }
     end
 
@@ -68,7 +68,7 @@ Injects code snippets and assess whether or not execution was successful.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.4',
+            version:     '0.2.5',
             platforms:   payloads.keys,
 
             issue:       {

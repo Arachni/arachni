@@ -14,6 +14,14 @@ module Capabilities
 module Mutable
     include Arachni::Element::Capabilities::Mutable
 
+    def each_mutation( payload, options = {}, &block )
+        # No sense in doing this for the DOM, either payload will be raw in the
+        # first place or the browser will override us.
+        options.delete :with_raw_payloads
+
+        super( payload, options, &block )
+    end
+
 end
 
 end

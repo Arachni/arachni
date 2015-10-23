@@ -51,9 +51,9 @@ module Mutable
         #
         # Values can be OR'ed bitfields of all available constants of {Format}.
         format:                 [
-                                    Format::STRAIGHT, Format::APPEND,
-                                    Format::NULL, Format::APPEND | Format::NULL
-                                ],
+            Format::STRAIGHT, Format::APPEND,
+            Format::NULL, Format::APPEND | Format::NULL
+        ],
 
         # Inject the payload into parameter values.
         #
@@ -68,6 +68,13 @@ module Mutable
         # * `true`
         # * `false`
         parameter_names:        nil,
+
+        # Add mutations with non-encoded payloads.
+        #
+        # * `nil`: Use system settings (`!Options.audit.with_raw_parameters`).
+        # * `true`
+        # * `false`
+        with_raw_payloads:       nil,
 
         # Add the payload to an extra parameter.
         #
@@ -182,8 +189,15 @@ module Mutable
                         formatted_payload, format, &block
                     )
 
-                    next if !elem || !options[:with_both_http_methods]
-                    yield_if_unique( elem.switch_method, generated, &block )
+                    next if !elem
+
+                    if options[:with_raw_payloads]
+                        yield_if_unique( elem.with_raw_payload, generated, &block )
+                    end
+
+                    if options[:with_both_http_methods]
+                        yield_if_unique( elem.switch_method, generated, &block )
+                    end
                 end
             end
         end
@@ -225,6 +239,14 @@ module Mutable
 
     def parameter_name_audit?
         affected_input_name == FUZZ_NAME
+    end
+
+    def with_raw_payload
+        self.dup.tap do |c|
+            c.audit_options[:submit] = {
+                raw_parameters: [c.affected_input_name]
+            }
+        end
     end
 
     def switch_method
@@ -297,17 +319,24 @@ module Mutable
     protected
 
     def mutable_id
-        "#{@method}:#{inputtable_id}"
+        raw_parameters = Arachni::Element::Capabilities::Inputtable.inputtable_id(
+            (@audit_options[:submit] || {})[:raw_parameters] || []
+        )
+        "#{@method}:#{raw_parameters}:#{inputtable_id}"
     end
 
     def self.mutable_id( method, inputs )
-        "#{method}:#{Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs )}"
+        "#{method}:[]:#{Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs )}"
     end
 
     private
 
     def prepare_mutation_options( options )
         options = MUTATION_OPTIONS.merge( options )
+
+        if options[:with_raw_payloads].nil?
+            options[:with_raw_payloads] = Options.audit.with_raw_payloads?
+        end
 
         if options[:parameter_values].nil?
             options[:parameter_values] = Options.audit.parameter_values?
