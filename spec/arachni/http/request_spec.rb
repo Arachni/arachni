@@ -121,6 +121,69 @@ describe Arachni::HTTP::Request do
             end
         end
 
+        describe ':encode' do
+            let(:url){ "#{@url}/raw" }
+            let(:request) { described_class.new( options ) }
+            let(:options) do
+                {
+                    url:        url,
+                    method:     method,
+                    parameters: parameters,
+                    body:       body,
+                    encode:     encode
+                }
+            end
+            let(:parameters) { { '1 ' => '2 ' } }
+            let(:body) { {} }
+            let(:method) { :get }
+            let(:response) { request.run }
+
+            context 'true' do
+                let(:encode) { true }
+
+                it 'encodes URL query params' do
+                    expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1%20=2%20 HTTP/1.1'
+                end
+            end
+
+            context 'false' do
+                let(:encode) { false }
+
+                it 'does not encode URL query params' do
+                    expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1 =2  HTTP/1.1'
+                end
+            end
+
+            context 'when the method is POST' do
+                let(:method) { :post }
+                let(:body) { { '3 ' => '4 ' } }
+
+                context 'true' do
+                    let(:encode) { true }
+
+                    it 'encodes URL query params' do
+                        expect(response.request.to_s.lines.first.strip).to eq 'POST /raw?1%20=2%20 HTTP/1.1'
+                    end
+
+                    it 'encodes URL body params' do
+                        expect(response.request.to_s.lines.last).to eq '3%20=4%20'
+                    end
+                end
+
+                context 'false' do
+                    let(:encode) { false }
+
+                    it 'encode URL query params' do
+                        expect(response.request.to_s.lines.first.strip).to eq 'POST /raw?1%20=2%20 HTTP/1.1'
+                    end
+
+                    it 'does not encode URL query params' do
+                        expect(response.request.to_s.lines.last).to eq '3 =4 '
+                    end
+                end
+            end
+        end
+
         context 'when url is not a String' do
             it 'raises ArgumentError' do
                 raised = false
