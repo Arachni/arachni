@@ -52,7 +52,7 @@ shared_examples_for 'inputtable' do |options = {}|
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
-        %w(inputs default_inputs).each do |attribute|
+        %w(inputs default_inputs raw_inputs).each do |attribute|
             it "includes '#{attribute}'" do
                 expect(data[attribute]).to eq(subject.send( attribute ))
             end
@@ -63,7 +63,7 @@ shared_examples_for 'inputtable' do |options = {}|
         let(:restored) { subject.class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
-        %w(inputs default_inputs).each do |attribute|
+        %w(inputs default_inputs raw_inputs).each do |attribute|
             it "restores '#{attribute}'" do
                 expect(restored.send( attribute )).to eq(subject.send( attribute ))
             end
@@ -76,6 +76,7 @@ shared_examples_for 'inputtable' do |options = {}|
 
             k, v = orig.inputs.keys.first, 'value'
 
+            subject.raw_inputs << k
             subject.update( k => v )
 
             expect(subject.inputs).not_to eq(orig.inputs)
@@ -83,6 +84,7 @@ shared_examples_for 'inputtable' do |options = {}|
             subject.reset
 
             expect(subject.inputs).to eq(orig.inputs)
+            expect(subject.raw_inputs).to be_empty
         end
     end
 
@@ -173,6 +175,28 @@ shared_examples_for 'inputtable' do |options = {}|
             expect(e.inputtable_id).not_to eq(c.inputtable_id)
         end
 
+        it 'takes into account raw inputs' do
+            e = subject.dup
+            e.inputs = { 1 => 2, 3 => 4 }
+            e.raw_inputs = [1]
+
+            c = subject.dup
+            c.inputs = { 1 => 2, 3 => 4 }
+            c.raw_inputs = [1]
+
+            expect(e.inputtable_id).to eq(c.inputtable_id)
+
+            e = subject.dup
+            e.inputs = { 1 => 2, 3 => 4 }
+            e.raw_inputs = [1]
+
+            c = subject.dup
+            e.inputs = { 1 => 2, 3 => 4 }
+            e.raw_inputs = [2]
+
+            expect(e.inputtable_id).not_to eq(c.inputtable_id)
+        end
+
         it 'takes into account input values' do
             e = subject.dup
             e.inputs = { 1 => 2 }
@@ -199,6 +223,49 @@ shared_examples_for 'inputtable' do |options = {}|
             c.inputs = { 3 => 4, 1 => 2 }
 
             expect(e.inputtable_id).to eq(c.inputtable_id)
+        end
+    end
+
+    describe '#raw_inputs=' do
+        it 'converts all inputs to strings' do
+            subject.raw_inputs = [valid_key.to_sym]
+            expect(subject.raw_inputs).to eq [valid_key.to_s]
+        end
+
+        context 'when a name contains invalid data' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
+                allow(subject).to receive(:valid_input_data?) { |data| data != valid_key }
+
+                expect do
+                    subject.raw_inputs = [ valid_key ]
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+            end
+        end
+
+        context 'when a name is invalid' do
+            it "raises #{Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name}" do
+                allow(subject).to receive(:valid_input_name?) { false }
+
+                expect do
+                    subject.raw_inputs = [ valid_key ]
+                end.to raise_error Arachni::Element::Capabilities::Inputtable::Error::InvalidData::Name
+            end
+        end
+    end
+
+    describe '#raw_input?' do
+        context 'if the name is in #raw_inputs' do
+            it 'returns true' do
+                subject.raw_inputs = [valid_key]
+                expect(subject.raw_input?( valid_key )).to be_truthy
+            end
+        end
+
+        context 'if the name is not in #raw_inputs' do
+            it 'returns false' do
+                subject.raw_inputs = []
+                expect(subject.raw_input?( valid_key )).to be_falsey
+            end
         end
     end
 
@@ -465,9 +532,12 @@ shared_examples_for 'inputtable' do |options = {}|
 
     describe '#to_h' do
         it 'returns a hash representation of self' do
+            subject.raw_inputs = [ subject.inputs.keys.first ]
+
             hash = subject.to_h
             expect(hash[:inputs]).to         eq(subject.inputs)
             expect(hash[:default_inputs]).to eq(subject.default_inputs)
+            expect(hash[:raw_inputs]).to eq(subject.raw_inputs)
         end
     end
 

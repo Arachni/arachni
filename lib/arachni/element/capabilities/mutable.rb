@@ -142,6 +142,13 @@ module Mutable
         @immutables ||= Set.new
     end
 
+    # @return   [Boolean]
+    #   `true` if the mutation's {#affected_input_value} has been set to skip
+    #   encoding, `false` otherwise.
+    def with_raw_payload?
+        raw_inputs.include? affected_input_name
+    end
+
     # @note Vector names in {#immutables} will be excluded.
     #
     # Injects the `payload` in self's values according to formatting options
@@ -243,9 +250,7 @@ module Mutable
 
     def with_raw_payload
         self.dup.tap do |c|
-            c.audit_options[:submit] = {
-                raw_parameters: [c.affected_input_name]
-            }
+            c.raw_inputs << c.affected_input_name
         end
     end
 
@@ -296,6 +301,7 @@ module Mutable
 
         s << "default-inputs=#{default_inputs.inspect} "
         s << "inputs=#{inputs.inspect} "
+        s << "raw_inputs=#{raw_inputs.inspect} "
 
         if mutation?
             s << "seed=#{seed.inspect} "
@@ -319,14 +325,15 @@ module Mutable
     protected
 
     def mutable_id
-        raw_parameters = Arachni::Element::Capabilities::Inputtable.inputtable_id(
-            (@audit_options[:submit] || {})[:raw_parameters] || []
+        Arachni::Element::Capabilities::Mutable.mutable_id(
+            method,
+            inputs,
+            raw_inputs
         )
-        "#{@method}:#{raw_parameters}:#{inputtable_id}"
     end
 
-    def self.mutable_id( method, inputs )
-        "#{method}:[]:#{Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs )}"
+    def self.mutable_id( method, inputs, raw_inputs )
+        "#{method}:#{Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs, raw_inputs )}"
     end
 
     private
@@ -390,11 +397,16 @@ module Mutable
         elem
     end
 
-    def create_and_yield_if_unique( list, inputs, seed, input_name, input_value,
-                                      format, &block )
+    def create_and_yield_if_unique(
+        list, inputs, seed, input_name, input_value,format, &block
+    )
         # We can check if it's unique prior to actually creating, so do it.
         return if list.include?(
-            Arachni::Element::Capabilities::Mutable.mutable_id( self.method, inputs )
+            Arachni::Element::Capabilities::Mutable.mutable_id(
+                self.method,
+                inputs,
+                []
+            )
         )
 
         element = create_mutation( inputs, seed, input_name, input_value, format )
@@ -485,6 +497,13 @@ module Mutable
         print_debug_level_2 '|--> Inputs: '
         mutation.inputs.each do |k, v|
             print_debug_level_2 "|----> #{k.inspect} => #{v.inspect}"
+        end
+
+        if mutation.raw_inputs.any?
+            print_debug_level_2 '|--> Raw inputs: '
+            mutation.raw_inputs.each do |k|
+                print_debug_level_2 "|----> #{k.inspect}"
+            end
         end
     end
 

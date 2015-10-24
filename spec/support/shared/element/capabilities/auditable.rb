@@ -224,23 +224,28 @@ shared_examples_for 'auditable' do
             end
         end
 
-        it 'forwards submit options' do
-            param           = auditable.inputs.keys.first
-            raw_parameters  = nil
+        context ':submit' do
+            it 'forwards :raw_parameters',
+               if: !described_class.ancestors.include?( Arachni::Element::DOM ) do
 
-            auditable.audit( 'stuff',
-                 format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                 submit: {
-                     raw_parameters: [ param ]
-                 },
-                 skip_original: true
-            ) do |response, _|
-                raw_parameters = response.request.raw_parameters
+                param           = auditable.inputs.keys.first
+                raw_parameters  = nil
+
+                auditable.audit(
+                    'stuff',
+                    format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
+                    submit: {
+                        raw_parameters: [ param ]
+                    },
+                    skip_original: true
+                ) do |response, _|
+                    raw_parameters = response.request.raw_parameters
+                end
+
+                run
+
+                expect(raw_parameters).to eq [param]
             end
-
-            run
-
-            expect(raw_parameters).to eq [param]
         end
 
         context 'when the response is out of scope' do
