@@ -61,7 +61,7 @@ class Message
     end
 
     def url=( url )
-        @url = Arachni::URI( url ).to_s.freeze
+        @url = URI.normalize_url( url ).to_s.freeze
     end
 
 end
