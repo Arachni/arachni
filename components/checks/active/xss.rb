@@ -47,9 +47,23 @@ class Arachni::Checks::Xss < Arachni::Check::Base
         }
     end
 
+    def self.optimization_cache
+        @optimization_cache ||= {}
+    end
+    def optimization_cache
+        self.class.optimization_cache
+    end
+
     def run
         audit( self.class.strings, self.class.options ) do |response, element|
-            check_and_log( response, element )
+            # If there's no vuln responses will usually be identical, so bail
+            # out early.
+            # If responses aren't identical due to noise, well, we're not losing
+            # much.
+            next if optimization_cache[response.body.hash] == :checked
+
+            optimization_cache[response.body.hash] =
+                check_and_log( response, element )
         end
     end
 
@@ -58,17 +72,18 @@ class Arachni::Checks::Xss < Arachni::Check::Base
         # The other cases either don't matter or are covered by the xss_dom check.
         if (self.class.elements - [Arachni::Link]).include?( element.class ) &&
             !response.body.downcase.include?( self.class.tag )
-            return
+
+            return :checked
         end
 
         # See if we managed to successfully inject our element in the doc tree.
         if find_proof( response )
             log vector: element, proof: self.class.tag, response: response
-            return
+            return :checked
         end
 
         # No idea what was returned, but we can't work with it.
-        return if !response.to_page.has_script?
+        return :checked if !response.to_page.has_script?
 
         with_browser_cluster do
             print_info 'Progressing to deferred browser evaluation of response.'
@@ -76,9 +91,15 @@ class Arachni::Checks::Xss < Arachni::Check::Base
             # Pass the response to the BrowserCluster for evaluation and see if the
             # element appears in the doc tree now.
             trace_taint( response, taint: self.class.tag ) do |page|
+                # At this point further checks will be body based, identical
+                # bodies will yield identical results.
+                next if optimization_cache["traced-#{page.body.hash}".hash] == :traced
+                optimization_cache["traced-#{page.body.hash}".hash] = :traced
+
                 print_info 'Checking results of deferred taint analysis.'
 
                 next if !(proof = find_proof( page ))
+
                 log vector: element, proof: proof, page: page
             end
         end
@@ -112,7 +133,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.5',
+            version:     '0.4.6',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},

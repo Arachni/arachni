@@ -11,8 +11,6 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.2.1
-#
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
@@ -77,13 +75,27 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         @options ||= { format: [ Format::STRAIGHT ] }
     end
 
+    def self.optimization_cache
+        @optimization_cache ||= {}
+    end
+    def optimization_cache
+        self.class.optimization_cache
+    end
+
     def taints( browser_cluster )
         self.class.strings.map { |taint| taint % browser_cluster.javascript_token }
     end
 
     def run
         with_browser_cluster do |cluster|
-            audit taints( cluster ), self.class.options, &method(:check_and_log)
+            audit taints( cluster ), self.class.options do |response, element|
+                # Completely body based, identical bodies will yield identical
+                # results.
+                next if optimization_cache[response.body.hash]
+                optimization_cache[response.body.hash] = true
+
+                check_and_log( response, element )
+            end
         end
     end
 
@@ -93,7 +105,8 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         return if !(proof = tainted?( response, element.seed ))
 
         if proof.is_a? String
-            return log vector: element, proof: element.seed, response: response
+            log vector: element, proof: element.seed, response: response
+            return
         end
 
         print_info 'Response is tainted, scheduling a taint-trace.'
@@ -117,26 +130,23 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         # Quick check to see if the payload landed in a <script>.
         in_script = (response.body =~ /<script.*?>.*#{Regexp.escape seed}.*?<\/script>/im)
 
-        # Quick check to see if the payload landed in an attribute.
-        pure_seed = self.class.seed % browser_cluster.javascript_token
-        in_attribute = !!ATTRIBUTES.find do |attribute|
+        # Quick check to see if the payload landed in any attributes.
+        pure_seed     = self.class.seed % browser_cluster.javascript_token
+        in_attributes = ATTRIBUTES.select do |attribute|
             !!response.body.scan( /#{attribute}=(.*?)>/im ).flatten.find do |match|
                 match.include? pure_seed
             end
         end
 
         # Nowhere to be seen, bail out early.
-        return if !in_attribute && !in_script
+        return if in_attributes.empty? && !in_script
 
         # More comprehensive checks by searching the document.
         doc = Nokogiri::HTML( response.body )
 
         return true if in_script && doc.css('script').to_s.include?( seed )
 
-        # Not in attribute, no need to check.
-        return false if !in_attribute
-
-        ATTRIBUTES.each do |attribute|
+        in_attributes.each do |attribute|
             doc.xpath( "//*[@#{attribute}]" ).each do |elem|
                 value = elem.attributes[attribute].to_s
 
@@ -162,7 +172,7 @@ Injects JS taint code and check to see if it gets executed as proof of vulnerabi
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.2',
+            version:     '0.2.3',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in script context},

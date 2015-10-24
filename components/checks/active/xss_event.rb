@@ -41,11 +41,15 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
         'src'
     ]
 
+    def self.attribute_name
+        'arachni_xss_in_element_event'
+    end
+
     def self.strings
         @strings ||= [
-            ";arachni_xss_in_element_event=#{random_seed}//",
-            "\";arachni_xss_in_element_event=#{random_seed}//",
-            "';arachni_xss_in_element_event=#{random_seed}//"
+            ";#{attribute_name}=#{random_seed}//",
+            "\";#{attribute_name}=#{random_seed}//",
+            "';#{attribute_name}=#{random_seed}//"
         ].map { |s| [ " script:#{s}", " #{s}" ] }.flatten
     end
 
@@ -53,20 +57,38 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
         @options ||= { format: [ Format::APPEND ] }
     end
 
+    def self.optimization_cache
+        @optimization_cache ||= {}
+    end
+    def optimization_cache
+        self.class.optimization_cache
+    end
+
     def run
-        audit self.class.strings, self.class.options, &method(:check_and_log)
+        audit self.class.strings, self.class.options do |response, element|
+            next if optimization_cache[response.body.hash] == :checked
+
+            optimization_cache[response.body.hash] =
+                check_and_log( response, element )
+        end
     end
 
     def check_and_log( response, element )
-        body = response.body.downcase
-        return if element.seed.to_s.empty? || !body.include?( element.seed )
+        body = response.body
+
+        return :checked if !(body =~ /#{self.class.attribute_name}/i)
+        return if element.seed.to_s.empty? || !(body =~ /#{element.seed}/i)
+
+        included_attributes = EVENT_ATTRS.select do |attribute|
+            body =~ /#{attribute}/i
+        end
+
+        return :checked if included_attributes.empty?
 
         doc  = Nokogiri::HTML( body )
-        seed = element.seed.dup
+        seed = element.seed
 
-        EVENT_ATTRS.each do |attribute|
-            next if !body.include?( attribute )
-
+        included_attributes.each do |attribute|
             doc.xpath( "//*[@#{attribute}]" ).each do |elem|
                 value = elem.attributes[attribute].to_s.downcase
                 seed  = seed.split( ':', 2 ).last
@@ -76,10 +98,12 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
                     # xss_script_context check. However VBScript doesn't have
                     # full support so we settle.
                     if value =~ /^(vb|)script:/ && value.include?( seed )
-                        return log vector: element, response: response, proof: value
+                        log vector: element, response: response, proof: value
+                        return
                     end
                 elsif value.include?( seed )
-                    return log vector: element, response: response, proof: value
+                    log vector: element, response: response, proof: value
+                    return
                 end
             end
         end
@@ -91,7 +115,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.6',
+            version:     '0.1.7',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in event tag of HTML element},
