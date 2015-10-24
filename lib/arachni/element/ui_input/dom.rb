@@ -56,6 +56,10 @@ class DOM < DOM
         @valid_input_name == name.to_s
     end
 
+    def coverage_id
+        "#{super}:#{@method}#{locator.hash}"
+    end
+
     def type
         self.class.type
     end

@@ -25,6 +25,8 @@
         - `ActiveOptions#set` -- Allow options to be set during runtime and ajust
             the scan scope accordingly.
 - `Element`
+    - `UIInput::DOM` -- Updated coverage identifier calculation.
+    - `UIForm::DOM` -- Updated coverage identifier calculation.
     - `Capabilities`
         - `Analyzable`
             - `Signature`

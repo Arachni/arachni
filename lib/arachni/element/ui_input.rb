@@ -12,7 +12,7 @@ module Arachni::Element
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class UIInput < Base
-    require_relative 'input/dom'
+    require_relative 'ui_input/dom'
 
     include Arachni::Element::Capabilities::DOMOnly
 
