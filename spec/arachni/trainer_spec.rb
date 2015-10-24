@@ -213,6 +213,20 @@ describe Arachni::Trainer do
             end
         end
 
+        context 'when the page body has already been seen' do
+            it 'returns nil' do
+                @trainer.page = @page
+
+                r = request( @url )
+                expect(@trainer).to receive(:analyze).with(r)
+                expect(@trainer.push( r )).to be_truthy
+
+                r = request( @url )
+                expect(@trainer).to_not receive(:analyze)
+                expect(@trainer.push( r )).to be_nil
+            end
+        end
+
         context 'when the resource is out-of-scope' do
             it 'returns false' do
                 @trainer.page = @page

@@ -34,6 +34,8 @@ class Trainer
         @framework  = framework
         @updated    = false
 
+        @seen_pages = Support::LookUp::HashSet.new
+
         @trainings_per_url = Hash.new( 0 )
 
         # get us setup using the page that is being audited as a seed page
@@ -72,6 +74,13 @@ class Trainer
             print_info 'No more pages accepted, skipping analysis.'
             return
         end
+
+        # Naive optimization but it works a lot of the time. :)
+        if @seen_pages.include? response.body
+            print_debug "Already seen response body for request ID: ##{response.request.id}"
+            return
+        end
+        @seen_pages << response.body
 
         return false if !response.text?
 
