@@ -89,6 +89,8 @@ class BrowserCluster < Arachni::OptionGroup
     def to_rpc_data
         d = super
 
+        d['wait_for_elements'] = d['wait_for_elements'].dup
+
         d['wait_for_elements'].dup.each do |k, v|
             d['wait_for_elements'][k.source] = d['wait_for_elements'].delete(k)
         end
