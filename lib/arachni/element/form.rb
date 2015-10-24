@@ -46,6 +46,8 @@ class Form < Base
         end
     end
 
+    DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
 
@@ -421,13 +423,15 @@ class Form < Base
         def decode( string )
             string = string.to_s
 
-            # Fast, but could throw error.
-            begin
-                ::URI.decode_www_form_component string
+            DECODE_CACHE.fetch( string ) do
+                # Fast, but could throw error.
+                begin
+                    ::URI.decode_www_form_component string
 
-            # Slower, but reliable.
-            rescue ArgumentError
-                URI.decode( string.gsub( '+', ' ' ) )
+                # Slower, but reliable.
+                rescue ArgumentError
+                    URI.decode( string.gsub( '+', ' ' ) )
+                end
             end
         end
 

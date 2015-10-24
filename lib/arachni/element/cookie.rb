@@ -41,6 +41,8 @@ class Cookie < Base
     ENCODE_CHARACTERS_IN_NAME      = ENCODE_CHARACTERS + ['=']
     ENCODE_CHARACTERS_IN_NAME_LIST = ENCODE_CHARACTERS_IN_NAME.join
 
+    ENCODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+
     # Default cookie values
     DEFAULT = {
         name:        nil,
@@ -426,25 +428,30 @@ class Cookie < Base
         def encode( str, name = false )
             str = str.to_s
 
-            return str if !(name ? ENCODE_CHARACTERS_IN_NAME : ENCODE_CHARACTERS).
-                find { |c| str.include? c }
+            ENCODE_CACHE.fetch( [str, name] )  do
+                characters = (name ? ENCODE_CHARACTERS_IN_NAME : ENCODE_CHARACTERS)
 
-            # Instead of just encoding everything we do this selectively because:
-            #
-            #  * Some webapps don't actually decode some cookies, they just get
-            #    the raw value, so if we encode something may break.
-            #  * We need to encode spaces as '+' because of the above.
-            #    Since we decode values, any un-encoded '+' will be converted
-            #    to spaces, and in order to send back a value that the server
-            #    expects we use '+' for spaces.
+                if characters.find { |c| str.include? c }
+                    # Instead of just encoding everything we do this selectively because:
+                    #
+                    #  * Some webapps don't actually decode some cookies, they just get
+                    #    the raw value, so if we encode something may break.
+                    #  * We need to encode spaces as '+' because of the above.
+                    #    Since we decode values, any un-encoded '+' will be converted
+                    #    to spaces, and in order to send back a value that the server
+                    #    expects we use '+' for spaces.
 
-            s = ::URI.encode(
-                str,
-                name ? ENCODE_CHARACTERS_IN_NAME_LIST :
-                    ENCODE_CHARACTERS_LIST
-            )
-            s.gsub!( '%20', '+' )
-            s
+                    s = ::URI.encode(
+                        str,
+                        name ? ENCODE_CHARACTERS_IN_NAME_LIST :
+                            ENCODE_CHARACTERS_LIST
+                    )
+                    s.gsub!( '%20', '+' )
+                    s
+                else
+                    str
+                end
+            end
         end
 
         # Decodes a {String} encoded for the `Cookie` header field.

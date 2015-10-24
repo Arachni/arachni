@@ -32,6 +32,8 @@ class Link < Base
     include Capabilities::Submittable
     include Capabilities::Auditable
 
+    DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+
     # @param    [Hash]    options
     # @option   options [String]    :url
     #   URL of the page which includes the link.
@@ -149,7 +151,9 @@ class Link < Base
         end
 
         def decode( *args )
-            ::URI.decode( *args )
+            DECODE_CACHE.fetch( args ) do
+                ::URI.decode( *args )
+            end
         end
     end
 
