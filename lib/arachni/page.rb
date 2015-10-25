@@ -338,7 +338,9 @@ class Page
     # @return   [Nokogiri::HTML]
     #   Parsed {#body HTML} document.
     def document
-        @cache[:document] ||= (parser.nil? ? Nokogiri::HTML( body ) : parser.document)
+        @cache[:document] ||= (parser.nil? ?
+            Arachni::Parser.parse( body ) :
+            parser.document)
     end
 
     # @note Will preserve caches for elements which have been externally modified.

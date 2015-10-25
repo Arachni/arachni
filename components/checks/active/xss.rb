@@ -108,12 +108,11 @@ class Arachni::Checks::Xss < Arachni::Check::Base
     def find_proof( resource )
         return if !resource.body.has_html_tag?( self.class.tag_name )
 
-        proof_nodes = Nokogiri::HTML( resource.body ).css( self.class.tag_name )
+        proof_nodes = Arachni::Parser.parse( resource.body ).css( self.class.tag_name )
         return if proof_nodes.empty?
 
         proof = nil
         proof_nodes.each do |e|
-            # Text-areas have TEXT not nodes Nokogiri!
             next if e.parent.name =='textarea'
             proof = e.to_s
         end

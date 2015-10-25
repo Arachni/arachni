@@ -480,7 +480,7 @@ class Javascript
         # For example, it may have been JSON with the wrong content-type that
         # includes HTML -- it happens.
         begin
-            return false if Nokogiri::XML( response.body ).children.empty?
+            return false if Parser.parse_xml( response.body ).children.empty?
         rescue => e
             print_debug "Does not look like HTML: #{response.url}"
             print_debug "\n#{response.body}"

@@ -38,7 +38,7 @@ module Capabilities::Inputtable
     end
 
     INPUTTABLE_CACHE = {
-        inputtable_id: Support::Cache::LeastRecentlyPushed.new( 1_000 )
+        inputtable_id: Support::Cache::LeastRecentlyPushed.new( 100_000 )
     }
 
     # Frozen version of {#inputs}, has all the original names and values.

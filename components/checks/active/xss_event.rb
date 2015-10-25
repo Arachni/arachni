@@ -85,7 +85,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
 
         return :checked if included_attributes.empty?
 
-        doc  = Nokogiri::HTML( body )
+        doc  = Arachni::Parser.parse( body )
         seed = element.seed
 
         included_attributes.each do |attribute|

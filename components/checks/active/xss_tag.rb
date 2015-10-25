@@ -38,7 +38,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
 
         # see if we managed to inject a working HTML attribute to any
         # elements
-        Nokogiri::HTML( body ).xpath( "//*[@#{ATTRIBUTE_NAME}]" ).each do |node|
+        Arachni::Parser.parse( body ).xpath( "//*[@#{ATTRIBUTE_NAME}]" ).each do |node|
             next if node[ATTRIBUTE_NAME] != random_seed
 
             proof = (payload = find_included_payload( body )) ? payload : node.to_s

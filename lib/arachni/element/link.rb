@@ -116,7 +116,7 @@ class Link < Base
 
                 return [] if !in_html?( document )
 
-                document = Nokogiri::HTML( document )
+                document = Arachni::Parser.parse( document )
             end
 
             base_url =  begin

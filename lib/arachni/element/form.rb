@@ -270,7 +270,7 @@ class Form < Base
 
                 return [] if !in_html?( document )
 
-                document = Nokogiri::HTML( document )
+                document = Arachni::Parser.parse( document )
             end
 
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)

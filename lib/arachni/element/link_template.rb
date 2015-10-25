@@ -162,7 +162,10 @@ class LinkTemplate < Base
         def from_document( url, document, templates = Arachni::Options.audit.link_templates )
             return [] if templates.empty?
 
-            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            if !document.is_a?( Nokogiri::HTML::Document )
+                document = Arachni::Parser.parse( document.to_s )
+            end
+
             base_url = begin
                 document.search( '//base[@href]' )[0]['href']
             rescue

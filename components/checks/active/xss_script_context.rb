@@ -142,7 +142,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         return if in_attributes.empty? && !in_script
 
         # More comprehensive checks by searching the document.
-        doc = Nokogiri::HTML( response.body )
+        doc = Arachni::Parser.parse( response.body )
 
         return true if in_script && doc.css('script').to_s.include?( seed )
 

@@ -56,6 +56,39 @@ class Parser
         end
     end
 
+    CACHE_SIZES = {
+        parse:          500,
+        parse_fragment: 500,
+        parse_xml:      500
+    }
+
+    CACHE = {}
+    CACHE_SIZES.each do |name, size|
+        CACHE[name] = Support::Cache::LeastRecentlyPushed.new( size )
+    end
+
+    class <<self
+
+        def parse( html )
+            CACHE[__method__].fetch html do
+                Nokogiri::HTML( html ).freeze
+            end
+        end
+
+        def parse_fragment( html )
+            CACHE[__method__].fetch html do
+                Nokogiri::HTML.fragment( html ).children.first.freeze
+            end
+        end
+
+        def parse_xml( xml )
+            CACHE[__method__].fetch xml do
+                Nokogiri::XML( xml ).freeze
+            end
+        end
+
+    end
+
     alias :skip? :skip_path?
 
     # @return    [String]
@@ -133,8 +166,12 @@ class Parser
     #   `nil` if the response data wasn't {#text? text-based} or the response
     #   couldn't be parsed.
     def document
+        return if !text?
         return @document.freeze if @document
-        @document = Nokogiri::HTML( body ) if text? rescue nil
+
+        @document = self.class.parse( body )
+    rescue
+        nil
     end
 
     # @note It will include common request headers as well headers from the HTTP

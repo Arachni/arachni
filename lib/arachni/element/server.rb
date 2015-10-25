@@ -69,7 +69,7 @@ class Server < Base
     # @see #remote_file_exist?
     def log_remote_file_if_exists( url, silent = false, &block )
         # Make sure the URL is valid.
-        return false if !full_and_absolute_url?( url )
+        return false if !(url.start_with?( 'http://' ) || url.start_with?( 'https://' ))
 
         auditor.print_status( "Checking for #{url}" ) if !silent
         remote_file_exist?( url ) do |bool, response|
@@ -96,7 +96,7 @@ class Server < Base
     #   * `true` if everything went fine.
     def remote_file_exist?( url, &block )
         # Make sure the URL is valid.
-        return false if !full_and_absolute_url?( url )
+        return false if !(url.start_with?( 'http://' ) || url.start_with?( 'https://' ))
 
         if http.dynamic_404_handler.needs_check?( url )
 

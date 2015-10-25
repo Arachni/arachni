@@ -18,7 +18,7 @@ module WithNode
     # @return [Nokogiri::XML::Element]
     def node
         return if !@source
-        Nokogiri::HTML.fragment( @source.dup ).children.first
+        Arachni::Parser.parse_fragment( @source.dup )
     end
 
 end

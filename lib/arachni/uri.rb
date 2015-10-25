@@ -47,12 +47,12 @@ class URI
     end
 
     CACHE_SIZES = {
-        parse:       1000,
-        fast_parse:  1000,
-        encode:      1000,
-        decode:      1000,
-        normalize:   1000,
-        to_absolute: 1000
+        parse:       5_000,
+        fast_parse:  5_000,
+        encode:      10_000,
+        decode:      10_000,
+        normalize:   10_000,
+        to_absolute: 10_000
     }
 
     CACHE = {

@@ -114,7 +114,7 @@ class ElementLocator
     end
 
     def self.from_html( html )
-        from_node Nokogiri::HTML.fragment( html ).children.first
+        from_node Parser.parse_fragment( html )
     end
 
     def self.from_node( node )
