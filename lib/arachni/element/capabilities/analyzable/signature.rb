@@ -158,7 +158,7 @@ module Signature
             when Regexp, String, Array
                 [signatures].flatten.compact.each do |signature|
                     res = find_signature( signature, response, opts )
-                    SIGNATURE_CACHE[:match].fetch(k) { !!res }
+                    SIGNATURE_CACHE[:match][k] ||= !!res
                 end
 
             when Hash
@@ -166,7 +166,7 @@ module Signature
                     [signatures[opts[:platform]]].flatten.compact.each do |p|
                         [p].flatten.compact.each do |signature|
                             res = find_signature( signature, response, opts )
-                            SIGNATURE_CACHE[:match].fetch(k) { !!res }
+                            SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
 
@@ -177,7 +177,7 @@ module Signature
 
                         [p].flatten.compact.each do |signature|
                             res = find_signature( signature, response, dopts )
-                            SIGNATURE_CACHE[:match].fetch(k) { !!res }
+                            SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
                 end
@@ -193,7 +193,7 @@ module Signature
 
                         [p].flatten.compact.each do |signature|
                             res = find_signature( signature, response, dopts )
-                            SIGNATURE_CACHE[:match].fetch(k) { !!res }
+                            SIGNATURE_CACHE[:match][k] ||= !!res
                         end
                     end
         end
