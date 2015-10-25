@@ -332,8 +332,9 @@ Arachni is able to extract and audit the following elements and their inputs:
     - JSON request data.
     - XML request data.
  - Can ignore binary/non-text pages.
- - Can optionally audit elements using both `GET` and `POST` HTTP methods.
- - Can optionally submit all links and forms of the page along with the cookie
+ - Can audit elements using both `GET` and `POST` HTTP methods.
+ - Can inject both raw and HTTP encoded payloads.
+ - Can submit all links and forms of the page along with the cookie
     permutations to provide extensive cookie-audit coverage.
  - Can exclude specific input vectors by name.
  - Can include specific input vectors by name.

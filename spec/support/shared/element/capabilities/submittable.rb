@@ -87,6 +87,18 @@ shared_examples_for 'submittable' do
             run
             expect(response.request.performer).to eq(submittable)
         end
+
+        it 'sets Request#raw_parameters from #raw_inputs',
+           if: !described_class.ancestors.include?( Arachni::Element::DOM ) do
+
+            response = nil
+
+            submittable.raw_inputs = [submittable.inputs.keys.first]
+            submittable.submit { |res| response = res }
+
+            run
+            expect(response.request.raw_parameters).to eq([submittable.inputs.keys.first])
+        end
     end
 
     describe '#id' do

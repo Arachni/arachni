@@ -45,13 +45,18 @@ class Typhoeus < Common
         # if url.end_with?( '/cookie' )
         # if !url.end_with?( '/url' ) && response.time > 0.1
         # if response.code == 500
-            # ap "#{$WATIR_REQ_COUNT} #{verb} #{url} #{response.code}"
+        #     ap "#{$WATIR_REQ_COUNT} #{verb} #{url} #{response.code}"
         #     ap payload
         #     ap headers
         #     ap response.time
         #     ap caller
         #     puts response.body
         # end
+
+        # ap "#{verb} #{url} #{response.code}"
+        # ap payload
+        # puts response.body
+        # ap '-' * 120
 
         create_response extract_real_code( response ), response.body,
                         response.headers['Content-Type']

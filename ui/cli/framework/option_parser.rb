@@ -229,6 +229,12 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.parameter_names = true
         end
 
+        on( '--audit-with-raw-payloads',
+            'Inject payloads with and without HTTP encoding.'
+        ) do
+            options.audit.with_raw_payloads = true
+        end
+
         on( '--audit-with-extra-parameter',
             'Inject payloads into extra element parameters.'
         ) do

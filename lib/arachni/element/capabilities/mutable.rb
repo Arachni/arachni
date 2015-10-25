@@ -51,9 +51,9 @@ module Mutable
         #
         # Values can be OR'ed bitfields of all available constants of {Format}.
         format:                 [
-                                    Format::STRAIGHT, Format::APPEND,
-                                    Format::NULL, Format::APPEND | Format::NULL
-                                ],
+            Format::STRAIGHT, Format::APPEND,
+            Format::NULL, Format::APPEND | Format::NULL
+        ],
 
         # Inject the payload into parameter values.
         #
@@ -68,6 +68,13 @@ module Mutable
         # * `true`
         # * `false`
         parameter_names:        nil,
+
+        # Add mutations with non-encoded payloads.
+        #
+        # * `nil`: Use system settings (`!Options.audit.with_raw_parameters`).
+        # * `true`
+        # * `false`
+        with_raw_payloads:       nil,
 
         # Add the payload to an extra parameter.
         #
@@ -135,6 +142,13 @@ module Mutable
         @immutables ||= Set.new
     end
 
+    # @return   [Boolean]
+    #   `true` if the mutation's {#affected_input_value} has been set to skip
+    #   encoding, `false` otherwise.
+    def with_raw_payload?
+        raw_inputs.include? affected_input_name
+    end
+
     # @note Vector names in {#immutables} will be excluded.
     #
     # Injects the `payload` in self's values according to formatting options
@@ -182,8 +196,15 @@ module Mutable
                         formatted_payload, format, &block
                     )
 
-                    next if !elem || !options[:with_both_http_methods]
-                    yield_if_unique( elem.switch_method, generated, &block )
+                    next if !elem
+
+                    if options[:with_raw_payloads]
+                        yield_if_unique( elem.with_raw_payload, generated, &block )
+                    end
+
+                    if options[:with_both_http_methods]
+                        yield_if_unique( elem.switch_method, generated, &block )
+                    end
                 end
             end
         end
@@ -225,6 +246,12 @@ module Mutable
 
     def parameter_name_audit?
         affected_input_name == FUZZ_NAME
+    end
+
+    def with_raw_payload
+        self.dup.tap do |c|
+            c.raw_inputs << c.affected_input_name
+        end
     end
 
     def switch_method
@@ -274,6 +301,7 @@ module Mutable
 
         s << "default-inputs=#{default_inputs.inspect} "
         s << "inputs=#{inputs.inspect} "
+        s << "raw_inputs=#{raw_inputs.inspect} "
 
         if mutation?
             s << "seed=#{seed.inspect} "
@@ -297,17 +325,25 @@ module Mutable
     protected
 
     def mutable_id
-        "#{@method}:#{inputtable_id}"
+        Arachni::Element::Capabilities::Mutable.mutable_id(
+            method,
+            inputs,
+            raw_inputs
+        )
     end
 
-    def self.mutable_id( method, inputs )
-        "#{method}:#{Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs )}"
+    def self.mutable_id( method, inputs, raw_inputs )
+        "#{method}:#{Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs, raw_inputs )}"
     end
 
     private
 
     def prepare_mutation_options( options )
         options = MUTATION_OPTIONS.merge( options )
+
+        if options[:with_raw_payloads].nil?
+            options[:with_raw_payloads] = Options.audit.with_raw_payloads?
+        end
 
         if options[:parameter_values].nil?
             options[:parameter_values] = Options.audit.parameter_values?
@@ -361,11 +397,16 @@ module Mutable
         elem
     end
 
-    def create_and_yield_if_unique( list, inputs, seed, input_name, input_value,
-                                      format, &block )
+    def create_and_yield_if_unique(
+        list, inputs, seed, input_name, input_value,format, &block
+    )
         # We can check if it's unique prior to actually creating, so do it.
         return if list.include?(
-            Arachni::Element::Capabilities::Mutable.mutable_id( self.method, inputs )
+            Arachni::Element::Capabilities::Mutable.mutable_id(
+                self.method,
+                inputs,
+                []
+            )
         )
 
         element = create_mutation( inputs, seed, input_name, input_value, format )
@@ -456,6 +497,13 @@ module Mutable
         print_debug_level_2 '|--> Inputs: '
         mutation.inputs.each do |k, v|
             print_debug_level_2 "|----> #{k.inspect} => #{v.inspect}"
+        end
+
+        if mutation.raw_inputs.any?
+            print_debug_level_2 '|--> Raw inputs: '
+            mutation.raw_inputs.each do |k|
+                print_debug_level_2 "|----> #{k.inspect}"
+            end
         end
     end
 

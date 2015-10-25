@@ -107,6 +107,12 @@ module Mutable
 
     private
 
+    def prepare_mutation_options( options )
+        options = super( options )
+        options.delete( :with_raw_payloads )
+        options
+    end
+
     def immutable_input?( path )
         [path].flatten.each do |name|
             return true if immutables.include?( name )

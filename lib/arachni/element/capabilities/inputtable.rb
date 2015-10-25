@@ -52,6 +52,39 @@ module Capabilities::Inputtable
     #   Frozen effective inputs.
     attr_reader :inputs
 
+    # @note Null-bytes will always be encoded.
+    #
+    # @return   [Array]
+    #   List of input names which should have their values submitted in raw
+    #   form, without encoding.
+    attr_reader :raw_inputs
+
+    def initialize( options )
+        super
+        @raw_inputs = []
+    end
+
+    # @param    [String]    name
+    #   Name of the input to check.
+    #
+    # @return   [Boolean]
+    #   `true` if the input `name` is in {#raw_inputs}, `false` otherwise.
+    def raw_input?( name )
+        @raw_inputs.include? name
+    end
+
+    # @note Will convert names to strings.
+    #
+    # @param  [Array]  raw
+    #   Input names whose values should not be encoded during submission.
+    #
+    # @raise   [Error::InvalidData::Name]
+    def raw_inputs=( raw )
+        names = raw.map(&:to_s)
+        names.each { |name| fail_if_invalid_name( name ) }
+        @raw_inputs = raw.map(&:to_s)
+    end
+
     # @note Will convert keys and values to strings.
     #
     # @param  [Hash]  hash
@@ -105,6 +138,7 @@ module Capabilities::Inputtable
     def reset
         super if defined?( super )
         self.inputs = @default_inputs.rpc_clone
+        self.raw_inputs = []
         self
     end
 
@@ -227,38 +261,43 @@ module Capabilities::Inputtable
     # @return   [String]
     #   Uniquely identifies the {#inputs}.
     def inputtable_id
-        Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs )
+        Arachni::Element::Capabilities::Inputtable.inputtable_id( inputs, raw_inputs )
     end
 
-    def self.inputtable_id( inputs )
-        INPUTTABLE_CACHE[:inputtable_id].fetch inputs do
-            inputs ? inputs.sort_by { |k, _| k }.hash.to_s : ''
+    def self.inputtable_id( inputs, raw_inputs )
+        INPUTTABLE_CACHE[:inputtable_id].fetch [inputs, raw_inputs] do
+            id  = inputs ? inputs.sort_by { |k, _| k }.hash.to_s : ''
+            id << ':'
+            id << (raw_inputs ? raw_inputs.sort.hash.to_s : '')
         end
     end
 
     def to_h
         (defined?( super ) ? super : {}).merge(
             inputs:         inputs,
+            raw_inputs:     raw_inputs,
             default_inputs: default_inputs
         )
     end
 
     private
 
-    def fail_if_invalid( name, value )
+    def fail_if_invalid_name( name )
         if !valid_input_data?( name.to_s )
             fail Error::InvalidData::Name,
                  "Invalid data in input name for #{self.class}: #{name.inspect}"
         end
 
-        if !valid_input_data?( value.to_s )
-            fail Error::InvalidData::Value,
-                 "Invalid data in input value for #{self.class}: #{value.inspect}"
-        end
-
         if !valid_input_name?( name.to_s )
             fail Error::InvalidData::Name,
                  "Invalid name for #{self.class}: #{name.inspect}"
+        end
+    end
+
+    def fail_if_invalid_value( value )
+        if !valid_input_data?( value.to_s )
+            fail Error::InvalidData::Value,
+                 "Invalid data in input value for #{self.class}: #{value.inspect}"
         end
 
         if !valid_input_value?( value.to_s )
@@ -267,8 +306,14 @@ module Capabilities::Inputtable
         end
     end
 
+    def fail_if_invalid( name, value )
+        fail_if_invalid_name( name )
+        fail_if_invalid_value( value )
+    end
+
     def copy_inputtable( other )
-        other.inputs = self.inputs.dup
+        other.inputs     = self.inputs.dup
+        other.raw_inputs = self.raw_inputs.dup
         other
     end
 

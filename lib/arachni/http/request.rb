@@ -15,6 +15,8 @@ module HTTP
 class Request < Message
     require_relative 'request/scope'
 
+    ENCODE_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
+
     # Default redirect limit, RFC says 5 max.
     REDIRECT_LIMIT = 5
 
@@ -101,6 +103,10 @@ class Request < Message
     #   Maximum HTTP response size to accept, in bytes.
     attr_accessor :response_max_size
 
+    # @return   [Array]
+    #   Parameters which should not be encoded, by name.
+    attr_accessor :raw_parameters
+
     # @param  [Hash]  options
     #   Request options.
     # @option options [String] :url
@@ -132,10 +138,19 @@ class Request < Message
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
         @on_complete     = []
 
-        @timeout       ||= Options.http.request_timeout
-        @mode          ||= :async
-        @parameters    ||= {}
-        @cookies       ||= {}
+        @raw_parameters ||= []
+        @timeout        ||= Options.http.request_timeout
+        @mode           ||= :async
+        @parameters     ||= {}
+        @cookies        ||= {}
+    end
+
+    def raw_parameters=( names )
+        if names
+            @raw_parameters.merge names
+        else
+            @raw_parameters.clear
+        end
     end
 
     def high_priority?
@@ -337,12 +352,22 @@ class Request < Message
         max_size = 1   if max_size == 0
         max_size = nil if max_size < 0
 
+        ep = self.class.encode_hash( self.effective_parameters, @raw_parameters )
+
+        eb = self.body
+        if eb.is_a?( Hash )
+            eb = self.class.encode_hash( eb, @raw_parameters )
+        end
+
         options = {
             method:          method,
             headers:         headers,
-            body:            body,
-            params:          effective_parameters,
+
+            body:            eb,
+            params:          ep,
+
             userpwd:         userpwd,
+
             followlocation:  follow_location?,
             maxredirs:       @max_redirects,
 
@@ -368,7 +393,14 @@ class Request < Message
             # Don't keep the socket alive if this is a blocking request because
             # it's going to be performed by an one-off Hydra.
             forbid_reuse:    blocking?,
-            verbose:         true
+
+            # Enable debugging messages in order to capture raw traffic data.
+            verbose:         true,
+
+            # We're going to be escaping **a lot** of the same strings during
+            # the scan, so bypass Ethon's encoding and do our own cache-based
+            # encoding.
+            escape:          false
         }
 
         options[:timeout_ms] = timeout if timeout
@@ -404,8 +436,10 @@ class Request < Message
             end
         end
 
-        curl             = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
-        typhoeus_request = Typhoeus::Request.new( curl, options )
+        typhoeus_request = Typhoeus::Request.new(
+            url.split( '?', 2 ).first,
+            options
+        )
 
         if @on_complete.any?
             response_body_buffer = ''
@@ -509,9 +543,30 @@ class Request < Message
             end
         end
 
+        def encode_hash( hash, skip = [] )
+            hash.inject({}) do |h, (k, v)|
+
+                if skip.include?( k )
+                    # We need to at least encode null-bytes since they can't
+                    # be transported at all.
+                    # If we don't Typhoeus/Ethon will raise errors.
+                    h.merge!( encode_null_byte( k ) => encode_null_byte( v ) )
+                else
+                    h.merge!( encode( k ) => encode( v ) )
+                end
+
+                h
+            end
+        end
+
+        def encode_null_byte( string )
+            string.to_s.gsub "\0", '%00'
+        end
+
         def encode( string )
+            string = string.to_s
             @easy ||= Ethon::Easy.new( url: 'www.example.com' )
-            @easy.escape string
+            ENCODE_CACHE.fetch( string ) { @easy.escape( string ) }
         end
     end
 

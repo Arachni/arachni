@@ -20,7 +20,7 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.1.2
+# @version 0.1.3
 class Arachni::Checks::SessionFixation < Arachni::Check::Base
 
     def token
@@ -43,7 +43,7 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
                 name = cookie.name
                 print_info "Found session cookie named: #{name}"
 
-                audit( token ) do |response, element|
+                audit( token, with_raw_parameters: false ) do |response, element|
                     cookie = cookies_from_response( response ).
                         select { |c| c.name == name }.first
                     next if !cookie || !cookie.value.include?( token )

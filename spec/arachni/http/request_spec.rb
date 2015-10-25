@@ -56,7 +56,7 @@ describe Arachni::HTTP::Request do
         let(:data) { subject.to_rpc_data }
 
         %w(url method parameters body headers_string effective_body timeout
-            headers cookies username password).each do |attribute|
+            headers cookies username password raw_parameters).each do |attribute|
             it "includes '#{attribute}'" do
                 expect(data[attribute]).to eq(subject.send( attribute ))
             end
@@ -117,6 +117,79 @@ describe Arachni::HTTP::Request do
                 it 'enables fingerprinting' do
                     r = described_class.new( options.merge( fingerprint: nil ) )
                     expect(r.fingerprint?).to be_truthy
+                end
+            end
+        end
+
+        describe ':raw_parameters' do
+            let(:url){ "#{@url}/raw" }
+            let(:request) { described_class.new( options ) }
+            let(:options) do
+                {
+                    url:            url,
+                    method:         method,
+                    parameters:     parameters,
+                    body:           body,
+                    raw_parameters: raw_parameters
+                }
+            end
+            let(:parameters) { { '1 ' => '2 ', '3 ' => '4 ' } }
+            let(:body) { {} }
+            let(:method) { :get }
+            let(:response) { request.run }
+
+            context 'when a query parameter name is' do
+                context 'included' do
+                    let(:raw_parameters) { ['1 '] }
+
+                    it 'does not encode it' do
+                        expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1 =2 &3%20=4%20 HTTP/1.1'
+                    end
+
+                    context 'and contains null-bytes' do
+                        let(:parameters) { { '1 ' => "\0", '3 ' => '4 ' } }
+
+                        it 'sencodes them' do
+                            expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1 =%00&3%20=4%20 HTTP/1.1'
+                        end
+                    end
+                end
+
+                context 'not included' do
+                    let(:raw_parameters) { ['stuff'] }
+
+                    it 'encodes it' do
+                        expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1%20=2%20&3%20=4%20 HTTP/1.1'
+                    end
+                end
+            end
+
+            context 'when a body parameter name is' do
+                let(:method) { :post }
+                let(:body) { { '5 ' => '6 ', '7 ' => '8 ' } }
+
+                context 'included' do
+                    let(:raw_parameters) { ['5 '] }
+
+                    it 'does not encode it' do
+                        expect(response.request.to_s.lines.last.strip).to eq '5 =6 &7%20=8%20'
+                    end
+
+                    context 'and contains null-bytes' do
+                        let(:body) { { '5 ' => "\0", '7 ' => '8 ' } }
+
+                        it 'sencodes them' do
+                            expect(response.request.to_s.lines.last.strip).to eq '5 =%00&7%20=8%20'
+                        end
+                    end
+                end
+
+                context 'not included' do
+                    let(:raw_parameters) { ['stuff'] }
+
+                    it 'encodes it' do
+                        expect(response.request.to_s.lines.last.strip).to eq '5%20=6%20&7%20=8%20'
+                    end
                 end
             end
         end

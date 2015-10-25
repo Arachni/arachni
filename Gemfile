@@ -26,6 +26,11 @@ group :prof do
     gem 'benchmark-ips'
 end
 
-gemspec
+gem 'awesome_print'
+
+gem 'ethon',    github: 'zapotek/ethon'
+gem 'typhoeus', github: 'zapotek/typhoeus'
 
 gem 'arachni-reactor', github: 'arachni/arachni-reactor', branch: 'slice-to-byteslice'
+
+gemspec

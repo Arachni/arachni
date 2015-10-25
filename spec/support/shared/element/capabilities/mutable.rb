@@ -85,6 +85,26 @@ shared_examples_for 'mutable' do |options = {}|
         end
     end
 
+    describe '#with_raw_payload?' do
+        let(:mutation) do
+            mutable.mutations( seed ).first
+        end
+
+        context 'when #affected_input_name is in #raw_inputs' do
+            it 'returns true' do
+                mutation.raw_inputs << mutation.affected_input_name
+                expect(mutation).to be_with_raw_payload
+            end
+        end
+
+        context 'when #affected_input_name is not in #raw_inputs' do
+            it 'returns true' do
+                mutation.raw_inputs = []
+                expect(mutation).to_not be_with_raw_payload
+            end
+        end
+    end
+
     describe '#affected_input_value' do
         it 'returns the value of the affected_input_name input' do
             elem = mutable.mutations( seed ).first
@@ -189,6 +209,58 @@ shared_examples_for 'mutable' do |options = {}|
                         expect(mutable.mutations( seed ).
                             find { |m| m.affected_input_value.include? seed }).
                             to be_falsey
+                    end
+                end
+            end
+
+            describe ':with_raw_payloads',
+                     if: !described_class.ancestors.include?(
+                         Arachni::Element::DOM
+                     ) && described_class != Arachni::Element::JSON &&
+                             described_class != Arachni::Element::XML &&
+                             described_class != Arachni::Element::Header &&
+                             described_class != Arachni::Element::Cookie do
+
+                describe 'true' do
+                    it 'adds an unencoded payload' do
+                        expect(
+                            mutable.mutations( seed, with_raw_payloads: true ).
+                                find(&:with_raw_payload?)
+                        ).to be_truthy
+                    end
+                end
+                describe 'false' do
+                    it 'does not add an unencoded payload' do
+                        expect(mutable.mutations( seed, with_raw_payloads: false ).find do |m|
+                            next if !m.audit_options[:submit]
+
+                            m.audit_options[:submit][:raw_parameters] &&
+                                m.audit_options[:submit][:raw_parameters].include?( m.affected_input_name )
+                        end).to be_falsey
+                    end
+                end
+                describe 'nil' do
+                    it 'does not add an unencoded payload' do
+                        expect(mutable.mutations( seed ).find do |m|
+                            next if !m.audit_options[:submit]
+
+                            m.audit_options[:submit][:raw_parameters] &&
+                                m.audit_options[:submit][:raw_parameters].include?( m.affected_input_name )
+                        end).to be_falsey
+                    end
+                end
+
+                describe "#{Arachni::OptionGroups::Audit}#with_raw_payloads" do
+                    it 'serves as the default value of :with_raw_payloads' do
+                        Arachni::Options.audit.with_raw_payloads = true
+                        expect(
+                            mutable.mutations( seed ).find(&:with_raw_payload?)
+                        ).to be_truthy
+
+                        Arachni::Options.audit.with_raw_payloads = false
+                        expect(
+                            mutable.mutations( seed ).find(&:with_raw_payload?)
+                        ).to be_falsey
                     end
                 end
             end

@@ -5,7 +5,8 @@ describe Arachni::OptionGroups::Audit do
     subject { described_class.new }
 
     %w(with_both_http_methods exclude_vector_patterns include_vector_patterns
-        links forms cookies cookies_extensively headers link_templates).each do |method|
+        links forms cookies cookies_extensively headers link_templates with_raw_payloads
+    ).each do |method|
         it { is_expected.to respond_to method }
         it { is_expected.to respond_to "#{method}=" }
     end
@@ -43,6 +44,22 @@ describe Arachni::OptionGroups::Audit do
             it "raises #{described_class::Error::InvalidLinkTemplate}" do
                 expect { subject.link_templates = /(.*)/ }.to raise_error
                 described_class::Error::InvalidLinkTemplate
+            end
+        end
+    end
+
+    describe '#with_raw_payloads?' do
+        context 'when #with_raw_payloads is' do
+            it 'true' do
+                subject.with_raw_payloads = true
+                expect(subject.with_raw_payloads?).to eq(true)
+            end
+        end
+
+        context 'when #with_raw_payloads is' do
+            it 'returns false' do
+                subject.with_raw_payloads = false
+                expect(subject.with_raw_payloads?).to eq(false)
             end
         end
     end
