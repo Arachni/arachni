@@ -89,6 +89,14 @@ module Mutable
         end
     end
 
+    private
+
+    def prepare_mutation_options( options )
+        options = super( options )
+        options.delete( :with_raw_payloads )
+        options
+    end
+
 end
 
 end

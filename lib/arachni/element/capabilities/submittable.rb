@@ -74,7 +74,10 @@ module Capabilities::Submittable
 
         @auditor ||= options.delete( :auditor )
 
-        options[:performer]      ||= self
+        options[:performer] ||= self
+
+        options[:raw_parameters] ||= raw_inputs
+
         http_request( options, &block )
     end
 

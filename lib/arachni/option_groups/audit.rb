@@ -45,6 +45,14 @@ class Audit < Arachni::OptionGroup
     # @note Default is `false`.
     #
     # @return    [Bool]
+    #   Allows checks to sent payloads in raw format, without HTTP encoding.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :with_raw_payloads
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
     #   Inject payloads into extra element parameters.
     #
     # @see Element::Capabilities::Mutable#each_mutation
@@ -169,6 +177,10 @@ class Audit < Arachni::OptionGroup
         include_vector_patterns: [],
         link_templates:          []
     )
+
+    def with_raw_payloads?
+        !!@with_raw_payloads
+    end
 
     # @param    [Array<Regexp>] templates
     #   Regular expressions with named captures, serving as templates used to

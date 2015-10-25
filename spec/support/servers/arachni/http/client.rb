@@ -1,5 +1,6 @@
 # encoding: utf-8
 require 'zlib'
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
 require 'sinatra/streaming'
@@ -34,6 +35,20 @@ helpers do
     end
 end
 
+
+get '/raw' do
+    {
+        'query' => env['QUERY_STRING'],
+        'body'  => request.body.read
+    }.to_json
+end
+
+post '/raw' do
+    {
+        'query' => env['QUERY_STRING'],
+        'body'  => request.body.read
+    }.to_json
+end
 
 get '/partial' do
     [ 200, { 'Content-Length' => '1000' }, 'Hello!' ]
