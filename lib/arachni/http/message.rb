@@ -47,7 +47,8 @@ class Message
 
         fail ArgumentError, 'Missing :url.' if url.to_s.empty?
 
-        @headers = Headers.new( @headers )
+        @normalize_url = options[:parse_url].nil? ? true : options[:parse_url]
+        @headers       = Headers.new( @headers )
     end
 
     # @return   [Scope]
@@ -61,7 +62,11 @@ class Message
     end
 
     def url=( url )
-        @url = URI.normalize_url( url ).to_s.freeze
+        if @normalize_url
+            @url = URI.normalize_url( url ).to_s.freeze
+        else
+            @url = url.to_s.freeze
+        end
     end
 
 end

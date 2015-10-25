@@ -105,7 +105,7 @@ class Server < Base
             #
             # If a resource does exist though it will be fingerprinted down the
             # line.
-            http.get( url, performer: self, fingerprint: false ) do |r|
+            http.get( url, normalize_url: false, performer: self, fingerprint: false ) do |r|
                 if r.code == 200
                     http.dynamic_404_handler._404?( r ) { |bool| block.call( !bool, r ) }
                 else
@@ -113,7 +113,7 @@ class Server < Base
                 end
             end
         else
-            http.request( url, method: :head, performer: self ) do |response|
+            http.request( url, normalize_url: false, method: :head, performer: self ) do |response|
                 block.call( response.code == 200, response )
             end
         end

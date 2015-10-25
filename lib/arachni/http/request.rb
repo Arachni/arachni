@@ -436,10 +436,7 @@ class Request < Message
             end
         end
 
-        typhoeus_request = Typhoeus::Request.new(
-            url.split( '?', 2 ).first,
-            options
-        )
+        typhoeus_request = Typhoeus::Request.new( url.split( '?').first, options )
 
         if @on_complete.any?
             response_body_buffer = ''
