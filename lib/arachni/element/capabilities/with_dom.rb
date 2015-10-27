@@ -11,6 +11,7 @@ module Element::Capabilities
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module WithDOM
+    include Arachni::UI::Output
 
     # @return     [DOM]
     attr_accessor :dom

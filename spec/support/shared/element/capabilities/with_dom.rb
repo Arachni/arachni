@@ -76,6 +76,13 @@ shared_examples_for 'with_dom' do |html = nil|
         it "returns #{described_class::DOM}" do
             expect(with_dom.dom).to be_kind_of described_class::DOM
         end
+
+        context "when #{described_class::DOM}.new raises Inputtable::Error" do
+            it 'returns nil' do
+                allow(described_class::DOM).to receive(:new) { raise Arachni::Element::Capabilities::Inputtable::Error }
+                expect(subject.dom).to be_nil
+            end
+        end
     end
 
     describe '#dup' do
