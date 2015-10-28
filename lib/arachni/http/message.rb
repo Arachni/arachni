@@ -37,6 +37,11 @@ class Message
     # @option   options [String]    :body
     #   Body.
     def initialize( options = {} )
+        options = options.dup
+\
+        @normalize_url = options.delete( :normalize_url )
+        @normalize_url = true if @normalize_url.nil?
+
         options.each do |k, v|
             begin
                 send( "#{k}=", v )
@@ -47,8 +52,7 @@ class Message
 
         fail ArgumentError, 'Missing :url.' if url.to_s.empty?
 
-        @normalize_url = options[:parse_url].nil? ? true : options[:parse_url]
-        @headers       = Headers.new( @headers )
+        @headers = Headers.new( @headers )
     end
 
     # @return   [Scope]
