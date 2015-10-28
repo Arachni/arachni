@@ -29,6 +29,7 @@ shared_examples_for 'check' do
         options.audit.with_raw_payloads    = true
         options.audit.with_extra_parameter = true
 
+        framework.checks.clear
         framework.checks.load @name
 
         # Do not deduplicate, the check tests need to see everything.
