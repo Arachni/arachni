@@ -190,16 +190,16 @@ class URI
                     components[:scheme].downcase! if components[:scheme]
 
                     if (url = splits.shift)
-                        splits = url.to_s.split( '?' ).first.to_s.split( '@', 2 )
+                        userinfo_host, url = url.to_s.split( '?' ).first.to_s.split( '/', 2 )
+                        url    = url.to_s
+                        splits = userinfo_host.split( '@', 2 )
 
                         if splits.size > 1
                             components[:userinfo] = splits.first
-                            url = splits.shift
                         end
 
                         if !splits.empty?
                             splits = splits.last.split( '/', 2 )
-                            url = splits.last
 
                             splits = splits.first.split( ':', 2 )
                             if splits.size == 2
@@ -212,14 +212,11 @@ class URI
                                 if components[:port] == 80
                                     components[:port] = nil
                                 end
-
-                                url.sub!( ":#{components[:port]}", '' )
                             else
                                 host = splits.last
                             end
 
                             if (components[:host] = host)
-                                url.sub!( host, '' )
                                 components[:host].downcase!
                             end
                         else
