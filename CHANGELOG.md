@@ -9,6 +9,8 @@
         - Audit
             - `--audit-with-raw-payloads` -- Injects both raw and HTTP encoded payloads.
 - `URI` -- Optimized and re-written to completely bypass Ruby's `URI` lib.
+- `Plugin::Manager`
+    - Run `#prepare` methods of plugins in the Framework thread, ordered by plugin priority.
 - `HTTP`
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
         written server with support for `keep-alive` and low-overhead SSL interception.

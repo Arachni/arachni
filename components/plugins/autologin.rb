@@ -29,11 +29,6 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         @verifier   = Regexp.new( options[:check] )
         @url        = options[:url].to_s
         @errored    = false
-    end
-
-    def run
-        framework_pause
-        print_info 'System paused.'
 
         session.configure( url: @url, inputs: @parameters )
 
@@ -86,13 +81,10 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
     end
 
     def clean_up
-        if @errored
-            print_info 'Aborting the scan.'
-            framework_abort
-            return
-        end
+        return if !@errored
 
-        framework_resume
+        print_info 'Aborting the scan.'
+        framework_abort
     end
 
     def self.info
@@ -107,7 +99,7 @@ request as framework-wide cookies.
 interactions in order to become visible, this plugin will not be able to submit it.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             options:     [
                 Options::String.new( :url,
                     required:    true,

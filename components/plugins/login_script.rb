@@ -29,16 +29,11 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
                 eval script
             end
         end
-    end
 
-    def run
         if javascript? && !session.has_browser?
             set_status :missing_browser, :error
             return
         end
-
-        framework_pause
-        print_info 'System paused.'
 
         session.record_login_sequence do |browser|
             print_info 'Running the script.'
@@ -81,13 +76,10 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
     end
 
     def clean_up
-        if @failed
-            print_info 'Aborting the scan.'
-            framework_abort
-            return
-        end
+        return if !@failed
 
-        framework_resume
+        print_info 'Aborting the scan.'
+        framework_abort
     end
 
     def javascript?
@@ -177,7 +169,7 @@ in the browser, within the page of the target URL.
 
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.2',
+            version:     '0.2.3',
             options:     [
                 Options::Path.new( :script,
                     required:    true,

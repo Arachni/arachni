@@ -16,10 +16,7 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
 
-    def run
-        framework_pause
-        print_status 'System paused.'
-
+    def prepare
         # if the 'vectors' option is an array at this point then someone fed
         # them to us programmatically
         if !options[:vectors].is_a? Array
@@ -168,11 +165,6 @@ class Arachni::Plugins::VectorFeed < Arachni::Plugin::Base
         e
     end
 
-    def clean_up
-        framework_resume
-        print_status 'System resumed.'
-    end
-
     def self.info
         {
             name:        'Vector feed',
@@ -234,7 +226,7 @@ Example YAML file:
 
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             options:     [
                 Options::Object.new( :vectors,
                     description: ' Vector array (for configuration over RPC).'

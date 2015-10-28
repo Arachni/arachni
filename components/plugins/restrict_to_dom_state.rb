@@ -11,10 +11,6 @@
 class Arachni::Plugins::RestrictToDOMState < Arachni::Plugin::Base
 
     def prepare
-        print_status 'Sending pause signal...'
-        @pause_id = framework.pause( false )
-        print_status '...done.'
-
         # Disable any operations that can lead to a crawl, we only want the
         # system to audit the page snapshot we give it.
         framework.options.scope.do_not_crawl
@@ -23,9 +19,7 @@ class Arachni::Plugins::RestrictToDOMState < Arachni::Plugin::Base
         @url      = "#{framework.options.url}##{@fragment}"
 
         print_info "Full URL set to: #{@url}"
-    end
 
-    def run
         print_status 'Initialising browser...'
         browser = Arachni::Browser.new( store_pages: false )
         print_status '...done.'
@@ -45,25 +39,19 @@ class Arachni::Plugins::RestrictToDOMState < Arachni::Plugin::Base
         print_status '...done.'
     end
 
-    def clean_up
-        print_status 'Resuming scan...'
-        framework.resume @pause_id
-        print_status '...done.'
-    end
-
     def self.info
         {
             name:        'Restrict to DOM state',
             description: %q{Restricts the scan to a single page's DOM state.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             options:     [
                 Options::String.new( :fragment,
                     required:    true,
                     description: 'URL fragment for the desired state.'
                 )
             ],
-            priority:    0 # run before any other plugin
+            priority:    1
         }
     end
 
