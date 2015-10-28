@@ -38,7 +38,7 @@ class Message
     #   Body.
     def initialize( options = {} )
         options = options.dup
-\
+
         @normalize_url = options.delete( :normalize_url )
         @normalize_url = true if @normalize_url.nil?
 
