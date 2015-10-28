@@ -192,7 +192,7 @@ class URI
                     if (url = splits.shift)
                         userinfo_host, url = url.to_s.split( '?' ).first.to_s.split( '/', 2 )
                         url    = url.to_s
-                        splits = userinfo_host.split( '@', 2 )
+                        splits = userinfo_host.to_s.split( '@', 2 )
 
                         if splits.size > 1
                             components[:userinfo] = splits.first
