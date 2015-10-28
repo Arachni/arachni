@@ -189,7 +189,7 @@ module Data
 
             # We push directly to the queue instead of using #push_to_page_queue
             # because it's too early to deduplicate.
-            pop_page_from_url_queue { |p| page_queue << p }
+            pop_page_from_url_queue { |p| page_queue << p if p }
         end
 
         !url_queue.empty?
