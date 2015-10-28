@@ -178,6 +178,7 @@ class Response < Message
 
         hash[:headers] = {}.merge( hash[:headers] )
 
+        hash.delete( :normalize_url )
         hash.delete( :scope )
         hash.delete( :parsed_url )
         hash.delete( :redirections )
