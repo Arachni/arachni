@@ -449,7 +449,10 @@ class Request < Message
                 end
 
                 fill_in_data_from_typhoeus_response typhoeus_response
-                handle_response Response.from_typhoeus( typhoeus_response )
+                handle_response Response.from_typhoeus(
+                    typhoeus_response,
+                    normalize_url: @normalize_url
+                )
             end
         end
 

@@ -211,7 +211,7 @@ class Response < Message
         to_h.hash
     end
 
-    def self.from_typhoeus( response )
+    def self.from_typhoeus( response, options = {} )
         redirections = response.redirections.map do |redirect|
             rurl   = URI.to_absolute( redirect.headers['Location'],
                                       response.effective_url )
@@ -220,14 +220,14 @@ class Response < Message
             # Broken redirection, skip it...
             next if !rurl
 
-            new(
-                url:     rurl,
-                code:    redirect.code,
-                headers: redirect.headers
-            )
+            new( options.merge(
+                url:           rurl,
+                code:          redirect.code,
+                headers:       redirect.headers
+            ))
         end
 
-        new(
+        new( options.merge(
             url:            response.effective_url,
             code:           response.code,
             ip_address:     response.primary_ip,
@@ -241,7 +241,7 @@ class Response < Message
             total_time:     response.total_time.to_f,
             return_code:    response.return_code,
             return_message: response.return_message
-        )
+        ))
     end
 
 end
