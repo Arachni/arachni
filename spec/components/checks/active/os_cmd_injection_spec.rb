@@ -16,11 +16,11 @@ describe name_from_filename do
         h = {}
         [:unix, :bsd, :aix].each do |platform|
             h[platform] = {
-                Element::Form         => 11,
+                Element::Form         => 19,
                 Element::Link         => 11,
                 Element::Cookie       => 11,
                 Element::Header       => 8,
-                Element::LinkTemplate => 10,
+                Element::LinkTemplate => 20,
                 Element::JSON         => 11,
                 Element::XML          => 22
             }
@@ -31,7 +31,7 @@ describe name_from_filename do
             Element::Link         => 22,
             Element::Cookie       => 22,
             Element::Header       => 16,
-            Element::LinkTemplate => 22,
+            Element::LinkTemplate => 44,
             Element::JSON         => 22,
             Element::XML          => 44
         }

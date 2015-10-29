@@ -14,11 +14,11 @@ describe name_from_filename do
 
     def issue_count_per_element
         {
-            Element::Form         => 6,
-            Element::Link         => 6,
+            Element::Form         => 12,
+            Element::Link         => 12,
             Element::Cookie       => 4,
             Element::Header       => 4,
-            Element::LinkTemplate => 5,
+            Element::LinkTemplate => 10,
             Element::JSON         => 6,
             Element::XML          => 16
         }

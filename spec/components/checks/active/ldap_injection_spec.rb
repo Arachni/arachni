@@ -9,7 +9,7 @@ describe name_from_filename do
     end
 
     def issue_count_per_element
-        i = current_check.error_strings.size
+        i = current_check.error_strings.size * 2
 
         {
             Element::Form         => i,
