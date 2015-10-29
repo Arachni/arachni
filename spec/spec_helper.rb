@@ -6,6 +6,7 @@
     web site for more information on licensing and terms of use.
 =end
 
+require 'rack/test'
 require 'simplecov'
 require 'faker'
 

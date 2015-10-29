@@ -24,6 +24,7 @@
     - `Cache` -- Minimized calls to `Base#make_key`.
     - Added
         - `Glob` -- Glob matcher.
+- `REST::Server` -- Added REST API.
 - `RPC`
     - `Server`
         - `ActiveOptions#set` -- Allow options to be set during runtime and ajust

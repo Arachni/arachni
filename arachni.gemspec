@@ -69,9 +69,16 @@ Gem::Specification.new do |s|
         s.add_dependency 'msgpack',       '0.5.8'
 
         # Optimized JSON.
-        s.add_dependency 'oj',                '~> 2.12.9'
+        s.add_dependency 'oj',            '~> 2.12.9'
         s.add_dependency 'oj_mimic_json'
     end
+
+    # Web server
+    s.add_dependency 'puma',              '2.14.0'
+
+    # REST API
+    s.add_dependency 'sinatra',           '1.4.6'
+    s.add_dependency 'sinatra-contrib',   '1.4.6'
 
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc',       '0.2.1.2'
