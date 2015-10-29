@@ -9,6 +9,10 @@ describe Arachni::Rest::Server do
     let(:id) { @id }
     let(:non_existent_id) { 'stuff' }
 
+    before do
+        reset_options
+    end
+
     def create_scan
         post '/scans',
              url: scan_url,
@@ -21,7 +25,7 @@ describe Arachni::Rest::Server do
     context 'when authentication' do
         let(:username) { nil }
         let(:password) { nil }
-        let(:userpwd) { "#{username}:#{password}"}
+        let(:userpwd) { "#{username}:#{password}" }
         let(:url) { "http://localhost:#{Arachni::Options.rpc.server_port}/scans" }
 
         before do
@@ -57,6 +61,72 @@ describe Arachni::Rest::Server do
                     expect(Typhoeus.get( url ).code).to eq 401
                     expect(Typhoeus.get( url, userpwd: userpwd ).code).to eq 200
                 end
+            end
+        end
+    end
+
+    describe 'SSL options' do
+        let(:ssl_key) { nil }
+        let(:ssl_cert) { nil }
+        let(:ssl_ca) { nil }
+        let(:url) { "http://localhost:#{Arachni::Options.rpc.server_port}/scans" }
+        let(:https_url) { "https://localhost:#{Arachni::Options.rpc.server_port}/scans" }
+
+        before do
+            Arachni::Options.rpc.ssl_ca                 = ssl_ca
+            Arachni::Options.rpc.server_ssl_private_key = ssl_key
+            Arachni::Options.rpc.server_ssl_certificate = ssl_cert
+
+            Arachni::Options.rpc.server_port = Arachni::Utilities.available_port
+            Arachni::Processes::Manager.spawn( :rest_service )
+
+            sleep 0.1 while Typhoeus.get( url ).return_code == :couldnt_connect
+        end
+
+        after do
+            Arachni::Processes::Manager.killall
+        end
+
+        describe 'when key and certificate is given' do
+            let(:ssl_key) { "#{support_path}/pems/server/key.pem" }
+            let(:ssl_cert) { "#{support_path}/pems/server/cert.pem" }
+
+            describe 'when no CA is given' do
+                it 'disables peer verification' do
+                    expect(Typhoeus.get( https_url, ssl_verifypeer: false ).code).to eq 200
+                end
+            end
+
+            describe 'a CA is given' do
+                let(:ssl_ca) { "#{support_path}/pems/cacert.pem" }
+
+                it 'enables peer verification' do
+                    expect(Typhoeus.get( https_url, ssl_verifypeer: false ).code).to eq 0
+
+                    expect(Typhoeus.get(
+                        https_url,
+                        ssl_verifypeer: true,
+                        sslcert:        "#{support_path}/pems/client/cert.pem",
+                        sslkey:         "#{support_path}/pems/client/key.pem",
+                        cainfo:         ssl_ca
+                    ).code).to eq 200
+                end
+            end
+        end
+
+        describe 'when only key is given' do
+            let(:ssl_key) { "#{support_path}/pems/server/key.pem" }
+
+            it 'does not enable SSL' do
+                expect(Typhoeus.get( url ).code).to eq 200
+            end
+        end
+
+        describe 'when only cert is given' do
+            let(:ssl_cert) { "#{support_path}/pems/server/cert.pem" }
+
+            it 'does not enable SSL' do
+                expect(Typhoeus.get( url ).code).to eq 200
             end
         end
     end

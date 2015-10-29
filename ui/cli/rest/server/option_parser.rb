@@ -84,7 +84,9 @@ class OptionParser < UI::CLI::OptionParser
         separator 'SSL'
 
         on( '--ssl-ca FILE',
-            'Location of the CA certificate (.pem).'
+            'Location of the CA certificate (.pem).',
+            'If provided, peer verification will be enabled, otherwise no' +
+                ' verification will take place.'
         ) do |file|
             options.rpc.ssl_ca = file
         end

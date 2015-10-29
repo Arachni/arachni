@@ -6,6 +6,8 @@
     web site for more information on licensing and terms of use.
 =end
 
+require 'puma'
+require 'puma/minissl'
 require 'sinatra'
 require 'sinatra/contrib'
 
@@ -20,6 +22,7 @@ class Server < Sinatra::Base
     helpers InstanceHelpers
 
     use Rack::Session::Pool
+    set :environment, :production
 
     enable :logging
 
@@ -153,6 +156,51 @@ class Server < Sinatra::Base
         instances.delete( id ).close
 
         json nil
+    end
+
+    class <<self
+        include Arachni::UI::Output
+
+        def run!( options )
+            set :username, options[:username]
+            set :password, options[:password]
+
+            server = Puma::Server.new( self )
+            server.min_threads = 0
+            server.max_threads = 16
+
+            ssl = false
+            if options[:ssl_key] && options[:ssl_certificate]
+                ctx = Puma::MiniSSL::Context.new
+
+                ctx.key  = options[:ssl_key]
+                ctx.cert = options[:ssl_certificate]
+
+                if options[:ssl_ca]
+                    print_info 'CA provided, peer verification has been enabled.'
+
+                    ctx.ca          = options[:ssl_ca]
+                    ctx.verify_mode = Puma::MiniSSL::VERIFY_PEER |
+                        Puma::MiniSSL::VERIFY_FAIL_IF_NO_PEER_CERT
+                else
+                    print_info 'CA missing, peer verification has been disabled.'
+                end
+
+                ssl = true
+                server.binder.add_ssl_listener( options[:bind], options[:port], ctx )
+            else
+                ssl = false
+                server.add_tcp_listener( options[:bind], options[:port] )
+            end
+
+            print_status "Listening on http#{'s' if ssl}://#{options[:bind]}:#{options[:port]}"
+
+            begin
+                server.run.join
+            rescue Interrupt
+                server.stop( true )
+            end
+        end
     end
 
 end
