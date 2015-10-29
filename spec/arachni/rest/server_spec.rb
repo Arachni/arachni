@@ -18,6 +18,49 @@ describe Arachni::Rest::Server do
         response_data['id']
     end
 
+    context 'when authentication' do
+        let(:username) { nil }
+        let(:password) { nil }
+        let(:userpwd) { "#{username}:#{password}"}
+        let(:url) { "http://localhost:#{Arachni::Options.rpc.server_port}/scans" }
+
+        before do
+            Arachni::Options.datastore['username'] = username
+            Arachni::Options.datastore['password'] = password
+
+            Arachni::Options.rpc.server_port = Arachni::Utilities.available_port
+            Arachni::Processes::Manager.spawn( :rest_service )
+
+            sleep 0.1 while Typhoeus.get( url ).code == 0
+        end
+
+        after do
+            Arachni::Processes::Manager.killall
+        end
+
+        context 'username' do
+            let(:username) { 'username' }
+
+            context 'is configured' do
+                it 'requires authentication' do
+                    expect(Typhoeus.get( url ).code).to eq 401
+                    expect(Typhoeus.get( url, userpwd: userpwd ).code).to eq 200
+                end
+            end
+        end
+
+        context 'password' do
+            let(:password) { 'password' }
+
+            context 'is configured' do
+                it 'requires authentication' do
+                    expect(Typhoeus.get( url ).code).to eq 401
+                    expect(Typhoeus.get( url, userpwd: userpwd ).code).to eq 200
+                end
+            end
+        end
+    end
+
     describe 'GET /scans' do
         before do
             @ids = []

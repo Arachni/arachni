@@ -9,7 +9,6 @@ module RequestHelpers
         JSON.load response.body
     rescue => e
         ap response
-        puts response_body
         raise
     end
 

@@ -18,6 +18,8 @@ class Server
 class OptionParser < UI::CLI::OptionParser
 
     attr_reader :cli
+    attr_reader :username
+    attr_reader :password
 
     def initialize
         super
@@ -61,6 +63,21 @@ class OptionParser < UI::CLI::OptionParser
             "(Only applicable when '--reroute-to-logfile' is enabled.)"
         ) do
             only_positives
+        end
+
+        separator ''
+        separator 'Authentication'
+
+        on( '--authentication-username USERNAME',
+            'Location of the CA certificate (.pem).'
+        ) do |username|
+            @username = username
+        end
+
+        on( '--authentication-password PASSWORD',
+            'Location of the SSL private key (.pem).'
+        ) do |password|
+            @password = password
         end
 
         separator ''

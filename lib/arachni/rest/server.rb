@@ -24,10 +24,34 @@ class Server < Sinatra::Base
     enable :logging
 
     before do
+        protected!
         content_type :json
     end
 
     helpers do
+        def protected!
+            if !settings.respond_to?( :username )
+                settings.set :username, nil
+            end
+
+            if !settings.respond_to?( :password )
+                settings.set :password, nil
+            end
+
+            return if !settings.username && !settings.password
+            return if authorized?
+
+            headers['WWW-Authenticate'] = 'Basic realm="Restricted Area"'
+            halt 401, "Not authorized\n"
+        end
+
+        def authorized?
+            @auth ||= Rack::Auth::Basic::Request.new( request.env )
+            @auth.provided? && @auth.basic? && @auth.credentials == [
+                settings.username.to_s, settings.password.to_s
+            ]
+        end
+
         def fail_if_not_exists
             token = params[:id]
 

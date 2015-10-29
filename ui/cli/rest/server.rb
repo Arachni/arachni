@@ -20,11 +20,14 @@ module Rest
 class Server
 
     def initialize
-        OptionParser.new.parse
+        parser = OptionParser.new
+        parser.parse
 
         Arachni::Rest::Server.run!(
-            port: Arachni::Options.rpc.server_port,
-            bind: Arachni::Options.rpc.server_address
+            port:     Arachni::Options.rpc.server_port,
+            bind:     Arachni::Options.rpc.server_address,
+            username: parser.username,
+            password: parser.password
         )
     end
 
