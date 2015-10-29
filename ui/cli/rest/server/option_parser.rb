@@ -69,13 +69,13 @@ class OptionParser < UI::CLI::OptionParser
         separator 'Authentication'
 
         on( '--authentication-username USERNAME',
-            'Location of the CA certificate (.pem).'
+            'Username to use for HTTP authentication.'
         ) do |username|
             @username = username
         end
 
         on( '--authentication-password PASSWORD',
-            'Location of the SSL private key (.pem).'
+            'Password to use for HTTP authentication.'
         ) do |password|
             @password = password
         end
