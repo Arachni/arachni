@@ -35,9 +35,7 @@ Gem::Specification.new do |s|
     s.files            += %w(Gemfile Rakefile arachni.gemspec)
     s.test_files        = Dir.glob( 'spec/**/**' )
 
-    s.executables       = [ 'arachni', 'arachni_rpcd_monitor', 'arachni_rpcd',
-                            'arachni_rpc', 'arachni_console', 'arachni_script',
-                            'arachni_multi', 'arachni_reporter', 'arachni_restore' ]
+    s.executables       = Dir.glob( 'bin/*' ).map { |e| File.basename e }
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
                             AUTHORS.md CHANGELOG.md CONTRIBUTORS.md)
