@@ -29,8 +29,8 @@ module RequestHelpers
     end
 
     %w(get post put delete).each do |m|
-        define_method m do |path, parameters = nil|
-            super( path, (parameters.to_json if parameters) )
+        define_method m do |path, parameters = nil, headers = {}|
+            super( path, (parameters.to_json if parameters), headers )
         end
     end
 

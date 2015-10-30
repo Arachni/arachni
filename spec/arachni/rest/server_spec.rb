@@ -22,6 +22,24 @@ describe Arachni::Rest::Server do
         response_data['id']
     end
 
+    context 'supports compressing as' do
+        ['deflate','gzip', 'deflate,gzip','gzip,deflate'].each do |compression_method|
+
+            it compression_method do
+                get '/', {}, { 'HTTP_ACCEPT_ENCODING' => compression_method }
+                expect( response.headers['Content-Encoding'] ).to eq compression_method.split( ',' ).first
+            end
+
+        end
+    end
+
+    context 'when the client does not support compression' do
+        it 'does not compress the response' do
+            get '/'
+            expect(response.headers['Content-Encoding']).to be_nil
+        end
+    end
+
     context 'when authentication' do
         let(:username) { nil }
         let(:password) { nil }

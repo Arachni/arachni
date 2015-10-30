@@ -21,7 +21,9 @@ class Server < Sinatra::Base
 
     helpers InstanceHelpers
 
+    use Rack::Deflater
     use Rack::Session::Pool
+
     set :environment, :production
 
     enable :logging
