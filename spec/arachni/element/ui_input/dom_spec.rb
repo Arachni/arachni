@@ -164,4 +164,36 @@ describe Arachni::Element::UIInput::DOM do
             expect(s1.coverage_id).to_not eq s2.coverage_id
         end
     end
+
+    describe '#id' do
+        let(:action) { @page.url }
+        let(:method) { 'click' }
+        let(:source) { '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1" />' }
+        let(:options) do
+            {
+                method: method,
+                action: action,
+                source: source,
+                inputs: inputs
+            }
+        end
+
+        def get_element( o = {} )
+            Arachni::Element::UIInput.new( options.merge( o ) ).dom
+        end
+
+        it 'takes the #method into consideration' do
+            s1 = get_element
+            s2 = get_element( method: 'mouseover' )
+
+            expect(s1.id).to_not eq s2.id
+        end
+
+        it 'takes the #locator into consideration' do
+            s1 = get_element
+            s2 = get_element( source: '<input oninput="handleOnInput();" id="my-input2" name="my-input" value="1" />' )
+
+            expect(s1.id).to_not eq s2.id
+        end
+    end
 end

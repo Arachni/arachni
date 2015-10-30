@@ -56,7 +56,11 @@ class DOM < DOM
     end
 
     def coverage_id
-        "#{super}:#{@method}#{locator.hash}"
+        "#{super}:#{@method}:#{locator}"
+    end
+
+    def id
+        "#{super}:#{@method}:#{locator}"
     end
 
     def type

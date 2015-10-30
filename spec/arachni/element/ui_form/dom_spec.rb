@@ -176,4 +176,39 @@ describe Arachni::Element::UIForm::DOM do
         end
     end
 
+    describe '#id' do
+        let(:action) { @page.url }
+        let(:method) { 'click' }
+        let(:source) { '<button id="insert">Insert into DOM</button>' }
+        let(:opening_tags) { {
+            'my-input' => "<input id=\"my-input\" type=\"text\" value=\"stuff\">"
+        } }
+        let(:options) do
+            {
+                method:       method,
+                action:       action,
+                source:       source,
+                inputs:       inputs,
+                opening_tags: opening_tags
+            }
+        end
+
+        def get_element( o = {} )
+            Arachni::Element::UIForm.new( options.merge( o ) ).dom
+        end
+
+        it 'takes the #method into consideration' do
+            s1 = get_element
+            s2 = get_element( method: 'mouseover' )
+
+            expect(s1.id).to_not eq s2.id
+        end
+
+        it 'takes the #locator into consideration' do
+            s1 = get_element
+            s2 = get_element( source: '<button id="insert2">Insert into DOM</button>' )
+
+            expect(s1.id).to_not eq s2.id
+        end
+    end
 end

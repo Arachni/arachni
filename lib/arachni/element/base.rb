@@ -200,6 +200,10 @@ class Base
                             next if !value
                             self::DOM.from_rpc_data( value )
 
+                        when 'locator'
+                            next if !value
+                            Browser::ElementLocator.from_rpc_data( value )
+
                         when 'initialization_options'
                             value.is_a?( Hash ) ?
                                 value.my_symbolize_keys( false ) : value

@@ -35,15 +35,15 @@ module DOMOnly
     end
 
     def coverage_id
-        dom.coverage_id
+        "#{type}:#{dom.coverage_id}"
     end
 
     def coverage_hash
-        dom.coverage_hash
+        coverage_id.persistent_hash
     end
 
     def id
-        dom.id
+        "#{type}:#{dom.id}"
     end
 
     def dup
