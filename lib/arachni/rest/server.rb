@@ -26,6 +26,8 @@ class Server < Sinatra::Base
 
     enable :logging
 
+    VALID_REPORT_FORMATS = %w(json xml yaml)
+
     before do
         protected!
         content_type :json
@@ -126,6 +128,12 @@ class Server < Sinatra::Base
 
     get '/scans/:id/report.:format' do
         fail_if_not_exists
+
+        if !VALID_REPORT_FORMATS.include?( params[:format] )
+            halt 400, "Invalid report format: #{h params[:format]}."
+        end
+
+        content_type params[:format]
 
         scan_for( params[:id] ).report_as( params[:format] )
     end

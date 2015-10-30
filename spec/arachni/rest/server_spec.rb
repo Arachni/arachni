@@ -221,84 +221,116 @@ describe Arachni::Rest::Server do
         end
     end
 
-    describe 'GET /scans/:id/report.json' do
-        let(:tpl_url) { '/scans/%s/report.json' }
+    describe 'GET /scans/:id/report.:format' do
+        let(:tpl_url) { "/scans/%s/report.#{format}" }
 
-        before do
-            @id = create_scan
-        end
+        describe 'json' do
+            let(:format) { 'json' }
 
-        it 'returns scan report as JSON' do
-            get url
-
-            %w(version options issues sitemap plugins start_datetime
-                finish_datetime).each do |key|
-                expect(response_data).to include key
+            before do
+                @id = create_scan
             end
-        end
 
-        context 'when passed a non-existent id' do
-            let(:id) { non_existent_id }
-
-            it 'returns 404' do
+            it 'returns scan report as JSON' do
                 get url
-                expect(response_code).to eq 404
-            end
-        end
-    end
 
-    describe 'GET /scans/:id/report.xml' do
-        let(:tpl_url) { '/scans/%s/report.xml' }
-
-        before do
-            @id = create_scan
-        end
-
-        it 'returns scan report as XML' do
-            get url
-
-            %w(version options issues sitemap plugins start_datetime
+                %w(version options issues sitemap plugins start_datetime
                 finish_datetime).each do |key|
-                expect(
-                    response_body.include?( "<#{key}>") ||
-                        response_body.include?( "<#{key}/>")
-                ).to be_truthy
+                    expect(response_data).to include key
+                end
             end
-        end
 
-        context 'when passed a non-existent id' do
-            let(:id) { non_existent_id }
-
-            it 'returns 404' do
+            it 'has content-type application/json' do
                 get url
-                expect(response_code).to eq 404
+                expect(last_response.headers['content-type']).to eq 'application/json'
+            end
+
+            context 'when passed a non-existent id' do
+                let(:id) { non_existent_id }
+
+                it 'returns 404' do
+                    get url
+                    expect(response_code).to eq 404
+                end
             end
         end
-    end
 
-    describe 'GET /scans/:id/report.yaml' do
-        let(:tpl_url) { '/scans/%s/report.yaml' }
+        describe 'xml' do
+            let(:format) { 'xml' }
 
-        before do
-            @id = create_scan
-        end
+            before do
+                @id = create_scan
+            end
 
-        it 'returns scan report as YAML' do
-            get url
+            it 'returns scan report as XML' do
+                get url
 
-            data = YAML.load( response_body )
-            %w(version options issues sitemap plugins start_datetime
+                %w(version options issues sitemap plugins start_datetime
                 finish_datetime).each do |key|
-                expect(data).to include key.to_sym
+                    expect(
+                        response_body.include?( "<#{key}>") ||
+                            response_body.include?( "<#{key}/>")
+                    ).to be_truthy
+                end
+            end
+
+            it 'has content-type application/xml' do
+                get url
+                expect(last_response.headers['content-type']).to eq 'application/xml;charset=utf-8'
+            end
+
+            context 'when passed a non-existent id' do
+                let(:id) { non_existent_id }
+
+                it 'returns 404' do
+                    get url
+                    expect(response_code).to eq 404
+                end
             end
         end
 
-        context 'when passed a non-existent id' do
-            let(:id) { non_existent_id }
+        describe 'yaml' do
+            let(:format) { 'yaml' }
 
-            it 'returns 404' do
+            before do
+                @id = create_scan
+            end
+
+            it 'returns scan report as YAML' do
                 get url
-                expect(response_code).to eq 404
+
+                data = YAML.load( response_body )
+                %w(version options issues sitemap plugins start_datetime
+                finish_datetime).each do |key|
+                    expect(data).to include key.to_sym
+                end
+            end
+
+            it 'has content-type text/yaml' do
+                get url
+                expect(last_response.headers['content-type']).to eq 'text/yaml;charset=utf-8'
+            end
+
+            context 'when passed a non-existent id' do
+                let(:id) { non_existent_id }
+
+                it 'returns 404' do
+                    get url
+                    expect(response_code).to eq 404
+                end
+            end
+        end
+
+        describe 'invalid format' do
+            let(:format) { 'blah' }
+
+            before do
+                @id = create_scan
+            end
+
+            it 'returns 400' do
+                get url
+                expect(response_code).to eq 400
             end
         end
     end
