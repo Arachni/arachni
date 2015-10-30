@@ -224,6 +224,37 @@ describe Arachni::Rest::Server do
     describe 'GET /scans/:id/report.:format' do
         let(:tpl_url) { "/scans/%s/report.#{format}" }
 
+        describe 'without format' do
+            let(:tpl_url) { '/scans/%s/report' }
+
+            before do
+                @id = create_scan
+            end
+
+            it 'returns scan report as JSON' do
+                get url
+
+                %w(version options issues sitemap plugins start_datetime
+                finish_datetime).each do |key|
+                    expect(response_data).to include key
+                end
+            end
+
+            it 'has content-type application/json' do
+                get url
+                expect(last_response.headers['content-type']).to eq 'application/json'
+            end
+
+            context 'when passed a non-existent id' do
+                let(:id) { non_existent_id }
+
+                it 'returns 404' do
+                    get url
+                    expect(response_code).to eq 404
+                end
+            end
+        end
+
         describe 'json' do
             let(:format) { 'json' }
 

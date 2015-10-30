@@ -126,8 +126,10 @@ class Server < Sinatra::Base
         json data
     end
 
-    get '/scans/:id/report.:format' do
+    get '/scans/:id/report.?:format?' do
         fail_if_not_exists
+
+        params[:format] ||= 'json'
 
         if !VALID_REPORT_FORMATS.include?( params[:format] )
             halt 400, "Invalid report format: #{h params[:format]}."
