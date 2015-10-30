@@ -28,7 +28,7 @@ describe name_from_filename do
                 Element::Link         => 192,
                 Element::Cookie       => 96,
                 Element::Header       => 48,
-                Element::LinkTemplate => 56,
+                Element::LinkTemplate => 96,
                 Element::JSON         => 96,
                 Element::XML          => 192
             },

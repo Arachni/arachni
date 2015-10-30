@@ -37,7 +37,7 @@ describe name_from_filename do
                 Element::Link         => 16,
                 Element::Cookie       => 8,
                 Element::Header       => 4,
-                Element::LinkTemplate => 16,
+                Element::LinkTemplate => 0,
                 Element::JSON         => 12,
                 Element::XML          => 16
             }

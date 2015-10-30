@@ -9,14 +9,14 @@ describe name_from_filename do
     end
 
     def issue_count_per_element
-        i = current_check.error_strings.size * 2
+        i = current_check.error_strings.size
 
         {
             Element::Form         => i,
             Element::Link         => i,
             Element::Cookie       => i,
             Element::Header       => i,
-            Element::LinkTemplate => i,
+            Element::LinkTemplate => i * 2,
             Element::JSON         => i,
             Element::XML          => i * 2
         }
