@@ -52,6 +52,7 @@
         - `xss`, `xss_dom`, `xss_tag`, `xss_event`, `xss_script_context` --
             Optimized identification of tainted responses to avoid parsing as
                 much as possible.
+        - `xss_dom` -- Updated payloads to improve coverage.
     - Passive
         - Grep
             - `emails` -- Verify e-mail addresses by resolving the identified domains.

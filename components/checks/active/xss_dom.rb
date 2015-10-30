@@ -24,8 +24,8 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
             # Straight injection.
             tag,
 
-            # Break out of HTML comments.
-            "-->#{tag}<!--"
+            # Break out of HTML comments and text areas.
+            "</textarea>-->#{tag}<!--<textarea>"
         ]
     end
 
@@ -46,6 +46,7 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
 
     def check_and_log( page, element )
         return if !(proof = find_proof( page ))
+
         log vector: element, proof: proof, page: page
     end
 
@@ -66,7 +67,7 @@ tainted responses to look for proof of vulnerability.
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS)},
