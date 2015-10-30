@@ -121,7 +121,7 @@ class Server < Sinatra::Base
         )
 
         data[:issues].each do |issue|
-            session[:seen_issues] << issue['digest']
+            session[params[:id]][:seen_issues] << issue['digest']
         end
 
         session[params[:id]][:seen_errors]  += data[:errors].size
