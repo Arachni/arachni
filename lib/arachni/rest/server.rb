@@ -101,18 +101,20 @@ class Server < Sinatra::Base
     get '/scans/:id' do
         fail_if_not_exists
 
-        session[:seen_issues]  ||= []
-        session[:seen_errors]  ||= 0
-        session[:seen_sitemap] ||= 0
+        session[params[:id]] ||= {
+            seen_issues:  [],
+            seen_errors:  0,
+            seen_sitemap: 0
+        }
 
         data = scan_for( params[:id] ).progress(
             with:    [
                 :issues,
-                errors:  session[:seen_errors],
-                sitemap: session[:seen_sitemap]
+                errors:  session[params[:id]][:seen_errors],
+                sitemap: session[params[:id]][:seen_sitemap]
             ],
             without: [
-                issues: session[:seen_issues]
+                issues: session[params[:id]][:seen_issues]
             ]
         )
 
@@ -120,8 +122,8 @@ class Server < Sinatra::Base
             session[:seen_issues] << issue['digest']
         end
 
-        session[:seen_errors]  += data[:errors].size
-        session[:seen_sitemap] += data[:sitemap].size
+        session[params[:id]][:seen_errors]  += data[:errors].size
+        session[params[:id]][:seen_sitemap] += data[:sitemap].size
 
         json data
     end
@@ -164,6 +166,8 @@ class Server < Sinatra::Base
         kill_instance( id )
 
         instances.delete( id ).close
+
+        session.delete params[:id]
 
         json nil
     end
