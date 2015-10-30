@@ -364,13 +364,13 @@ module State
     # redundancy checks can introduce significant latencies when dealing
     # with pages with lots of elements.
     def pre_audit_element_filter( page )
-        redundant_elements  = {}
+        unique_elements  = {}
         page.elements.each do |e|
             next if !Options.audit.element?( e.type )
             next if e.is_a?( Cookie ) || e.is_a?( Header )
 
-            new_element                  = false
-            redundant_elements[e.type] ||= []
+            new_element               = false
+            unique_elements[e.type] ||= []
 
             if !state.element_checked?( e )
                 state.element_checked e
@@ -384,15 +384,15 @@ module State
                 end
             end
 
-            next if new_element
+            next if !new_element
 
-            redundant_elements[e.type] << e
+            unique_elements[e.type] << e
         end
 
         # Remove redundant elements from the page cache, if there are thousands
         # of them then just skipping them during the audit will introduce latency.
-        redundant_elements.each do |type, elements|
-            page.send( "#{type}s=", page.send( "#{type}s" ) - elements )
+        unique_elements.each do |type, elements|
+            page.send( "#{type}s=", elements )
         end
 
         page
