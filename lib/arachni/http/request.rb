@@ -147,7 +147,7 @@ class Request < Message
 
     def raw_parameters=( names )
         if names
-            @raw_parameters.merge names
+            @raw_parameters = names
         else
             @raw_parameters.clear
         end

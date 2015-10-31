@@ -121,6 +121,21 @@ describe Arachni::HTTP::Request do
             end
         end
 
+        describe '#raw_parameters=' do
+            it 'assigns #raw_parameters' do
+                subject.raw_parameters = ['stuff']
+                expect(subject.raw_parameters).to eq ['stuff']
+            end
+
+            context 'when nil' do
+                it 'clears #raw_parameters' do
+                    subject.raw_parameters = ['stuff']
+                    subject.raw_parameters = nil
+                    expect(subject.raw_parameters).to be_empty
+                end
+            end
+        end
+
         describe ':raw_parameters' do
             let(:url){ "#{@url}/raw" }
             let(:request) { described_class.new( options ) }
