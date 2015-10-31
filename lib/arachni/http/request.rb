@@ -224,14 +224,20 @@ class Request < Message
     end
 
     def effective_cookies
-        Cookie.from_string( url, headers['Cookie'] || '' ).inject({}) do |h, cookie|
-            h[cookie.name] = cookie.value
-            h
-        end.merge( cookies )
+        return cookies if headers['Cookie'].to_s.empty?
+
+        Cookie.from_string( url, headers['Cookie'] ).
+            inject( cookies.dup ) do |h, cookie|
+                h[cookie.name] ||= cookie.value
+                h
+            end
     end
 
     def effective_parameters
-        Utilities.uri_parse_query( url ).merge( parameters || {} )
+        ep = Utilities.uri_parse_query( url )
+        return ep if parameters.empty?
+
+        ep.merge!( parameters )
     end
 
     def body_parameters
@@ -534,9 +540,9 @@ class Request < Message
         # @return   [Hash]
         #   Parameters.
         def parse_body( body )
-            return {} if !body
+            return {} if body.to_s.empty?
 
-            body.to_s.split( '&' ).inject( {} ) do |h, pair|
+            body.split( '&' ).inject( {} ) do |h, pair|
                 name, value = pair.split( '=', 2 )
                 h[Form.decode( name.to_s )] = Form.decode( value )
                 h
