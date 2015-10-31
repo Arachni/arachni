@@ -62,6 +62,8 @@ class URI
         CACHE[name] = Support::Cache::LeastRecentlyPushed.new( size )
     end
 
+    QUERY_CHARACTER_CLASS = Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' )
+
     class <<self
 
         # @return [URI::Parser] cached URI parser
@@ -252,10 +254,7 @@ class URI
                         !(query = dupped_url.split( '?', 2 ).last).empty?
 
                         components[:query] = (query.split( '&', -1 ).map do |pair|
-                            encode(
-                                decode( pair ),
-                                Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' )
-                            )
+                            encode( decode( pair ), QUERY_CHARACTER_CLASS )
                         end).join( '&' )
                     end
                 end
