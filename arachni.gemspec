@@ -61,11 +61,9 @@ Gem::Specification.new do |s|
     s.add_dependency 'childprocess',      '0.5.3'
 
     # RPC serialization.
-    if RUBY_PLATFORM == 'java'
-        s.add_dependency 'msgpack-jruby', '1.4.0'
-    else
-        s.add_dependency 'msgpack',       '0.5.8'
+    s.add_dependency 'msgpack',           '0.7.0'
 
+    if RUBY_PLATFORM != 'java'
         # Optimized JSON.
         s.add_dependency 'oj',            '~> 2.12.9'
         s.add_dependency 'oj_mimic_json'
@@ -94,7 +92,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '~> 1.6.5'
+    s.add_dependency 'nokogiri',          '1.6.7.rc3'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'
