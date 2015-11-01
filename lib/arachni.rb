@@ -8,28 +8,13 @@
 
 require 'rubygems'
 require 'bundler/setup'
-
-require 'pp'
-
-begin
-
-    # Only for development, intercepts certain method calls to assist with
-    # formatting and introduces latency.
-    require 'ap'
-
-    def ap( obj )
-        super obj, raw: true
-    end
-
-rescue LoadError
-
-    def ap( obj )
-        pp obj
-    end
-
-end
-
 require 'concurrent'
+require 'pp'
+require 'ap'
+
+def ap( obj )
+    super obj, raw: true
+end
 
 module Arachni
 

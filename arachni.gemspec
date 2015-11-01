@@ -42,6 +42,8 @@ Gem::Specification.new do |s|
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
+    s.add_dependency 'awesome_print'
+
     s.add_dependency 'rack'
 
     s.add_dependency 'bundler'
