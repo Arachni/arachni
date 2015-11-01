@@ -43,7 +43,7 @@ class Manager
         Timeout.timeout 10 do
             while sleep 0.1 do
                 begin
-                    Process.kill( Gem.win_platform? ? 'QUIT' : 'TERM', pid )
+                    Process.kill( Arachni.windows? ? 'KILL' : 'TERM', pid )
                 rescue Errno::ESRCH
                     @pids.delete pid
                     return
