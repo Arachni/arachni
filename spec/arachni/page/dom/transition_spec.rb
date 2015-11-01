@@ -97,7 +97,7 @@ describe Arachni::Page::DOM::Transition do
                 called = false
                 t = described_class.new :page, :load do
                     called = true
-                    sleep 1
+                    sleep 1.1
                 end
 
                 expect(called).to be_truthy
@@ -149,7 +149,7 @@ describe Arachni::Page::DOM::Transition do
                 called = false
                 t = empty_transition.start :page, :load do
                     called = true
-                    sleep 1
+                    sleep 1.1
                 end
 
                 expect(called).to be_truthy
@@ -206,7 +206,7 @@ describe Arachni::Page::DOM::Transition do
     describe '#complete' do
         it 'sets the #time' do
             running = Factory[:running_transition]
-            sleep 1
+            sleep 1.1
             expect(running.complete.time).to be > 1
         end
 
@@ -303,8 +303,15 @@ describe Arachni::Page::DOM::Transition do
 
         context 'when the transition has completed' do
             it 'returns the time it took for the transition' do
-                expect(completed_transition).not_to be_running
-                expect(completed_transition.time).to be > 0
+                expect(empty_transition).not_to be_running
+
+                t = empty_transition.start :page, :load do
+                    sleep 1.1
+                end
+
+                expect(t.time).to be > 1
+                expect(t).to be_completed
+                expect(t).not_to be_running
             end
         end
     end
