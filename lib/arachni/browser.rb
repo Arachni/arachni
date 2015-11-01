@@ -9,7 +9,6 @@
 require 'childprocess'
 require 'watir-webdriver'
 require_relative 'selenium/webdriver/element'
-require_relative 'selenium/webdriver/remote/http/typhoeus'
 require_relative 'processes/manager'
 require_relative 'browser/element_locator'
 require_relative 'browser/javascript'
@@ -1065,7 +1064,7 @@ class Browser
     def selenium
         return @selenium if @selenium
 
-        client = Selenium::WebDriver::Remote::Http::Typhoeus.new
+        client = Selenium::WebDriver::Remote::Http::Default.new
         client.timeout = WATIR_COM_TIMEOUT
 
         @selenium = Selenium::WebDriver.for(
