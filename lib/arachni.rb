@@ -31,10 +31,6 @@ end
 
 require 'concurrent'
 
-if RUBY_PLATFORM != 'java'
-    require 'oj_mimic_json'
-end
-
 module Arachni
 
     class <<self
@@ -61,6 +57,10 @@ module Arachni
 
     end
 
+end
+
+if !Arachni.jruby?
+    require 'oj_mimic_json'
 end
 
 require_relative 'arachni/version'
