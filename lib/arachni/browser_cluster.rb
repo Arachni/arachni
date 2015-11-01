@@ -399,7 +399,8 @@ class BrowserCluster
     end
 
     def self.seconds_per_job
-        total_job_time / Float( completed_job_count )
+        n = (total_job_time / Float( completed_job_count ))
+        n.nan? ? 0 : n
     end
 
     def self.increment_queued_job_count
