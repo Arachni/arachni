@@ -2260,7 +2260,7 @@ describe Arachni::Browser do
                 end
 
                 it "waits a maximum of #{Arachni::OptionGroups::BrowserCluster}#job_timeout" do
-                    Arachni::Options.browser_cluster.job_timeout = 4
+                    Arachni::Options.browser_cluster.job_timeout = 2
 
                     t = Time.now
                     @browser.goto( @url + '/wait_for_elements#stuff/here' )

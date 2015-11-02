@@ -169,8 +169,8 @@ describe Arachni::Framework::Parts::Audit do
             expect(subject.sitemap).to include @url + '/link/#/stuff'
         end
 
-        it "runs #{Arachni::Check::Manager}#without_platforms before #{Arachni::Check::Manager}#with_platforms" do
-            @options.paths.checks  = fixtures_path + '/checks/'
+        it "runs checks without platforms before ones with platforms" do
+            @options.paths.checks = fixtures_path + '/checks/'
 
             Arachni::Framework.new do |f|
                 f.checks.load_all
@@ -184,10 +184,12 @@ describe Arachni::Framework::Parts::Audit do
 
                 f.audit_page page
 
-                expect(responses).to eq(
+                expect(responses.sort).to eq(
                     %w(http://localhost/test3 http://localhost/test
                         http://localhost/test2)
-                )
+                ).sort
+
+                expect(responses.last).to eq 'http://localhost/test2'
             end
         end
 
