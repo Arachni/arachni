@@ -44,7 +44,10 @@ class Manager
             while sleep 0.1 do
                 begin
                     Process.kill( Arachni.windows? ? 'KILL' : 'TERM', pid )
-                rescue Errno::ESRCH
+                # Either kill was succesful or we don't have enough perms or
+                # we hit a reused PID for someone else's process, either way,
+                # consider the process gone.
+                rescue Errno::ESRCH, Errno::EPERM
                     @pids.delete pid
                     return
                 end
