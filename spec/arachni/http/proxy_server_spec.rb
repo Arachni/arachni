@@ -6,6 +6,9 @@ describe Arachni::HTTP::ProxyServer do
         @url = web_server_url_for( :proxy_server ) + '/'
     end
 
+    let(:address) { Socket.ip_address_list.find(&:ipv4?).ip_address }
+    let(:port) { Arachni::Utilities.available_port }
+
     def via_proxy( proxy, url )
         Typhoeus::Request.get(
             url,
@@ -54,8 +57,6 @@ describe Arachni::HTTP::ProxyServer do
     describe '#initialize' do
         describe ':address' do
             it 'sets the bind address' do
-                address = WEBrick::Utils::getservername
-
                 proxy = described_class.new( address: address )
                 proxy.start_async
 
@@ -303,9 +304,6 @@ describe Arachni::HTTP::ProxyServer do
 
     describe '#address' do
         it 'returns the address of the proxy' do
-            address = 'localhost'
-            port    = Arachni::Utilities.available_port
-
             proxy = described_class.new( address: address, port: port )
             expect(proxy.url).to eq "http://#{address}:#{port}"
             proxy.start_async

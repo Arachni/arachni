@@ -40,7 +40,7 @@ class ProxyServer
 
         @active_connections = Set.new
 
-        @options[:address] ||= '0.0.0.0'
+        @options[:address] ||= '127.0.0.1'
         @options[:port]    ||= Utilities.available_port
     end
 
@@ -55,7 +55,7 @@ class ProxyServer
             print_exception e
         end
 
-        @reactor.listen(
+        listener = @reactor.listen(
             @options[:address], @options[:port], Connection,
             @options.merge( parent: self )
         )
