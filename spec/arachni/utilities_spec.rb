@@ -109,7 +109,7 @@ describe Arachni::Utilities do
 
         context 'when a port is not available' do
             it 'returns true' do
-                s = TCPServer.new( 7777 )
+                s = TCPServer.new( "127.0.0.1", 7777 )
                 expect(subject.port_available?( 7777 )).to be_falsey
                 s.close
             end
