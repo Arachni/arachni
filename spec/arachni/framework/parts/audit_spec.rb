@@ -186,8 +186,8 @@ describe Arachni::Framework::Parts::Audit do
 
                 expect(responses.sort).to eq(
                     %w(http://localhost/test3 http://localhost/test
-                        http://localhost/test2)
-                ).sort
+                        http://localhost/test2).sort
+                )
 
                 expect(responses.last).to eq 'http://localhost/test2'
             end
