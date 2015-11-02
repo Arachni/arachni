@@ -20,6 +20,12 @@ module Arachni
 
     class <<self
 
+        def tmpdir
+            # On MS Windows Dir.tmpdir can return the path with a shortname,
+            # better avoid that as it can be insonsistent with other paths.
+            get_long_win32_filename( Dir.tmpdir )
+        end
+
         def null_device
             Gem.win_platform? ? 'NUL' : '/dev/null'
         end
@@ -40,6 +46,31 @@ module Arachni
             !!ENV['ARACHNI_PROFILER']
         end
 
+        if Arachni.windows?
+            require 'find'
+            require 'fileutils'
+            require 'Win32API'
+            require 'win32ole'
+
+            def get_long_win32_filename( short_name )
+                max_path  = 1024
+                long_name = ' ' * max_path
+
+                lfn_size = Win32API.new(
+                    "kernel32", 
+                    "GetLongPathName",
+                    ['P','P','L'],
+                    'L'
+                ).call( short_name, long_name, max_path )
+
+                (1..max_path).include?( lfn_size ) ? 
+                    long_name[0..lfn_size-1] : short_name
+            end 
+        else
+            def get_long_win32_filename( short_name )
+                short_name
+            end
+        end
     end
 
 end

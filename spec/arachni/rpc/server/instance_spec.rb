@@ -166,7 +166,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
             File.delete snapshot_path
 
-            sleep 1 while @instance.service.busy?
+            sleep 1 while @instance.service.status != :scanning
 
             expect(@instance.service.report[:options]).to eq(options)
         end
@@ -530,7 +530,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 @progress_instance.service.scan(
                     url: web_server_url_for( :framework_multi ),
                     scope: {
-                        page_limit: 50
+                        page_limit: 10
                     },
                     audit:  { elements: [:links, :forms] },
                     checks: :test,

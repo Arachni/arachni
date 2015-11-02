@@ -83,7 +83,7 @@ describe Arachni::Rest::Server do
         end
     end
 
-    describe 'SSL options', if: RUBY_PLATFORM != 'java' do
+    describe 'SSL options', if: !Arachni.jruby? && !Arachni.windows? do
         let(:ssl_key) { nil }
         let(:ssl_cert) { nil }
         let(:ssl_ca) { nil }

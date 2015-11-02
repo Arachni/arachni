@@ -84,7 +84,7 @@ class <<self
 
             # Append metadata to the end of the file.
             metadata = Marshal.dump( prepare_metadata )
-            File.open( location, 'a' ) do |f|
+            File.open( location, 'ab' ) do |f|
                 f.write [metadata, metadata.size].pack( 'a*N' )
             end
 
@@ -114,6 +114,8 @@ class <<self
         State.load( "#{directory}/state/" )
 
         self
+    ensure
+        FileUtils.rm_rf( directory )
     end
 
     # @param    [String]    snapshot
@@ -125,7 +127,7 @@ class <<self
     # @raise    [Error::InvalidFile]
     #   When trying to read an invalid file.
     def read_metadata( snapshot )
-        File.open( snapshot ) do |f|
+        File.open( snapshot, 'rb' ) do |f|
             f.seek -4, IO::SEEK_END
             metadata_size = f.read( 4 ).unpack( 'N' ).first
 
@@ -149,7 +151,7 @@ class <<self
     end
 
     def get_temporary_directory
-        "#{Dir.tmpdir}/Arachni_Snapshot_#{Utilities.generate_token}/"
+        "#{Arachni.tmpdir}/Arachni_Snapshot_#{Utilities.generate_token}/"
     end
 
     def extract( archive, directory )
@@ -165,8 +167,12 @@ class <<self
     end
 
     def compress( directory, archive )
+        # Globs on Windows don't accept \ as a separator since it's an escape character.
+        directory = directory.gsub( '\\', '/' ) + '/'
+        directory.gsub!( /\/+/, '/' )
+
         Zip::File.open( archive, Zip::File::CREATE ) do |zipfile|
-            Dir[File.join(directory, '**', '**')].each do |file|
+            Dir[directory + '**/**'].each do |file|
                 zipfile.add( file.sub( directory, '' ), file )
             end
         end

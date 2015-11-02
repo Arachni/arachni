@@ -252,7 +252,7 @@ describe Arachni::Data::Issues do
                 issue_path = "#{dump_directory}/issue_#{issue.digest}"
                 expect(File.exists?( issue_path )).to be_truthy
 
-                loaded_issue = Marshal.load( IO.read( issue_path ) )
+                loaded_issue = Marshal.load( IO.binread( issue_path ) )
                 expect(issue).to eq(loaded_issue)
             end
         end
@@ -261,7 +261,7 @@ describe Arachni::Data::Issues do
             unsorted_issues.each { |i| subject << i }
             subject.dump( dump_directory )
 
-            expect(subject.digests).to eq(Marshal.load( IO.read( "#{dump_directory}/digests" ) ))
+            expect(subject.digests).to eq(Marshal.load( IO.binread( "#{dump_directory}/digests" ) ))
         end
     end
 

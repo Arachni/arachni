@@ -53,6 +53,26 @@ class Manager
     rescue Timeout::Error
     end
 
+    # @param    [Integer]   pid
+    # @return   [Boolean]
+    #   `true` if the process is alive, `false` otherwise.
+    def alive?( pid )
+        # Windows is not big on POSIX so try it its own way if possible.
+        if Arachni.windows?
+            begin
+                wmi = WIN32OLE.connect( 'winmgmts://' )
+                wmi.InstancesOf( 'Win32_Process' ).each do |proc|
+                    return true if pid == proc.ProcessId
+                end
+
+                return false
+            rescue WIN32OLERuntimeError 
+            end
+        end
+
+        !!(Process.kill( 0, pid ) rescue false)     
+    end
+
     # @param    [Array<Integer>]   pids
     #   PIDs of the process to {Arachni::Processes::Manager#kill}.
     def kill_many( pids )

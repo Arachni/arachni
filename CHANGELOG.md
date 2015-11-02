@@ -2,6 +2,7 @@
 
 ## Under development
 
+- Native MS Windows compatibility.
 - Options
     - Added
         - Scope

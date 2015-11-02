@@ -199,7 +199,7 @@ class Dispatcher
             cjob['currtime'] = currtime.to_s
             cjob['age']      = currtime - Time.parse( cjob['birthdate'] )
             cjob['runtime']  = currtime - Time.parse( cjob['starttime'] )
-            cjob['alive']    = !!Process.kill( 0, pid ) rescue false
+            cjob['alive']    = Arachni::Processes::Manager.alive?( pid )
 
             return cjob
         end

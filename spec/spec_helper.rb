@@ -7,7 +7,7 @@
 =end
 
 require 'rack/test'
-require 'simplecov'
+# require 'simplecov'
 require 'faker'
 
 require_relative '../lib/arachni'
