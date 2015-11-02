@@ -5,6 +5,7 @@ Factory.define :custom_job do
         end
 
         def run
+            sleep 0.1
             save_result my_data: 'Some stuff'
         end
     end
