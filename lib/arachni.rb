@@ -53,8 +53,9 @@ module Arachni
             require 'win32ole'
 
             def get_long_win32_filename( short_name )
-                max_path  = 1024
-                long_name = ' ' * max_path
+                short_name = short_name.dup
+                max_path   = 1024
+                long_name  = ' ' * max_path
 
                 lfn_size = Win32API.new(
                     "kernel32", 
