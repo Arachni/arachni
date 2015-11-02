@@ -114,8 +114,6 @@ class <<self
         State.load( "#{directory}/state/" )
 
         self
-    ensure
-        FileUtils.rm_rf( directory )
     end
 
     # @param    [String]    snapshot
