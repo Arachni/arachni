@@ -72,14 +72,14 @@ describe Arachni::BrowserCluster::Worker do
         context 'before running the job' do
             it 'ensures that there is a live PhantomJS process' do
                 Arachni::Processes::Manager.kill subject.pid
-                expect{ Process.getpgid( subject.pid ) }.to raise_error Errno::ESRCH
+                expect(Arachni::Processes::Manager.alive?( subject.pid )).to be_falsey
                 dead_pid = subject.pid
 
                 @cluster.queue( custom_job ){}
                 @cluster.wait
 
                 expect(subject.pid).not_to eq(dead_pid)
-                expect(Process.getpgid( subject.pid )).to be_truthy
+                expect(Arachni::Processes::Manager.alive?( subject.pid )).to be_truthy
             end
         end
 
