@@ -59,6 +59,8 @@
     - Passive
         - Grep
             - `emails` -- Verify e-mail addresses by resolving the identified domains.
+            - `ssn` -- Mark issues as untrusted by default since there's no way
+                to verify SSNs.
 - Plugins
     - `proxy`
         - Removed injection of control toolbar to each response.
