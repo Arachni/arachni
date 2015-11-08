@@ -21,6 +21,7 @@ group :prof do
     gem 'benchmark-ips'
 end
 
+gem 'ffi',      github: 'ffi/ffi', branch: 'elcapt'
 gem 'ethon',    github: 'typhoeus/ethon'
 gem 'typhoeus', github: 'typhoeus/typhoeus'
 
