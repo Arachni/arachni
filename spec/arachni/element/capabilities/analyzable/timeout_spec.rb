@@ -446,7 +446,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 run
 
                 expect(issues).to be_any
-                expect(issues.flatten.first.response.time.to_i).to eq(11)
+                expect(issues.flatten.first.request.timeout).to eq(11_000)
             end
         end
     end

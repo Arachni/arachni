@@ -16,8 +16,11 @@ EOHTML
 end
 
 get '/add' do
-    sleep( params[:sleep].to_f - 1 ).to_s
-    'Stuff'
+    sleep_time = params[:sleep].to_f - 1
+
+    if sleep_time > 0
+        sleep( sleep_time ).to_s
+    end
 end
 
 get '/sleep' do

@@ -313,7 +313,9 @@ module Timeout
             'wear off, this may take a while (max waiting time is ' <<
              "#{options[:timeout] / 1000.0} seconds)."
 
-        if (response = timeout_control.submit( options )).timed_out?
+        response = timeout_control.submit( options )
+
+        if response.timed_out? || response.partial?
             print_bad "#{prepend}Max waiting time exceeded."
             false
         else
@@ -362,7 +364,7 @@ module Timeout
         end
 
         audit( payloads, options ) do |response, mutation|
-            next if !response.timed_out?
+            next if !response.timed_out? || response.partial?
 
             mutation.timing_attack_remark_data[:delays] << options[:delay]
             block.call( mutation, response )
@@ -420,7 +422,7 @@ module Timeout
             print_verbose "  * Payload:         #{payload.inspect}"
 
             submit( response_max_size: 0, timeout: timeout ) do |response|
-                if !response.timed_out?
+                if !response.timed_out? || response.partial?
                     print_info '* Verification failed.'
                     print_verbose "  * Server responded in #{response.time} seconds."
                     next
@@ -462,7 +464,7 @@ module Timeout
         # tricked by WAFs/IDS/IPS dropping packets.
         self.affected_input_value = seed.sub( '__TIME__', '0' )
         submit( response_max_size: 0, timeout: timeout ) do |control|
-            if control.timed_out?
+            if control.timed_out? || control.partial?
                 print_info '* Control check failed, aborting.'
                 next
             end
