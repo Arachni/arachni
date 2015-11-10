@@ -11,5 +11,5 @@ describe name_from_filename do
         3
     end
 
-    easy_test
+    easy_test { expect(issues.find(&:trusted?)).to be_nil }
 end
