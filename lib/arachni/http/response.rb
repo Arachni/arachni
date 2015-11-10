@@ -152,7 +152,7 @@ class Response < Message
     # @return   [Boolean]
     #   `true` if timed out, `false` otherwise.
     def timed_out?
-        [:operation_timedout, :couldnt_connect].include? return_code
+        return_code == :operation_timedout
     end
 
     def body=( body )
