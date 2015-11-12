@@ -63,6 +63,32 @@ shared_examples_for 'check' do
         it 'holds the right elements' do
             expect(current_check.info[:elements].map(&:to_s).sort).to eq(self.class.elements.map(&:to_s).sort)
         end
+
+        context 'when it has references' do
+            it 'they are still available' do
+                if !(current_check.info[:issue] && current_check.info[:issue][:references])
+                    next
+                end
+
+                hydra = Typhoeus::Hydra.new
+
+                current_check.info[:issue][:references].each do |title, url|
+                    r = Typhoeus::Request.new(
+                        url,
+                        followlocation: true,
+                        headers:        {
+                            'User-Agent' => 'Mozilla/5.0 (Windows NT x.y; rv:10.0) Gecko/20100101 Firefox/10.0'
+                        }
+                    )
+                    r.on_complete do |response|
+                        expect(response.code).to eq(200), "#{response.code} -- #{title} => #{url}"
+                    end
+                    hydra.queue r
+                end
+
+                hydra.run
+            end
+        end
     end
 
     def self.easy_test( run_checks = true, &block )

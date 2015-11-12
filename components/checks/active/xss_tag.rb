@@ -83,9 +83,9 @@ tag. For example `<INJECTION_HERE href=.......etc>` where `INJECTION_HERE`
 represents the location where the Arachni payload was detected.
 },
                 references:  {
-                    'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                    'Secunia'  => 'http://secunia.com/advisories/9716/',
-                    'WASC' => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting'
+                    'Secunia' => 'http://secunia.com/advisories/9716/',
+                    'WASC'    => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
+                    'OWASP'   => 'https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
                 },
 
                 tags:            %w(xss script tag regexp dom attribute injection),
