@@ -29,6 +29,8 @@ describe name_from_filename do
                 let(:script) do
                     <<EOSCRIPT
                 framework.options.datastore.browser = browser
+                framework.options.datastore.screen_width = browser.execute_script( 'return window.innerWidth;' )
+                framework.options.datastore.screen_height = browser.execute_script( 'return window.innerHeight;' )
 EOSCRIPT
                 end
 
@@ -37,12 +39,21 @@ EOSCRIPT
 
                     expect(options.datastore.browser).to be_kind_of Watir::Browser
                 end
+
+                it 'sets the appropriate resolution' do
+                    run
+
+                    expect(framework.options.datastore.screen_width).to eq Arachni::Options.browser_cluster.screen_width
+                    expect(framework.options.datastore.screen_height).to eq Arachni::Options.browser_cluster.screen_height
+                end
             end
 
             context 'when using a Javascript script' do
                 let(:script) do
                     <<EOSCRIPT
                 document.cookie = 'mycookie=myvalue'
+                document.cookie = 'width=' + window.innerWidth
+                document.cookie = 'height=' + window.innerHeight
 EOSCRIPT
                 end
                 let(:script_path) { "#{super()}.js" }
@@ -52,6 +63,15 @@ EOSCRIPT
 
                     expect(framework.http.cookies.
                         find { |c| c.name == 'mycookie' }.value).to eq('myvalue')
+                end
+
+                it 'sets the appropriate resolution' do
+                    run
+
+                    expect(framework.http.cookies.
+                        find { |c| c.name == 'width' }.value).to eq Arachni::Options.browser_cluster.screen_width.to_s
+                    expect(framework.http.cookies.
+                        find { |c| c.name == 'height' }.value).to eq Arachni::Options.browser_cluster.screen_height.to_s
                 end
             end
         end

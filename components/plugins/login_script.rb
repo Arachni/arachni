@@ -37,11 +37,18 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
 
         session.record_login_sequence do |browser|
             print_info 'Running the script.'
-            @script.call browser ? browser.watir : nil
 
-            # JS run async so we need to wait for the page to settle after
-            # execution.
-            session.browser.wait_till_ready if javascript?
+            if browser
+                watir = browser.watir
+                watir.window.resize_to(
+                    Arachni::Options.browser_cluster.screen_width,
+                    Arachni::Options.browser_cluster.screen_height
+                )
+                @script.call watir
+                browser.wait_till_ready
+            else
+                @script.call
+            end
 
             print_info 'Execution completed.'
         end
