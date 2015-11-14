@@ -75,15 +75,6 @@ class Trainer
             return
         end
 
-        # Naive optimization but it works a lot of the time. :)
-        if @seen_pages.include? response.body
-            print_debug "Already seen response body for request ID: ##{response.request.id}"
-            return
-        end
-        @seen_pages << response.body
-
-        return false if !response.text?
-
         skip_message = nil
         if @trainings_per_url[response.url] >= MAX_TRAININGS_PER_URL
             skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
@@ -97,6 +88,20 @@ class Trainer
             print_verbose "#{skip_message}, skipping: #{response.url}"
             return false
         end
+
+        param_names = response.parsed_url.query_parameters.keys
+        cookies     = Cookie.from_headers( response.url, response.headers ).map(&:name)
+
+        k = "#{param_names.hash}:#{cookies.hash}:#{response.body}"
+
+        # Naive optimization but it works a lot of the time. :)
+        if @seen_pages.include? k
+            print_debug "Already seen response for request ID: ##{response.request.id}"
+            return
+        end
+        @seen_pages << k
+
+        return false if !response.text?
 
         analyze response
         true

@@ -213,17 +213,47 @@ describe Arachni::Trainer do
             end
         end
 
-        context 'when the page body has already been seen' do
-            it 'returns nil' do
+        context 'when the response has already been seen' do
+            before do
                 @trainer.page = @page
 
                 r = request( @url )
                 expect(@trainer).to receive(:analyze).with(r)
                 expect(@trainer.push( r )).to be_truthy
+            end
 
+            it 'returns nil' do
                 r = request( @url )
                 expect(@trainer).to_not receive(:analyze)
                 expect(@trainer.push( r )).to be_nil
+            end
+
+            context 'but URL param names are different' do
+                it 'returns true' do
+                    r = request( "#{@url}/?stuff=1" )
+                    expect(@trainer).to receive(:analyze).with(r)
+                    expect(@trainer.push( r )).to be_truthy
+                end
+            end
+
+            context 'but cookie names are different' do
+                it 'returns true' do
+                    r = request( @url )
+                    r.headers['set-cookie'] = 'name=val'
+
+                    expect(@trainer).to receive(:analyze).with(r)
+                    expect(@trainer.push( r )).to be_truthy
+                end
+            end
+
+            context 'but the body is different' do
+                it 'returns true' do
+                    r = request( @url )
+                    r.body = '1'
+
+                    expect(@trainer).to receive(:analyze).with(r)
+                    expect(@trainer.push( r )).to be_truthy
+                end
             end
         end
 
