@@ -58,6 +58,14 @@ class Session
     # @return   [Block]
     attr_reader :login_sequence
 
+    # @return   [Hash]
+    #   {HTTP::Client#request} options for {#logged_in?}.
+    attr_accessor :check_options
+
+    def initialize
+        @check_options = {}
+    end
+
     def clean_up
         configuration.clear
         shutdown_browser
@@ -267,15 +275,17 @@ class Session
         fail Error::NoLoginCheck if !has_login_check?
 
         http_options = http_options.merge(
+            method:          :get,
             mode:            block_given? ? :async : :sync,
             follow_location: true,
             performer:       self
         )
+        http_options.merge!( @check_options )
 
         print_debug 'Performing login check.'
 
         bool = nil
-        http.get( Options.session.check_url, http_options ) do |response|
+        http.request( Options.session.check_url, http_options ) do |response|
             bool = !!response.body.match( Options.session.check_pattern )
 
             print_debug "Login check done: #{bool}\n#{response}"

@@ -27,6 +27,9 @@
     - `Cache` -- Minimized calls to `Base#make_key`.
     - Added
         - `Glob` -- Glob matcher.
+- `Session`
+    - Added `#check_options`, allowing login scripts to set advanced HTTP request
+        options for login checks.
 - `REST::Server` -- Added REST API.
 - `RPC`
     - `Server`

@@ -164,6 +164,35 @@ by loading cookies from a shared Netscape-style cookie-jar file.
 
     http.cookie_jar.load 'cookies.txt'
 
+## Advanced session check configuration
+
+In addition to just settings the `check_url` and `check_pattern` options,
+you can also set arbitrary HTTP request options for the login check, to cover
+cases where extra tokens or a method other than `GET` must be used.
+
+    session.check_options = {
+        # :get, :post, :put, :delete
+        method:     :post,
+
+        # URL query parameters.
+        parameters: {
+            'param1' => 'value'
+        },
+
+        # Request body parameters -- can also be a String instead of Hash.
+        body:       {
+            'body_param1' => 'value'
+        },
+
+        cookies:    {
+            'custom_cookie' => 'value'
+        },
+
+        headers:    {
+            'X-Custom-Header' => 'value'
+        }
+    }
+
 # Javascript
 
 When the given script has a `.js` file extension, it will be loaded and executed
