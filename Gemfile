@@ -21,7 +21,10 @@ group :prof do
     gem 'benchmark-ips'
 end
 
-gem 'ffi',      github: 'ffi/ffi', branch: 'elcapt', platform: :ruby
+if !Gem.win_platform?
+    gem 'ffi', github: 'ffi/ffi', branch: 'elcapt'
+end
+
 gem 'ethon',    github: 'typhoeus/ethon'
 gem 'typhoeus', github: 'typhoeus/typhoeus'
 
