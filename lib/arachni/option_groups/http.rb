@@ -35,7 +35,7 @@ class HTTP < Arachni::OptionGroup
 
     # @return   [Array<String>]
     #   Supported proxy types.
-    PROXY_TYPES = %w(http http_1_0 socks4 socks5 socks4a)
+    PROXY_TYPES = %w(http http_1_0 socks4 socks4a socks5 socks5h)
 
     # @return   [Array<String>]
     #   Supported SSL certificate types.

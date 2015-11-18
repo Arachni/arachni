@@ -4,6 +4,7 @@
 
 - Native MS Windows compatibility.
 - Options
+    - `--http-proxy-type` -- Added `socks5h`, enabling hostname resolution via the proxy.
     - Added
         - Scope
             - `--scope-exclude-file-extensions` -- CSV of file extensions to exclude.
