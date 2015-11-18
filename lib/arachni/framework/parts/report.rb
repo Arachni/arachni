@@ -79,7 +79,7 @@ module Report
                      "Reporter '#{name}' cannot format the audit results as a String."
             end
 
-            outfile = "#{Dir.tmpdir}/#{generate_token}"
+            outfile = "#{Arachni.tmpdir}/#{generate_token}"
             @reporters.run( name, external_report, outfile: outfile )
 
             IO.binread( outfile )

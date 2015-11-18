@@ -96,7 +96,7 @@ class Base
 
     def generate_filename
         # Should be unique enough...
-        "#{Dir.tmpdir}/#{self.class.name}_#{Process.pid}_#{object_id}_#{@filename_counter}".gsub( '::', '_' )
+        "#{Arachni.tmpdir}/#{self.class.name}_#{Process.pid}_#{object_id}_#{@filename_counter}".gsub( '::', '_' )
     ensure
         @filename_counter += 1
     end
