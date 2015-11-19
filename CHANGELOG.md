@@ -22,6 +22,8 @@
     - Sped up process spawning,
     - Switched to `Selenium`'s default HTTP client for `WebDriver` communications
         in order to resolve JRuby and MS Windows issues.
+    - `#trigger_events` -- Fixed deduplication issue causing identical event
+        callbacks from different pages not to be triggered.
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.

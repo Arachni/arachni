@@ -604,7 +604,7 @@ class Browser
         root_page = to_page
 
         elements_with_events( true ).each do |locator, events|
-            state = "#{locator.tag_name}#{locator.attributes}#{events}"
+            state = "#{root_page.url}:#{locator.tag_name}:#{locator.attributes}:#{events}"
             next if skip_state?( state )
             skip_state state
 
@@ -944,7 +944,7 @@ class Browser
                 capture_snapshot_with_sink( page )
 
                 unique_id = self.snapshot_id
-                next if skip_state? unique_id
+                next if skip_state? "#{page.url}#{unique_id}"
                 skip_state unique_id
 
                 notify_on_new_page( page )
