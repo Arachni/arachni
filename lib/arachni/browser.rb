@@ -944,7 +944,7 @@ class Browser
                 capture_snapshot_with_sink( page )
 
                 unique_id = self.snapshot_id
-                next if skip_state? "#{page.url}#{unique_id}"
+                next if skip_state? "#{unique_id}"
                 skip_state unique_id
 
                 notify_on_new_page( page )
