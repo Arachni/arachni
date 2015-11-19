@@ -604,7 +604,7 @@ class Browser
         root_page = to_page
 
         elements_with_events( true ).each do |locator, events|
-            state = "#{root_page.url}:#{locator.tag_name}:#{locator.attributes}:#{events}"
+            state = "#{locator.tag_name}:#{locator.attributes}:#{events}"
             next if skip_state?( state )
             skip_state state
 
