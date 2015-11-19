@@ -417,10 +417,6 @@ class Dynamic404Handler
             # don't bother fingerprinting them
             fingerprint:   false,
 
-            # No need to normalize these random URLs, they'll be valid for sure
-            # and never used again, so no need for caching them either.
-            normalize_url: false,
-
             performer:     self,
             &block
         )
