@@ -1210,8 +1210,7 @@ class Browser
                         '--ignore-ssl-errors=true',
                         '--ssl-protocol=any',
 
-                        '--disk-cache=true',
-                        "--debug=#{!!debug?}"
+                        '--disk-cache=true'
                     )
                     # @process.leader = true
                     @process.detach = true
@@ -1232,7 +1231,6 @@ class Browser
                          rescue
                              sleep 0.05
                          end
-
                      end
 
                     print_debug 'Boot-up complete.'
