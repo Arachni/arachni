@@ -25,6 +25,11 @@ class Browser
     include Utilities
     include Support::Mixins::Observable
 
+    # Make sure there are no process leaks.
+    at_exit do
+        Browser.killall
+    end
+
     # @!method on_fire_event( &block )
     advertise :on_fire_event
 
@@ -124,33 +129,58 @@ class Browser
     # @return   [Integer]
     attr_reader :pid
 
+    attr_reader :process
+
     attr_reader :last_url
 
-    # @return   [Bool]
-    #   `true` if a supported browser is in the OS PATH, `false` otherwise.
-    def self.has_executable?
-        !!executable
-    end
+    class <<self
 
-    # @return   [String]
-    #   Path to the PhantomJS executable.
-    def self.executable
-        Selenium::WebDriver::PhantomJS.path
-    end
+        # Kills all {#processes}.
+        def killall
+            while process = processes.pop
+                begin
+                    process.stop if process.alive?
+                rescue Errno::ECHILD
+                end
+            end
 
-    def self.asset_domains
-        @asset_domains ||= Set.new
+            nil
+        end
+
+        # @return   [Array<ChildProcess>]
+        #   Active Browser processes.
+        def processes
+            @processes ||= []
+        end
+
+        # @return   [Bool]
+        #   `true` if a supported browser is in the OS PATH, `false` otherwise.
+        def has_executable?
+            !!executable
+        end
+
+        # @return   [String]
+        #   Path to the PhantomJS executable.
+        def executable
+            Selenium::WebDriver::PhantomJS.path
+        end
+
+        def asset_domains
+            @asset_domains ||= Set.new
+        end
+
+        def add_asset_domain( url )
+            return if url.to_s.empty?
+            return if !(curl = Arachni::URI( url ))
+            return if !(domain = curl.domain)
+
+            asset_domains << domain
+            domain
+        end
+
     end
+    processes
     asset_domains
-
-    def self.add_asset_domain( url )
-        return if url.to_s.empty?
-        return if !(curl = Arachni::URI( url ))
-        return if !(domain = curl.domain)
-
-        asset_domains << domain
-        domain
-    end
 
     # @param    [Hash]  options
     # @option options   [Integer]    :concurrency
@@ -1212,6 +1242,9 @@ class Browser
 
                         '--disk-cache=true'
                     )
+
+                    self.class.processes << @process
+
                     # @process.leader = true
                     @process.detach = true
 
@@ -1282,6 +1315,8 @@ class Browser
         rescue Errno::ECHILD
             false
         end
+
+        self.class.processes.delete @process
 
         @process     = nil
         @watir       = nil
