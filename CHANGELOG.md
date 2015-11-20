@@ -16,6 +16,10 @@
 - `HTTP`
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
         written server with support for `keep-alive` and low-overhead SSL interception.
+- `Page`
+    - `DOM`
+        - `#restore` -- Don't preload the stored page to avoid stale nonces,
+            instead rely solely on browser for caching.
 - `Browser`
     - Replaced internal use of `Watir` with direct access to `Selenium`, resulting
         in much better performance and lower CPU utilization.

@@ -2508,30 +2508,38 @@ describe Arachni::Browser do
                 it 'loads it' do
                     expect(hit_count).to eq(0)
 
-                    @browser.load Arachni::HTTP::Client.get( @url, mode: :sync ).to_page
+                    page = Arachni::HTTP::Client.get( @url, mode: :sync ).to_page
+
+                    expect(hit_count).to eq(1)
+
+                    @browser.load page
+
                     expect(@browser.source).to include( ua )
                     expect(@browser.preloads).not_to include( @url )
 
-                    expect(hit_count).to eq(1)
+                    expect(hit_count).to eq(2)
                 end
 
                 it 'uses its #cookie_jar' do
                     expect(@browser.javascript_cookies).to be_empty
 
-                    page = Arachni::Page.from_data(
-                        url:        @url,
-                        cookie_jar:  [
-                            Arachni::Cookie.new(
-                                url:    @url,
-                                inputs: {
-                                    'my-name' => 'my-value'
-                                }
-                            )
-                        ]
+                    cookie = Arachni::Cookie.new(
+                        url:    @url,
+                        inputs: {
+                            'my-name' => 'my-value'
+                        }
                     )
 
+                    page = Arachni::Page.from_data(
+                        url:        @url,
+                        cookie_jar:  [ cookie ]
+                    )
+
+                    expect(@browser.javascript_cookies).to_not include cookie
+
                     @browser.load( page )
-                    expect(@browser.javascript_cookies).to eq(page.cookie_jar)
+
+                    expect(@browser.javascript_cookies).to include cookie
                 end
 
                 it 'replays its DOM#transitions' do

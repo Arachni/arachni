@@ -143,9 +143,6 @@ class DOM
     # @return   [Browser, nil]
     #   Live page in the `browser` if successful, `nil` otherwise.
     def restore( browser, take_snapshot = true )
-        # Preload the associated HTTP response since we've already got it.
-        browser.preload( page )
-
         # First, try to load the page via its DOM#url in case it can restore
         # itself via its URL fragments and whatnot.
         browser.goto url, take_snapshot: take_snapshot
@@ -157,8 +154,7 @@ class DOM
 
         browser_page = browser.to_page
 
-        # We were probably led to an out-of-scope page via a JS redirect,
-        # bail out.
+        # We were probably led to an out-of-scope page via a JS redirect, bail out.
         return if browser_page.code == 0
 
         # Check to see if just loading the DOM URL was enough.
@@ -176,10 +172,7 @@ class DOM
         browser.print_debug "Could not load snapshot by URL (#{url}), " <<
             'will load by replaying transitions.'
 
-        # The URL restore failed, so, navigate to the pure version of the URL and
-        # replay its transitions.
-        browser.preload( page )
-
+        # The URL restore failed, replay its transitions.
         playables.each do |transition|
             next if transition.play( browser )
 
