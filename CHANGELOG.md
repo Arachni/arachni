@@ -61,6 +61,9 @@
             - `Differential`
                 - Abort on partial responses to avoid FPs caused by server stress
                     or Firewall/IDS/IPS.
+            - `Timeout`
+                - Added one more verification phase to further reduce the possibility
+                    of random FPs.
 - Checks
     - Active -- Updated all checks that make use of `Element::Capabilities::Analyzable::Signature`
         to provide simple substring signatures whenever possible.
