@@ -164,7 +164,7 @@ class Worker < Arachni::Browser
 
         # Keep checking to see if any of the 'done' criteria are true.
         kill_check = Thread.new do
-            sleep 0.1 while browser_alive? && wait && @job
+            sleep 0.1 while alive? && wait && @job
             @done_signal << nil
         end
 
@@ -228,7 +228,7 @@ class Worker < Arachni::Browser
     end
 
     def browser_respawn_if_necessary
-        return false if !time_to_die? && browser_alive?
+        return false if !time_to_die? && alive?
         browser_respawn
     end
 
@@ -238,7 +238,7 @@ class Worker < Arachni::Browser
         begin
             # If PhantomJS is already dead this will block for quite some time so
             # beware.
-            @watir.close if browser_alive?
+            @watir.close if alive?
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error
         end

@@ -25,11 +25,6 @@ class Browser
     include Utilities
     include Support::Mixins::Observable
 
-    # Make sure there are no process leaks.
-    at_exit do
-        Browser.killall
-    end
-
     # @!method on_fire_event( &block )
     advertise :on_fire_event
 
@@ -135,24 +130,6 @@ class Browser
 
     class <<self
 
-        # Kills all {#processes}.
-        def killall
-            while process = processes.pop
-                begin
-                    process.stop if process.alive?
-                rescue Errno::ECHILD
-                end
-            end
-
-            nil
-        end
-
-        # @return   [Array<ChildProcess>]
-        #   Active Browser processes.
-        def processes
-            @processes ||= []
-        end
-
         # @return   [Bool]
         #   `true` if a supported browser is in the OS PATH, `false` otherwise.
         def has_executable?
@@ -179,7 +156,6 @@ class Browser
         end
 
     end
-    processes
     asset_domains
 
     # @param    [Hash]  options
@@ -432,7 +408,7 @@ class Browser
 
     def shutdown
         begin
-            watir.close if browser_alive?
+            watir.close if alive?
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error
         end
@@ -1229,31 +1205,21 @@ class Browser
                 with_timeout 10 do
                     print_debug "Spawning process: #{self.class.executable}"
 
-                    @process = ChildProcess.build(
-                        self.class.executable,
-                        "--webdriver=#{port}",
-                        "--proxy=#{@proxy.url}",
-
-                        # As lax as possible to allow for easy SSL interception.
-                        # The actual request to the origin server will obey
-                        # the system-side SSL options.
-                        '--ignore-ssl-errors=true',
-                        '--ssl-protocol=any',
-
-                        '--disk-cache=true'
-                    )
-
-                    self.class.processes << @process
-
-                    # @process.leader = true
-                    @process.detach = true
-
                     r, w = IO.pipe
 
-                    @process.io.stderr = @process.io.stdout = w
-                    @process.io.stderr.sync = @process.io.stdout.sync = true
+                    @pid = Processes::Manager.spawn(
+                        :browser,
+                        executable: self.class.executable,
+                        without_arachni: true,
+                        fork: false,
+                        out: w,
+                        err: w,
+                        port: port,
+                        proxy_url: @proxy.url
+                    )
 
-                    @process.start
+                    w.close
+
                     print_debug 'Process spawned, waiting for it to boot-up...'
 
                     # Wait for PhantomJS to initialize.
@@ -1273,7 +1239,7 @@ class Browser
                 print_debug 'Spawn timed-out.'
             end
 
-            if @process.io.stdout
+            if !output.empty?
                 print_debug output
             end
 
@@ -1291,16 +1257,10 @@ class Browser
         #
         # Bail out for now and count on the BrowserCluster to retry to boot
         # another process ass needed.
-        if !@process
+        if !@pid
             log_error 'Could not spawn browser process.'
             log_error output
             return
-        end
-
-        begin
-            @pid = @process.pid
-        # Not supported on JRuby on MS Windows.
-        rescue NotImplementedError
         end
 
         @browser_url = "http://127.0.0.1:#{port}"
@@ -1308,27 +1268,18 @@ class Browser
 
     def kill_process
         begin
-            if @process && @process.alive?
-                @process.stop
-                @process.io.close rescue nil
-            end
-        rescue Errno::ECHILD
-            false
+            Process.kill 'INT', @pid
+        rescue Errno::ESRCH
         end
 
-        self.class.processes.delete @process
-
-        @process     = nil
         @watir       = nil
         @selenium    = nil
         @pid         = nil
         @browser_url = nil
     end
 
-    def browser_alive?
-        @watir && @process && @process.alive?
-    rescue Errno::ECHILD
-        false
+    def alive?
+        @pid && Processes::Manager.alive?( @pid )
     end
 
     def store_pages?

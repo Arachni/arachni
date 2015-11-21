@@ -69,10 +69,6 @@ class BrowserCluster
     #   Number of pending jobs.
     attr_reader :pending_job_counter
 
-    attr_reader :consumed_pids
-
-    attr_reader :job_counter
-
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
     #   Amount of {Worker browsers} to add to the pool.
@@ -120,7 +116,6 @@ class BrowserCluster
         @mutex       = Monitor.new
         @done_signal = Queue.new
 
-        @consumed_pids = []
         initialize_workers
     end
 
@@ -483,11 +478,8 @@ class BrowserCluster
                 height: Options.browser_cluster.screen_height
             )
             @workers << worker
-            @consumed_pids << worker.pid
-
             print_status "Spawned ##{i+1} with PID #{worker.pid}."
         end
-        @consumed_pids.compact!
 
         print_status "Initialization completed with #{@workers.size} browsers in the pool."
     end

@@ -28,6 +28,8 @@
         in order to resolve JRuby and MS Windows issues.
     - `#trigger_events` -- Fixed deduplication issue causing identical event
         callbacks from different pages not to be triggered.
+    - `#spawn_phantomjs` -- Use a Ruby lifeline process to kill the browser
+        if the parent dies for whatever reason.
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.

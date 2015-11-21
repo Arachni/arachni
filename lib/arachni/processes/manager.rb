@@ -124,8 +124,21 @@ class Manager
         fork = options.delete(:fork)
         fork = true if fork.nil?
 
+        spawn_options = {}
+        if stdin = options.delete(:in)
+            spawn_options[:in] = stdin
+        end
+        if out = options.delete(:out)
+            spawn_options[:out] = out
+        end
+        if err = options.delete(:err)
+            spawn_options[:err] = err
+        end
+
+        options[:ppid]  = Process.pid
+
         options[:options] ||= {}
-        options[:options] = Options.to_h.merge( options[:options] )
+        options[:options]   = Options.to_h.merge( options[:options] )
 
         # Paths are not included in RPC nor Hash representations as they're
         # considered local, in this case though they're necessary to provide
@@ -142,7 +155,10 @@ class Manager
         # have a fallback ready.
         if fork && Process.respond_to?( :fork )
             pid = Process.fork do
-                if discard_output?
+                if out
+                    $stdout = out
+                    $stderr = err
+                elsif discard_output?
                     $stdout.reopen( Arachni.null_device, 'w' )
                     $stderr.reopen( Arachni.null_device, 'w' )
                 end
@@ -166,7 +182,11 @@ class Manager
             # It's very, **VERY** important that we use this argument format as
             # it bypasses the OS shell and we can thus count on a 1-to-1 process
             # creation and that the PID we get will be for the actual process.
-            pid = Process.spawn( RbConfig.ruby, RUNNER, *argv )
+            pid = Process.spawn(
+                RbConfig.ruby,
+                RUNNER,
+                *(argv + [spawn_options])
+            )
         end
 
         self << pid

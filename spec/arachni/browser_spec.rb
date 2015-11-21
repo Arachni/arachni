@@ -60,46 +60,6 @@ describe Arachni::Browser do
         pages_should_have_form_with_input( pages, 'by-ajax' )
     end
 
-    describe '.killall' do
-        it 'kills all processes' do
-            browsers  = [subject, described_class.new, described_class.new]
-            processes = browsers.map(&:process)
-
-            expect(processes.select(&:alive?).size).to eq processes.size
-
-            described_class.killall
-
-            expect(described_class.processes).to be_empty
-
-            dead = 0
-            processes.each do |process|
-                begin
-                    next if process.alive?
-                rescue Errno::ECHILD
-                end
-
-                dead += 1
-            end
-            expect(dead).to eq processes.size
-
-            @browser = nil
-        end
-    end
-
-    describe '.processes' do
-        it 'returns all processes' do
-            browsers = [subject, described_class.new, described_class.new]
-
-            expect(described_class.processes.map(&:object_id).sort).to eq browsers.map(&:process).map(&:object_id).sort
-
-            browsers.each(&:shutdown)
-
-            expect(described_class.processes).to be_empty
-
-            @browser = nil
-        end
-    end
-
     describe '.has_executable?' do
         context 'when there is no executable browser' do
             it 'returns false' do
