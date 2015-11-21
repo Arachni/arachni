@@ -42,7 +42,19 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
         context 'when dealing with a dynamic handler' do
             context 'which at any point returns non-200' do
                 it 'aborts the check' do
-                    response = client.get( url + 'dynamic/erratic', mode: :sync )
+                    response = client.get( url + 'dynamic/erratic/code/test', mode: :sync )
+
+                    check = nil
+                    subject._404?( response ) { |bool| check = bool }
+                    client.run
+
+                    expect(check).to be_nil
+                end
+            end
+
+            context 'which is too erratic' do
+                it 'aborts the check' do
+                    response = client.get( url + 'dynamic/erratic/body/test', mode: :sync )
 
                     check = nil
                     subject._404?( response ) { |bool| check = bool }
@@ -57,18 +69,19 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                     res = nil
                     client.get( url + 'dynamic/crap' ) { |c_res| res = c_res }
                     client.run
-                    bool = false
+                    bool = nil
                     subject._404?( res ) { |c_bool| bool = c_bool }
                     client.run
                     expect(bool).to be_truthy
                 end
             end
+
             context 'which includes constantly changing text in the response' do
                 it 'returns true' do
                     res = nil
                     client.get( url + 'random/crap' ) { |c_res| res = c_res }
                     client.run
-                    bool = false
+                    bool = nil
                     subject._404?( res ) { |c_bool| bool = c_bool }
                     client.run
                     expect(bool).to be_truthy
@@ -79,7 +92,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                     res = nil
                     client.get( url + 'combo/crap' ) { |c_res| res = c_res }
                     client.run
-                    bool = false
+                    bool = nil
                     subject._404?( res ) { |c_bool| bool = c_bool }
                     client.run
                     expect(bool).to be_truthy
@@ -93,7 +106,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                         client.get( url + 'advanced/sensitive-ext/blah.html2' ) { |c_res| res = c_res }
                         client.run
 
-                        bool = false
+                        bool = nil
                         subject._404?( res ) { |c_bool| bool = c_bool }
                         client.run
 
@@ -115,7 +128,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                 client.get( url + 'static/crap' ) { |c_res| res = c_res }
                 client.run
 
-                bool = false
+                bool = nil
                 subject._404?( res ) { |c_bool| bool = c_bool }
                 client.run
                 expect(bool).to be_truthy
@@ -135,7 +148,7 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                     overhead += 1
                 end
 
-                bool = false
+                bool = nil
                 subject._404?( res ) { |c_bool| bool = c_bool }
                 client.run
                 expect(bool).to be_truthy

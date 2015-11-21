@@ -16,6 +16,10 @@
 - `HTTP`
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
         written server with support for `keep-alive` and low-overhead SSL interception.
+    - `Client`
+        - `Dynamic404Handler` -- Check for excessive amounts of noise during
+            custom-404 signature generation and abort if an accurate reading is
+            impossible.
 - `Page`
     - `DOM`
         - `#restore` -- Don't preload the stored page to avoid stale nonces,
@@ -42,7 +46,7 @@
 - `REST::Server` -- Added REST API.
 - `RPC`
     - `Server`
-        - `ActiveOptions#set` -- Allow options to be set during runtime and ajust
+        - `ActiveOptions#set` -- Allow options to be set during runtime and adjust
             the scan scope accordingly.
 - `Element`
     - `UIInput::DOM` -- Updated coverage identifier calculation.
