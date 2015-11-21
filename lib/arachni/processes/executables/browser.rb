@@ -23,7 +23,7 @@ handle_exit = proc do
     # $stderr.puts "#{Process.pid}: Exited"
 end
 
-trap( 'INT', &handle_exit )
+trap( 'TERM', &handle_exit )
 at_exit( &handle_exit )
 
 process.detach = true

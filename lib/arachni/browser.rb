@@ -1268,7 +1268,7 @@ class Browser
 
     def kill_process
         begin
-            Process.kill 'INT', @pid
+            Process.kill 'TERM', @pid
         rescue Errno::ESRCH
         end
 
