@@ -22,12 +22,15 @@ def parent_alive?
     # Windows is not big on POSIX so try it its own way if possible.
     if Gem.win_platform?
         begin
-            wmi = WIN32OLE.connect( 'winmgmts://' )
-            wmi.InstancesOf( 'Win32_Process' ).each do |proc|
-                return true if ppid == proc.ProcessId
+            alive = false
+            @wmi ||= WIN32OLE.connect( 'winmgmts://' )
+            processes = @wmi.ExecQuery( "select ProcessId from win32_process where ProcessID='#{ppid}'")
+            processes.each do |proc|
+                alive = true
             end
+            processes.ole_free
 
-            return false
+            return alive
         rescue WIN32OLERuntimeError
         end
     end
