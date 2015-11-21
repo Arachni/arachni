@@ -63,17 +63,21 @@ class Manager
         # Windows is not big on POSIX so try it its own way if possible.
         if Arachni.windows?
             begin
-                wmi = WIN32OLE.connect( 'winmgmts://' )
-                wmi.InstancesOf( 'Win32_Process' ).each do |proc|
-                    return true if pid == proc.ProcessId
+                alive = false
+                @wmi ||= WIN32OLE.connect( 'winmgmts://' )
+                processes = @wmi.ExecQuery( "select ProcessId from win32_process where ProcessID='#{pid}'")
+                processes.each do |proc|
+                    proc.ole_free
+                    alive = true
                 end
+                processes.ole_free
 
-                return false
-            rescue WIN32OLERuntimeError 
+                return alive
+            rescue WIN32OLERuntimeError
             end
         end
 
-        !!(Process.kill( 0, pid ) rescue false)     
+        !!(Process.kill( 0, pid ) rescue false)
     end
 
     # @param    [Array<Integer>]   pids
