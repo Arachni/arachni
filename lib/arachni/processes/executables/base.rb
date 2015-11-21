@@ -26,6 +26,7 @@ def parent_alive?
             @wmi ||= WIN32OLE.connect( 'winmgmts://' )
             processes = @wmi.ExecQuery( "select ProcessId from win32_process where ProcessID='#{ppid}'")
             processes.each do |proc|
+                proc.ole_free
                 alive = true
             end
             processes.ole_free
