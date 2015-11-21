@@ -127,6 +127,13 @@ class Response < Message
         code != 304
     end
 
+    # @return [Boolean]
+    #   `true` if the request was performed successfully and the response was
+    #   received in full, `false` otherwise.
+    def ok?
+        return_code == :ok
+    end
+
     # @return [Bool]
     #   `true` if the response body is textual in nature, `false` if binary,
     #   `nil` if could not be determined.

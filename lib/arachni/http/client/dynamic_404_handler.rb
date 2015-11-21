@@ -154,46 +154,35 @@ class Dynamic404Handler
 
         real_404s          = 0
         corrupted          = false
-        gathered_responses = 0
-        expected_responses = generators.size * PRECISION
+        gathered_signatures = 0
+        expected_signatures = generators.size
 
         generators.each.with_index do |generator, i|
             current_signature = (preliminary_signatures_for( url )[i] ||= {})
 
-            PRECISION.times do
-                request( generator.call ) do |c_res|
-                    next if corrupted
+            signature_from_url generator.call, current_signature do |c_res, status|
+                next if corrupted
 
+                if status == :done
                     print_debug "[gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
 
-                    # Well, bad luck, bail out to avoid FPs.
-                    if corrupted_response?( c_res )
-                        print_debug "[corrupted]: #{url} #{c_res.code} #{block}"
-                        corrupted = true
-                        next clear_data_for( url )
-                    end
-
-                    gathered_responses += 1
+                    gathered_signatures += 1
                     if c_res.code == 404
                         real_404s += 1
                     end
 
-                    if current_signature[:body]
-                        current_signature[:rdiff] =
-                            current_signature[:body].refine( c_res.body )
-
-                        next if gathered_responses != expected_responses
-
-                        if real_404s == expected_responses
+                    if gathered_signatures == expected_signatures
+                        if real_404s == expected_signatures
                             @static << url_for( url )
                         end
 
                         block.call
-                    else
-                        current_signature[:body] = Support::Signature.new(
-                            c_res.body, threshold: SIGNATURE_THRESHOLD
-                        )
                     end
+                end
+
+                if status == :corrupted
+                    print_debug "[corrupted]: #{url} #{block}"
+                    corrupted = true
                 end
             end
         end
@@ -207,40 +196,76 @@ class Dynamic404Handler
             return
         end
 
-        corrupted          = false
-        gathered_responses = 0
-        expected_responses = generators.size * PRECISION
+        corrupted           = false
+        gathered_signatures = 0
+        expected_signatures = generators.size
 
         generators.each.with_index do |generator, i|
             current_signature = (advanced_signatures_for( url )[i] ||= {})
 
-            PRECISION.times do
-                request( generator.call ) do |c_res|
-                    next if corrupted
+            signature_from_url generator.call, current_signature do |c_res, status|
+                next if corrupted
 
-                    print_debug "[gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
+                print_debug "[gathering]: #{c_res.request.url} #{c_res.url} #{c_res.code} #{block}"
 
-                    # Well, bad luck, bail out to avoid FPs.
-                    if corrupted_response?( c_res )
-                        print_debug "[corrupted]: #{url} #{block}"
-                        corrupted = true
-                        next clear_data_for( url )
+                gathered_signatures += 1
+
+                if status == :done && gathered_signatures == expected_signatures
+                    block.call
+                end
+
+                if status == :corrupted
+                    print_debug "[corrupted]: #{url} #{block}"
+                    corrupted = true
+                end
+            end
+        end
+    end
+
+    def signature_from_url( url, signature_data, precision = PRECISION, &block )
+        controlled_precision = precision * 2
+        control_data         = {}
+
+        corrupted          = false
+        gathered_responses = 0
+
+        controlled_precision.times do
+            request( url ) do |response|
+                next if corrupted
+
+                signature = gathered_responses >= precision ?
+                    control_data : signature_data
+
+                # Well, bad luck, bail out to avoid FPs.
+                if corrupted_response?( response )
+                    block.call response, :corrupted
+                    corrupted = true
+                    next
+                end
+
+                gathered_responses += 1
+
+                if signature[:body]
+                    signature[:rdiff] = signature[:body].refine( response.body )
+
+                    if gathered_responses == controlled_precision
+
+                        # Both attempts yielded in the same result, the webapp
+                        # was stable during the process and the signature can be
+                        # considered accurate.
+                        if control_data[:rdiff] == signature_data[:rdiff]
+                            block.call response, :done
+
+                        # Coo-coo for cocoa puffs, can't work with it.
+                        else
+                            block.call response, :corrupted
+                        end
+
                     end
-
-                    gathered_responses += 1
-
-                    if current_signature[:body]
-                        current_signature[:rdiff] =
-                            current_signature[:body].refine( c_res.body )
-
-                        next if gathered_responses != expected_responses
-
-                        block.call
-                    else
-                        current_signature[:body] = Support::Signature.new(
-                            c_res.body, threshold: SIGNATURE_THRESHOLD
-                        )
-                    end
+                else
+                    signature[:body] = Support::Signature.new(
+                        response.body, threshold: SIGNATURE_THRESHOLD
+                    )
                 end
             end
         end
@@ -314,7 +339,7 @@ class Dynamic404Handler
     # In that case we should bail out to avoid corrupted signatures which can
     # lead to FPs.
     def corrupted_response?( response )
-        response.code != 404 && response.code != 200
+        !response.ok? || (response.code != 404 && response.code != 200)
     end
 
     def url_for( url )

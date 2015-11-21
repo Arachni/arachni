@@ -114,6 +114,26 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#ok?' do
+        before do
+            subject.return_code = return_code
+        end
+
+        context 'when #return_code is' do
+            context ':ok' do
+                let(:return_code) { :ok }
+
+                expect_it { to be_ok }
+            end
+
+            context 'not :ok' do
+                let(:return_code) { :blah }
+
+                expect_it { to_not be_ok }
+            end
+        end
+    end
+
     describe '#partial?' do
         context 'when the response body does not match the content-lenth' do
             it 'returns true' do

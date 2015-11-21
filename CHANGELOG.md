@@ -16,6 +16,10 @@
 - `HTTP`
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
         written server with support for `keep-alive` and low-overhead SSL interception.
+    - `Client`
+        - `Dynamic404Handler` -- Check for excessive amounts of noise during
+            custom-404 signature generation and abort if an accurate reading is
+            impossible.
 - `Page`
     - `DOM`
         - `#restore` -- Don't preload the stored page to avoid stale nonces,
@@ -26,8 +30,6 @@
     - Sped up process spawning,
     - Switched to `Selenium`'s default HTTP client for `WebDriver` communications
         in order to resolve JRuby and MS Windows issues.
-    - `#trigger_events` -- Fixed deduplication issue causing identical event
-        callbacks from different pages not to be triggered.
     - `#spawn_phantomjs` -- Use a Ruby lifeline process to kill the browser
         if the parent dies for whatever reason.
 - `Support`
@@ -42,7 +44,7 @@
 - `REST::Server` -- Added REST API.
 - `RPC`
     - `Server`
-        - `ActiveOptions#set` -- Allow options to be set during runtime and ajust
+        - `ActiveOptions#set` -- Allow options to be set during runtime and adjust
             the scan scope accordingly.
 - `Element`
     - `UIInput::DOM` -- Updated coverage identifier calculation.
@@ -57,6 +59,9 @@
             - `Differential`
                 - Abort on partial responses to avoid FPs caused by server stress
                     or Firewall/IDS/IPS.
+            - `Timeout`
+                - Added one more verification phase to further reduce the possibility
+                    of random FPs.
 - Checks
     - Active -- Updated all checks that make use of `Element::Capabilities::Analyzable::Signature`
         to provide simple substring signatures whenever possible.
