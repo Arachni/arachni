@@ -19,9 +19,9 @@ process = ChildProcess.build(
 )
 
 handle_exit = proc do
-    $stderr.puts "#{Process.pid}: Exiting"
+    # $stderr.puts "#{Process.pid}: Exiting"
     process.stop
-    $stderr.puts "#{Process.pid}: Exited"
+    # $stderr.puts "#{Process.pid}: Exited"
 end
 
 trap( 'TERM', &handle_exit )
