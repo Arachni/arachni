@@ -1269,7 +1269,7 @@ class Browser
     def kill_process
         begin
             Process.kill 'TERM', @pid
-        rescue Errno::ESRCH
+        rescue Errno::ESRCH, Errno::EINVAL
         end
 
         @watir       = nil
