@@ -414,7 +414,7 @@ class Browser
         end
 
         kill_process
-        @proxy.shutdown
+        @proxy.shutdown rescue Reactor::Error::NotRunning
     end
 
     # @return   [String]
@@ -1205,13 +1205,15 @@ class Browser
                 with_timeout 10 do
                     print_debug "Spawning process: #{self.class.executable}"
 
-                    r, w = IO.pipe
+                    r, w  = IO.pipe
+                    ri, @kill_process = IO.pipe
 
                     @pid = Processes::Manager.spawn(
                         :browser,
                         executable: self.class.executable,
                         without_arachni: true,
                         fork: false,
+                        in: ri,
                         out: w,
                         err: w,
                         port: port,
@@ -1219,6 +1221,7 @@ class Browser
                     )
 
                     w.close
+                    ri.close
 
                     print_debug 'Process spawned, waiting for it to boot-up...'
 
@@ -1267,10 +1270,7 @@ class Browser
     end
 
     def kill_process
-        begin
-            Process.kill 'TERM', @pid
-        rescue Errno::ESRCH, Errno::EINVAL
-        end
+        @kill_process.puts
 
         @watir       = nil
         @selenium    = nil

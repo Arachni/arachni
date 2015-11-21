@@ -160,6 +160,7 @@ class Manager
         if fork && Process.respond_to?( :fork )
             pid = Process.fork do
                 if out
+                    $stdin  = stdin
                     $stdout = out
                     $stderr = err
                 elsif discard_output?

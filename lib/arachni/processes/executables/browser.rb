@@ -19,12 +19,19 @@ process = ChildProcess.build(
 )
 
 handle_exit = proc do
+    $stderr.puts "#{Process.pid}: Exiting"
     process.stop
-    # $stderr.puts "#{Process.pid}: Exited"
+    $stderr.puts "#{Process.pid}: Exited"
 end
 
 trap( 'TERM', &handle_exit )
 at_exit( &handle_exit )
+
+kill_signal = false
+Thread.new do
+    $stdin.readline.inspect
+    kill_signal = true
+end
 
 process.detach = true
 
@@ -38,14 +45,17 @@ process.start
 # $stderr.puts "#{Process.pid}: Started"
 
 # Bail out if either the parent of the browser dies.
-while parent_alive?
+while parent_alive? && !kill_signal
     # $stderr.puts "#{Process.pid}: Working"
 
     begin
         break if !process.alive?
     rescue Errno::ECHILD
+        # $stderr.puts "#{Process.pid}: Errno::ECHILD"
         exit
     end
 
     sleep 0.5
 end
+
+# $stderr.puts "#{Process.pid}: EOF"
