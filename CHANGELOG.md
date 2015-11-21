@@ -30,8 +30,6 @@
     - Sped up process spawning,
     - Switched to `Selenium`'s default HTTP client for `WebDriver` communications
         in order to resolve JRuby and MS Windows issues.
-    - `#trigger_events` -- Fixed deduplication issue causing identical event
-        callbacks from different pages not to be triggered.
     - `#spawn_phantomjs` -- Use a Ruby lifeline process to kill the browser
         if the parent dies for whatever reason.
 - `Support`
