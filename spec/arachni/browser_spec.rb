@@ -2475,6 +2475,15 @@ describe Arachni::Browser do
             expect(@browser.load( @url )).to eq(@browser)
         end
 
+        it 'updates the global cookie-jar' do
+            @browser.load @url
+
+            cookie = Arachni::HTTP::Client.cookies.find(&:http_only?)
+
+            expect(cookie.name).to  eq('This name should be updated; and properly escaped')
+            expect(cookie.value).to eq('This value should be updated; and properly escaped')
+        end
+
         describe ':cookies' do
             it 'loads the given cookies' do
                 cookie = { 'myname' => 'myvalue' }
@@ -2915,21 +2924,21 @@ describe Arachni::Browser do
     end
 
     describe '#javascript_cookies' do
-        it 'updates the global cookie-jar' do
-            @browser.load @url
-
-            cookie = Arachni::HTTP::Client.cookies.find(&:http_only?)
-
-            expect(cookie.name).to  eq('This name should be updated; and properly escaped')
-            expect(cookie.value).to eq('This value should be updated; and properly escaped')
-        end
-
         it 'returns cookies visible via JavaScript' do
             @browser.load @url
 
             cookie = @browser.javascript_cookies.first
             expect(cookie.name).to  eq 'cookie_name'
             expect(cookie.value).to eq 'cookie value'
+        end
+
+        it 'sets / as path' do
+            @browser.load "#{@url}/cookie/under/path"
+
+            cookie = @browser.javascript_cookies.first
+            expect(cookie.name).to  eq 'cookie_under_path'
+            expect(cookie.value).to eq 'value'
+            expect(cookie.path).to eq '/'
         end
 
         context 'when parsing v1 cookies' do

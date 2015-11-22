@@ -29,6 +29,18 @@ get '/' do
 HTML
 end
 
+get '/cookie/under/path' do
+    <<HTML
+<html>
+    <body>
+        <script type="text/javascript">
+            document.cookie = 'cookie_under_path=value';
+        </script>
+    </body>
+</html>
+HTML
+end
+
 get '/open-new-window' do
     <<HTML
 <html>
@@ -780,10 +792,6 @@ get '/cookie-test' do
     <<HTML
     <div id="cookies">#{cookies.to_hash}</div>
 HTML
-end
-
-get '/update-cookies' do
-    cookies[:update] = 'this'
 end
 
 get '/update-cookies' do

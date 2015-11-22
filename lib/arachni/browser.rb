@@ -1018,7 +1018,16 @@ class Browser
             ''
         end
 
-        Cookie.from_string( self.url, js_cookies )
+        Cookie.from_string(
+            Arachni::URI( self.url ).up_to_port,
+            js_cookies
+        )
+    end
+
+    def update_cookies
+        # HTTPOnly cookies don't worry us, the proxy server will have already
+        # set them globally.
+        HTTP::Client.update_cookies self.javascript_cookies
     end
 
     # @return   [String]
@@ -1405,12 +1414,6 @@ EOJS
         end
 
         @selenium.manage.window.resize_to( @width, @height )
-    end
-
-    def update_cookies
-        # HTTPOnly cookies don't worry us, the proxy server will have already
-        # set them globally.
-        HTTP::Client.update_cookies self.javascript_cookies
     end
 
     # # Firefox driver, only used for debugging.
