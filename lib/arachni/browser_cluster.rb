@@ -478,7 +478,8 @@ class BrowserCluster
                 height: Options.browser_cluster.screen_height
             )
             @workers << worker
-            print_status "Spawned ##{i+1} with PID #{worker.pid}."
+            print_status "Spawned ##{i+1} with PID #{worker.browser_pid} " <<
+                "[lifeline at PID #{worker.lifeline_pid}]."
         end
 
         print_status "Initialization completed with #{@workers.size} browsers in the pool."

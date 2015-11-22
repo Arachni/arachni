@@ -70,16 +70,41 @@ describe Arachni::BrowserCluster::Worker do
         end
 
         context 'before running the job' do
-            it 'ensures that there is a live PhantomJS process' do
-                Arachni::Processes::Manager.kill subject.pid
-                expect(Arachni::Processes::Manager.alive?( subject.pid )).to be_falsey
-                dead_pid = subject.pid
+            context 'when PhantomJS is dead' do
+                it 'spawns a new one' do
+                    Arachni::Processes::Manager.kill subject.browser_pid
 
-                @cluster.queue( custom_job ){}
-                @cluster.wait
+                    dead_lifeline_pid = subject.lifeline_pid
+                    dead_browser_pid  = subject.browser_pid
 
-                expect(subject.pid).not_to eq(dead_pid)
-                expect(Arachni::Processes::Manager.alive?( subject.pid )).to be_truthy
+                    @cluster.queue( custom_job ){}
+                    @cluster.wait
+
+                    expect(subject.browser_pid).not_to eq(dead_browser_pid)
+                    expect(subject.lifeline_pid).not_to eq(dead_lifeline_pid)
+
+                    expect(Arachni::Processes::Manager.alive?( subject.lifeline_pid )).to be_truthy
+                    expect(Arachni::Processes::Manager.alive?( subject.browser_pid )).to be_truthy
+                end
+            end
+
+            context 'when the lifeline is dead' do
+                it 'spawns a new one' do
+                    Arachni::Processes::Manager << subject.browser_pid
+                    Arachni::Processes::Manager.kill subject.lifeline_pid
+
+                    dead_lifeline_pid = subject.lifeline_pid
+                    dead_browser_pid  = subject.browser_pid
+
+                    @cluster.queue( custom_job ){}
+                    @cluster.wait
+
+                    expect(subject.browser_pid).not_to eq(dead_browser_pid)
+                    expect(subject.lifeline_pid).not_to eq(dead_lifeline_pid)
+
+                    expect(Arachni::Processes::Manager.alive?( subject.lifeline_pid )).to be_truthy
+                    expect(Arachni::Processes::Manager.alive?( subject.browser_pid )).to be_truthy
+                end
             end
         end
 
@@ -100,12 +125,12 @@ describe Arachni::BrowserCluster::Worker do
                     end
 
                     watir = subject.watir
-                    pid   = subject.pid
+                    pid   = subject.browser_pid
 
                     subject.run_job( custom_job )
 
                     expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.pid)
+                    expect(pid).not_to eq(subject.browser_pid)
                 end
             end
         end
@@ -232,14 +257,14 @@ describe Arachni::BrowserCluster::Worker do
 
                 it 'respawns PhantomJS' do
                     watir         = subject.watir
-                    pid = subject.pid
+                    pid = subject.browser_pid
 
                     expect(subject.watir.windows.size).to be > 5
                     @cluster.explore( page ) {}
                     @cluster.wait
 
                     expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.pid)
+                    expect(pid).not_to eq(subject.browser_pid)
                     expect(subject.watir.windows.size).to eq(1)
                 end
 
@@ -266,13 +291,13 @@ describe Arachni::BrowserCluster::Worker do
                     subject.max_time_to_live = 1
 
                     watir         = subject.watir
-                    pid = subject.pid
+                    pid = subject.browser_pid
 
                     @cluster.queue( custom_job ) {}
                     @cluster.wait
 
                     expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.pid)
+                    expect(pid).not_to eq(subject.browser_pid)
                 end
             end
 
@@ -284,12 +309,12 @@ describe Arachni::BrowserCluster::Worker do
                         end
 
                         watir = subject.watir
-                        pid   = subject.pid
+                        pid   = subject.browser_pid
 
                         subject.run_job( custom_job )
 
                         expect(watir).not_to eq(subject.watir)
-                        expect(pid).not_to eq(subject.pid)
+                        expect(pid).not_to eq(subject.browser_pid)
                     end
                 end
             end

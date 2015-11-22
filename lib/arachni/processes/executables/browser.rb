@@ -1,5 +1,16 @@
 require 'childprocess'
 
+def exit?
+    $stdin.read_nonblock( 1 )
+    false
+rescue Errno::EWOULDBLOCK
+    false
+# Parent dead or willfully closed STDIN as a signal.
+rescue EOFError, Errno::EPIPE => e
+    # $stderr.puts "#{Process.pid}: [#{e.class}] #{e}"
+    true
+end
+
 executable = $options[:executable]
 port       = $options[:port]
 proxy_url  = $options[:proxy_url]
@@ -10,8 +21,7 @@ process = ChildProcess.build(
     "--proxy=#{proxy_url}",
 
     # As lax as possible to allow for easy SSL interception.
-    # The actual request to the origin server will obey
-    # the system-side SSL options.
+    # The actual request to the origin server will obey the system-side SSL options.
     '--ignore-ssl-errors=true',
     '--ssl-protocol=any',
 
@@ -20,42 +30,42 @@ process = ChildProcess.build(
 
 handle_exit = proc do
     # $stderr.puts "#{Process.pid}: Exiting"
-    process.stop
-    # $stderr.puts "#{Process.pid}: Exited"
+    process.stop rescue nil
 end
 
-trap( 'TERM', &handle_exit )
 at_exit( &handle_exit )
 
-kill_signal = false
-Thread.new do
-    $stdin.readline.inspect
-    kill_signal = true
+# Try our best to terminate cleanly if some external entity tries to kill us.
+%w(EXIT TERM QUIT INT KILL).each do |signal|
+    next if !Signal.list.include?( signal )
+    trap( signal, &handle_exit ) rescue Errno::EINVAL
 end
 
 process.detach = true
 
 # Forward output.
-process.io.stderr = $stderr
 process.io.stdout = $stdout
-process.io.stderr.sync = process.io.stdout.sync = true
+process.io.stdout.sync = true
 
 process.start
-
 # $stderr.puts "#{Process.pid}: Started"
 
-# Bail out if either the parent of the browser dies.
-while parent_alive? && !kill_signal
+$stdout.puts "PID: #{process.pid}"
+
+while !exit?
     # $stderr.puts "#{Process.pid}: Working"
 
     begin
         break if !process.alive?
-    rescue Errno::ECHILD
-        # $stderr.puts "#{Process.pid}: Errno::ECHILD"
-        exit
+
+    # If for whatever reason we can't get a status on the browser consider it
+    # dead.
+    rescue => e
+        # $stderr.puts "#{Process.pid}: [#{e.class}] #{e}"
+        break
     end
 
-    sleep 0.5
+    sleep 0.03
 end
 
 # $stderr.puts "#{Process.pid}: EOF"

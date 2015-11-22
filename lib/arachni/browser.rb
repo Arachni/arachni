@@ -122,9 +122,12 @@ class Browser
     attr_reader :skip_states
 
     # @return   [Integer]
-    attr_reader :pid
+    #   PID of the lifeline process managing the browser process.
+    attr_reader :lifeline_pid
 
-    attr_reader :process
+    # @return   [Integer]
+    #   PID of the browser process.
+    attr_reader :browser_pid
 
     attr_reader :last_url
 
@@ -1084,9 +1087,14 @@ class Browser
         )
     end
 
+    def alive?
+        @lifeline_pid && Processes::Manager.alive?( @lifeline_pid )
+    end
+
     def inspect
         s = "#<#{self.class} "
-        s << "pid=#{@pid} "
+        s << "pid=#{@lifeline_pid} "
+        s << "browser_pid=#{@browser_pid} "
         s << "last-url=#{@last_url.inspect} "
         s << "transitions=#{@transitions.size}"
         s << '>'
@@ -1208,14 +1216,14 @@ class Browser
                     r, w  = IO.pipe
                     ri, @kill_process = IO.pipe
 
-                    @pid = Processes::Manager.spawn(
+                    @lifeline_pid = Processes::Manager.spawn(
                         :browser,
                         executable: self.class.executable,
                         without_arachni: true,
                         fork: false,
-                        in: ri,
-                        out: w,
-                        err: w,
+                        stdin: ri,
+                        stdout: w,
+                        # stderr: w,
                         port: port,
                         proxy_url: @proxy.url
                     )
@@ -1234,6 +1242,8 @@ class Browser
                              sleep 0.05
                          end
                      end
+
+                    @browser_pid = output.scan( /^PID: (\d+)/ ).flatten.first.to_i
 
                     print_debug 'Boot-up complete.'
                     done = true
@@ -1260,7 +1270,7 @@ class Browser
         #
         # Bail out for now and count on the BrowserCluster to retry to boot
         # another process ass needed.
-        if !@pid
+        if !@lifeline_pid
             log_error 'Could not spawn browser process.'
             log_error output
             return
@@ -1270,20 +1280,18 @@ class Browser
     end
 
     def kill_process
-        begin
-            @kill_process.puts
-        rescue Errno::EPIPE
+        if @kill_process
+            begin
+                @kill_process.close
+            rescue Errno::EPIPE
+            end
         end
 
         @kill_process = nil
         @watir        = nil
         @selenium     = nil
-        @pid          = nil
+        @lifeline_pid          = nil
         @browser_url  = nil
-    end
-
-    def alive?
-        @pid && Processes::Manager.alive?( @pid )
     end
 
     def store_pages?

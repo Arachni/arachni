@@ -179,7 +179,7 @@ class Worker < Arachni::Browser
 
     def inspect
         s = "#<#{self.class} "
-        s << "pid=#{@pid} "
+        s << "pid=#{@lifeline_pid} "
         s << "job=#{@job.inspect} "
         s << "last-url=#{@last_url.inspect} "
         s << "transitions=#{@transitions.size}"

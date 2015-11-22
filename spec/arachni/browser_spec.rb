@@ -60,6 +60,39 @@ describe Arachni::Browser do
         pages_should_have_form_with_input( pages, 'by-ajax' )
     end
 
+    context 'when the browser dies' do
+        it 'kills the lifeline too' do
+            Arachni::Processes::Manager.kill subject.browser_pid
+            expect(Arachni::Processes::Manager.alive?(subject.lifeline_pid)).to be_falsey
+        end
+    end
+
+    describe '#alive?' do
+        context 'when the lifeline is alive' do
+            it 'returns true' do
+                expect(Arachni::Processes::Manager.alive?(subject.lifeline_pid)).to be_truthy
+                expect(subject).to be_alive
+            end
+        end
+
+        context 'when the browser is dead' do
+            it 'returns false' do
+                Arachni::Processes::Manager.kill subject.browser_pid
+
+                expect(subject).to_not be_alive
+            end
+        end
+
+        context 'when the lifeline is dead' do
+            it 'returns false' do
+                Arachni::Processes::Manager << subject.browser_pid
+                Arachni::Processes::Manager.kill subject.lifeline_pid
+
+                expect(subject).to_not be_alive
+            end
+        end
+    end
+
     describe '.has_executable?' do
         context 'when there is no executable browser' do
             it 'returns false' do
