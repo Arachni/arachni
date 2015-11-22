@@ -64,13 +64,14 @@ class Manager
         if Arachni.windows?
             begin
                 alive = false
-                @wmi ||= WIN32OLE.connect( 'winmgmts://' )
-                processes = @wmi.ExecQuery( "select ProcessId from win32_process where ProcessID='#{pid}'")
+                wmi = WIN32OLE.connect( 'winmgmts://' )
+                processes = wmi.ExecQuery( "select ProcessId from win32_process where ProcessID='#{pid}'" )
                 processes.each do |proc|
                     proc.ole_free
                     alive = true
                 end
                 processes.ole_free
+                wmi.ole_free
 
                 return alive
             rescue WIN32OLERuntimeError
