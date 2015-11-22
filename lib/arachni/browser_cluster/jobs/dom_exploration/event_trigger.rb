@@ -32,7 +32,10 @@ class EventTrigger < DOMExploration
         browser.on_new_page { |page| save_result( page: page ) }
 
         browser.load resource
-        browser.trigger_event( resource, element, event )
+
+        # We're disabling page restoration for the trigger as this is an one-time
+        # job situation, the browser's state is going to be discarded at the end.
+        browser.trigger_event( resource, element, event, false )
     end
 
     def to_s

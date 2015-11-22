@@ -648,7 +648,7 @@ class Browser
     # @param    [ElementLocator]  element
     # @param    [Symbol]  event
     #   Event to trigger.
-    def trigger_event( page, element, event )
+    def trigger_event( page, element, event, restore = true )
         event = event.to_sym
         transition = fire_event( element, event )
 
@@ -657,13 +657,16 @@ class Browser
                 ' the page has changed, capturing a new snapshot.'
             capture_snapshot
 
-            print_info 'Restoring page.'
-            restore page
+            if restore
+                print_info 'Restoring page.'
+                restore( page )
+            end
+
             return
         end
 
         capture_snapshot( transition )
-        restore page
+        restore( page ) if restore
     end
 
     # Triggers `event` on `element`.
