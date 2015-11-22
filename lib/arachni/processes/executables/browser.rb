@@ -37,6 +37,9 @@ process = ChildProcess.build(
 )
 
 handle_exit = proc do
+    next if !@called
+    @called = true
+
     puts_stderr "#{Process.pid}: Exiting"
 
     begin
