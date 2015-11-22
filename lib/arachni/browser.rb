@@ -412,8 +412,9 @@ class Browser
     def shutdown
         begin
             watir.close if alive?
-        rescue Selenium::WebDriver::Error::WebDriverError,
-            Watir::Exception::Error
+        # Bucnh of dirrent errors can be raised here, Selenium, HTTP client,
+        # don't try to catch them by type because we'll probably miss some.
+        rescue
         end
 
         kill_process
@@ -1293,14 +1294,15 @@ class Browser
         if @kill_process
             begin
                 @kill_process.close
-            rescue Errno::EPIPE
+            rescue
             end
         end
 
         @kill_process = nil
         @watir        = nil
         @selenium     = nil
-        @lifeline_pid          = nil
+        @lifeline_pid = nil
+        @browser_pid  = nil
         @browser_url  = nil
     end
 
