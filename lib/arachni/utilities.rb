@@ -386,7 +386,7 @@ module Utilities
             socket.bind( ::Socket.sockaddr_in( port, '127.0.0.1' ) )
             socket.close
             true
-        rescue Errno::EADDRINUSE
+        rescue Errno::EADDRINUSE, Errno::EACCES
             false
         end
     end
