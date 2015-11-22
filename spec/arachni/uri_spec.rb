@@ -478,6 +478,25 @@ describe Arachni::URI do
         end
     end
 
+    describe '#up_to_port' do
+        it 'returns the URL up to its port' do
+            url = 'http://test.com/path/goes/here.php?query=goes&here=.!#frag'
+            expect(described_class.parse( url ).up_to_port).to eq('http://test.com')
+
+            url = 'http://test.com:80/path/goes/here/?query=goes&here=.!#frag'
+            expect(described_class.parse( url ).up_to_port).to eq('http://test.com')
+
+            url = 'http://test.com:23/path/goes/here?query=goes&here=.!#frag'
+            expect(described_class.parse( url ).up_to_port).to eq('http://test.com:23')
+
+            url = 'https://test.com:443/'
+            expect(described_class.parse( url ).up_to_port).to eq('https://test.com')
+
+            url = 'https://test.com:54/'
+            expect(described_class.parse( url ).up_to_port).to eq('https://test.com:54')
+        end
+    end
+
     describe '#domain' do
         it 'removes the deepest subdomain from the host' do
             url = 'http://test.com/'

@@ -566,9 +566,19 @@ class URI
 
         uri_path << '/' if uri_path[-1] != '/'
 
+        up_to_port << uri_path
+    end
+
+    # @return   [String]
+    #   Scheme, host & port only.
+    def up_to_port
         uri_str = "#{scheme}://#{host}"
-        uri_str << ':' + port.to_s if port && port != 80
-        uri_str << uri_path
+
+        if port && ((scheme == 'http' && port != 80) || (scheme == 'https' && port != 443))
+            uri_str << ':' + port.to_s
+        end
+
+        uri_str
     end
 
     # @return [String]
