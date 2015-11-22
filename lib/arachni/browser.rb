@@ -1221,6 +1221,7 @@ class Browser
                         executable: self.class.executable,
                         without_arachni: true,
                         fork: false,
+                        pgroup: true,
                         stdin: ri,
                         stdout: w,
                         stderr: w,

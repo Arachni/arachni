@@ -131,11 +131,13 @@ class Manager
         stdin  = options.delete(:stdin)
         stdout = options.delete(:stdout)
         stderr = options.delete(:stderr)
+        pgroup = options.delete(:pgroup)
 
         spawn_options = {}
-        spawn_options[:in]  = stdin  if stdin
-        spawn_options[:out] = stdout if stdout
-        spawn_options[:err] = stderr if stderr
+        spawn_options[:pgroup] = pgroup if pgroup
+        spawn_options[:in]     = stdin  if stdin
+        spawn_options[:out]    = stdout if stdout
+        spawn_options[:err]    = stderr if stderr
 
         options[:ppid]  = Process.pid
 

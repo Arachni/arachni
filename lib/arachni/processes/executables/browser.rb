@@ -51,7 +51,7 @@ at_exit( &handle_exit )
 # Try our best to terminate cleanly if some external entity tries to kill us.
 %w(EXIT TERM QUIT INT KILL).each do |signal|
     next if !Signal.list.include?( signal )
-    trap( signal, &proc{} ) rescue Errno::EINVAL
+    trap( signal, &handle_exit ) rescue Errno::EINVAL
 end
 
 # Break out of the process group in order to ignore signals sent to the parent.
