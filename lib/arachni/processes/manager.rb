@@ -128,13 +128,21 @@ class Manager
         fork = options.delete(:fork)
         fork = true if fork.nil?
 
-        stdin  = options.delete(:stdin)
-        stdout = options.delete(:stdout)
-        stderr = options.delete(:stderr)
-        pgroup = options.delete(:pgroup)
+        stdin      = options.delete(:stdin)
+        stdout     = options.delete(:stdout)
+        stderr     = options.delete(:stderr)
+        new_pgroup = options.delete(:new_pgroup)
 
         spawn_options = {}
-        spawn_options[:pgroup] = pgroup if pgroup
+
+        if new_pgroup
+            if Arachni.windows?
+                spawn_options[:new_pgroup] = new_pgroup
+            else
+                spawn_options[:pgroup] = new_pgroup
+            end
+        end
+
         spawn_options[:in]     = stdin  if stdin
         spawn_options[:out]    = stdout if stdout
         spawn_options[:err]    = stderr if stderr
