@@ -128,16 +128,14 @@ class Manager
         fork = options.delete(:fork)
         fork = true if fork.nil?
 
+        stdin  = options.delete(:stdin)
+        stdout = options.delete(:stdout)
+        stderr = options.delete(:stderr)
+
         spawn_options = {}
-        if stdin = options.delete(:in)
-            spawn_options[:in] = stdin
-        end
-        if out = options.delete(:out)
-            spawn_options[:out] = out
-        end
-        if err = options.delete(:err)
-            spawn_options[:err] = err
-        end
+        spawn_options[:in]  = stdin  if stdin
+        spawn_options[:out] = stdout if stdout
+        spawn_options[:err] = stderr if stderr
 
         options[:ppid]  = Process.pid
 
@@ -159,12 +157,17 @@ class Manager
         # have a fallback ready.
         if fork && Process.respond_to?( :fork )
             pid = Process.fork do
-                if out
-                    $stdin  = stdin
-                    $stdout = out
-                    $stderr = err
+                $stdin = spawn_options[:in] if spawn_options[:in]
+
+                if spawn_options[:out]
+                    $stdout = spawn_options[:out]
                 elsif discard_output?
                     $stdout.reopen( Arachni.null_device, 'w' )
+                end
+
+                if spawn_options[:err]
+                    $stderr = spawn_options[:err]
+                elsif discard_output?
                     $stderr.reopen( Arachni.null_device, 'w' )
                 end
 
