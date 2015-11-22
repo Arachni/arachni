@@ -39,4 +39,11 @@ def parent_alive?
     !!(Process.kill( 0, ppid ) rescue false)
 end
 
+def puts_stderr( str )
+    return if $stderr.closed?
+
+    $stderr.puts str
+rescue
+end
+
 load ARGV.pop

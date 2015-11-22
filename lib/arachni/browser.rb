@@ -1223,7 +1223,7 @@ class Browser
                         fork: false,
                         stdin: ri,
                         stdout: w,
-                        # stderr: w,
+                        stderr: w,
                         port: port,
                         proxy_url: @proxy.url
                     )
