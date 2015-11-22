@@ -1270,12 +1270,16 @@ class Browser
     end
 
     def kill_process
-        @kill_process.puts
+        begin
+            @kill_process.puts
+        rescue Errno::EPIPE
+        end
 
-        @watir       = nil
-        @selenium    = nil
-        @pid         = nil
-        @browser_url = nil
+        @kill_process = nil
+        @watir        = nil
+        @selenium     = nil
+        @pid          = nil
+        @browser_url  = nil
     end
 
     def alive?
