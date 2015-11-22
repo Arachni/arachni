@@ -67,6 +67,13 @@ describe Arachni::Browser do
         end
     end
 
+    context 'when the lifeline dies' do
+        it 'kills the browser too' do
+            Arachni::Processes::Manager.kill subject.lifeline_pid
+            expect(Arachni::Processes::Manager.alive?(subject.browser_pid)).to be_falsey
+        end
+    end
+
     describe '#alive?' do
         context 'when the lifeline is alive' do
             it 'returns true' do
