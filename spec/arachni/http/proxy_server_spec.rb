@@ -169,14 +169,14 @@ describe Arachni::HTTP::ProxyServer do
                 proxy.start_async
                 post_via_proxy( proxy, @url )
 
-                expect(request.headers_string).to eq(
-                    "POST / HTTP/1.1\r\n" <<
+                expect(request.headers_string.split( "\r\n" ).sort).to eq(
+                    ("POST / HTTP/1.1\r\n" <<
+                    "Host: #{request.parsed_url.host}:#{request.parsed_url.port}\r\n" <<
                     "Accept-Encoding: gzip, deflate\r\n" <<
                     "User-Agent: Typhoeus - https://github.com/typhoeus/typhoeus\r\n" <<
-                        "Host: #{request.parsed_url.host}:#{request.parsed_url.port}\r\n" <<
-                        "Accept: */*\r\n" <<
-                        "Content-Length: 7\r\n" <<
-                        "Content-Type: application/x-www-form-urlencoded\r\n\r\n"
+                    "Accept: */*\r\n" <<
+                    "Content-Length: 7\r\n" <<
+                    "Content-Type: application/x-www-form-urlencoded\r\n\r\n").split( "\r\n" ).sort
                 )
 
                 expect(request.effective_body).to eq('1=2&3=4')
