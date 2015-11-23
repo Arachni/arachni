@@ -1020,14 +1020,13 @@ class Browser
         end
 
         @selenium.manage.all_cookies.map do |c|
-            original_name = c[:name].to_s
 
-
+            c[:httponly] = !js_cookies.include?( c[:name].to_s )
             c[:path]     = c[:path].gsub( /\/+/, '/' )
-            c[:name]     = Cookie.decode( c[:name].to_s )
-            c[:value]    = Cookie.value_to_v0( c[:value].to_s )
-            c[:httponly] = !js_cookies.include?( original_name )
-            c[:expires]  = c[:expires]
+            c[:expires]  = Time.parse( c[:expires].to_s ) if c[:expires]
+
+            c[:name]  = Cookie.decode( c[:name].to_s )
+            c[:value] = Cookie.value_to_v0( c[:value].to_s )
 
             existing_cookie = HTTP::Client.cookies.
                 find { |cookie| cookie.name == c[:name] }
@@ -1046,8 +1045,6 @@ class Browser
     end
 
     def update_cookies
-        # HTTPOnly cookies don't worry us, the proxy server will have already
-        # set them globally.
         HTTP::Client.update_cookies self.cookies
     end
 
@@ -1370,7 +1367,6 @@ class Browser
         set_cookies = {}
         HTTP::Client.cookie_jar.for_url( url ).each do |cookie|
             cookie = cookie.dup
-            cookie.data.delete :domain
             set_cookies[cookie.name] = cookie
         end
 
@@ -1380,7 +1376,6 @@ class Browser
                 set_cookies[name].update( name => value )
             else
                 set_cookies[name] = Cookie.new( url: url, inputs: { name => value } )
-                set_cookies[name].data.delete :domain
             end
         end
 

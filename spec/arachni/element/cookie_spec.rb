@@ -323,20 +323,21 @@ describe Arachni::Element::Cookie do
             )
 
             expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/; Secure; HttpOnly'
+                'blah%3Dha%25=some+stuff+%3B; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
             )
             expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
 
             c = described_class.new(
                 url:    url,
-                name:  'blah=ha%',
-                value: 'some stuff ;',
-                path:  '/stuff'
+                name:   'blah=ha%',
+                value:  'some stuff ;',
+                path:   '/stuff',
+                domain: '.localhost'
             )
 
             expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
             expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/stuff'
+                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=.localhost'
             )
         end
     end
