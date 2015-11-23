@@ -473,6 +473,7 @@ class Cookie < Base
             @keep = Set.new( DEFAULT.keys )
             @keep.delete( :name )
             @keep.delete( :value )
+            @keep.delete( :domain )
             @keep.delete( :url )
             @keep.delete( :secure )
             @keep.delete( :httponly )

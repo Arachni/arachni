@@ -2959,11 +2959,6 @@ describe Arachni::Browser do
             expect(cookie.name).to  eq 'include_subdomains'
             expect(cookie.value).to eq 'bar1'
             expect(cookie.domain).to eq '.127.0.0.2'
-
-            cookie = cookies.find { |c| c.name == 'no_subdomains' }
-            expect(cookie.name).to  eq 'no_subdomains'
-            expect(cookie.value).to eq 'bar2'
-            expect(cookie.domain).to eq '127.0.0.2'
         end
 
         it 'ignores cookies for other domains' do

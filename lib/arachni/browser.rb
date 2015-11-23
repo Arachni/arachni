@@ -1019,6 +1019,14 @@ class Browser
             ''
         end
 
+        # The domain attribute cannot be trusted, PhantomJS thinks all cookies
+        # are for subdomains too.
+        # Do not try to hack around this because it'll be a waste of time,
+        # leading to confusion and duplicate cookies.
+        #
+        # Still, we ask Selenium for cookies instead of parsing the JS ones
+        # and merging with the HTTP cookiejar because this allows us to get
+        # a path attribute for JS cookies.
         @selenium.manage.all_cookies.map do |c|
 
             c[:httponly] = !js_cookies.include?( c[:name].to_s )
@@ -1027,18 +1035,6 @@ class Browser
 
             c[:name]  = Cookie.decode( c[:name].to_s )
             c[:value] = Cookie.value_to_v0( c[:value].to_s )
-
-            existing_cookie = HTTP::Client.cookies.
-                find { |cookie| cookie.name == c[:name] }
-
-            # PhantomJS has a bug when is comes to handling domains, it thinks
-            # all cookies apply to subdomains too.
-            #
-            # However, our own cookie-jar will have already been updated with
-            # HTTP cookies and have the proper domain.
-            if existing_cookie
-                c[:domain] = existing_cookie.domain
-            end
 
             Cookie.new c.merge( url: @last_url || self.url )
         end
@@ -1406,7 +1402,6 @@ EOJS
                 'Set-Cookie' => set_cookie
             }
         ))
-
     end
 
     # Makes sure we have at least 2 windows open so that we can switch to the
