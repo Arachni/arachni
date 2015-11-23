@@ -396,9 +396,11 @@ class Request < Message
             # the reading of the response body if it exceeds this limit.
             maxfilesize:     max_size,
 
-            # Don't keep the socket alive if this is a blocking request because
-            # it's going to be performed by an one-off Hydra.
-            forbid_reuse:    blocking?,
+            # Reusing connections for blocking requests used to cause FD leaks
+            # but doesn't appear to do so anymore.
+            #
+            # Let's allow reuse for all request types again but keep an eye on it.
+            # forbid_reuse:    blocking?,
 
             # Enable debugging messages in order to capture raw traffic data.
             verbose:         true,

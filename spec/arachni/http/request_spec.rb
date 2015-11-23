@@ -499,21 +499,21 @@ describe Arachni::HTTP::Request do
             expect(subject).to be_kind_of Typhoeus::Request
         end
 
-        context 'when the request is blocking' do
-            let(:request) { described_class.new( url: url, mode: :sync ) }
-
-            it 'forbids socket reuse' do
-                expect(subject.options[:forbid_reuse]).to be_truthy
-            end
-        end
-
-        context 'when the request is non-blocking' do
-            let(:request) { described_class.new( url: url, mode: :async ) }
-
-            it 'reuses sockets' do
-                expect(subject.options[:forbid_reuse]).to be_falsey
-            end
-        end
+        # context 'when the request is blocking' do
+        #     let(:request) { described_class.new( url: url, mode: :sync ) }
+        #
+        #     it 'forbids socket reuse' do
+        #         expect(subject.options[:forbid_reuse]).to be_truthy
+        #     end
+        # end
+        #
+        # context 'when the request is non-blocking' do
+        #     let(:request) { described_class.new( url: url, mode: :async ) }
+        #
+        #     it 'reuses sockets' do
+        #         expect(subject.options[:forbid_reuse]).to be_falsey
+        #     end
+        # end
 
         context 'when cookies are available' do
             let(:request) do
