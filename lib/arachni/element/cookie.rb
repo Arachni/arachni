@@ -96,7 +96,7 @@ class Cookie < Base
         end
 
         if @data[:expires] && !@data[:expires].is_a?( Time )
-            @data[:expires] = Time.parse( @data[:expires] ) rescue nil
+            @data[:expires] = Time.parse( @data[:expires].to_s ) rescue nil
         end
 
         @data[:domain] ||= parsed_uri.host

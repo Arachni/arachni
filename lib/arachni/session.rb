@@ -246,7 +246,7 @@ class Session
         end
 
         if has_browser?
-            http.update_cookies browser.javascript_cookies
+            http.update_cookies browser.cookies
         end
 
         page

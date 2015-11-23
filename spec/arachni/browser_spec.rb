@@ -2385,7 +2385,7 @@ describe Arachni::Browser do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.goto @url, cookies: cookie
 
-                cookie_data = @browser.javascript_cookies.
+                cookie_data = @browser.cookies.
                     find { |c| c.name == cookie.keys.first }.inputs
 
                 expect(cookie_data).to eq(cookie)
@@ -2396,18 +2396,6 @@ describe Arachni::Browser do
                 transition = @browser.goto( @url, cookies: cookie )
 
                 expect(transition.options[:cookies]).to eq(cookie)
-            end
-
-            context 'when auditing existing cookies' do
-                it 'preserves the HttpOnly attribute' do
-                    @browser.goto( @url )
-                    expect(@browser.javascript_cookies.size).to eq(1)
-
-                    cookies = { @browser.javascript_cookies.first.name => 'updated' }
-                    @browser.goto( @url, cookies: cookies )
-
-                    @browser.javascript_cookies.first.value == 'updated'
-                end
             end
         end
 
@@ -2489,7 +2477,7 @@ describe Arachni::Browser do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.load @url, cookies: cookie
 
-                expect(@browser.javascript_cookies.find { |c| c.name == cookie.keys.first }.inputs).to eq(cookie)
+                expect(@browser.cookies.find { |c| c.name == cookie.keys.first }.inputs).to eq(cookie)
             end
         end
 
@@ -2570,7 +2558,7 @@ describe Arachni::Browser do
                 end
 
                 it 'uses its #cookie_jar' do
-                    expect(@browser.javascript_cookies).to be_empty
+                    expect(@browser.cookies).to be_empty
 
                     cookie = Arachni::Cookie.new(
                         url:    @url,
@@ -2584,11 +2572,11 @@ describe Arachni::Browser do
                         cookie_jar:  [ cookie ]
                     )
 
-                    expect(@browser.javascript_cookies).to_not include cookie
+                    expect(@browser.cookies).to_not include cookie
 
                     @browser.load( page )
 
-                    expect(@browser.javascript_cookies).to include cookie
+                    expect(@browser.cookies).to include cookie
                 end
 
                 it 'replays its DOM#transitions' do
@@ -2923,22 +2911,76 @@ describe Arachni::Browser do
         end
     end
 
-    describe '#javascript_cookies' do
+    describe '#cookies' do
         it 'returns cookies visible via JavaScript' do
             @browser.load @url
 
-            cookie = @browser.javascript_cookies.first
+            cookie = @browser.cookies.first
             expect(cookie.name).to  eq 'cookie_name'
             expect(cookie.value).to eq 'cookie value'
         end
 
-        it 'sets / as path' do
-            @browser.load "#{@url}/cookie/under/path"
+        it 'preserves expiration value' do
+            @browser.load "#{@url}/cookies/expires"
 
-            cookie = @browser.javascript_cookies.first
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'without_expiration'
+            expect(cookie.value).to eq 'stuff'
+            expect(cookie.expires).to be_nil
+
+            cookie = @browser.cookies.last
+            expect(cookie.name).to  eq 'with_expiration'
+            expect(cookie.value).to eq 'bar'
+            expect(cookie.expires.to_s).to eq Time.parse( '2047-08-01 09:30:11 +0000' ).to_s
+        end
+
+        it 'preserves the domain' do
+            @browser.load "#{@url}/cookies/domains"
+
+            cookies = @browser.cookies
+
+            cookie = cookies.find { |c| c.name == 'include_subdomains' }
+            expect(cookie.name).to  eq 'include_subdomains'
+            expect(cookie.value).to eq 'bar1'
+            expect(cookie.domain).to eq '.127.0.0.2'
+
+            cookie = cookies.find { |c| c.name == 'no_subdomains' }
+            expect(cookie.name).to  eq 'no_subdomains'
+            expect(cookie.value).to eq 'bar2'
+            expect(cookie.domain).to eq '127.0.0.2'
+        end
+
+        it 'ignores cookies for other domains' do
+            @browser.load "#{@url}/cookies/domains"
+
+            cookies = @browser.cookies
+            expect(cookies.find { |c| c.name == 'other_domain' }).to be_nil
+        end
+
+        it 'preserves the path' do
+            @browser.load "#{@url}/cookies/under/path"
+
+            cookie = @browser.cookies.first
             expect(cookie.name).to  eq 'cookie_under_path'
             expect(cookie.value).to eq 'value'
-            expect(cookie.path).to eq '/'
+            expect(cookie.path).to eq '/cookies/under/'
+        end
+
+        it 'preserves httpOnly' do
+            @browser.load "#{@url}/cookies/under/path"
+
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'cookie_under_path'
+            expect(cookie.value).to eq 'value'
+            expect(cookie.path).to eq '/cookies/under/'
+            expect(cookie).to_not be_http_only
+
+            @browser.load "#{@url}/cookies/httpOnly"
+
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'http_only'
+            expect(cookie.value).to eq 'stuff'
+            expect(cookie).to be_http_only
         end
 
         context 'when parsing v1 cookies' do
@@ -2948,14 +2990,14 @@ describe Arachni::Browser do
                 @browser.load @url
                 @browser.javascript.run( "document.cookie = '#{cookie}';" )
 
-                cookie = @browser.javascript_cookies.find { |c| c.name == 'rsession' }
+                cookie = @browser.cookies.find { |c| c.name == 'rsession' }
                 expect(cookie.value).to eq('06142010_0:e275d357943e9a2de0')
             end
         end
 
         context 'when no page is available' do
             it 'returns an empty Array' do
-                expect(@browser.javascript_cookies).to be_empty
+                expect(@browser.cookies).to be_empty
             end
         end
     end

@@ -600,7 +600,7 @@ class Browser
             id << "#{tag_name}:#{element_id}:#{events}"
         end
 
-        id << [:cookies, javascript_cookies.map(&:name).sort].to_s
+        id << [:cookies, cookies.map(&:name).sort].to_s
 
         id.uniq.sort.to_s
     end
@@ -1007,12 +1007,9 @@ class Browser
         @page_snapshots.clear
     end
 
-    # @note HTTP cookies will be intercepted by the {HTTP::ProxyServer}
-    #   and placed in the {HTTP::Client} {HTTP::CookieJar}.
-    #
     # @return   [Array<Cookie>]
     #   Cookies visible to JS.
-    def javascript_cookies
+    def cookies
         js_cookies = begin
              # Watir doesn't tell us if cookies are HttpOnly, so we need to figure
              # this out ourselves, by checking for JS visibility.
@@ -1022,16 +1019,36 @@ class Browser
             ''
         end
 
-        Cookie.from_string(
-            Arachni::URI( self.url ).up_to_port,
-            js_cookies
-        )
+        @selenium.manage.all_cookies.map do |c|
+            original_name = c[:name].to_s
+
+
+            c[:path]     = c[:path].gsub( /\/+/, '/' )
+            c[:name]     = Cookie.decode( c[:name].to_s )
+            c[:value]    = Cookie.value_to_v0( c[:value].to_s )
+            c[:httponly] = !js_cookies.include?( original_name )
+            c[:expires]  = c[:expires]
+
+            existing_cookie = HTTP::Client.cookies.
+                find { |cookie| cookie.name == c[:name] }
+
+            # PhantomJS has a bug when is comes to handling domains, it thinks
+            # all cookies apply to subdomains too.
+            #
+            # However, our own cookie-jar will have already been updated with
+            # HTTP cookies and have the proper domain.
+            if existing_cookie
+                c[:domain] = existing_cookie.domain
+            end
+
+            Cookie.new c.merge( url: @last_url || self.url )
+        end
     end
 
     def update_cookies
         # HTTPOnly cookies don't worry us, the proxy server will have already
         # set them globally.
-        HTTP::Client.update_cookies self.javascript_cookies
+        HTTP::Client.update_cookies self.cookies
     end
 
     # @return   [String]

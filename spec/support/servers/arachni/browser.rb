@@ -29,7 +29,7 @@ get '/' do
 HTML
 end
 
-get '/cookie/under/path' do
+get '/cookies/under/path' do
     <<HTML
 <html>
     <body>
@@ -39,6 +39,40 @@ get '/cookie/under/path' do
     </body>
 </html>
 HTML
+end
+
+get '/cookies/httpOnly' do
+    cookies[:http_only] = 'stuff'
+end
+
+get '/cookies/domains' do
+    response.set_cookie(
+        :include_subdomains,
+        value:   'bar1',
+        domain: ".#{request.host}"
+    )
+
+    response.set_cookie(
+        :no_subdomains,
+        value:   'bar2',
+        domain: request.host
+    )
+
+    response.set_cookie(
+        :other_domain,
+        value:   'bar3',
+        domain: 'blah.blah'
+    )
+end
+
+get '/cookies/expires' do
+    cookies[:without_expiration] = 'stuff'
+
+    response.set_cookie(
+        :with_expiration,
+        value:   'bar',
+        expires: Time.parse( '2047-08-01 09:30:12 +0000' )
+    )
 end
 
 get '/open-new-window' do
