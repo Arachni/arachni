@@ -408,7 +408,7 @@ class Javascript
 
             body = response.body.dup
 
-            update_taints( body )
+            update_taints( body, response )
             update_custom_code( body )
 
             response.body = body
@@ -439,7 +439,7 @@ class Javascript
 <script src="#{script_url_for( :taint_tracer )}"></script> #{html_comment}
 <script src="#{script_url_for( :dom_monitor )}"></script> #{html_comment}
 <script>
-#{wrapped_taint_tracer_initializer}
+#{wrapped_taint_tracer_initializer( response )}
 #{js_initialization_signal};
 
 #{wrapped_custom_code}
@@ -501,22 +501,34 @@ class Javascript
         "<!-- Injected by #{self.class} -->"
     end
 
-    def taints
+    def taints( response )
         taints = [@taint]
 
         # Include cookie names and values in the trace so that the browser will
         # be able to infer if they're being used, to avoid unnecessary audits.
         if Options.audit.cookie_doms?
-            taints |= HTTP::Client.cookies.map { |c| c.inputs.to_a }.flatten
+            cookies = begin
+                HTTP::Client.cookie_jar.for_url( response.url )
+            rescue
+                print_debug "Could not get cookies for URL '#{response.url}' from Cookiejar (#{e})."
+                print_debug_exception e
+                HTTP::Client.cookies
+            end
+
+            taints |= cookies.map do |c|
+                next if c.http_only?
+
+                c.inputs.to_a
+            end.flatten.compact
         end
 
         taints.flatten.reject { |v| v.to_s.empty? }
     end
 
-    def update_taints( body )
+    def update_taints( body, response )
         body.gsub!(
             /\/\* #{token}_initialize_start \*\/(.*)\/\* #{token}_initialize_stop \*\//,
-            wrapped_taint_tracer_initializer
+            wrapped_taint_tracer_initializer( response )
         )
     end
 
@@ -527,9 +539,9 @@ class Javascript
         )
     end
 
-    def wrapped_taint_tracer_initializer
+    def wrapped_taint_tracer_initializer( response )
         "/* #{token}_initialize_start */ " <<
-            "#{@taint_tracer.stub.function( :initialize, taints )} " <<
+            "#{@taint_tracer.stub.function( :initialize, taints( response ) )} " <<
             "/* #{token}_initialize_stop */"
     end
 

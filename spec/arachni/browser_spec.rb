@@ -1312,8 +1312,16 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-names' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
-                                    expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie1' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie2' }.skip_dom).to be_nil
+                                end
+
+                                it 'does not track HTTP-only cookies' do
+                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be_true
+                                end
+
+                                it 'does not track cookies for other paths' do
+                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be_true
                                 end
                             end
 
@@ -1321,8 +1329,16 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-values' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
-                                    expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie1' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie2' }.skip_dom).to be_nil
+                                end
+
+                                it 'does not track HTTP-only cookies' do
+                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be_true
+                                end
+
+                                it 'does not track cookies for other paths' do
+                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be_true
                                 end
                             end
                         end
@@ -1332,7 +1348,7 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-names' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
+                                    expect(cookies.find { |c| c.name == 'js_cookie3' }.skip_dom).to be_truthy
                                 end
                             end
 
@@ -1340,7 +1356,7 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-values' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
+                                    expect(cookies.find { |c| c.name == 'js_cookie3' }.skip_dom).to be_truthy
                                 end
                             end
                         end

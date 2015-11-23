@@ -833,9 +833,26 @@ get '/update-cookies' do
 end
 
 get '/dom-cookies-names' do
-    cookies['my-cookie']  = 'stuff'
-    cookies['my-cookie2'] = 'stuff'
-    cookies['my-cookie3'] = 'stuff'
+    cookies['http_only_cookie'] = 'stuff1'
+
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
 
     <<HTML
     <html>
@@ -855,18 +872,37 @@ get '/dom-cookies-names' do
                 return '';
             }
 
-            getCookie('my-cookie');
-            getCookie('my-cookie2');
+            getCookie('http_only_cookie');
+            getCookie('js_cookie1');
+            getCookie('js_cookie2');
+            getCookie('other_path');
         </script>
     </html>
 HTML
 end
 
 get '/dom-cookies-values' do
-    cookies['my-cookie']  = 'stuff1'
-    cookies['my-cookie2'] = 'stuff2'
-    cookies['my-cookie3'] = 'stuff3'
+    cookies['http_only_cookie'] = 'stuff1'
 
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
     <<HTML
     <html>
         <script>
@@ -876,6 +912,8 @@ get '/dom-cookies-values' do
 
             cookiesHaveValue('stuff1');
             cookiesHaveValue('stuff2');
+            cookiesHaveValue('stuff3');
+            cookiesHaveValue('stuff4');
         </script>
     </html>
 HTML
