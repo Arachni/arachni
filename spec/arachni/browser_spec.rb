@@ -15,6 +15,7 @@ describe Arachni::Browser do
         Arachni::Options.reset
         Arachni::Framework.reset
         @browser.shutdown if @browser
+        described_class.asset_domains.clear
         clear_hit_count
     end
 
@@ -1317,11 +1318,11 @@ describe Arachni::Browser do
                                 end
 
                                 it 'does not track HTTP-only cookies' do
-                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be_true
+                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be true
                                 end
 
                                 it 'does not track cookies for other paths' do
-                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be_true
+                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be true
                                 end
                             end
 
@@ -1334,11 +1335,11 @@ describe Arachni::Browser do
                                 end
 
                                 it 'does not track HTTP-only cookies' do
-                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be_true
+                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be true
                                 end
 
                                 it 'does not track cookies for other paths' do
-                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be_true
+                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be true
                                 end
                             end
                         end
