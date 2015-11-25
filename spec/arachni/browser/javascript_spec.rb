@@ -14,6 +14,7 @@ describe Arachni::Browser::Javascript do
     after( :each ) do
         Arachni::Options.reset
         @browser.shutdown
+        Arachni::Browser.asset_domains.clear
     end
 
     subject { @browser.javascript }
