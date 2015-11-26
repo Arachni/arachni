@@ -411,7 +411,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 run
 
                 expect(issues).to be_any
-                expect(issues.flatten.first.vector.seed).to eq('16000')
+                expect(issues.flatten.first.vector.seed).to eq('8000')
             end
         end
 
@@ -426,7 +426,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 run
 
                 expect(issues).to be_any
-                expect(issues.flatten.first.vector.seed).to eq('16')
+                expect(issues.flatten.first.vector.seed).to eq('8')
             end
         end
 
@@ -446,7 +446,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 run
 
                 expect(issues).to be_any
-                expect(issues.flatten.first.request.timeout).to eq(23_000)
+                expect(issues.flatten.first.request.timeout).to eq(11_000)
             end
         end
     end

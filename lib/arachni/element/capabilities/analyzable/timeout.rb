@@ -190,7 +190,9 @@ module Timeout
         # Runs phase e of the timing attacks, auditing an individual element
         # (which passed phase 3) with a higher delay and timeout.
         def analysis_phase_4( elem )
-            delay = elem.audit_options[:delay] * 2
+            # Use the same delay, we don't want to overdo it because the server
+            # might cut us off due to its own restrictions.
+            delay = elem.audit_options[:delay]
 
             elem.print_status "Phase 4 for #{elem.type} input " <<
                 "'#{elem.affected_input_name}' with action #{elem.action}"
