@@ -12,7 +12,9 @@ class Arachni::Checks::InsecureCookies < Arachni::Check::Base
     def run
         return if page.parsed_url.scheme != 'https'
 
-        page.cookies.each do |cookie|
+        # We grab the parser cookies because the Page#cookies will also include
+        # stuff from the cookiejar.
+        page.parser.cookies.each do |cookie|
             next if cookie.secure? || audited?( cookie.name )
 
             log( vector: cookie )
@@ -29,7 +31,7 @@ Logs cookies that are served over an encrypted channel but without having the
 },
             elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
 
             issue:       {
                 name:            %q{Insecure cookie},

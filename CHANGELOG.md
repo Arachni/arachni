@@ -79,6 +79,8 @@
             - `emails` -- Verify e-mail addresses by resolving the identified domains.
             - `credit_card`, `ssn` -- Mark issues as untrusted by default since
                 there's no way to verify SSNs.
+            - `http_only_cookies`, `insecure_cookies` -- Only check current page
+                cookies, don't let the CookieJar ones sneak in.
 - Plugins
     - `proxy`
         - Removed injection of control toolbar to each response.
