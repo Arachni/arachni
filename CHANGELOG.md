@@ -74,6 +74,7 @@
                 much as possible.
         - `xss_dom` -- Updated payloads to improve coverage.
     - Passive
+        - `directory_listing` - Bail out on failed requests to avoid FPs.
         - Grep
             - `emails` -- Verify e-mail addresses by resolving the identified domains.
             - `credit_card`, `ssn` -- Mark issues as untrusted by default since

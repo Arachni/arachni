@@ -48,11 +48,11 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
     def check_and_log( path )
         audited( path )
 
-        # if we have a 403 Forbidden it means that we successfully
+        # If we have a 403 Forbidden it means that we successfully
         # built a pah which would force a directory listing *but*
         # the web server kicked our asses...so let's run away like
         # little girls...
-        @harvested.each { |res| return if res.code == 403 }
+        @harvested.each { |res| return if !res.ok? || res.code == 403 }
 
         if !File.basename( @harvested[0].url, '?*' ).empty? &&
             same_page?( @harvested[0], @harvested[5] )
@@ -80,7 +80,7 @@ class Arachni::Checks::DirectoryListing < Arachni::Check::Base
             description:      %q{Tries to force directory listings.},
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:          '0.1.6',
+            version:          '0.1.7',
             exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {
