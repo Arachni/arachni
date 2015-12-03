@@ -35,11 +35,8 @@ class Cookie < Base
     include Capabilities::Inputtable
     include Capabilities::Mutable
 
-    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", '&', ' ', '"', "\n", "\r"]
+    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", '&', ' ', '"', "\n", "\r", '=']
     ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
-
-    ENCODE_CHARACTERS_IN_NAME      = ENCODE_CHARACTERS + ['=']
-    ENCODE_CHARACTERS_IN_NAME_LIST = ENCODE_CHARACTERS_IN_NAME.join
 
     ENCODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
@@ -173,7 +170,7 @@ class Cookie < Base
     # @return   [String]
     #   To be used in a `Cookie` HTTP request header.
     def to_s
-        "#{encode( name, true )}=#{encode( value )}"
+        "#{encode( name )}=#{encode( value )}"
     end
 
     # @return   [String]
@@ -418,20 +415,16 @@ class Cookie < Base
         #
         # @example
         #    p Cookie.encode "+;%=\0 "
-        #    #=> "%2B%3B%25=%00+"
-        #
-        #    p Cookie.encode "+;%=\0 ", true
         #    #=> "%2B%3B%25%3D%00+"
         # @param    [String]    str
         #
         # @return   [String]
-        def encode( str, name = false )
+        def encode( str )
             str = str.to_s
 
             ENCODE_CACHE.fetch( [str, name] )  do
-                characters = (name ? ENCODE_CHARACTERS_IN_NAME : ENCODE_CHARACTERS)
+                if ENCODE_CHARACTERS.find { |c| str.include? c }
 
-                if characters.find { |c| str.include? c }
                     # Instead of just encoding everything we do this selectively because:
                     #
                     #  * Some webapps don't actually decode some cookies, they just get
@@ -441,11 +434,7 @@ class Cookie < Base
                     #    to spaces, and in order to send back a value that the server
                     #    expects we use '+' for spaces.
 
-                    s = ::URI.encode(
-                        str,
-                        name ? ENCODE_CHARACTERS_IN_NAME_LIST :
-                            ENCODE_CHARACTERS_LIST
-                    )
+                    s = ::URI.encode( str, ENCODE_CHARACTERS_LIST )
                     s.gsub!( '%20', '+' )
                     s
                 else

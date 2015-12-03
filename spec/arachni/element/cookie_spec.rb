@@ -263,42 +263,22 @@ describe Arachni::Element::Cookie do
     describe '.encode' do
 
         it 'encodes the string in a way that makes is suitable to be included in a cookie header' do
-            expect(described_class.encode( 'some stuff \'";%=&' )).to eq('some+stuff+\'%22%3B%25=%26')
+            expect(described_class.encode( 'some stuff \'";%=&' )).to eq('some+stuff+\'%22%3B%25%3D%26')
         end
 
-        context 'when encoding values' do
-            %w(! = ' / : ).each do |character|
-                it "preserves '#{character}'" do
-                    expect(described_class.encode( character )).to eq(character)
-                end
-            end
-
-            ['+', ';', '%', "\0", '&', '"', "\n", "\r"].each do |character|
-                it "encodes '#{character}'" do
-                    expect(described_class.encode( character )).to eq("%#{character.unpack('H*')[0]}".upcase)
-                end
-
-                it "encodes space as '+'" do
-                    expect(described_class.encode( ' ' )).to eq('+')
-                end
+        %w(! ' / : ).each do |character|
+            it "preserves '#{character}'" do
+                expect(described_class.encode( character )).to eq(character)
             end
         end
 
-        context 'when encoding names' do
-            %w(! ' / : ).each do |character|
-                it "preserves '#{character}'" do
-                    expect(described_class.encode( character, true )).to eq(character)
-                end
+        ['+', ';', '%', "\0", '&', '"', "\n", "\r", '='].each do |character|
+            it "encodes '#{character}'" do
+                expect(described_class.encode( character )).to eq("%#{character.unpack('H*')[0]}".upcase)
             end
 
-            ['=', '+', ';', '%', "\0", '&', '"', "\n", "\r"].each do |character|
-                it "encodes '#{character}'" do
-                    expect(described_class.encode( character, true )).to eq("%#{character.unpack('H*')[0]}".upcase)
-                end
-
-                it "encodes space as '+'" do
-                    expect(described_class.encode( ' ', true )).to eq('+')
-                end
+            it "encodes space as '+'" do
+                expect(described_class.encode( ' ' )).to eq('+')
             end
         end
     end
