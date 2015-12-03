@@ -43,7 +43,13 @@ class Arachni::Checks::SessionFixation < Arachni::Check::Base
                 name = cookie.name
                 print_info "Found session cookie named: #{name}"
 
-                audit( token, with_raw_parameters: false ) do |response, element|
+                audit(
+                    token,
+                    with_raw_parameters: false,
+                    submit: {
+                        response_max_size: 0
+                    }
+                ) do |response, element|
                     cookie = cookies_from_response( response ).
                         select { |c| c.name == name }.first
                     next if !cookie || !cookie.value.include?( token )
