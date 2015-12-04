@@ -86,6 +86,7 @@
         - Removed injection of control toolbar to each response.
         - Cleaned up control panel design.
         - Updated description to list management URLs and SSL interception info.
+    - `email_notify` -- Made username and password optional.
     - `defaults/meta/remedy/`
         - `discovery` -- Updated similarity check to prevent analysis of singular issues.
 

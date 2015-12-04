@@ -67,7 +67,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             name:        'E-mail notify',
             description: %q{Sends a notification (and optionally a report) over SMTP at the end of the scan.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             options:     [
                 Options::String.new( :to,
                     required:    true,
@@ -95,11 +95,9 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                     description: 'Use TLS/SSL?.'
                 ),
                 Options::String.new( :username,
-                    required:    true,
                     description: 'SMTP username.'
                 ),
                 Options::String.new( :password,
-                    required:    true,
                     description: 'SMTP password.'
                 ),
                 Options::String.new( :domain,
