@@ -82,13 +82,6 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
         print_exception e
     end
 
-    def clean_up
-        return if !@failed
-
-        print_info 'Aborting the scan.'
-        framework_abort
-    end
-
     def javascript?
         @options[:script].split( '.' ).last == 'js'
     end
@@ -103,8 +96,12 @@ class Arachni::Plugins::LoginScript < Arachni::Plugin::Base
             }.merge( extra )
         )
 
-        @failed = true if type == :error
         send "print_#{type}", STATUSES[status]
+
+        if type == :error
+            print_info 'Aborting the scan.'
+            framework_abort
+        end
     end
 
     def self.info

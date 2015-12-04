@@ -17,20 +17,21 @@
 class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
     STATUSES  = {
-        ok:               'Form submitted successfully.',
+        ok:               'Logged in successfully.',
         form_not_found:   'Could not find a form suiting the provided parameters.',
         form_not_visible: 'The form was located but its DOM element is not ' <<
                               'visible and thus cannot be submitted.',
-        check_failed:     'Form submitted but the response did not match the verifier.'
+        check_failed:     'The response did not match the verifier.'
     }
 
     def prepare
         @parameters = request_parse_body( options[:parameters] )
         @verifier   = Regexp.new( options[:check] )
         @url        = options[:url].to_s
-        @errored    = false
 
         session.configure( url: @url, inputs: @parameters )
+
+        print_status 'Logging in, please wait.'
 
         response = begin
             session.login( true )
@@ -39,18 +40,18 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
                 'status'  => 'form_not_found',
                 'message' => STATUSES[:form_not_found]
             )
-            print_error STATUSES[:form_not_found]
-            @errored = true
-            return
+            handle_error( :form_not_found )
+            return clean_up
         rescue Arachni::Session::Error::FormNotVisible
             register_results(
                 'status'  => 'form_not_visible',
                 'message' => STATUSES[:form_not_visible]
             )
-            print_error STATUSES[:form_not_visible]
-            @errored = true
+            handle_error( :form_not_visible )
             return
         end
+
+        print_status "Form submitted successfully, checking the session's validity."
 
         framework.options.session.check_url     ||= response.url
         framework.options.session.check_pattern ||= @verifier
@@ -60,8 +61,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
                 'status'  => 'check_failed',
                 'message' => STATUSES[:check_failed]
             )
-            print_error STATUSES[:check_failed]
-            @errored = true
+            handle_error( :check_failed )
             return
         end
 
@@ -80,8 +80,8 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         end
     end
 
-    def clean_up
-        return if !@errored
+    def handle_error( type )
+        print_error STATUSES[type]
 
         print_info 'Aborting the scan.'
         framework_abort
