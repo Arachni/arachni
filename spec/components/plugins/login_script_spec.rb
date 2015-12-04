@@ -28,7 +28,7 @@ describe name_from_filename do
             context 'when using a Ruby script' do
                 let(:script) do
                     <<EOSCRIPT
-                framework.options.datastore.browser = browser
+                framework.options.datastore.browser = browser.class.to_s
                 framework.options.datastore.screen_width = browser.execute_script( 'return window.innerWidth;' )
                 framework.options.datastore.screen_height = browser.execute_script( 'return window.innerHeight;' )
 EOSCRIPT
@@ -37,7 +37,7 @@ EOSCRIPT
                 it "exposes a Watir::Browser interface via the 'browser' variable" do
                     run
 
-                    expect(options.datastore.browser).to be_kind_of Watir::Browser
+                    expect(options.datastore.browser).to eq 'Watir::Browser'
                 end
 
                 it 'sets the appropriate resolution' do
