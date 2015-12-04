@@ -22,7 +22,7 @@ Dir.glob( "#{support_path}/{lib,helpers,shared,factories}/**/*.rb" ).each { |f| 
 
 # Enable extra output options in order to get full coverage...
 Arachni::UI::Output.verbose_on
-Arachni::UI::Output.debug_on( 3 )
+Arachni::UI::Output.debug_on( 999999 )
 # ...but don't actually print anything.
 Arachni::UI::Output.mute
 
