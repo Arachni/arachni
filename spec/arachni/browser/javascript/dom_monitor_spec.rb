@@ -68,7 +68,8 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     describe '#digest' do
         it 'returns a string digest of the current DOM tree' do
             load '/digest'
-            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://javascri' <<
+            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
+                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascri' <<
                 'pt.browser.arachni/' <<'taint_tracer.js><SCRIPT src' <<
                 '=http://javascript.browser.arachni/dom_monitor.js><SCRIPT>' <<
                 '<BODY onload=void();><DIV id=my-id-div><DIV class=my-class' <<
@@ -78,14 +79,16 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
         it 'does not include <p> elements' do
             load '/digest/p'
-            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://javascript' <<
+            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
+                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascript' <<
                 '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
                 'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><STRONG>')
         end
 
         it "does not include 'data-arachni-id' attributes" do
             load '/digest/data-arachni-id'
-            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://javascript' <<
+            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
+                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascript' <<
                 '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
                 'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><DIV ' <<
                 'id=my-id-div><DIV class=my-class-div>')

@@ -436,6 +436,7 @@ class Javascript
 
             # Include and initialize our JS interfaces.
             response.body = <<-EOHTML
+<script src="#{script_url_for( :polyfills )}"></script> #{html_comment}
 <script src="#{script_url_for( :taint_tracer )}"></script> #{html_comment}
 <script src="#{script_url_for( :dom_monitor )}"></script> #{html_comment}
 <script>
