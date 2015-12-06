@@ -16,6 +16,8 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
     end
 
     def run
+        return if page.code != 200
+
         path = get_path( page.url )
         return if audited?( path )
 
@@ -29,7 +31,7 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
             description:      %q{Tries to find common backdoors on the server.},
             elements:         [Element::Server],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:          '0.2.5',
+            version:          '0.2.6',
             exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {

@@ -16,6 +16,8 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
     end
 
     def run
+        return if page.code != 200
+
         resource = page.parsed_url.without_query
         return if audited?( resource )
 
@@ -50,7 +52,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
             description:      %q{Tries to identify backup files.},
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:          '0.3.1',
+            version:          '0.3.2',
             exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {

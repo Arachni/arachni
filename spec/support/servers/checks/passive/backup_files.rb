@@ -7,6 +7,8 @@ get '/' do
     HTML
 end
 
+get( '/some_filename.php' ){}
+
 current_check.formats.each do |format|
     path = format.gsub( '[name]', 'some_filename' ).gsub( '[extension]', 'php' )
     get '/' + path do

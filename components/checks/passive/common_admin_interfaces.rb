@@ -10,7 +10,6 @@
 #
 # @author Brendan Coles <bcoles@gmail.com>
 # @author Tasos Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
 class Arachni::Checks::CommonAdminInterfaces < Arachni::Check::Base
 
     def self.resources
@@ -18,6 +17,8 @@ class Arachni::Checks::CommonAdminInterfaces < Arachni::Check::Base
     end
 
     def run
+        return if page.code != 200
+
         path = get_path( page.url )
         return if audited?( path )
 
@@ -37,7 +38,7 @@ class Arachni::Checks::CommonAdminInterfaces < Arachni::Check::Base
                 'Brendan Coles <bcoles@gmail.com>',
                 'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>'
             ],
-            version:     '0.1',
+            version:     '0.1.1',
             targets:     %w(Generic),
             references: {
                 'Apache.org' => 'http://httpd.apache.org/docs/2.0/mod/mod_access.html',

@@ -7,6 +7,8 @@ get '/' do
     HTML
 end
 
+get( '/some_directory/' ){}
+
 current_check.formats.each do |format|
     path = format.gsub( '[name]', 'some_directory' )
     get '/' + path do

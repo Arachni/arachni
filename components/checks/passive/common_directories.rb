@@ -19,6 +19,8 @@ class Arachni::Checks::CommonDirectories < Arachni::Check::Base
     end
 
     def run
+        return if page.code != 200
+
         path = get_path( page.url )
         return if audited?( path )
 

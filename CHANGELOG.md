@@ -75,6 +75,9 @@
         - `xss_dom` -- Updated payloads to improve coverage.
     - Passive
         - `directory_listing` - Bail out on failed requests to avoid FPs.
+        - `backdoors`, `backup_directories`, `backup_files`, `common_admin_interfaces`,
+            `common_directories`, `common_files` -- Bail out if the seed resource
+            is already a 404.
         - Grep
             - `emails` -- Verify e-mail addresses by resolving the identified domains.
             - `credit_card`, `ssn` -- Mark issues as untrusted by default since
