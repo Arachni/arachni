@@ -7,7 +7,6 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
 class Arachni::Checks::NoSqlInjectionDifferential < Arachni::Check::Base
 
     def self.options
@@ -23,7 +22,7 @@ class Arachni::Checks::NoSqlInjectionDifferential < Arachni::Check::Base
             end
         end
 
-        @options = { false: '-1', pairs: pairs }
+        @options = { false: '-1839', pairs: pairs }
     end
 
     def run
@@ -40,7 +39,7 @@ that of a vulnerable application.
 },
             elements:    [ Element::Link, Element::Form, Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
             platforms:   [ :nosql ],
 
             issue:       {

@@ -76,6 +76,8 @@
         - `sql_injection_differential`
             - Replaced `-1` control `false` value with `-1839`
             - When using quotes, quote all parts of the conditional in the SQL query.
+        - `no_sql_injection_differential`
+            - Replaced `-1` control `false` value with `-1839`
     - Passive
         - `directory_listing` - Bail out on failed requests to avoid FPs.
         - `backdoors`, `backup_directories`, `backup_files`, `common_admin_interfaces`,
