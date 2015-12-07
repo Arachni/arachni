@@ -8,7 +8,7 @@ end
 def get_result( str )
     str = str.to_s
 
-    if str.end_with?( '1=2' ) || str == '-1'
+    if str.end_with?( '1=2' ) || str == '-1839'
         'Could not find any results, bugger off!'
     elsif str.end_with?( '1=1' ) || str == default
         '1 item found: Blah blah blah...'
