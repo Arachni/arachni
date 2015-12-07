@@ -60,6 +60,8 @@ module Differential
         false:          '-1'
     }
 
+    DIFFERENTIAL_ALLOWED_STATUS = Set.new([200, 404])
+
     attr_accessor :differential_analysis_options
 
     # Performs differential analysis and logs an issue should there be one.
@@ -423,8 +425,8 @@ module Differential
     def response_check( response, signatures, elem, pair = nil )
         corrupted = false
 
-        if response.code != 200
-            print_status "Server returned non 200 status (#{response.code})," <<
+        if !DIFFERENTIAL_ALLOWED_STATUS.include?( response.code )
+            print_status "Server returned status (#{response.code})," <<
                 " aborting analysis for #{elem.type} variable " <<
                 "'#{elem.affected_input_name}' with action '#{elem.action}'."
             corrupted = true
