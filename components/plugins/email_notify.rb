@@ -106,7 +106,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 ),
                 Options::MultipleChoice.new( :authentication,
                     description: 'Authentication.',
-                    default:     'plain',
+                    default:     '',
                     choices:     ['plain', 'login', 'cram_md5', '']
                 ),
                 Options::MultipleChoice.new( :report,
