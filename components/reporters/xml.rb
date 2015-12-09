@@ -135,14 +135,20 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
         has_errors = false
         xsd.validate( Nokogiri::XML( xml ) ).each do |error|
             puts error.message
+            puts " -- Line #{error.line}, column #{error.column}, level #{error.level}."
             puts '-' * 100
 
+            justify = (error.line+10).to_s.size
             lines = xml.lines
             ((error.line-10)..(error.line+10)).each do |i|
                 line = lines[i]
-                puts line
+                next if i < 0 || !line
+                i = i + 1
+
+                printf( "%#{justify}s | %s", i, line )
 
                 if i == error.line
+                    printf( "%#{justify}s |", i )
                     line.size.times.each do |c|
                         print error.column == c ? '^' : '-'
                     end
