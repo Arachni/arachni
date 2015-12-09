@@ -97,6 +97,8 @@
     - `email_notify` -- Made username and password optional.
     - `defaults/meta/remedy/`
         - `discovery` -- Updated similarity check to prevent analysis of singular issues.
+- Reporters
+    - `xml` -- Updated validation messages to point to relevant markup.
 
 ## 1.3.2 _(October 19, 2015)_
 
