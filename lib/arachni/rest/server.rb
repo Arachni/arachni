@@ -28,7 +28,7 @@ class Server < Sinatra::Base
 
     enable :logging
 
-    VALID_REPORT_FORMATS = %w(json xml yaml)
+    VALID_REPORT_FORMATS = %w(json xml yaml html.zip)
 
     before do
         protected!
@@ -128,6 +128,12 @@ class Server < Sinatra::Base
         session[params[:id]][:seen_sitemap] += data[:sitemap].size
 
         json data
+    end
+
+    get '/scans/:id/report.html.zip' do
+        fail_if_not_exists
+        content_type 'zip'
+        scan_for( params[:id] ).report_as( 'html' )
     end
 
     get '/scans/:id/report.?:format?' do

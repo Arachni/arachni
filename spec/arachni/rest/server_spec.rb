@@ -370,6 +370,34 @@ describe Arachni::Rest::Server do
             end
         end
 
+        describe 'html.zip' do
+            let(:format) { 'html.zip' }
+
+            before do
+                @id = create_scan
+            end
+
+            it 'returns scan report as a zipped HTML' do
+                get url
+
+                expect(response_body).to start_with 'PK'
+            end
+
+            it 'has content-type application/zip' do
+                get url
+                expect(last_response.headers['content-type']).to eq 'application/zip'
+            end
+
+            context 'when passed a non-existent id' do
+                let(:id) { non_existent_id }
+
+                it 'returns 404' do
+                    get url
+                    expect(response_code).to eq 404
+                end
+            end
+        end
+
         describe 'invalid format' do
             let(:format) { 'blah' }
 
