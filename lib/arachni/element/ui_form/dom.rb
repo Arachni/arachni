@@ -46,7 +46,7 @@ class DOM < DOM
         submission_transition = browser.fire_event( locate, @method )
         print_debug "Submitted: #{self.source}"
 
-        return if !submission_transition
+        return [] if !submission_transition
 
         transitions + [submission_transition]
     end

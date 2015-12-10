@@ -61,7 +61,7 @@ shared_examples_for 'submittable_dom' do
 
         context 'when the element could not be submitted' do
             it 'does not call the block' do
-                allow(subject).to receive( :trigger ) { false }
+                allow(subject).to receive( :trigger ) { [nil] }
 
                 called = false
                 subject.submit do

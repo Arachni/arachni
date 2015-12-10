@@ -23,7 +23,7 @@ module Submittable
 
             # If we've wondered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
-            if (transitions = self.trigger)
+            if (transitions = self.trigger.compact).any?
                 page = browser.to_page
                 page.dom.transitions += transitions
                 block.call page.tap { |p| p.request.performer = self }
