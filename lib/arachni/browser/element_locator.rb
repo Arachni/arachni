@@ -14,6 +14,12 @@ class Browser
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ElementLocator
 
+    # Exclude attributes from the {#css} selector.
+    EXCLUDE_FROM_CSS = Set.new([
+        # ReactJS has data-reactid whose value changes with each page refresh.
+        'data-reactid'
+    ])
+
     # @return   [Symbol]
     #   Tag name of the element.
     attr_accessor :tag_name
@@ -69,7 +75,21 @@ class ElementLocator
     end
 
     def css
-        "#{tag_name}#{attributes.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
+        attrs = {}
+
+        # If there's an ID attribute that's good enough, don't include anything
+        # else to avoid risking broken selectors due to dynamic attributes and
+        # values.
+        if attributes['id']
+            attrs['id'] = attributes['id']
+
+        # Alternatively, exclude known attributes that can cause issues and
+        # use whatever other attributes are available.
+        else
+            attrs = attributes.reject { |k, v| EXCLUDE_FROM_CSS.include? k }
+        end
+
+        "#{tag_name}#{attrs.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
     end
 
     # @return   [String]

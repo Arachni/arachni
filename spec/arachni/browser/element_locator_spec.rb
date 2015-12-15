@@ -130,12 +130,40 @@ describe Arachni::Browser::ElementLocator do
         context 'when there are multiple attributes' do
             it 'returns a CSS locator with the attributes' do
                 expect(described_class.new(
-                    tag_name: :a,
-                    attributes: {
-                        stuff:  'blah',
-                        stuff2: 'blah2'
-                    }
-                ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
+                           tag_name: :a,
+                           attributes: {
+                               stuff:  'blah',
+                               stuff2: 'blah2'
+                           }
+                       ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
+            end
+
+            context 'and an ID' do
+                it 'only includes the ID' do
+                    expect(described_class.new(
+                               tag_name: :a,
+                               attributes: {
+                                   stuff:  'blah',
+                                   stuff2: 'blah2',
+                                   id:     'my-id'
+                               }
+                           ).css).to eq('a[id="my-id"]')
+                end
+            end
+
+            context 'and includes a problematic one' do
+                it 'excludes it' do
+                    described_class::EXCLUDE_FROM_CSS.each do |attr|
+                        expect(described_class.new(
+                                   tag_name: :a,
+                                   attributes: {
+                                       stuff:  'blah',
+                                       stuff2: 'blah2',
+                                       attr => 'blah3'
+                                   }
+                               ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
+                    end
+                end
             end
         end
     end
