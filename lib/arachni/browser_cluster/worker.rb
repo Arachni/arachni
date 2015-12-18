@@ -238,7 +238,7 @@ class Worker < Arachni::Browser
         begin
             # If PhantomJS is already dead this will block for quite some time so
             # beware.
-            @watir.close if alive?
+            @watir.close if @watir && alive?
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error
         end
