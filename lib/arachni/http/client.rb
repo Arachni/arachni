@@ -129,8 +129,9 @@ class Client
 
         headers.clear
         headers.merge!(
-            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent' => Options.http.user_agent
+            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent'      => Options.http.user_agent,
+            'Accept-Language' => 'en-US,en;q=0.8,he;q=0.6'
         )
         headers['From'] = Options.authorized_by if Options.authorized_by
         headers.merge!( Options.http.request_headers )

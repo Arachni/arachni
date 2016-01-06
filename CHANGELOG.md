@@ -17,6 +17,7 @@
     - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
         written server with support for `keep-alive` and low-overhead SSL interception.
     - `Client`
+        - Added default value for `Accept-Language` header.
         - `Dynamic404Handler` -- Check for excessive amounts of noise during
             custom-404 signature generation and abort if an accurate reading is
             impossible.

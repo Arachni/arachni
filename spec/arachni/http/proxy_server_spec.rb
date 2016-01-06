@@ -176,6 +176,7 @@ describe Arachni::HTTP::ProxyServer do
                     "User-Agent: Typhoeus - https://github.com/typhoeus/typhoeus\r\n" <<
                     "Accept: */*\r\n" <<
                     "Content-Length: 7\r\n" <<
+                    "Accept-Language: en-US,en;q=0.8,he;q=0.6\r\n" <<
                     "Content-Type: application/x-www-form-urlencoded\r\n\r\n").split( "\r\n" ).sort
                 )
 

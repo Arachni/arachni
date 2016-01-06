@@ -579,9 +579,10 @@ class Request < Message
     end
 
     def prepare_headers
-        headers['User-Agent'] ||= Options.http.user_agent
-        headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        headers['From']       ||= Options.authorized_by if Options.authorized_by
+        headers['User-Agent']      ||= Options.http.user_agent
+        headers['Accept']          ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        headers['From']            ||= Options.authorized_by if Options.authorized_by
+        headers['Accept-Language'] ||= 'en-US,en;q=0.8,he;q=0.6'
 
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
