@@ -48,8 +48,8 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'bundler'
 
-    s.add_dependency 'concurrent-ruby',     '1.0.0.pre4'
-    s.add_dependency 'concurrent-ruby-ext', '1.0.0.pre4'
+    s.add_dependency 'concurrent-ruby',     '1.0.0'
+    s.add_dependency 'concurrent-ruby-ext', '1.0.0'
 
     # For compressing/decompressing system state archives.
     s.add_dependency 'rubyzip',           '1.1.6'
@@ -82,7 +82,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'arachni-rpc',       '0.2.1.2'
 
     # HTTP client.
-    s.add_dependency 'typhoeus',          '0.8.0'
+    s.add_dependency 'typhoeus',          '1.0.1'
 
     # Fallback URI parsing and encoding utilities.
     s.add_dependency 'addressable',       '2.3.6'
@@ -94,7 +94,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '1.6.7.rc4'
+    s.add_dependency 'nokogiri',          '1.6.7.1'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'
