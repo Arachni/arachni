@@ -119,14 +119,17 @@ class CookieJar
 
         return [] if !request_domain || !request_path
 
+        unique_cookies = {}
         @cookies.values.map do |cookie|
             if cookie.expired? || !request_path.start_with?( cookie.path ) ||
                 !in_domain?( cookie.domain, request_domain )
                 next
             end
 
-            cookie
-        end.compact.sort do |lhs, rhs|
+            unique_cookies[cookie.name] = cookie
+        end
+
+        unique_cookies.values.sort do |lhs, rhs|
             rhs.path.length <=> lhs.path.length
         end
     end

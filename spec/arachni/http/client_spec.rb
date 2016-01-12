@@ -819,8 +819,8 @@ describe Arachni::HTTP::Client do
                 end
             end
             context 'false' do
-                it 'uses the cookie_jar' do
-                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                it 'uses the raw data from the cookie jar' do
+                    @opts.http.cookie_string = 'my_cookie_name="val1";"blah_name"=val2;another_name=another_val'
                     expect(subject.cookie_jar.cookies).to be_empty
                     subject.reset
 
@@ -829,8 +829,8 @@ describe Arachni::HTTP::Client do
                     subject.request( @url + '/cookies', no_cookie_jar: false ) { |res| body = res.body }
                     subject.run
                     expect(YAML.load( body )).to eq({
-                        'my_cookie_name' => 'val1',
-                        'blah_name' => 'val2',
+                        'my_cookie_name' => '"val1"',
+                        '"blah_name"' => 'val2',
                         'another_name' => 'another_val'
                     })
                 end
@@ -857,17 +857,17 @@ describe Arachni::HTTP::Client do
             end
             context 'nil' do
                 it 'defaults to false' do
-                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name="val1";"blah_name"=val2;another_name=another_val'
                     expect(subject.cookie_jar.cookies).to be_empty
                     subject.reset
 
                     body = nil
 
-                    subject.request( @url + '/cookies' ) { |res| body = res.body }
+                    subject.request( @url + '/cookies', no_cookie_jar: false ) { |res| body = res.body }
                     subject.run
                     expect(YAML.load( body )).to eq({
-                        'my_cookie_name' => 'val1',
-                        'blah_name' => 'val2',
+                        'my_cookie_name' => '"val1"',
+                        '"blah_name"' => 'val2',
                         'another_name' => 'another_val'
                     })
                 end

@@ -18,6 +18,8 @@
         written server with support for `keep-alive` and low-overhead SSL interception.
     - `Client`
         - Added default value for `Accept-Language` header.
+        - Updated to treat cookie-jar cookies as dumb storage and not encode/decode
+            names and values.
         - `Dynamic404Handler` -- Check for excessive amounts of noise during
             custom-404 signature generation and abort if an accurate reading is
             impossible.

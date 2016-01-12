@@ -44,6 +44,8 @@ class Cookie < Base
     DEFAULT = {
         name:        nil,
         value:       nil,
+        raw_name:    nil,
+        raw_value:   nil,
         version:     0,
         port:        nil,
         discard:     nil,
@@ -170,7 +172,14 @@ class Cookie < Base
     # @return   [String]
     #   To be used in a `Cookie` HTTP request header.
     def to_s
-        "#{encode( name )}=#{encode( value )}"
+        # Only do encoding if we're dealing with a mutation, otherwise pass
+        # along the raw data as set in order to deal with server-side decoding
+        # quirks.
+        if mutation? || !(raw_name || raw_value )
+            "#{encode( name )}=#{encode( value )}"
+        else
+            "#{raw_name}=#{raw_value}"
+        end
     end
 
     # @return   [String]
@@ -363,11 +372,19 @@ class Cookie < Base
                 cookie_hash['expires'] = cookie.expires
 
                 cookie_hash['path'] ||= '/'
+                cookie_hash['raw_name']  = cookie.name
                 cookie_hash['name']  = decode( cookie.name )
 
                 if too_big?( cookie.value )
                     cookie_hash['value'] = ''
                 else
+                    quoted = "\"#{cookie.value}\""
+                    if str.include? quoted
+                        cookie_hash['raw_value']  = quoted
+                    else
+                        cookie_hash['raw_value']  = cookie.value
+                    end
+
                     cookie_hash['value'] = decode( cookie.value )
                 end
 
@@ -396,9 +413,12 @@ class Cookie < Base
                 v = '' if too_big?( v )
 
                 new(
-                    url:    url,
-                    source: cookie_pair,
-                    inputs: { decode( k ) => value_to_v0( v ) }
+                    url:       url,
+                    source:    cookie_pair,
+                    raw_name:  k,
+                    raw_value: v,
+                    name:      decode( k ),
+                    value:     value_to_v0( v )
                 )
             end.flatten.compact
         end
@@ -462,6 +482,8 @@ class Cookie < Base
             @keep = Set.new( DEFAULT.keys )
             @keep.delete( :name )
             @keep.delete( :value )
+            @keep.delete( :raw_name )
+            @keep.delete( :raw_value )
             @keep.delete( :domain )
             @keep.delete( :url )
             @keep.delete( :secure )

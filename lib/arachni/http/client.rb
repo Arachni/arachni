@@ -357,27 +357,28 @@ class Client
     def request( url = @url, options = {}, &block )
         fail ArgumentError, 'URL cannot be empty.' if !url
 
-        options = options.dup
-        cookies = options.delete( :cookies ) || {}
+        options     = options.dup
+        cookies     = options.delete( :cookies ) || {}
+        raw_cookies = []
 
         exception_jail false do
             if !options.delete( :no_cookie_jar )
-                cookies = begin
-                    cookie_jar.for_url( url ).inject({}) do |h, c|
-                        h[c.name] = c.value
-                        h
-                    end.merge( cookies )
+                raw_cookies = begin
+                    cookie_jar.for_url( url ).reject do |c|
+                        cookies.include? c.name
+                    end
                 rescue => e
                     print_error "Could not get cookies for URL '#{url}' from Cookiejar (#{e})."
                     print_error_backtrace e
-                    cookies
+                    []
                 end
             end
 
             request = Request.new( options.merge(
-                url:     url,
-                headers: headers.merge( options.delete( :headers ) || {} ),
-                cookies: cookies
+                url:         url,
+                headers:     headers.merge( options.delete( :headers ) || {} ),
+                cookies:     cookies,
+                raw_cookies: raw_cookies
             ))
 
             if block_given?

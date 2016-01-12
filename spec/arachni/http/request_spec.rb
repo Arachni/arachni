@@ -442,7 +442,7 @@ describe Arachni::HTTP::Request do
     end
 
     describe '#effective_cookies' do
-        it 'returns the given :cookies merged with the cookies in Headers' do
+        it 'returns the given :cookies merged with the cookies in Headers and raw cookies' do
             request = described_class.new(
                 url: url,
                 headers: {
@@ -451,7 +451,16 @@ describe Arachni::HTTP::Request do
                 cookies: {
                     'cookie2' => 'updated_value',
                     'cookie3' => 'value3',
-                }
+                },
+                raw_cookies: [
+                    Arachni::Element::Cookie.new(
+                        url: url,
+                        name: 'name',
+                        value: 'value',
+                        raw_name: 'name1',
+                        raw_value: 'value1'
+                    )
+                ]
             )
 
             expect(request.cookies).to eq({
@@ -461,7 +470,8 @@ describe Arachni::HTTP::Request do
             expect(request.effective_cookies).to eq({
                 'my_cookie' => 'my_value',
                 'cookie2'   => 'updated_value',
-                'cookie3'   => 'value3'
+                'cookie3'   => 'value3',
+                'name1'     => 'value1'
             })
         end
     end
@@ -529,6 +539,31 @@ describe Arachni::HTTP::Request do
 
             it 'encodes and puts them in the Cookie header' do
                 expect(subject.options[:headers]['Cookie']).to eq('na+me=stu+ff;na+me2=stu+ff2')
+            end
+        end
+
+        context 'when raw cookies are available' do
+            let(:request) do
+                described_class.new(
+                    url:     url,
+                    cookies: {
+                        'na me'  => 'stu ff',
+                        'na me2' => 'stu ff2'
+                    },
+                    raw_cookies: [
+                        Arachni::Element::Cookie.new(
+                            url: url,
+                            name: 'name',
+                            value: 'value',
+                            raw_name: 'name1',
+                            raw_value: '"v alue1"'
+                        )
+                    ]
+                )
+            end
+
+            it 'places raw data in the Cookie header' do
+                expect(subject.options[:headers]['Cookie']).to eq('na+me=stu+ff;na+me2=stu+ff2;name1="v alue1"')
             end
         end
 

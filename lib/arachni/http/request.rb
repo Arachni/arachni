@@ -63,6 +63,9 @@ class Request < Message
     #   Cookies set for this request.
     attr_reader   :cookies
 
+    # @return   [Array<Element::Cookie>]
+    attr_reader   :raw_cookies
+
     # @return   [Symbol]
     #   Mode of operation for the request.
     #
@@ -143,6 +146,7 @@ class Request < Message
         @mode           ||= :async
         @parameters     ||= {}
         @cookies        ||= {}
+        @raw_cookies    ||= []
     end
 
     def raw_parameters=( names )
@@ -224,13 +228,22 @@ class Request < Message
     end
 
     def effective_cookies
-        return cookies if headers['Cookie'].to_s.empty?
+        effective_cookies = self.cookies.dup
 
-        Cookie.from_string( url, headers['Cookie'] ).
-            inject( cookies.dup ) do |h, cookie|
+        if !headers['Cookie'].to_s.empty?
+            Cookie.from_string( url, headers['Cookie'] ).
+                inject( effective_cookies ) do |h, cookie|
                 h[cookie.name] ||= cookie.value
                 h
             end
+        end
+
+        @raw_cookies.inject( effective_cookies ) do |h, cookie|
+            h[cookie.raw_name] ||= cookie.raw_value
+            h
+        end
+
+        effective_cookies
     end
 
     def effective_parameters
@@ -488,10 +501,12 @@ class Request < Message
     end
 
     def marshal_dump
-        callbacks = @on_complete.dup
-        performer = @performer
+        raw_cookies = @raw_cookies.dup
+        callbacks   = @on_complete.dup
+        performer   = @performer
 
         @performer   = nil
+        @raw_cookies = []
         @on_complete = []
 
         instance_variables.inject( {} ) do |h, iv|
@@ -500,6 +515,7 @@ class Request < Message
             h
         end
     ensure
+        @raw_cookies = raw_cookies
         @on_complete = callbacks
         @performer   = performer
     end
@@ -586,9 +602,26 @@ class Request < Message
 
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
-        headers['Cookie'] = effective_cookies.
-            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.
-            join( ';' )
+        final_cookies_hash = self.cookies
+        final_raw_cookies  = self.raw_cookies
+
+        if headers['Cookie']
+            final_raw_cookies_set = Set.new( final_raw_cookies.map(&:name) )
+            final_raw_cookies |= Cookie.from_string( url, headers['Cookie'] ).reject do |c|
+                final_cookies_hash.include?( c.name ) ||
+                    final_raw_cookies_set.include?( c.name )
+            end
+        end
+
+        headers['Cookie'] = final_cookies_hash.
+            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.join( ';' )
+
+        if !headers['Cookie'].empty? && final_raw_cookies.any?
+            headers['Cookie'] += ';'
+        end
+
+        headers['Cookie'] += final_raw_cookies.map { |c| c.to_s }.join( ';' )
+
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
 
         headers
