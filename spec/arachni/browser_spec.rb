@@ -2937,6 +2937,8 @@ describe Arachni::Browser do
             cookie = @browser.cookies.first
             expect(cookie.name).to  eq 'cookie_name'
             expect(cookie.value).to eq 'cookie value'
+            expect(cookie.raw_name).to  eq 'cookie_name'
+            expect(cookie.raw_value).to eq '"cookie value"'
         end
 
         it 'preserves expiration value' do
@@ -3006,6 +3008,7 @@ describe Arachni::Browser do
 
                 cookie = @browser.cookies.find { |c| c.name == 'rsession' }
                 expect(cookie.value).to eq('06142010_0:e275d357943e9a2de0')
+                expect(cookie.raw_value).to eq('"06142010_0%3Ae275d357943e9a2de0"')
             end
         end
 

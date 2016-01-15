@@ -1033,6 +1033,9 @@ class Browser
             c[:path]     = c[:path].gsub( /\/+/, '/' )
             c[:expires]  = Time.parse( c[:expires].to_s ) if c[:expires]
 
+            c[:raw_name]  = c[:name].to_s
+            c[:raw_value] = c[:value].to_s
+
             c[:name]  = Cookie.decode( c[:name].to_s )
             c[:value] = Cookie.value_to_v0( c[:value].to_s )
 
