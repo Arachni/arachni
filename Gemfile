@@ -25,6 +25,9 @@ if !Gem.win_platform?
     gem 'ffi', github: 'ffi/ffi', branch: 'elcapt'
 end
 
+gem 'ethon',    github: 'typhoeus/ethon'
+gem 'typhoeus', github: 'typhoeus/typhoeus'
+
 gem 'arachni-reactor', github: 'arachni/arachni-reactor', branch: 'slice-to-byteslice'
 
 gemspec
