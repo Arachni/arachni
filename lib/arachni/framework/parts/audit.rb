@@ -82,7 +82,15 @@ module Audit
         add_to_sitemap( page )
 
         print_line
-        print_status "[HTTP: #{page.code}] #{page.dom.url}"
+
+        if page.response.ok?
+            print_status "[HTTP: #{page.code}] #{page.dom.url}"
+        else
+            print_error "[HTTP: #{page.code}] #{page.dom.url}"
+            print_error "[#{page.response.return_code}] #{page.response.return_message}"
+
+            exit
+        end
 
         if page.platforms.any?
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"
