@@ -131,6 +131,12 @@ describe Arachni::HTTP::Response do
 
                 expect_it { to_not be_ok }
             end
+
+            context 'missing' do
+                let(:return_code) { nil }
+
+                expect_it { to be_ok }
+            end
         end
     end
 

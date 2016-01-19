@@ -131,7 +131,7 @@ class Response < Message
     #   `true` if the request was performed successfully and the response was
     #   received in full, `false` otherwise.
     def ok?
-        return_code == :ok
+        !return_code || return_code == :ok
     end
 
     # @return [Bool]
@@ -235,6 +235,18 @@ class Response < Message
             ))
         end
 
+        return_code    = response.return_code
+        return_message = response.return_message
+
+        # A write error in this case will be because body reading was aborted
+        # during our own callback in Request#set_body_reader.
+        #
+        # So, this is here just for consistency.
+        if response.return_code == :write_error
+            return_code    = :filesize_exceeded
+            return_message = 'Maximum file size exceeded'
+        end
+
         new( options.merge(
             url:            response.effective_url,
             code:           response.code,
@@ -247,8 +259,8 @@ class Response < Message
             app_time:       (response.timed_out? ? response.time :
                                 response.start_transfer_time - response.pretransfer_time).to_f,
             total_time:     response.total_time.to_f,
-            return_code:    response.return_code,
-            return_message: response.return_message
+            return_code:    return_code,
+            return_message: return_message
         ))
     end
 
