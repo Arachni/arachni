@@ -42,6 +42,9 @@ class Message
         @normalize_url = options.delete( :normalize_url )
         @normalize_url = true if @normalize_url.nil?
 
+        # Headers are necessary for subsequent operations to set them first.
+        @headers = Headers.new( options.delete( :headers ) || {} )
+
         options.each do |k, v|
             begin
                 send( "#{k}=", v )
@@ -51,8 +54,10 @@ class Message
         end
 
         fail ArgumentError, 'Missing :url.' if url.to_s.empty?
+    end
 
-        @headers = Headers.new( @headers )
+    def headers=( h )
+        @headers = Headers.new( h || {} )
     end
 
     # @return   [Scope]

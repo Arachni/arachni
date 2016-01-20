@@ -222,7 +222,7 @@ describe Arachni::HTTP::Response do
                 end
             end
 
-            context nil do
+            context 'nil' do
                 context 'and the response body is' do
                     context 'binary' do
                         it 'returns false' do
@@ -240,7 +240,7 @@ describe Arachni::HTTP::Response do
                                 url:  'http://test.com',
                                 body: 'stuff'
                             }
-                            expect(described_class.new( h ).text?).to be_truthy
+                            expect(described_class.new( h ).text?).to eq(true)
                         end
                     end
 
