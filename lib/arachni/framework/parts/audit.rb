@@ -88,8 +88,6 @@ module Audit
         else
             print_error "[HTTP: #{page.code}] #{page.dom.url}"
             print_error "[#{page.response.return_code}] #{page.response.return_message}"
-
-            exit
         end
 
         if page.platforms.any?
