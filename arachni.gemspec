@@ -67,7 +67,7 @@ Gem::Specification.new do |s|
 
     if RUBY_PLATFORM != 'java'
         # Optimized JSON.
-        s.add_dependency 'oj',            '~> 2.12.9'
+        s.add_dependency 'oj',            '~> 2.14.3'
         s.add_dependency 'oj_mimic_json'
     end
 
