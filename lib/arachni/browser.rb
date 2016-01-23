@@ -1372,6 +1372,10 @@ class Browser
         cookies.each do |name, value|
             if set_cookies[name]
                 set_cookies[name] = set_cookies[name].dup
+
+                # Don't forget this, otherwise the #to_set_cookie call will
+                # return the original raw data.
+                set_cookies[name].affected_input_name = name
                 set_cookies[name].update( name => value )
             else
                 set_cookies[name] = Cookie.new( url: url, inputs: { name => value } )
