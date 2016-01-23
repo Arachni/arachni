@@ -94,7 +94,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '1.6.7.1'
+    s.add_dependency 'nokogiri',          '1.6.8rc2'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'

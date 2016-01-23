@@ -21,7 +21,7 @@ describe name_from_filename do
                 Element::Header       => 8,
                 Element::LinkTemplate => 16,
                 Element::JSON         => 16,
-                Element::XML          => 32
+                Element::XML          => 16
             },
             windows: {
                 Element::Form         => 192,
@@ -30,7 +30,7 @@ describe name_from_filename do
                 Element::Header       => 48,
                 Element::LinkTemplate => 96,
                 Element::JSON         => 96,
-                Element::XML          => 192
+                Element::XML          => 96
             },
             java:    {
                 Element::Form         => 16,
@@ -39,7 +39,7 @@ describe name_from_filename do
                 Element::Header       => 4,
                 Element::LinkTemplate => 8,
                 Element::JSON         => 8,
-                Element::XML          => 16
+                Element::XML          => 8
             },
             php:  {
                 Element::Form         => 240,
@@ -48,7 +48,7 @@ describe name_from_filename do
                 Element::Header       => 56,
                 Element::LinkTemplate => 120,
                 Element::JSON         => 112,
-                Element::XML          => 224
+                Element::XML          => 112
             },
             perl:  {
                 Element::Form         => 240,
@@ -57,7 +57,7 @@ describe name_from_filename do
                 Element::Header       => 60,
                 Element::LinkTemplate => 120,
                 Element::JSON         => 120,
-                Element::XML          => 240
+                Element::XML          => 120
             }
         }
     end

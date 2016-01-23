@@ -11,6 +11,7 @@ describe Arachni::Element::XML do
     it_should_behave_like 'submittable'
     it_should_behave_like 'inputtable'
     it_should_behave_like 'mutable',
+                          supports_nulls: false,
                           inputs: described_class.parse_inputs( inputtable_source )
     it_should_behave_like 'auditable'
 

@@ -17,6 +17,12 @@ module Capabilities
 module Inputtable
     include Arachni::Element::Capabilities::Inputtable
 
+    INVALID_INPUT_DATA = [ "\0" ]
+
+    def valid_input_data?( data )
+        !INVALID_INPUT_DATA.find { |c| data.include? c }
+    end
+
     # @param    [String]    name
     #   Input name.
     #

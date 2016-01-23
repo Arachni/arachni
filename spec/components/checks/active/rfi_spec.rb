@@ -15,7 +15,7 @@ describe name_from_filename do
             Element::Cookie => 12,
             Element::Header => 6,
             Element::JSON   => 12,
-            Element::XML    => 24
+            Element::XML    => 12
         }
     end
 

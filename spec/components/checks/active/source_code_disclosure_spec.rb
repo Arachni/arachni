@@ -20,7 +20,7 @@ describe name_from_filename do
             Element::Header       => 4,
             Element::LinkTemplate => 10,
             Element::JSON         => 6,
-            Element::XML          => 16
+            Element::XML          => 8
         }
     end
 
