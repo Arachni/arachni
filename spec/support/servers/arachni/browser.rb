@@ -1071,6 +1071,17 @@ post '/href-ajax-sleep' do
     sleep 4
 end
 
+get '/5_windows' do
+    <<HTML
+    <script>
+        window.open();
+        window.open();
+        window.open();
+        window.open();
+        window.open();
+    </script>
+end
+
 get '/trigger_events' do
     <<HTML
 <html>

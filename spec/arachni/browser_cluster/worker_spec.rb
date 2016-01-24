@@ -248,39 +248,6 @@ describe Arachni::BrowserCluster::Worker do
                 expect(custom_job.time).to be > 0
             end
 
-            context 'when there are 5 or more windows open' do
-                before(:each) do
-                    5.times do
-                        subject.javascript.run( 'window.open()' )
-                    end
-                end
-
-                it 'respawns PhantomJS' do
-                    watir         = subject.watir
-                    pid = subject.browser_pid
-
-                    expect(subject.watir.windows.size).to be > 5
-                    @cluster.explore( page ) {}
-                    @cluster.wait
-
-                    expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.browser_pid)
-                    expect(subject.watir.windows.size).to eq(1)
-                end
-
-                it 'clears the cached HTTP responses' do
-                    subject.preload page
-                    expect(subject.preloads).to be_any
-                    subject.instance_variable_get(:@window_responses)
-
-                    expect(subject.watir.windows.size).to be > 5
-                    @cluster.queue( custom_job ) {}
-                    @cluster.wait
-
-                    expect(subject.instance_variable_get(:@window_responses)).to be_empty
-                end
-            end
-
             context 'when #time_to_live reaches 0' do
                 it 'respawns the browser' do
                     @cluster.shutdown

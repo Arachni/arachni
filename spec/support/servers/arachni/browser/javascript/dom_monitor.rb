@@ -87,6 +87,27 @@ get '/intervals' do
 HTML
 end
 
+get '/elements_with_events/inherited' do
+    <<HTML
+    <div id="parent">
+        <p id="parent-p">
+            <button id="parent-button">Click me</button>
+        </p>
+
+        <div id="child">
+            <p id="child-p">
+                <button id="child-button">Click me too</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById( "parent" ).addEventListener( "click", function( parent_click ){}, false );
+        document.getElementById( "child" ).addEventListener( "click", function( child_click ){}, false );
+    </script>
+HTML
+end
+
 get '/elements_with_events/attributes' do
     <<HTML
     <body>

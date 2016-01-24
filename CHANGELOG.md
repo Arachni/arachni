@@ -35,6 +35,7 @@
         in order to resolve JRuby and MS Windows issues.
     - `#spawn_phantomjs` -- Use a Ruby lifeline process to kill the browser
         if the parent dies for whatever reason.
+    - Added support for tracking event delegation.
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.

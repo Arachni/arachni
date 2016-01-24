@@ -864,10 +864,12 @@ class Browser
     # @return   [Page]
     #   Converts the current browser window to a {Page page}.
     def to_page
-        if !(r = response)
+        d_url = dom_url
+
+        if d_url == 'about:blank' || !(r = response)
             return Page.from_data(
                 dom: {
-                    url: dom_url
+                    url: d_url
                 },
                 response: {
                     code: 0,
@@ -878,7 +880,7 @@ class Browser
 
         page                          = r.to_page
         page.body                     = source
-        page.dom.url                  = dom_url
+        page.dom.url                  = d_url
         page.dom.digest               = @javascript.dom_digest
         page.dom.execution_flow_sinks = @javascript.execution_flow_sinks
         page.dom.data_flow_sinks      = @javascript.data_flow_sinks
@@ -945,7 +947,7 @@ class Browser
                     @selenium.switch_to.window( handle )
                 end
 
-                next if !(page = to_page)
+                next if (page = to_page).code == 0
 
                 if pages.empty?
                     transitions.each do |t|
@@ -1145,7 +1147,7 @@ class Browser
 
         form.find_elements( :tag_name, 'select' ).each do |select|
             name_or_id = name_or_id_for( select )
-            value      = inputs ? inputs[name_or_id] : value_for( name_or_id )
+            value      = inputs ? inputs[name_or_id] : value_for_name( name_or_id )
 
             options = select.find_elements( tag_name: 'option' )
             options.each do |option|
@@ -1418,15 +1420,16 @@ EOJS
 
         if window_handles.size == 0
             @javascript.run( 'window.open()' )
+            @selenium.switch_to.window( @selenium.window_handles.last )
         else
             if window_handles.size > 1
                 # Keep the first
-                window_handles[1...-1].each do |handle|
+                window_handles[1..-1].each do |handle|
                     @selenium.switch_to.window( handle )
                     @selenium.close
                 end
 
-                @selenium.switch_to.default_content
+                @selenium.switch_to.window( @selenium.window_handles.first )
             end
 
             @selenium.navigate.to 'about:blank'

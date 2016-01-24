@@ -45,7 +45,7 @@ class Javascript
 
     NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
-        :title, :link
+        :title, :link, :hr
     ])
 
     # Events that apply to all elements.

@@ -20,13 +20,6 @@ class BrowserCluster
 class Worker < Arachni::Browser
     personalize_output
 
-    # @return   [Integer]
-    #   We can't just close all windows because PhantomJS for some reason
-    #   freezes after we do it a lot of times and we can't just leave open
-    #   windows accumulate, so we've got to take more drastic measures and kill
-    #   it when the amount of open windows reaches or exceeds this setting.
-    RESPAWN_WHEN_WINDOW_COUNT_REACHES = 5
-
     # @return    [BrowserCluster]
     attr_reader   :master
 
