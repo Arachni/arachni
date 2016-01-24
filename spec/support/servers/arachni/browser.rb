@@ -1080,6 +1080,7 @@ get '/5_windows' do
         window.open();
         window.open();
     </script>
+HTML
 end
 
 get '/trigger_events' do
