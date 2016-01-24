@@ -21,7 +21,7 @@ describe name_from_filename do
                 Element::Header       => 56,
                 Element::LinkTemplate => 16,
                 Element::JSON         => 168,
-                Element::XML          => 168
+                Element::XML          => 112
             },
             windows: {
                 Element::Form         => 672,
@@ -30,7 +30,7 @@ describe name_from_filename do
                 Element::Header       => 168,
                 Element::LinkTemplate => 48,
                 Element::JSON         => 504,
-                Element::XML          => 504
+                Element::XML          => 336
             },
             java:    {
                 Element::Form         => 16,
@@ -39,7 +39,7 @@ describe name_from_filename do
                 Element::Header       => 4,
                 Element::LinkTemplate => 0,
                 Element::JSON         => 12,
-                Element::XML          => 12
+                Element::XML          => 8
             }
         }
     end
