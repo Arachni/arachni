@@ -769,7 +769,7 @@ class Browser
         rescue Selenium::WebDriver::Error::WebDriverError => e
 
             print_debug "Error when triggering event for: #{url}"
-            print_debug "-- '#{event}' on: #{opening_tag}"
+            print_debug "-- '#{event}' on: #{opening_tag}  -- #{locator.css}"
             print_debug
             print_debug_exception e
             nil
