@@ -14,11 +14,7 @@ class Browser
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ElementLocator
 
-    # Exclude attributes from the {#css} selector.
-    EXCLUDE_FROM_CSS = Set.new([
-        # ReactJS has data-reactid whose value changes with each page refresh.
-        'data-reactid'
-    ])
+    ARACHNI_ID = 'data-arachni-id'
 
     # @return   [Symbol]
     #   Tag name of the element.
@@ -83,10 +79,13 @@ class ElementLocator
         if attributes['id']
             attrs['id'] = attributes['id']
 
-        # Alternatively, exclude known attributes that can cause issues and
-        # use whatever other attributes are available.
+        # Alternatively, exclude data attributes (except from ours ) to prevent
+        # issues and use whatever other attributes are available.
         else
-            attrs = attributes.reject { |k, v| EXCLUDE_FROM_CSS.include? k }
+            attrs = attributes.reject do |k, v|
+                k = k.to_s
+                k.start_with?( 'data-' ) && k != ARACHNI_ID
+            end
         end
 
         "#{tag_name}#{attrs.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"

@@ -151,18 +151,16 @@ describe Arachni::Browser::ElementLocator do
                 end
             end
 
-            context 'and includes a problematic one' do
-                it 'excludes it' do
-                    described_class::EXCLUDE_FROM_CSS.each do |attr|
-                        expect(described_class.new(
-                                   tag_name: :a,
-                                   attributes: {
-                                       stuff:  'blah',
-                                       stuff2: 'blah2',
-                                       attr => 'blah3'
-                                   }
-                               ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
-                    end
+            context 'and includes data ones' do
+                it "excludes all but #{described_class::ARACHNI_ID}" do
+                    expect(described_class.new(
+                        tag_name: :a,
+                        attributes: {
+                            'data-stuff'                => 'blah',
+                            'data-stuff2'               => 'blah2',
+                            described_class::ARACHNI_ID => 'blah3'
+                        }
+                    ).css).to eq("a[#{described_class::ARACHNI_ID}=\"blah3\"]")
                 end
             end
         end
