@@ -70,7 +70,7 @@ class Javascript
                   :onreset
               ],
 
-        # These need to be covered via Watir's API, #send_keys etc.
+        # These need to be covered via Selenium's API, #send_keys etc.
         input: [
                   :onselect,
                   :onchange,
@@ -82,7 +82,7 @@ class Javascript
                   :oninput
               ],
 
-        # These need to be covered via Watir's API, #send_keys etc.
+        # These need to be covered via Selenium's API, #send_keys etc.
         textarea: [
                   :onselect,
                   :onchange,
@@ -336,6 +336,7 @@ class Javascript
             end.compact)
 
             element['events'] |= self.class.select_event_attributes( attributes ).to_a
+            element['events'] = self.class.select_events( element['tag_name'], element['events'] ).dup
 
             element
         end.compact
