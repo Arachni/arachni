@@ -178,6 +178,10 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                 [
                                     "click",
                                     "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                ],
+                                [
+                                    "load",
+                                    "function () {\n\t\tdocument.removeEventListener( \"DOMContentLoaded\", completed, false );\n\t\twindow.removeEventListener( \"load\", completed, false );\n\t\tjQuery.ready();\n\t}"
                                 ]
                             ],
                         "attributes" => {
@@ -246,26 +250,21 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                        { "tag_name"   => "div",
                          "events"     => [["click", "function (parent_click) {}"]],
                          "attributes" => { "id" => "parent" } },
-                       { "tag_name"   => "p",
-                         "events"     => [["click", "function (parent_click) {}"]],
-                         "attributes" => { "id" => "parent-p" } },
                        { "tag_name"   => "button",
-                         "events"     => [["click", "function (parent_click) {}"]],
+                         "events"     => [["click", "function (parent_click) {}"],
+                                          ["click", "function (window_click) {}"],
+                                          ["click", "function (document_click) {}"]],
                          "attributes" => { "id" => "parent-button" } },
                        { "tag_name"   => "div",
                          "events"     =>
-                             [["click", "function (parent_click) {}"],
-                              ["click", "function (child_click) {}"]],
+                             [["click", "function (child_click) {}"]],
                          "attributes" => { "id" => "child" } },
-                       { "tag_name"   => "p",
-                         "events"     =>
-                             [["click", "function (parent_click) {}"],
-                              ["click", "function (child_click) {}"]],
-                         "attributes" => { "id" => "child-p" } },
                        { "tag_name"   => "button",
                          "events"     =>
                              [["click", "function (parent_click) {}"],
-                              ["click", "function (child_click) {}"]],
+                              ["click", "function (child_click) {}"],
+                              ["click", "function (window_click) {}"],
+                              ["click", "function (document_click) {}"]],
                          "attributes" => { "id" => "child-button" } }]
                 )
                 end

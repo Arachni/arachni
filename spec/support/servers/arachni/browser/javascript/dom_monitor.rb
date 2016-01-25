@@ -102,6 +102,8 @@ get '/elements_with_events/inherited' do
     </div>
 
     <script>
+        window.addEventListener( "click", function( window_click ){}, false );
+        document.addEventListener( "click", function( document_click ){}, false );
         document.getElementById( "parent" ).addEventListener( "click", function( parent_click ){}, false );
         document.getElementById( "child" ).addEventListener( "click", function( child_click ){}, false );
     </script>
