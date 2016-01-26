@@ -1,6 +1,6 @@
 # coding: utf-8
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -124,7 +124,7 @@ License            - Arachni Public Source License v1.0
                         (https://github.com/Arachni/arachni/blob/master/LICENSE.md)
 Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
 Twitter            - http://twitter.com/ArachniScanner
-Copyright          - 2010-2015 Tasos Laskos
+Copyright          - 2010-2016 Tasos Laskos
 
 Please do not hesitate to ask for assistance (via the support portal)
 or report a bug (via GitHub Issues) if you come across any problem.

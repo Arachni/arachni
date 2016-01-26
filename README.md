@@ -69,7 +69,7 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2015 Tasos Laskos</td>
+        <td>2010-2016 Tasos Laskos</td>
     </tr>
     <tr>
         <th>License</th>
