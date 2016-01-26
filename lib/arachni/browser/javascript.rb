@@ -473,8 +473,11 @@ class Javascript
 
         # Let's check that the response at least looks like it contains HTML
         # code of interest.
-        body = response.body.downcase
+        body = response.body.downcase.strip
         return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
+
+        # If there's a doctype then we're good to go.
+        return true if body.start_with?( '<!doctype html' )
 
         # The last check isn't fool-proof, so don't do it when loading the page
         # for the first time, but only when the page loads stuff via AJAX and whatnot.
@@ -488,6 +491,8 @@ class Javascript
         #
         # For example, it may have been JSON with the wrong content-type that
         # includes HTML -- it happens.
+        #
+        # Beware, if there's a doctype in the beginning this will fail.
         begin
             return false if Parser.parse_xml( response.body ).children.empty?
         rescue => e
