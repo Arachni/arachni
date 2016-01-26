@@ -25,6 +25,4 @@ if !Gem.win_platform?
     gem 'ffi', github: 'ffi/ffi', branch: 'elcapt'
 end
 
-gem 'arachni-reactor', github: 'arachni/arachni-reactor', branch: 'slice-to-byteslice'
-
 gemspec
