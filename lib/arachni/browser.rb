@@ -1538,18 +1538,6 @@ EOJS
 
         request.headers['user-agent'] = Options.http.user_agent
 
-        # The proxy has an unlimited response_max_size so if we're not requesting
-        # an asset remove the response_max_size option so that it'll end up using
-        # the system settings.
-        #
-        # However, this is not foolproof, a lot of assets don't have the expected
-        # extension.
-        if !request_for_asset?( request )
-            request.response_max_size = nil
-        else
-            print_debug_level_2 'Asset detected, removing max size limit.'
-        end
-
         # Signal the proxy to continue with its request to the origin server.
         true
     end
