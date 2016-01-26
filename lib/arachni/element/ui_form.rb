@@ -52,7 +52,7 @@ class UIForm < Base
                 locator.attributes['type'] != 'button' &&
                 locator.attributes['type'] != 'submit'
 
-            browser.javascript.class.select_events( locator.tag_name, events ).each do |event, _|
+            events.each do |event, _|
                 ui_forms << new(
                     action:       page.url,
                     source:       locator.to_s,

@@ -1887,14 +1887,14 @@ describe Arachni::Browser do
                         tag_name:   'body',
                         attributes: { 'onmouseover' => 'makePOST();' }
                     ),
-                    [[:onmouseover, 'makePOST();']]
+                    { onmouseover: ['makePOST();'] }
                 ],
                 [
                     described_class::ElementLocator.new(
                         tag_name:   'div',
                         attributes: { 'id' => 'my-div', 'onclick' => 'addForm();' }
                     ),
-                    [[:onclick, 'addForm();']]
+                    { onclick: ['addForm();']}
                 ]
             ])
         end
@@ -1911,7 +1911,7 @@ describe Arachni::Browser do
                                     tag_name:   'a',
                                     attributes: { 'href' => 'javascript:doStuff()' }
                                 ),
-                                [[:click, 'javascript:doStuff()']]
+                                {click: [ 'javascript:doStuff()']}
                             ]
                         ])
                     end
@@ -1951,7 +1951,7 @@ describe Arachni::Browser do
                                         'src'  => '/__sinatra__/404.png'
                                     }
                                 ),
-                                [[:click, 'image']]
+                                {click: ['image']}
                             ]
                         ])
                     end
@@ -1971,7 +1971,7 @@ describe Arachni::Browser do
                                         'action' => 'javascript:doStuff()'
                                     }
                                 ),
-                                [[:submit, 'javascript:doStuff()']]
+                                {submit: ['javascript:doStuff()']}
                             ]
                         ])
                     end
@@ -1980,7 +1980,7 @@ describe Arachni::Browser do
                 context 'and it does not start with javascript:' do
                     let(:url) { @url + '/each_element_with_events/form/action/regular' }
 
-                    it 'is ignored'do
+                    it 'is ignored' do
                         expect(elements_with_events).to be_empty
                     end
                 end
@@ -1988,7 +1988,7 @@ describe Arachni::Browser do
                 context 'and is out of scope' do
                     let(:url) { @url + '/each_element_with_events/form/action/out-of-scope' }
 
-                    it 'is ignored'do
+                    it 'is ignored' do
                         expect(elements_with_events).to be_empty
                     end
                 end

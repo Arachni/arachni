@@ -32,7 +32,7 @@ class UIInput < Base
             next if locator.attributes['type'] &&
                 locator.attributes['type'] != 'text'
 
-            browser.javascript.class.select_events( locator.tag_name, events ).each do |event, _|
+            events.each do |event, _|
                 name = locator.attributes['name'] || locator.attributes['id'] ||
                     locator.to_s
 

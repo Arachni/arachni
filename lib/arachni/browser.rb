@@ -479,7 +479,7 @@ class Browser
 
                     if !href.empty?
                         if href.downcase.start_with?( 'javascript:' )
-                            events << [ :click, href ]
+                            (events[:click] ||= []) << href
                         else
                             next if skip_path?( to_absolute( href, current_url ) )
                         end
@@ -487,7 +487,7 @@ class Browser
 
                 when 'input'
                     if attributes['type'].to_s.downcase == 'image'
-                        events << [ :click, 'image' ]
+                        (events[:click] ||= []) << 'image'
                     end
 
                 when 'form'
@@ -495,7 +495,7 @@ class Browser
 
                     if !action.empty?
                         if action.downcase.start_with?( 'javascript:' )
-                            events << [ :submit, action ]
+                            (events[:submit] ||= []) << action
                         else
                             next if skip_path?( to_absolute( action, current_url ) )
                         end
@@ -562,19 +562,19 @@ class Browser
 
                     if !href.empty?
                         if href.downcase.start_with?( 'javascript:' )
-                            events << [ :click, href ]
+                            (events[:click] ||= []) << href
                         else
                             absolute = to_absolute( href, current_url )
                             next if skip_path?( absolute )
 
-                            events << [ :click, href ]
+                            (events[:click] ||= []) << href
                         end
                     else
-                        events << [ :click, current_url ]
+                        (events[:click] ||= []) << current_url
                     end
 
                 when 'input', 'textarea', 'select'
-                    events     << [ tag_name.to_sym ]
+                    (events[:input] ||= []) << tag_name.to_sym
                     element_id << attributes['name'].to_s
 
                 when 'form'
@@ -583,21 +583,21 @@ class Browser
 
                     if !action.empty?
                         if action.downcase.start_with?( 'javascript:' )
-                            events << [ :submit, action ]
+                            (events[:submit] ||= []) << action
                         else
                             absolute = to_absolute( action, current_url )
                             if !skip_path?( absolute )
-                                events << [ :submit, absolute ]
+                                (events[:submit] ||= []) << absolute
                             end
                         end
                     else
-                        events << [ :submit, current_url ]
+                        (events[:submit] ||= []) << current_url
                     end
             end
 
             next if events.empty?
 
-            id << "#{tag_name}:#{element_id}:#{events}"
+            id << "#{tag_name}:#{element_id}:#{events.keys.sort}"
         end
 
         id << [:cookies, cookies.map(&:name).sort].to_s
@@ -614,7 +614,7 @@ class Browser
         root_page = to_page
 
         elements_with_events( true ).each do |locator, events|
-            state = "#{locator.tag_name}:#{locator.attributes}:#{events}"
+            state = "#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
             next if skip_state?( state )
             skip_state state
 

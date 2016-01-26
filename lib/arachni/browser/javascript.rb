@@ -338,6 +338,13 @@ class Javascript
             element['events'] |= self.class.select_event_attributes( attributes ).to_a
             element['events'] = self.class.select_events( element['tag_name'], element['events'] ).dup
 
+            categorized = {}
+            element['events'].each do |event, callback|
+                categorized[event] ||= []
+                categorized[event] << callback
+            end
+            element['events'] = categorized
+
             element
         end.compact
     end

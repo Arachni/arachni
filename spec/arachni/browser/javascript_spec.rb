@@ -174,23 +174,23 @@ describe Arachni::Browser::Javascript do
                 expect(subject.dom_elements_with_events).to eq([
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:onclick, 'handler_1()']
-                        ],
+                        'events'     => {
+                            onclick: [ 'handler_1()' ]
+                        },
                         'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
                     },
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:onclick, 'handler_2()']
-                        ],
+                        'events'     => {
+                            onclick: ['handler_2()']
+                        },
                         'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
                     },
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:onclick, 'handler_3()']
-                        ],
+                        'events'     => {
+                            onclick: ['handler_3()']
+                        },
                         'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
                     }
                 ])
@@ -204,17 +204,16 @@ describe Arachni::Browser::Javascript do
                 expect(subject.dom_elements_with_events).to eq([
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:click, 'function (my_button_click) {}'],
-                            [:click, 'function (my_button_click2) {}'],
-                            [:onmouseover, 'function (my_button_onmouseover) {}']
-                        ],
+                        'events'     => {
+                            click: ['function (my_button_click) {}', 'function (my_button_click2) {}'],
+                            onmouseover: ['function (my_button_onmouseover) {}']
+                        },
                         'attributes' => { 'id' => 'my-button' } },
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:click, 'function (my_button2_click) {}']
-                        ],
+                        'events'     => {
+                            click: ['function (my_button2_click) {}']
+                        },
                         'attributes' => { 'id' => 'my-button2' } }
                 ])
             end
