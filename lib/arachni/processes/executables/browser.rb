@@ -33,6 +33,9 @@ process = ChildProcess.build(
     '--ignore-ssl-errors=true',
     '--ssl-protocol=any',
 
+    # Uncomment to show better error messages.
+    # '--web-security=false',
+
     '--disk-cache=true'
 )
 
