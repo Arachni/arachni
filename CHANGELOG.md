@@ -33,9 +33,11 @@
     - Sped up process spawning,
     - Switched to `Selenium`'s default HTTP client for `WebDriver` communications
         in order to resolve JRuby and MS Windows issues.
-    - `#spawn_phantomjs` -- Use a Ruby lifeline process to kill the browser
-        if the parent dies for whatever reason.
     - Added support for tracking event delegation.
+    - `#spawn_phantomjs` -- Use a Ruby lifeline process to kill the browser
+            if the parent dies for whatever reason.
+    - `#fire_event` -- Track changes in timers caused by event triggers to identify
+        and wait for effects and transitions.
 - `Support`
     - `Signature` -- Optimized signature tokenization, deduplication and compression
         to be less resource intensive when processing large data sets.

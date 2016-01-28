@@ -718,6 +718,8 @@ class Browser
 
         notify_on_fire_event( element, event )
 
+        pre_timeouts = javascript.timeouts
+
         begin
             transition = Page::DOM::Transition.new( locator, event, options ) do
                 force = true
@@ -764,6 +766,15 @@ class Browser
             end
 
             print_debug_level_2 "[done in #{transition.time}s]: #{event} (#{options}) #{locator}"
+
+            delay = (javascript.timeouts - pre_timeouts).compact.map { |t| t[1].to_i }.max
+            if delay
+                print_debug_level_2 "Found new timers with max #{delay}ms."
+                delay = [Options.http.request_timeout, delay].min / 1000.0
+
+                print_debug_level_2 "Will wait for #{delay}s."
+                sleep delay
+            end
 
             transition
         rescue Selenium::WebDriver::Error::WebDriverError => e

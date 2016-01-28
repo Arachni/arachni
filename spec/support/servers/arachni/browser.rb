@@ -1118,6 +1118,39 @@ get '/trigger_events' do
 HTML
 end
 
+get '/trigger_events/with_new_timers/:delay' do |delay|
+    <<HTML
+<html>
+    <head>
+        <script>
+            function addForm() {
+                get_ajax = new XMLHttpRequest();
+                get_ajax.onreadystatechange = function() {
+                    if( get_ajax.readyState == 4 && get_ajax.status == 200 ) {
+                        document.getElementById( "my-div" ).innerHTML = get_ajax.responseText;
+                    }
+                }
+
+                get_ajax.open( "GET", "/get-ajax?ajax-token=my-token", true );
+                get_ajax.send();
+            }
+
+            function addFormAfterDelay() {
+                setTimeout( addForm, #{delay} )
+            }
+        </script>
+    <head>
+
+    <body>
+
+        <div id="my-div" onclick="addFormAfterDelay();">
+            Test
+        </div>
+    </body>
+</html>
+HTML
+end
+
 get '/trigger_events/invisible-div' do
     <<HTML
 <html>

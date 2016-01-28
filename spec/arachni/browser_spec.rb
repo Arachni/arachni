@@ -1436,6 +1436,28 @@ describe Arachni::Browser do
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
+        context 'when new timers are introduced' do
+            let(:url) { "#{@url}/trigger_events/with_new_timers/3000" }
+
+            it 'waits for them' do
+                @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+                pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+            end
+
+            context 'when a new timer exceeds Options.http.request_timeout' do
+                let(:url) { "#{@url}/trigger_events/with_new_timers/#{Arachni::Options.http.request_timeout + 5000}" }
+
+                it 'waits for Options.http.request_timeout' do
+                    t = Time.now
+
+                    @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+                    pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
+
+                    expect(Time.now - t).to be <= Arachni::Options.http.request_timeout
+                end
+            end
+        end
+
         context 'when cookies are set' do
             let(:url) { @url + '/each_element_with_events/set-cookie' }
 
