@@ -615,6 +615,8 @@ class Javascript
 
     def unwrap_element( element )
         element.html
+    rescue Selenium::WebDriver::Error::StaleElementReferenceError
+        ''
     end
 
 end
