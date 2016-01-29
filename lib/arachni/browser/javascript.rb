@@ -516,7 +516,14 @@ class Javascript
     end
 
     def taints( response )
-        taints = [@taint]
+        taints = {}
+
+        [@taint].flatten.compact.each do |t|
+            taints[t] = {
+                stop_at_first: false,
+                trace:         true
+            }
+        end
 
         # Include cookie names and values in the trace so that the browser will
         # be able to infer if they're being used, to avoid unnecessary audits.
@@ -529,14 +536,21 @@ class Javascript
                 HTTP::Client.cookies
             end
 
-            taints |= cookies.map do |c|
+            cookies.each do |c|
                 next if c.http_only?
 
-                c.inputs.to_a
-            end.flatten.compact
+                c.inputs.to_a.flatten.each do |input|
+                    next if input.empty?
+
+                    taints[input] ||= {
+                        stop_at_first: true,
+                        trace:         false
+                    }
+                end
+            end
         end
 
-        taints.flatten.reject { |v| v.to_s.empty? }
+        taints
     end
 
     def update_taints( body, response )

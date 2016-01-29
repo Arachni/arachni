@@ -477,11 +477,17 @@ EOHTML
                         subject.inject( response )
 
                         presponse = response.deep_clone
-                        pintializer = subject.taint_tracer.stub.function( :initialize, [] )
+                        pintializer = subject.taint_tracer.stub.function( :initialize, {} )
 
                         subject.taint = [ 'taint1', 'taint2' ]
                         subject.inject( response )
-                        intializer = subject.taint_tracer.stub.function( :initialize, subject.taint )
+                        intializer = subject.taint_tracer.stub.function(
+                            :initialize,
+                            {
+                                "taint1" => { "stop_at_first" => false, "trace" => true },
+                                "taint2" => { "stop_at_first" => false, "trace" => true }
+                            }
+                        )
 
                         expect(response.body).to eq(presponse.body.gsub( pintializer, intializer ))
                     end
