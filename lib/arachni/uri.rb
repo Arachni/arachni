@@ -178,7 +178,7 @@ class URI
                     url = "http:#{url}"
                 end
 
-                url.recode!
+                # url.recode!
                 url = html_decode( url )
 
                 dupped_url = url.dup

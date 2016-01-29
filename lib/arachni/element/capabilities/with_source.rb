@@ -23,11 +23,11 @@ module WithSource
 
     def initialize( options )
         super
-        self.source = options[:source].freeze
+        self.source = options[:source]
     end
 
     def source=( s )
-        @source = (s.frozen? ? s : s.recode.freeze )
+        @source = (s ? s : s.freeze )
     end
 
     def to_h

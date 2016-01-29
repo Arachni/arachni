@@ -249,7 +249,7 @@ class Browser
         end.join
     end
 
-    # @param    [String, HTTP::Response, Page]  resource
+    # @param    [String, HTTP::Response, Page, Page:::DOM]  resource
     #   Loads the given resource in the browser. If it is a string it will be
     #   treated like a URL.
     #
@@ -267,11 +267,14 @@ class Browser
             when Page
                 HTTP::Client.update_cookies resource.cookie_jar
 
-                @transitions = resource.dom.transitions.dup
-                update_skip_states resource.dom.skip_states
+                load resource.dom
+
+            when Page::DOM
+                @transitions = resource.transitions.dup
+                update_skip_states resource.skip_states
 
                 @add_request_transitions = false if @transitions.any?
-                resource.dom.restore self
+                resource.restore self
                 @add_request_transitions = true
 
             else
@@ -548,7 +551,7 @@ class Browser
     def snapshot_id
         current_url = self.url
 
-        id = []
+        id = Set.new
         javascript.dom_elements_with_events.each do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
@@ -597,12 +600,12 @@ class Browser
 
             next if events.empty?
 
-            id << "#{tag_name}:#{element_id}:#{events.keys.sort}"
+            id << "#{tag_name}:#{element_id}:#{events.keys.sort}".persistent_hash
         end
 
-        id << [:cookies, cookies.map(&:name).sort].to_s
+        id << [:cookies, cookies.map(&:name).sort].to_s.persistent_hash
 
-        id.uniq.sort.to_s
+        id.to_a.sort.map(&:to_s).join(':')
     end
 
     # Triggers all events on all elements (**once**) and captures
@@ -619,7 +622,7 @@ class Browser
             skip_state state
 
             events.each do |name, _|
-                distribute_event( root_page, locator, name.to_sym )
+                distribute_event( root_page.dom, locator, name.to_sym )
             end
         end
 
@@ -632,23 +635,23 @@ class Browser
     # Distributes the triggering of `event` on the element at `element_index`
     # on `page`.
     #
-    # @param    [Page]    page
+    # @param    [String, Page, Page::DOM, HTTP::Response]    resource
     # @param    [ElementLocator]  locator
     # @param    [Symbol]  event
-    def distribute_event( page, locator, event )
-        trigger_event( page, locator, event )
+    def distribute_event( resource, locator, event )
+        trigger_event( resource, locator, event )
     end
 
     # @note Captures page {#page_snapshots}.
     #
     # Triggers `event` on the element described by `tag` on `page`.
     #
-    # @param    [Page]    page
+    # @param    [String, Page, Page::DOM, HTTP::Response]    resource
     #   Page containing the element's `tag`.
     # @param    [ElementLocator]  element
     # @param    [Symbol]  event
     #   Event to trigger.
-    def trigger_event( page, element, event, restore = true )
+    def trigger_event( resource, element, event, restore = true )
         event = event.to_sym
         transition = fire_event( element, event )
 
@@ -659,14 +662,14 @@ class Browser
 
             if restore
                 print_info 'Restoring page.'
-                restore( page )
+                restore( resource )
             end
 
             return
         end
 
         capture_snapshot( transition )
-        restore( page ) if restore
+        restore( resource ) if restore
     end
 
     # Triggers `event` on `element`.
@@ -950,7 +953,7 @@ class Browser
         request_transitions = flush_request_transitions
         transitions = ([transition] + request_transitions).flatten.compact
 
-        window_handles     = @selenium.window_handles
+        window_handles = @selenium.window_handles
 
         begin
             window_handles.each do |handle|
@@ -976,7 +979,7 @@ class Browser
                 notify_on_new_page( page )
 
                 if store_pages?
-                    @page_snapshots[unique_id.hash] = page
+                    @page_snapshots[unique_id] = page
                     pages << page
                 end
             end

@@ -2582,6 +2582,53 @@ describe Arachni::Browser do
                 end
             end
 
+            describe 'Arachni::Page::DOM' do
+                it 'loads it' do
+                    expect(hit_count).to eq(0)
+
+                    page = Arachni::HTTP::Client.get( @url, mode: :sync ).to_page
+
+                    expect(hit_count).to eq(1)
+
+                    @browser.load page.dom
+
+                    expect(@browser.source).to include( ua )
+                    expect(@browser.preloads).not_to include( @url )
+
+                    expect(hit_count).to eq(2)
+                end
+
+                it 'replays its #transitions' do
+                    @browser.load "#{@url}play-transitions"
+                    page = @browser.explore_and_flush.last
+                    expect(page.body).to include ua
+
+                    @browser.load page.dom
+                    expect(@browser.source).to include ua
+
+                    page.dom.transitions.clear
+                    @browser.load page.dom
+                    expect(@browser.source).not_to include ua
+                end
+
+                it 'loads its #skip_states' do
+                    @browser.load( @url )
+                    pages = @browser.load( @url + '/explore' ).trigger_events.
+                        page_snapshots
+
+                    page = pages.last
+                    expect(page.dom.skip_states).to be_subset @browser.skip_states
+
+                    token = @browser.generate_token
+
+                    dpage = page.dup
+                    dpage.dom.skip_states << token
+
+                    @browser.load dpage.dom
+                    expect(@browser.skip_states).to include token
+                end
+            end
+
             describe 'Arachni::Page' do
                 it 'loads it' do
                     expect(hit_count).to eq(0)
@@ -2649,7 +2696,6 @@ describe Arachni::Browser do
                     @browser.load dpage
                     expect(@browser.skip_states).to include token
                 end
-
             end
 
             describe 'other' do

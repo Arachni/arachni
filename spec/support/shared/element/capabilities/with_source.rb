@@ -17,11 +17,6 @@ shared_examples_for 'with_source' do |source|
             context 'String' do
                 let(:string) { 'stuff' }
 
-                it 'recodes it' do
-                    expect(string).to receive(:recode)
-                    with_source.source = string
-                end
-
                 it 'sets the #source' do
                     with_source.source = string
                     expect(with_source.source).to eq(string)

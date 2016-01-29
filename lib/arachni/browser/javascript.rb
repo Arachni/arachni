@@ -454,7 +454,7 @@ class Javascript
 #{wrapped_custom_code}
 </script> #{html_comment}
 
-#{body.recode}
+#{body}
             EOHTML
         end
 

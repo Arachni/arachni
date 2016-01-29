@@ -18,7 +18,7 @@ class DOMExploration < Job
     require_relative 'dom_exploration/result'
     require_relative 'dom_exploration/event_trigger'
 
-    # @return [Page, String, HTTP::Response]
+    # @return [Page::DOM, Page, String, HTTP::Response]
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.
     attr_accessor :resource
