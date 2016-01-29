@@ -504,10 +504,17 @@ class Page
         self
     end
 
-    def to_initialization_options
+    def to_initialization_options( deep = true )
         h = {}
-        [:body, :cookie_jar, :element_audit_whitelist, :metadata].each do |m|
-            h[m] = try_dup( instance_variable_get( "@#{m}".to_sym ) )
+        h[:body] = @body if @body
+
+        [:cookie_jar, :element_audit_whitelist, :metadata].each do |m|
+            h[m] = instance_variable_get( "@#{m}".to_sym )
+
+            if deep
+                h[m] = try_dup( h[m] )
+            end
+
             h.delete( m ) if !h[m]
         end
 
@@ -527,7 +534,12 @@ class Page
         h[:do_not_audit_elements] = @do_not_audit_elements
 
         h[:dom] = dom.to_h.keys.inject({}) do |dh, k|
-            dh[k] = try_dup( dom.send( k ) )
+            dh[k] = dom.send( k )
+
+            if deep
+                dh[k] = try_dup( dh[k] )
+            end
+
             dh
         end
 
@@ -537,7 +549,7 @@ class Page
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data        = to_initialization_options.my_stringify_keys(false)
+        data        = to_initialization_options( false ).my_stringify_keys(false)
         data['dom'] = dom.to_rpc_data
         data['element_audit_whitelist'] = element_audit_whitelist.to_a
         data['response'] = data['response'].to_rpc_data
@@ -585,7 +597,7 @@ class Page
     end
 
     def _dump( _ )
-        Marshal.dump( to_initialization_options )
+        Marshal.dump( to_initialization_options( false ) )
     end
 
     def self._load( data )
