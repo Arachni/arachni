@@ -57,9 +57,9 @@ class Parser
     end
 
     CACHE_SIZES = {
-        parse:          100,
-        parse_fragment: 100,
-        parse_xml:      100
+        parse:          50,
+        parse_xml:      50,
+        parse_fragment: 100
     }
 
     CACHE = {}
