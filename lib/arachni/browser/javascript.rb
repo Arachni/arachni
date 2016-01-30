@@ -22,9 +22,8 @@ class Javascript
     require_relative 'javascript/dom_monitor'
 
     CACHE = {
-        select_event_attributes: Support::Cache::LeastRecentlyPushed.new( 1_000 ),
-        events_for:              Support::Cache::LeastRecentlyPushed.new( 1_000 ),
-        filter_events:           Support::Cache::LeastRecentlyPushed.new( 1_000 )
+        events_for:    Support::Cache::LeastRecentlyPushed.new( 1_000 ),
+        select_events: Support::Cache::LeastRecentlyPushed.new( 1_000 )
     }
 
     TOKEN = 'arachni_js_namespace'
@@ -159,13 +158,11 @@ class Javascript
     # @return   [Hash]
     #   `events` filtered to only include valid events for the given element type.
     def self.select_events( tag_name, events )
-        CACHE[:filter_events].fetch [tag_name, events] do
-
+        CACHE[:select_events].fetch [tag_name, events] do
             supported = events_for( tag_name )
             events.reject do |name, _|
                 !supported.include?( ('on' + name.to_s.gsub( /^on/, '' )).to_sym )
             end.freeze
-
         end
     end
 
@@ -175,14 +172,13 @@ class Javascript
     # @return   [Hash]
     #   `attributes` that include {.events}.
     def self.select_event_attributes( attributes = {} )
-        CACHE[:select_event_attributes].fetch attributes do
-
-            attributes.inject({}) do |h, (event, handler)|
-                next h if !event_whitelist.include?( event.to_s )
-                h.merge!( event.to_sym => handler )
-            end.freeze
-
-        end
+        # NOTICE: Don't cache this, attributes can include all kinds of weird
+        # random crap (framework-specific data nonce attributes etc.) which will
+        # keep filling the cache due to constant misses.
+        attributes.inject({}) do |h, (event, handler)|
+            next h if !event_whitelist.include?( event.to_s )
+            h.merge!( event.to_sym => handler )
+        end.freeze
     end
 
     # @param    [Browser]   browser
@@ -326,8 +322,6 @@ class Javascript
         dom_monitor.elements_with_events.map do |element|
             next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name'].to_sym
 
-            attributes = element['attributes']
-
             element['events'] = (element['events'].map do |event, fn|
                 next if !(self.class.event_whitelist.include?( event ) ||
                     self.class.event_whitelist.include?( "on#{event}" ))
@@ -335,8 +329,8 @@ class Javascript
                 [event.to_sym, fn]
             end.compact)
 
-            element['events'] |= self.class.select_event_attributes( attributes ).to_a
-            element['events'] = self.class.select_events( element['tag_name'], element['events'] ).dup
+            element['events'] |= self.class.select_event_attributes( element['attributes'] ).to_a
+            element['events']  = self.class.select_events( element['tag_name'], element['events'] ).dup
 
             categorized = {}
             element['events'].each do |event, callback|
