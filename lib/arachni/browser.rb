@@ -961,7 +961,18 @@ class Browser
                     @selenium.switch_to.window( handle )
                 end
 
-                next if (page = to_page).code == 0
+                # We don't even have an HTTP response for the page, don't
+                # bother trying anything else.
+                next if !response
+
+                unique_id = self.snapshot_id
+                already_seen = skip_state?( unique_id )
+                skip_state unique_id
+
+                # Avoid a #to_page call if at all possible because it'll generate
+                # loads of data.
+                next if (already_seen && !javascript.taint_tracer.has_sinks) ||
+                    (page = to_page).code == 0
 
                 if pages.empty?
                     transitions.each do |t|
@@ -971,10 +982,6 @@ class Browser
                 end
 
                 capture_snapshot_with_sink( page )
-
-                unique_id = self.snapshot_id
-                next if skip_state? unique_id
-                skip_state unique_id
 
                 notify_on_new_page( page )
 
