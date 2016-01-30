@@ -622,7 +622,7 @@ class Browser
             skip_state state
 
             events.each do |name, _|
-                distribute_event( root_page.dom, locator, name.to_sym )
+                distribute_event( root_page, locator, name.to_sym )
             end
         end
 
