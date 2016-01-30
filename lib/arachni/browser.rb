@@ -216,6 +216,8 @@ class Browser
         # Captures HTTP::Response objects per URL for open windows.
         @window_responses = {}
 
+        @elements_with_events = {}
+
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
         @skip_states = Support::LookUp::HashSet.new( hasher: :persistent_hash )
@@ -232,6 +234,7 @@ class Browser
 
     def clear_buffers
         synchronize do
+            @elements_with_events.clear
             @preloads.clear
             @cache.clear
             @captured_pages.clear
@@ -523,7 +526,6 @@ class Browser
     def elements_with_events( clear_cache = false )
         current_url = self.url
 
-        @elements_with_events ||= {}
         @elements_with_events.clear if clear_cache
 
         if @elements_with_events.include?( current_url )
@@ -892,12 +894,19 @@ class Browser
             )
         end
 
+        # We need sink data for both the current taint and to determine cookie
+        # usage, so grab all of the data-flow sinks once.
+        data_flow_sinks = {}
+        if @javascript.supported?
+            data_flow_sinks = @javascript.taint_tracer.data_flow_sinks
+        end
+
         page                          = r.to_page
         page.body                     = source
         page.dom.url                  = d_url
         page.dom.digest               = @javascript.dom_digest
         page.dom.execution_flow_sinks = @javascript.execution_flow_sinks
-        page.dom.data_flow_sinks      = @javascript.data_flow_sinks
+        page.dom.data_flow_sinks      = data_flow_sinks[@javascript.taint] || []
         page.dom.transitions          = @transitions.dup
         page.dom.skip_states          = skip_states.dup
 
@@ -932,10 +941,9 @@ class Browser
             end
 
             if Options.audit.cookie_doms?
-                sinks = @javascript.taint_tracer.data_flow_sinks
                 page.cookies.each do |cookie|
-                    next if sinks.include?( cookie.name ) ||
-                        sinks.include?( cookie.value )
+                    next if data_flow_sinks.include?( cookie.name ) ||
+                        data_flow_sinks.include?( cookie.value )
 
                     cookie.skip_dom = true
                 end

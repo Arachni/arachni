@@ -608,6 +608,8 @@ class Client
     def client_run
         # Can get Ethon select errors.
         exception_jail( false ) { @hydra.run }
+
+        Arachni.collect_young_objects if @queue_size > 0
     end
 
     def client_abort

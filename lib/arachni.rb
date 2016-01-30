@@ -20,6 +20,14 @@ module Arachni
 
     class <<self
 
+        # Runs a minor GC to collect young, short-lived objects.
+        #
+        # Generally called after analysis operations that generate a lot of
+        # new temporary objects.
+        def collect_young_objects
+            GC.start( full_mark: false )
+        end
+
         def tmpdir
             # On MS Windows Dir.tmpdir can return the path with a shortname,
             # better avoid that as it can be insonsistent with other paths.

@@ -226,6 +226,8 @@ class BrowserCluster
                 @pending_job_counter = 0
                 @done_signal << nil
             end
+
+            Arachni.collect_young_objects
         end
 
         true
