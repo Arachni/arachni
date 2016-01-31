@@ -616,7 +616,7 @@ class Browser
     # @return   [Browser]
     #   `self`
     def trigger_events
-        dom = self.to_minimal_dom
+        dom = self.state
 
         elements_with_events( true ).each do |locator, events|
             state = "#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
@@ -877,10 +877,11 @@ class Browser
         @captured_pages
     end
 
-    def to_minimal_dom
+    # @return   [Page::DOM]
+    def state
         d_url = dom_url
 
-        return if d_url == 'about:blank' || !response
+        return if !response
 
         Page::DOM.new(
             url:         d_url,
@@ -895,7 +896,7 @@ class Browser
     def to_page
         d_url = dom_url
 
-        if d_url == 'about:blank' || !(r = response)
+        if !(r = response)
             return Page.from_data(
                 dom: {
                     url: d_url
@@ -1123,6 +1124,11 @@ class Browser
 
     def response
         u = dom_url
+
+        if dom_url == 'about:blank'
+            print_debug 'Blank page.'
+            return
+        end
 
         if skip_path?( u )
             print_debug "Response is out of scope: #{u}"

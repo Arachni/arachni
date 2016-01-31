@@ -239,6 +239,52 @@ describe Arachni::Browser::Javascript do
         end
     end
 
+    describe '#has_sinks?' do
+        context 'when there are execution-flow sinks' do
+            it 'returns true' do
+                expect(subject).to_not have_sinks
+
+                @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub(1)}"
+                @browser.watir.form.submit
+
+                expect(subject).to have_sinks
+            end
+        end
+
+        context 'when there are data-flow sinks' do
+            context 'for the given taint' do
+                it 'returns true' do
+                    expect(subject).to_not have_sinks
+
+                    subject.taint = 'taint'
+                    @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( subject.taint, function: { name: 'blah' } )}"
+                    @browser.watir.form.submit
+
+                    expect(subject).to have_sinks
+                end
+            end
+
+            context 'for other taints' do
+                it 'returns false' do
+                    expect(subject).to_not have_sinks
+
+                    subject.taint = 'taint'
+                    @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( subject.taint, function: { name: 'blah' } )}"
+                    @browser.watir.form.submit
+
+                    subject.taint = 'taint2'
+                    expect(subject).to_not have_sinks
+                end
+            end
+        end
+
+        context 'when there are no sinks' do
+            it 'returns false' do
+                expect(subject).to_not have_sinks
+            end
+        end
+    end
+
     describe '#debugging_data' do
         it 'returns debugging information' do
             @browser.load "#{@taint_tracer_url}/debug?input=#{subject.debug_stub(1)}"

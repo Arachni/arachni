@@ -154,7 +154,7 @@ class DOM
         # If we've got no playable transitions then we're done.
         return browser if playables.empty?
 
-        browser_dom = browser.to_minimal_dom
+        browser_dom = browser.state
 
         # We were probably led to an out-of-scope page via a JS redirect, bail out.
         return if !browser_dom
@@ -189,7 +189,7 @@ class DOM
         browser
     end
 
-    def minimal
+    def state
         self.class.new(
             url:         @url,
             digest:      @digest,

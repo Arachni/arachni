@@ -200,6 +200,25 @@ describe Arachni::Page::DOM do
         end
     end
 
+    describe '#state' do
+        it 'returns a Page::DOM with enough info to reproduce the current state' do
+            expect(dom.digest).to_not be_empty
+            expect(dom.transitions).to_not be_empty
+            expect(dom.data_flow_sinks).to_not be_empty
+            expect(dom.execution_flow_sinks).to_not be_empty
+
+            state = dom.state
+
+            expect(state.page).to be_nil
+            expect(state.url).to eq dom.url
+            expect(state.digest).to eq dom.digest
+            expect(state.transitions).to eq dom.transitions
+            expect(state.skip_states).to eq dom.skip_states
+            expect(state.data_flow_sinks).to be_empty
+            expect(state.execution_flow_sinks).to be_empty
+        end
+    end
+
     describe '#to_hash' do
         it 'returns a hash with DOM data' do
             data = {

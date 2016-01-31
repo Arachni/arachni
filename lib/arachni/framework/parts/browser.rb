@@ -114,7 +114,7 @@ module Browser
         # needs to have a clean state.
         schedule_dom_metadata_application( page )
 
-        browser_cluster.queue( browser_job.forward( resource: page.dom.minimal ) ) do |result|
+        browser_cluster.queue( browser_job.forward( resource: page.dom.state ) ) do |result|
             handle_browser_page result.page
         end
 
@@ -131,9 +131,7 @@ module Browser
         return if !checks.values.
             find { |c| c.check? page, [Element::Form::DOM, Element::Cookie::DOM], true }
 
-        # This closure captures the DOM and if it takes a while to run we'll
-        # keep accumulating LARGE amounts of DOM objects in RAM.
-        dom = page.dom.minimal
+        dom = page.dom.state
         browser_cluster.with_browser do |browser|
             apply_dom_metadata( browser, dom )
         end

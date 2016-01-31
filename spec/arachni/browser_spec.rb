@@ -1052,6 +1052,49 @@ describe Arachni::Browser do
         end
     end
 
+    describe '#state' do
+        it 'returns a Page::DOM with enough info to reproduce the current state' do
+            @browser.load "#{web_server_url_for( :taint_tracer )}/debug" <<
+                "?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
+
+            dom   = subject.to_page.dom
+            state = subject.state
+
+            expect(state.page).to be_nil
+            expect(state.url).to eq dom.url
+            expect(state.digest).to eq dom.digest
+            expect(state.transitions).to eq dom.transitions
+            expect(state.skip_states).to eq dom.skip_states
+            expect(state.data_flow_sinks).to be_empty
+            expect(state.execution_flow_sinks).to be_empty
+        end
+
+        context 'when the URL is about:blank' do
+            it 'returns nil' do
+                Arachni::Options.url = @url
+                subject.load @url
+
+                subject.javascript.run( 'window.location = "about:blank";' )
+                sleep 1
+
+                expect(subject.state).to be_nil
+            end
+        end
+
+        context 'when the resource is out-of-scope' do
+            it 'returns an empty page' do
+                Arachni::Options.url = @url
+                subject.load @url
+
+                subject.javascript.run( 'window.location = "http://google.com/";' )
+                sleep 1
+
+                expect(subject.state).to be_nil
+            end
+        end
+
+    end
+
     describe '#to_page' do
         it "converts the working window to an #{Arachni::Page}" do
             ua = Arachni::Options.http.user_agent
