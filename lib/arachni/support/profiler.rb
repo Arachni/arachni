@@ -19,6 +19,7 @@ class Profiler
 
     def self.write_samples_to_disk( file, options = {} )
         profiler = Support::Profiler.new
+        # profiler.trace_allocations
 
         Thread.new do
             begin
@@ -42,11 +43,11 @@ class Profiler
         ap 'Object ID:   ' + o.object_id.to_s
         ap 'Source file: ' + ObjectSpace.allocation_sourcefile(o)
         ap 'Source line: ' + ObjectSpace.allocation_sourceline(o).to_s
-        ap 'Generation:  ' + ObjectSpace.allocation_generation(o).to_s
-        ap 'Class path:  ' + ObjectSpace.allocation_class_path(o).to_s
+        # ap 'Generation:  ' + ObjectSpace.allocation_generation(o).to_s
+        # ap 'Class path:  ' + ObjectSpace.allocation_class_path(o).to_s
         ap 'Method:      ' + ObjectSpace.allocation_method_id(o).to_s
         ap 'Memsize:     ' + ObjectSpace.memsize_of(o).to_s
-        #ap 'Reachable:   ' + ObjectSpace.reachable_objects_from(o).to_s  #=> [referenced, objects, ...]
+        ap 'Reachable:   ' + ObjectSpace.reachable_objects_from(o).to_s  #=> [referenced, objects, ...]
         ap '-' * 200
     end
 
@@ -103,11 +104,12 @@ class Profiler
         ObjectSpace.each_object do |o|
             next if o.class != klass && !object_within_namespace?( o, namespaces )
 
-            # if o.class == Thread
-            #     ap ObjectSpace.allocation_class_path( o ).to_s
-            #     ap "#{ObjectSpace.allocation_sourcefile( o )}:#{ObjectSpace.allocation_sourceline( o )}"
-            #     ap Utilities.bytes_to_megabytes( ObjectSpace.memsize_of( o ) )
-            #     ap '-' * 120
+            # if o.class == Page
+            #     print_object_allocations( o )
+            #
+            #     # ap ObjectSpace.allocation_class_path( o ).to_s
+            #     # ap "#{ObjectSpace.allocation_sourcefile( o )}:#{ObjectSpace.allocation_sourceline( o )}"
+            #     # ap '-' * 120
             # end
 
             object_space[o.class] ||= {
@@ -119,7 +121,7 @@ class Profiler
             object_space[o.class][:count]   += 1
         end
 
-        object_space = Hash[object_space.sort_by { |_, v| v[:memsize] }.reverse[0..max_entries]]
+        object_space = Hash[object_space.sort_by { |_, v| v[:count] }.reverse[0..max_entries]]
 
         with_deltas = {}
         object_space.each do |k, v|
