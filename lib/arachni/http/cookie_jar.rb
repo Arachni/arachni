@@ -184,7 +184,14 @@ class CookieJar
     end
 
     def set_cookie( cookie )
-        @cookies[make_key( cookie )] = cookie.dup
+        key = make_key( cookie )
+
+        if (existing = @cookies[key]) &&
+            cookie.to_set_cookie == existing.to_set_cookie
+            return
+        end
+
+        @cookies[key] = cookie.dup.tap { |c| c.page = nil }
     end
 
     def make_key( cookie )
