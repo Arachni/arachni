@@ -270,7 +270,7 @@ class Javascript
 
     def has_sinks?
         return false if !supported?
-        taint_tracer.has_sinks( @javascript.taint )
+        taint_tracer.has_sinks( @taint )
     end
 
     # @return   (see TaintTracer#debug)
