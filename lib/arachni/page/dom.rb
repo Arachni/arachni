@@ -72,10 +72,12 @@ class DOM
     def digest=( d )
         return @digest = nil if !d
 
-        if d.include?( url ) || d.include?( page.url )
+        normalized_url = Utilities.normalize_url( url )
+
+        if d.include?( url ) || d.include?( normalized_url )
             d = d.dup
             d.gsub!( url, '' )
-            d.gsub!( page.url, '' )
+            d.gsub!( normalized_url, '' )
         end
 
         @digest = d.freeze
@@ -100,11 +102,11 @@ class DOM
 
     def print_transitions( printer, indent = '' )
         longest_event_size = 0
-        page.dom.transitions.each do |t|
+        @transitions.each do |t|
             longest_event_size = [t.event.to_s.size, longest_event_size].max
         end
 
-        page.dom.transitions.map do |t|
+        @transitions.map do |t|
             padding = longest_event_size - t.event.to_s.size + 1
             time    = sprintf( '%.4f', t.time.to_f )
 
@@ -147,15 +149,15 @@ class DOM
         # itself via its URL fragments and whatnot.
         browser.goto url, take_snapshot: take_snapshot
 
-        playables = playable_transitions
+        playables = self.playable_transitions
 
         # If we've got no playable transitions then we're done.
         return browser if playables.empty?
 
-        browser_page = browser.to_page
+        browser_dom = browser.to_minimal_dom
 
         # We were probably led to an out-of-scope page via a JS redirect, bail out.
-        return if browser_page.code == 0
+        return if !browser_dom
 
         # Check to see if just loading the DOM URL was enough.
         #
@@ -164,7 +166,7 @@ class DOM
         # the document may still be different from when our snapshot was captured.
         #
         # However, this check doesn't cost us much so it's worth a shot.
-        if browser_page.dom === self
+        if browser_dom === self
             browser.print_debug "Loaded snapshot by URL: #{url}"
             return browser
         end
@@ -185,6 +187,15 @@ class DOM
         end
 
         browser
+    end
+
+    def minimal
+        self.class.new(
+            url:         @url,
+            digest:      @digest,
+            transitions: @transitions.dup,
+            skip_states: @skip_states.dup
+        )
     end
 
     # @return   [Hash]
@@ -283,14 +294,17 @@ class DOM
 
     protected
 
-    def digest_without_urls( other )
-        if !digest.include?( other.url ) && !digest.include?( other.page.url )
+    def digest_without_urls( dom )
+        normalized_other_url = Utilities.normalize_url( dom.url )
+
+        if !digest.include?( dom.url ) &&
+            !digest.include?( normalized_other_url )
             return digest
         end
 
         d = digest.dup
-        d.gsub!( other.url, '' )
-        d.gsub!( other.page.url, '' )
+        d.gsub!( dom.url, '' )
+        d.gsub!( normalized_other_url, '' )
         d
     end
 

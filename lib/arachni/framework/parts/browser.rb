@@ -114,7 +114,7 @@ module Browser
         # needs to have a clean state.
         schedule_dom_metadata_application( page )
 
-        browser_cluster.queue( browser_job.forward( resource: page ) ) do |result|
+        browser_cluster.queue( browser_job.forward( resource: page.dom.minimal ) ) do |result|
             handle_browser_page result.page
         end
 
@@ -131,21 +131,22 @@ module Browser
         return if !checks.values.
             find { |c| c.check? page, [Element::Form::DOM, Element::Cookie::DOM], true }
 
-        page.clear_cache
-
+        # This closure captures the DOM and if it takes a while to run we'll
+        # keep accumulating LARGE amounts of DOM objects in RAM.
+        dom = page.dom.minimal
         browser_cluster.with_browser do |browser|
-            apply_dom_metadata( browser, page )
+            apply_dom_metadata( browser, dom )
         end
     end
 
-    def apply_dom_metadata( browser, page )
+    def apply_dom_metadata( browser, dom )
         bp = nil
 
         begin
-            bp = browser.load( page ).to_page
+            bp = browser.load( dom ).to_page
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
-            print_debug "Could not apply metadata to '#{page.dom.url}'" <<
+            print_debug "Could not apply metadata to '#{dom.url}'" <<
                             " because: #{e} [#{e.class}"
             return
         end

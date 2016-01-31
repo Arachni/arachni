@@ -616,7 +616,7 @@ class Browser
     # @return   [Browser]
     #   `self`
     def trigger_events
-        root_page = to_page
+        dom = self.to_minimal_dom
 
         elements_with_events( true ).each do |locator, events|
             state = "#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
@@ -624,7 +624,7 @@ class Browser
             skip_state state
 
             events.each do |name, _|
-                distribute_event( root_page, locator, name.to_sym )
+                distribute_event( dom, locator, name.to_sym )
             end
         end
 
@@ -877,6 +877,19 @@ class Browser
         @captured_pages
     end
 
+    def to_minimal_dom
+        d_url = dom_url
+
+        return if d_url == 'about:blank' || !response
+
+        Page::DOM.new(
+            url:         d_url,
+            transitions: @transitions.dup,
+            digest:      @javascript.dom_digest,
+            skip_states: skip_states.dup
+        )
+    end
+
     # @return   [Page]
     #   Converts the current browser window to a {Page page}.
     def to_page
@@ -977,9 +990,11 @@ class Browser
                 already_seen = skip_state?( unique_id )
                 skip_state unique_id
 
+                with_sinks = javascript.taint_tracer.has_sinks( @javascript.taint )
+
                 # Avoid a #to_page call if at all possible because it'll generate
                 # loads of data.
-                next if (already_seen && !javascript.taint_tracer.has_sinks) ||
+                next if (already_seen && !with_sinks) ||
                     (page = to_page).code == 0
 
                 if pages.empty?
@@ -990,6 +1005,8 @@ class Browser
                 end
 
                 capture_snapshot_with_sink( page )
+
+                next if already_seen
 
                 notify_on_new_page( page )
 
