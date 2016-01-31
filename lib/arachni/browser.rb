@@ -990,7 +990,7 @@ class Browser
                 already_seen = skip_state?( unique_id )
                 skip_state unique_id
 
-                with_sinks = javascript.taint_tracer.has_sinks( @javascript.taint )
+                with_sinks = javascript.has_sinks?
 
                 # Avoid a #to_page call if at all possible because it'll generate
                 # loads of data.

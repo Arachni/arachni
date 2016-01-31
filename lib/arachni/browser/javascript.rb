@@ -268,6 +268,11 @@ class Javascript
         unwrap_elements run( *args )
     end
 
+    def has_sinks?
+        return false if !supported?
+        taint_tracer.has_sinks( @javascript.taint )
+    end
+
     # @return   (see TaintTracer#debug)
     def debugging_data
         return [] if !supported?
