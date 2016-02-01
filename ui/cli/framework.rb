@@ -54,7 +54,8 @@ class Framework
     def run
         print_status 'Initializing...'
 
-        get_user_command
+        # Won't work properly on MS Windows.
+        get_user_command if !Arachni.windows?
 
         begin
             # We may need to kill the audit so put it in a thread.
