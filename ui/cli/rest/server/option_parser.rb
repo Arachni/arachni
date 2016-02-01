@@ -80,27 +80,30 @@ class OptionParser < UI::CLI::OptionParser
             @password = password
         end
 
-        separator ''
-        separator 'SSL'
+        # Puma SSL doesn't seem to be working on MS Windows.
+        if !Arachni.windows?
+            separator ''
+            separator 'SSL'
 
-        on( '--ssl-ca FILE',
-            'Location of the CA certificate (.pem).',
-            'If provided, peer verification will be enabled, otherwise no' +
-                ' verification will take place.'
-        ) do |file|
-            options.rpc.ssl_ca = file
-        end
+            on( '--ssl-ca FILE',
+                'Location of the CA certificate (.pem).',
+                'If provided, peer verification will be enabled, otherwise no' +
+                    ' verification will take place.'
+            ) do |file|
+                options.rpc.ssl_ca = file
+            end
 
-        on( '--ssl-private-key FILE',
-            'Location of the SSL private key (.pem).'
-        ) do |file|
-            options.rpc.server_ssl_private_key = file
-        end
+            on( '--ssl-private-key FILE',
+                'Location of the SSL private key (.pem).'
+            ) do |file|
+                options.rpc.server_ssl_private_key = file
+            end
 
-        on( '--ssl-certificate FILE',
-            'Location of the SSL certificate (.pem).'
-        ) do |file|
-            options.rpc.server_ssl_certificate = file
+            on( '--ssl-certificate FILE',
+                'Location of the SSL certificate (.pem).'
+            ) do |file|
+                options.rpc.server_ssl_certificate = file
+            end
         end
     end
 
