@@ -21,8 +21,4 @@ group :prof do
     gem 'benchmark-ips'
 end
 
-if !Gem.win_platform?
-    gem 'ffi', github: 'ffi/ffi', branch: 'elcapt'
-end
-
 gemspec
