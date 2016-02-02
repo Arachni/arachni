@@ -72,9 +72,9 @@ class Server < Sinatra::Base
         end
     end
 
-    # List tokens.
+    # List scans.
     get '/scans' do
-        json ids: instances.keys
+        json instances.keys.inject({}){ |h, k| h.merge! k => {}}
     end
 
     # Create

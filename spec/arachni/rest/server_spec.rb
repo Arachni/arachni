@@ -163,7 +163,7 @@ describe Arachni::Rest::Server do
             get url
 
             @ids.each do |id|
-                expect(response_data['ids']).to include id
+                expect(response_data[id]).to eq({})
             end
         end
     end
@@ -192,12 +192,12 @@ describe Arachni::Rest::Server do
 
             it 'does not list the instance on the index' do
                 get '/scans'
-                ids = response_data['ids']
+                ids = response_data.keys
 
                 post url, stuff: scan_url
 
                 get '/scans'
-                expect(response_data['ids'] - ids).to be_empty
+                expect(response_data.keys - ids).to be_empty
             end
         end
     end
