@@ -105,6 +105,8 @@
         - `discovery` -- Updated similarity check to prevent analysis of singular issues.
 - Reporters
     - `xml` -- Updated validation messages to point to relevant markup.
+- Path extractors
+    - `meta_refresh` -- Strip whitespaces from URLs when not in quotes.
 
 ## 1.3.2 _(October 19, 2015)_
 

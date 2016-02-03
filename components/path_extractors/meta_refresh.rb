@@ -9,7 +9,7 @@
 # Extracts meta refresh URLs.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
+# @version 0.2.1
 class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Base
 
     def run
@@ -25,7 +25,7 @@ class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Ba
             begin
                 _, url = url['content'].split( ';', 2 )
                 next if !url
-                unquote( url.split( '=', 2 ).last )
+                unquote( url.split( '=', 2 ).last.strip )
             rescue
                 next
             end
