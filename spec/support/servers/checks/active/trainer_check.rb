@@ -28,7 +28,7 @@ end
 
 get "/link/straight/redir" do
     <<-EOHTML
-        <a href="trained">Stuff</a>
+        <a href="/link/straight/trained">Stuff</a>
     EOHTML
 end
 
@@ -42,7 +42,7 @@ end
 
 get "/link/append/redir" do
     <<-EOHTML
-        <a href="trained">Stuff</a>
+        <a href="/link/append/trained">Stuff</a>
     EOHTML
 end
 
@@ -67,7 +67,7 @@ end
 
 get "/form/straight/trained" do
     <<-EOHTML
-        <form action="?new_stuff"/>Stuff</form>
+        <form action="/form/straight/trained?new_stuff"/>Stuff</form>
     EOHTML
 end
 
@@ -80,7 +80,7 @@ end
 
 get "/form/append/trained" do
     <<-EOHTML
-        <form action="?more_new_stuff"/>Stuff</form>
+        <form action="/form/append/trained?more_new_stuff"/>Stuff</form>
     EOHTML
 end
 
@@ -140,7 +140,7 @@ end
 
 get '/header/straight/trained-redir' do
     <<-EOHTML
-        <a href="trained">Stuff</a>
+        <a href="/header/straight/trained">Stuff</a>
     EOHTML
 end
 
@@ -154,6 +154,6 @@ end
 
 get "/header/append/trained-redir" do
     <<-EOHTML
-        <a href="trained">Stuff</a>
+        <a href="/header/append/trained">Stuff</a>
     EOHTML
 end

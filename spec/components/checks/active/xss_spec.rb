@@ -12,8 +12,8 @@ describe name_from_filename do
         {
             Element::Form         => 9,
             Element::Link         => 10,
-            Element::Cookie       => 9,
-            Element::Header       => 8,
+            Element::Cookie       => 7,
+            Element::Header       => 6,
             Element::LinkTemplate => 9
         }
     end
