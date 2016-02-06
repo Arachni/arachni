@@ -79,6 +79,8 @@ shared_examples_for 'with_dom' do |html = nil|
 
         context "when #{described_class::DOM}.new raises Inputtable::Error" do
             it 'returns nil' do
+                subject.auditor = nil
+
                 allow(described_class::DOM).to receive(:new) { raise Arachni::Element::Capabilities::Inputtable::Error }
                 expect(subject.dom).to be_nil
             end

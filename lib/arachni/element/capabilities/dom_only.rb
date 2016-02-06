@@ -15,6 +15,7 @@ module Element::Capabilities
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module DOMOnly
+    include Arachni::Element::Capabilities::WithAuditor
     include Arachni::Element::Capabilities::Inputtable
     include Arachni::Element::Capabilities::WithNode
     include Arachni::Element::Capabilities::WithDOM
