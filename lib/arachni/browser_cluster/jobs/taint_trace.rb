@@ -1,12 +1,12 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
     web site for more information on licensing and terms of use.
 =end
 
-require_relative 'resource_exploration'
+require_relative 'dom_exploration'
 
 module Arachni
 class BrowserCluster
@@ -19,7 +19,7 @@ module Jobs
 # It will pass each evaluated page with the {TaintTrace::Result result}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class TaintTrace < ResourceExploration
+class TaintTrace < DOMExploration
 
     require_relative 'taint_trace/result'
     require_relative 'taint_trace/event_trigger'

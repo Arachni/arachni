@@ -35,7 +35,8 @@ describe Arachni::URI do
             'http://testfire.net/bank/queryxpath.aspx?__EVENTVALIDATION=%2FwEWAwLNx%2B2YBwKw59eKCgKcjoPABw%3D%3D&__VIEWSTATE=%2FwEPDwUKMTEzMDczNTAxOWRk&_ctl0%3A_ctl0%3AContent%3AMain%3AButton1=Query&_ctl0%3A_ctl0%3AContent%3AMain%3ATextBox1=Enter+title+%28e.g.+IBM%29%27%3Becho+287630581954%2B4196403186331128%3B%23',
             'http://192.168.0.232/dvwa/phpinfo.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000%23%5E%28%24%21%40%24%29%28%28%29%29%29%2A%2A%2A%2A%2A%2A&_arachni_trainer_c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e=c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e',
             'http://foo.com/user/login?user%5Bname%5D=bar&user%5Bpass%5D=asdasd%26asdihbasd',
-            'http://stuff.host.fdfd/web/seguros/auto;jsessionid=6CB5A6A4597FFFA80C4D23B235072588.000?test=tet'
+            'http://stuff.host.fdfd/web/seguros/auto;jsessionid=6CB5A6A4597FFFA80C4D23B235072588.000?test=tet',
+            'http://127.0.0.2:51453/link-template/append/input/default%23%5E($!@$)(()))******/stuff'
         ]
 
         @normalized = {
@@ -84,7 +85,9 @@ describe Arachni::URI do
            "http://foo.com/user/login?user%5Bname%5D=bar&user%5Bpass%5D=asdasd%26asdihbasd"=>
                "http://foo.com/user/login?user%5Bname%5D=bar&user%5Bpass%5D=asdasd%26asdihbasd",
            "http://stuff.host.fdfd/web/seguros/auto;jsessionid=6CB5A6A4597FFFA80C4D23B235072588.000?test=tet"=>
-               "http://stuff.host.fdfd/web/seguros/auto?test=tet"
+               "http://stuff.host.fdfd/web/seguros/auto?test=tet",
+            'http://127.0.0.2:51453/link-template/append/input/default%23%5E($!@$)(()))******/stuff' =>
+                'http://127.0.0.2:51453/link-template/append/input/default%23%5E($!@$)(()))******/stuff'
         }
 
         @ref_normalizer = proc do |p|
@@ -208,28 +211,6 @@ describe Arachni::URI do
         end
     end
 
-    describe '.ruby_parse' do
-        it 'cleans the URL' do
-            @urls.each do |url|
-                expect(described_class.ruby_parse( url ).to_s).to eq(@ref_normalizer.call( url ))
-            end
-        end
-
-        it 'ignores javascript: URLs' do
-            expect(described_class.ruby_parse( 'javascript:stuff()' )).to be_nil
-            expect(described_class.ruby_parse( 'jAvaScRipT:stuff()' )).to be_nil
-        end
-
-        context 'when an error occurs' do
-            it 'returns nil' do
-                allow(described_class).to receive(:fast_parse){ raise }
-                allow(described_class).to receive(:normalize){ raise }
-
-                expect(described_class.ruby_parse( 'http://test.com/222' )).to be_nil
-            end
-        end
-    end
-
     describe '.fast_parse' do
         it 'parses a URI and return its components as a hash' do
             scheme   = 'http'
@@ -268,19 +249,59 @@ describe Arachni::URI do
         it 'ignores javascript: URLs' do
             expect(described_class.fast_parse( 'javascript:stuff()' )).to be_nil
         end
+
+        it 'ignores fragment-only URLs' do
+            expect(described_class.fast_parse( '#/stuff/here?blah=1' )).to be_nil
+        end
     end
 
     describe '.to_absolute' do
+        let(:reference) do
+            'http://test.com/blah/ha?name=val#/!/stuff/?fname=fval'
+        end
+        let(:sanitized_reference) do
+            'http://test.com/blah/ha?name=val'
+        end
+
         it 'converts a relative path to absolute using the reference URL' do
-            abs  = 'http://test.com/blah/ha'
+            abs  = reference
+
+            expect(described_class.to_absolute( '', abs )).to eq('http://test.com/blah/ha?name=val')
+
             rel  = '/test'
+            expect(described_class.to_absolute( rel, abs )).to eq('http://test.com/test')
+
+            rel  = '/test?name2=val2'
+            expect(described_class.to_absolute( rel, abs )).to eq('http://test.com/test?name2=val2')
+
+            rel  = '?name2=val2'
+            expect(described_class.to_absolute( rel, abs )).to eq('http://test.com/blah/ha?name2=val2')
+
             rel2 = 'test2'
-            expect(described_class.to_absolute( rel, abs )).to eq("http://test.com" + rel)
-            expect(described_class.to_absolute( rel2, abs )).to eq("http://test.com/blah/" + rel2)
-            expect(described_class.to_absolute( rel2, abs + '/' )).to eq("http://test.com/blah/ha/" + rel2)
+            expect(described_class.to_absolute( rel2, abs )).to eq('http://test.com/blah/test2')
+
+            abs  = 'http://test.com/blah/ha/?name=val#/!/stuff/?fname=fval'
+            expect(described_class.to_absolute( rel2, abs )).to eq('http://test.com/blah/ha/test2')
 
             rel = '//domain-name.com/stuff'
-            expect(described_class.to_absolute( rel, abs )).to eq("http:" + rel)
+            expect(described_class.to_absolute( rel, abs )).to eq('http://domain-name.com/stuff')
+
+            rel = '//domain-name.com'
+            expect(described_class.to_absolute( rel, abs )).to eq('http://domain-name.com/')
+        end
+
+        context 'when the URL starts with javascript:' do
+            it 'returns the sanitized reference URL' do
+                rel = 'javascript:stuff()'
+                expect(described_class.to_absolute( rel, reference )).to eq(sanitized_reference)
+            end
+        end
+
+        context 'when the URL only has fragment data' do
+            it 'returns the sanitized reference URL' do
+                rel = '#/stuff/here?blah=1'
+                expect(described_class.to_absolute( rel, reference )).to eq(sanitized_reference)
+            end
         end
     end
 
@@ -315,53 +336,11 @@ describe Arachni::URI do
     end
 
     describe '#initialize' do
-        context String do
-            it 'normalizes and parse the string' do
-                @urls.each do |url|
-                    uri = described_class.new( url )
-                    expect(uri.is_a?( Arachni::URI )).to be_truthy
-                    expect(uri.to_s).to eq(@ref_normalizer.call( url ))
-                end
-            end
-        end
-
-        context Hash do
-            it 'normalizes and construct a URI from a Hash of components' do
-                @urls.each do |url|
-                    uri = described_class.new( described_class.fast_parse( url ) )
-                    expect(uri.is_a?( Arachni::URI )).to be_truthy
-                    expect(uri.to_s).to eq(@ref_normalizer.call( url ))
-                end
-            end
-        end
-
-        context URI do
-            it 'normalizes and construct a URI from a Hash of components' do
-                @urls.each do |url|
-                    uri = ::URI.parse( described_class.normalize( url ) )
-                    expect(uri.is_a?( ::URI )).to be_truthy
-
-                    a_uri = described_class.new( url )
-                    expect(a_uri.is_a?( Arachni::URI )).to be_truthy
-                    expect(a_uri.to_s).to eq(@ref_normalizer.call( url ))
-                end
-            end
-        end
-
-        context Arachni::URI do
-            it 'normalizes and construct a URI from a Hash of components' do
-                @urls.each do |url|
-                    uri = described_class.new( url )
-                    a_uri = described_class.new( uri )
-                    expect(a_uri.is_a?( Arachni::URI )).to be_truthy
-                    expect(a_uri).to eq(uri)
-                end
-            end
-        end
-
-        context 'else' do
-            it 'raises a ArgumentError' do
-                expect { described_class.new( [] ) }.to raise_error ArgumentError
+        it 'normalizes and parses the string' do
+            @urls.each do |url|
+                uri = described_class.new( url )
+                expect(uri.is_a?( Arachni::URI )).to be_truthy
+                expect(uri.to_s).to eq(@ref_normalizer.call( url ))
             end
         end
     end
@@ -370,18 +349,54 @@ describe Arachni::URI do
         it 'converts both objects to strings and compare them' do
             @urls.each do |url|
                 normalized_str = described_class.normalize( url )
-                uri = ::URI.parse( normalized_str )
-                expect(uri.is_a?( ::URI )).to be_truthy
 
                 a_uri = described_class.new( url )
                 expect(a_uri.is_a?( Arachni::URI )).to be_truthy
 
-                expect(a_uri).to eq(uri)
                 expect(a_uri).to eq(normalized_str)
                 expect(a_uri).to eq(a_uri)
             end
         end
     end
+
+    describe '#seed_in_host?' do
+        let(:parsed) { described_class.new( url ) }
+
+        context 'when the seed is in the domain' do
+            let(:url) { "http://www.#{Arachni::Utilities.random_seed}.com/stuff" }
+
+            it 'returns true' do
+                expect(parsed.seed_in_host?).to be_truthy
+            end
+        end
+
+        context 'when the seed is in the subdomain' do
+            let(:url) { "http://#{Arachni::Utilities.random_seed}.test.com" }
+
+            it 'returns true' do
+                expect(parsed.seed_in_host?).to be_truthy
+            end
+        end
+
+        context 'when the seed is in the TLD' do
+            let(:url) { "http://test.#{Arachni::Utilities.random_seed}" }
+
+            it 'returns true' do
+                expect(parsed.seed_in_host?).to be_truthy
+            end
+        end
+
+        context 'when the seed is not in the host' do
+            let(:url) { "http://test.com" }
+
+            it 'returns false' do
+                expect(parsed.seed_in_host?).to be_falsey
+            end
+        end
+    end
+
+    describe '#relative?'
+    describe '#absolute?'
 
     describe '#query=' do
         subject { described_class.new( 'http://test.com/?my=val' ) }
@@ -460,6 +475,25 @@ describe Arachni::URI do
 
             url = 'http://test.com/'
             expect(described_class.parse( url ).up_to_path).to eq('http://test.com/')
+        end
+    end
+
+    describe '#up_to_port' do
+        it 'returns the URL up to its port' do
+            url = 'http://test.com/path/goes/here.php?query=goes&here=.!#frag'
+            expect(described_class.parse( url ).up_to_port).to eq('http://test.com')
+
+            url = 'http://test.com:80/path/goes/here/?query=goes&here=.!#frag'
+            expect(described_class.parse( url ).up_to_port).to eq('http://test.com')
+
+            url = 'http://test.com:23/path/goes/here?query=goes&here=.!#frag'
+            expect(described_class.parse( url ).up_to_port).to eq('http://test.com:23')
+
+            url = 'https://test.com:443/'
+            expect(described_class.parse( url ).up_to_port).to eq('https://test.com')
+
+            url = 'https://test.com:54/'
+            expect(described_class.parse( url ).up_to_port).to eq('https://test.com:54')
         end
     end
 
@@ -565,19 +599,6 @@ describe Arachni::URI do
         it 'returns the extension of the resource' do
             uri = "http://test.com/direct.ory/resource.php?param=1&param2=2"
             expect(described_class.new( uri ).resource_extension).to eq('php')
-        end
-    end
-
-    describe '#mailto?' do
-        context 'when the URI has a mailto scheme' do
-            it 'returns true' do
-                expect(described_class.new( 'mailto:stuff@blah.com' ).mailto?).to be_truthy
-            end
-        end
-        context 'when the URI does not have a mailto scheme' do
-            it 'returns false' do
-                expect(described_class.new( 'blah.com' ).mailto?).to be_falsey
-            end
         end
     end
 

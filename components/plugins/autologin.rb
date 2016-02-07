@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,25 +17,21 @@
 class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
 
     STATUSES  = {
-        ok:               'Form submitted successfully.',
+        ok:               'Logged in successfully.',
         form_not_found:   'Could not find a form suiting the provided parameters.',
         form_not_visible: 'The form was located but its DOM element is not ' <<
                               'visible and thus cannot be submitted.',
-        check_failed:     'Form submitted but the response did not match the verifier.'
+        check_failed:     'The response did not match the verifier.'
     }
 
     def prepare
         @parameters = request_parse_body( options[:parameters] )
         @verifier   = Regexp.new( options[:check] )
         @url        = options[:url].to_s
-        @errored    = false
-    end
-
-    def run
-        framework_pause
-        print_info 'System paused.'
 
         session.configure( url: @url, inputs: @parameters )
+
+        print_status 'Logging in, please wait.'
 
         response = begin
             session.login( true )
@@ -44,18 +40,18 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
                 'status'  => 'form_not_found',
                 'message' => STATUSES[:form_not_found]
             )
-            print_error STATUSES[:form_not_found]
-            @errored = true
-            return
+            handle_error( :form_not_found )
+            return clean_up
         rescue Arachni::Session::Error::FormNotVisible
             register_results(
                 'status'  => 'form_not_visible',
                 'message' => STATUSES[:form_not_visible]
             )
-            print_error STATUSES[:form_not_visible]
-            @errored = true
+            handle_error( :form_not_visible )
             return
         end
+
+        print_status "Form submitted successfully, checking the session's validity."
 
         framework.options.session.check_url     ||= response.url
         framework.options.session.check_pattern ||= @verifier
@@ -65,8 +61,7 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
                 'status'  => 'check_failed',
                 'message' => STATUSES[:check_failed]
             )
-            print_error STATUSES[:check_failed]
-            @errored = true
+            handle_error( :check_failed )
             return
         end
 
@@ -85,14 +80,11 @@ class Arachni::Plugins::AutoLogin < Arachni::Plugin::Base
         end
     end
 
-    def clean_up
-        if @errored
-            print_info 'Aborting the scan.'
-            framework_abort
-            return
-        end
+    def handle_error( type )
+        print_error STATUSES[type]
 
-        framework_resume
+        print_info 'Aborting the scan.'
+        framework_abort
     end
 
     def self.info
@@ -107,7 +99,7 @@ request as framework-wide cookies.
 interactions in order to become visible, this plugin will not be able to submit it.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2',
+            version:     '0.2.1',
             options:     [
                 Options::String.new( :url,
                     required:    true,

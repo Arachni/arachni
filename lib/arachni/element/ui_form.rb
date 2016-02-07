@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -39,28 +39,20 @@ class UIForm < Base
     def self.from_browser( browser, page )
         ui_forms = []
 
-        # JS not supported on page, no sense in continuing...
-        return ui_forms if !browser.javascript.supported?
-
-        # Does the page have any buttons at all?
-        if !page.has_elements?( :button ) &&
-            !page.document.xpath( "//input[@type='button']" )&&
-            !page.document.xpath( "//input[@type='submit']" )
-            return ui_forms
-        end
+        return ui_forms if !browser.javascript.supported? || !in_html?( page.body )
 
         # Does the page have any text inputs?
         inputs, opening_tags = inputs_from_page( page )
         return ui_forms if inputs.empty?
 
         # Looks like we have input groups, get buttons with events.
-        browser.each_element_with_events false do |locator, events|
+        browser.elements_with_events.each do |locator, events|
             next if !SUPPORTED_TYPES.include?( locator.tag_name )
             next if locator.tag_name == :input &&
                 locator.attributes['type'] != 'button' &&
                 locator.attributes['type'] != 'submit'
 
-            browser.filter_events( locator.tag_name, events ).each do |event, _|
+            events.each do |event, _|
                 ui_forms << new(
                     action:       page.url,
                     source:       locator.to_s,
@@ -74,24 +66,35 @@ class UIForm < Base
         ui_forms
     end
 
+    def self.in_html?( html )
+        html.has_html_tag?( 'button' ) ||
+            html.has_html_tag?( 'input', /button|submit/ )
+    end
+
     def self.inputs_from_page( page )
         opening_tags = {}
         inputs       = {}
 
-        page.document.css( 'textarea' ).each do |textarea|
-            name = node_to_name( textarea )
+        if UIInput.with_textarea_in_html?( page.body )
+            page.document.css( 'textarea' ).each do |textarea|
+                name = node_to_name( textarea )
 
-            inputs[name]       = textarea.text
-            opening_tags[name] = Arachni::Browser::ElementLocator.from_node( textarea ).to_s
+                inputs[name]       = textarea.text
+                opening_tags[name] =
+                    Arachni::Browser::ElementLocator.from_node( textarea ).to_s
+            end
         end
 
-        page.document.css( 'input' ).each do |input|
-            next if input['type'] && input['type'] != 'text'
+        if UIInput.with_input_in_html?( page.body )
+            page.document.css( 'input' ).each do |input|
+                next if input['type'] && input['type'] != 'text'
 
-            name = node_to_name( input )
+                name = node_to_name( input )
 
-            inputs[name]       = input['value'].to_s
-            opening_tags[name] = Arachni::Browser::ElementLocator.from_node( input ).to_s
+                inputs[name]       = input['value'].to_s
+                opening_tags[name] =
+                    Arachni::Browser::ElementLocator.from_node( input ).to_s
+            end
         end
 
         [inputs, opening_tags]

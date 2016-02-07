@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -41,8 +41,19 @@ class Scope < Arachni::Scope
     #   `false` otherwise.
     #
     # @see OptionGroups::Scope#exclude_path_patterns
+    # @see #exclude_file_extension?
     def exclude?
-        !!options.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
+        exclude_file_extension? ||
+            !!options.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
+    end
+
+    # @return   [Bool]
+    #   `true` if the resource extension is in {OptionGroups::Scope#@exclude_file_extensions},
+    #   `false` otherwise.
+    #
+    # @see OptionGroups::Scope#@exclude_file_extensions
+    def exclude_file_extension?
+        options.exclude_file_extensions.include? @url.resource_extension.to_s.downcase
     end
 
     # @return   [Bool]

@@ -87,6 +87,29 @@ get '/intervals' do
 HTML
 end
 
+get '/elements_with_events/inherited' do
+    <<HTML
+    <div id="parent">
+        <p id="parent-p">
+            <button id="parent-button">Click me</button>
+        </p>
+
+        <div id="child">
+            <p id="child-p">
+                <button id="child-button">Click me too</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener( "click", function( window_click ){}, false );
+        document.addEventListener( "click", function( document_click ){}, false );
+        document.getElementById( "parent" ).addEventListener( "click", function( parent_click ){}, false );
+        document.getElementById( "child" ).addEventListener( "click", function( child_click ){}, false );
+    </script>
+HTML
+end
+
 get '/elements_with_events/attributes' do
     <<HTML
     <body>
@@ -148,7 +171,7 @@ get '/elements_with_events/jQuery.on-object-types' do
     <script>
         $('#my-button').on({
             click: function (){},
-            hover: function (){}
+            mouseover: function (){}
         });
     </script>
 HTML
@@ -164,7 +187,7 @@ get '/elements_with_events/jQuery.on-selector' do
 
             });
 
-            $('body').on( 'hover', '#my-button', function (){
+            $('body').on( 'mouseover', '#my-button', function (){
 
             });
 
@@ -187,7 +210,7 @@ get '/elements_with_events/jQuery.on-object-types-selector' do
         <script>
             $('body').on({
                 click: function (){},
-                hover: function (){}
+                mouseover: function (){}
             }, '#my-button');
         </script>
 
@@ -219,7 +242,7 @@ get '/elements_with_events/jQuery.delegate-object-types' do
         <script>
             $('body').delegate( '#my-button', {
                 click: function (){},
-                hover: function (){}
+                mouseover: function (){}
             });
         </script>
 

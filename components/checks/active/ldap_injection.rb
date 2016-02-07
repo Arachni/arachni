@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,7 +9,6 @@
 # LDAP injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.3
 #
 # @see http://cwe.mitre.org/data/definitions/90.html
 # @see http://projects.webappsec.org/w/page/13246947/LDAP-Injection
@@ -23,8 +22,8 @@ class Arachni::Checks::LdapInjection < Arachni::Check::Base
     def run
         # This string will hopefully force the webapp to output LDAP error messages.
         audit( '#^($!@$)(()))******',
-            format:    [Format::APPEND],
-            substring: self.class.error_strings
+            format:     [Format::APPEND],
+            signatures: self.class.error_strings
         )
     end
 
@@ -37,7 +36,7 @@ discover failures in user input validation.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
 
             issue:       {
                 name:            %q{LDAP Injection},

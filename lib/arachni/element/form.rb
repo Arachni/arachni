@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -46,6 +46,8 @@ class Form < Base
         end
     end
 
+    DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+
     ORIGINAL_VALUES = '__original_values__'
     SAMPLE_VALUES   = '__sample_values__'
 
@@ -69,8 +71,8 @@ class Form < Base
     # @option   options [String]    :action
     #   Form action -- defaults to `:url`.
     # @option   options [Hash]    :inputs
-    #   Form inputs, can either be simple `name => value` pairs or more a
-    #   more detailed representation such as:
+    #   Form inputs, can either be simple `name => value` pairs or a more
+    #   detailed representation such as:
     #
     #       {
     #           'my_token'  => {
@@ -88,7 +90,6 @@ class Form < Base
 
         cinputs = (options[:inputs] || {}).inject({}) do |h, (name, value_or_info)|
              if value_or_info.is_a? Hash
-                 value_or_info             = value_or_info.my_symbolize_keys
                  h[name]                   = value_or_info[:value]
                  @input_details[name.to_s] = value_or_info
              else
@@ -211,7 +212,7 @@ class Form < Base
     #
     # @return   [String]
     def field_type_for( name )
-        details_for( name )[:type] || :text
+        (details_for( name )[:type] || :text).to_sym
     end
 
     def fake_field?( name )
@@ -267,9 +268,9 @@ class Form < Base
             if !document.is_a?( Nokogiri::HTML::Document )
                 document = document.to_s
 
-                return [] if !(document =~ /<\s*form/i)
+                return [] if !in_html?( document )
 
-                document = Nokogiri::HTML( document )
+                document = Arachni::Parser.parse( document )
             end
 
             base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
@@ -284,6 +285,10 @@ class Form < Base
                     form
                 end
             end.flatten.compact
+        end
+
+        def in_html?( html )
+            html.has_html_tag? 'form'
         end
 
         def from_node( url, node, ignore_scope = false )
@@ -305,7 +310,7 @@ class Form < Base
 
             %w(textarea input select button).each do |attr|
                 options[attr] ||= []
-                node.search( ".//#{attr}" ).each do |elem|
+                node.css( attr ).each do |elem|
                     elem_attrs = attributes_to_hash( elem.attributes )
                     elem_attrs[:type] = elem_attrs[:type].to_sym if elem_attrs[:type]
 
@@ -418,14 +423,28 @@ class Form < Base
         def decode( string )
             string = string.to_s
 
-            # Fast, but could throw error.
-            begin
-                ::URI.decode_www_form_component string
+            DECODE_CACHE.fetch( string ) do
+                # Fast, but could throw error.
+                begin
+                    ::URI.decode_www_form_component string
 
-            # Slower, but reliable.
-            rescue ArgumentError
-                URI.decode( string.gsub( '+', ' ' ) )
+                # Slower, but reliable.
+                rescue ArgumentError
+                    URI.decode( string.gsub( '+', ' ' ) )
+                end
             end
+        end
+
+        def from_rpc_data( data )
+            # Inputs contain attribute data instead of just values, normalize them.
+            if data['initialization_options']['inputs'].values.first.is_a? Hash
+                data['initialization_options']['inputs'].each do |name, details|
+                    data['initialization_options']['inputs'][name] =
+                        details.my_symbolize_keys( true )
+                end
+            end
+
+            super data
         end
 
     end

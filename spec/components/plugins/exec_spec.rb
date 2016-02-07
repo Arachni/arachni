@@ -37,8 +37,8 @@ describe name_from_filename do
 
         expect(during).to eq({
             "status"     => 0,
-            "executable" => "echo \"#{options.url} #{scheme} #{host} #{port} during 0 0 preparing\"",
-            "stdout"     => "#{options.url} #{scheme} #{host} #{port} during 0 0 preparing\n",
+            "executable" => "echo \"#{options.url} #{scheme} #{host} #{port} during 0 0 scanning\"",
+            "stdout"     => "#{options.url} #{scheme} #{host} #{port} during 0 0 scanning\n",
             "stderr"     => ""
         })
 

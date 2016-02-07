@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -11,7 +11,6 @@ require 'nokogiri'
 # Creates an XML report of the audit.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.3.4
 class Arachni::Reporters::XML < Arachni::Reporter::Base
 
     LOCAL_SCHEMA  = File.dirname( __FILE__ ) + '/xml/schema.xsd'
@@ -136,11 +135,37 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
         has_errors = false
         xsd.validate( Nokogiri::XML( xml ) ).each do |error|
             puts error.message
-            ap error
+            puts " -- Line #{error.line}, column #{error.column}, level #{error.level}."
+            puts '-' * 100
+
+            justify = (error.line+10).to_s.size
+            lines = xml.lines
+            ((error.line-10)..(error.line+10)).each do |i|
+                line = lines[i]
+                next if i < 0 || !line
+                i = i + 1
+
+                printf( "%#{justify}s | %s", i, line )
+
+                if i == error.line
+                    printf( "%#{justify}s |", i )
+                    line.size.times.each do |c|
+                        print error.column == c ? '^' : '-'
+                    end
+                    puts
+                end
+            end
+
+            puts '-' * 100
+            puts
+
             has_errors = true
         end
 
-        fail 'XML report could not be validated against the XSD.' if has_errors
+        if has_errors
+            print_error 'Report could not be validated against the XSD due to the above errors.'
+            return
+        end
 
         IO.binwrite( outfile, xml )
         print_status "Saved in '#{outfile}'."

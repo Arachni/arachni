@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,6 +13,8 @@ class Browser
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class ElementLocator
+
+    ARACHNI_ID = 'data-arachni-id'
 
     # @return   [Symbol]
     #   Tag name of the element.
@@ -62,14 +64,31 @@ class ElementLocator
         end
     end
 
-    # @return   [Watir::HTMLElement]
-    #   Locates and returns the element based on {#tag_name} and {#attributes}.
+    # @return   [Selenium::WebDriver::Element]
+    #   Locates and returns the element based on {#css}.
     def locate( browser )
-        browser.watir.element( css: css )
+        browser.selenium.find_element( :css, css )
     end
 
     def css
-        "#{tag_name}#{attributes.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
+        attrs = {}
+
+        # If there's an ID attribute that's good enough, don't include anything
+        # else to avoid risking broken selectors due to dynamic attributes and
+        # values.
+        if attributes['id']
+            attrs['id'] = attributes['id']
+
+        # Alternatively, exclude data attributes (except from ours ) to prevent
+        # issues and use whatever other attributes are available.
+        else
+            attrs = attributes.reject do |k, v|
+                k = k.to_s
+                k.start_with?( 'data-' ) && k != ARACHNI_ID
+            end
+        end
+
+        "#{tag_name}#{attrs.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
     end
 
     # @return   [String]
@@ -114,7 +133,7 @@ class ElementLocator
     end
 
     def self.from_html( html )
-        from_node Nokogiri::HTML.fragment( html ).children.first
+        from_node Parser.parse_fragment( html )
     end
 
     def self.from_node( node )

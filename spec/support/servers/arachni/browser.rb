@@ -20,9 +20,70 @@ get '/' do
     <body>
         <div>
             <script type="text/javascript">
+                document.cookie = 'cookie_name="cookie value"';
                 document.write( navigator.userAgent );
             </script>
         </div>
+    </body>
+</html>
+HTML
+end
+
+get '/cookies/under/path' do
+    <<HTML
+<html>
+    <body>
+        <script type="text/javascript">
+            document.cookie = 'cookie_under_path=value';
+        </script>
+    </body>
+</html>
+HTML
+end
+
+get '/cookies/httpOnly' do
+    cookies[:http_only] = 'stuff'
+end
+
+get '/cookies/domains' do
+    response.set_cookie(
+        :include_subdomains,
+        value:   'bar1',
+        domain: ".#{request.host}"
+    )
+
+    response.set_cookie(
+        :no_subdomains,
+        value:   'bar2',
+        domain: request.host
+    )
+
+    response.set_cookie(
+        :other_domain,
+        value:   'bar3',
+        domain: 'blah.blah'
+    )
+end
+
+get '/cookies/expires' do
+    cookies[:without_expiration] = 'stuff'
+
+    response.set_cookie(
+        :with_expiration,
+        value:   'bar',
+        expires: Time.parse( '2047-08-01 09:30:12 +0000' )
+    )
+end
+
+get '/open-new-window' do
+    <<HTML
+<html>
+    <body>
+        <script>
+            window.open( "/with-ajax" );
+        </script>
+
+        <a href="/">Click me!</a>
     </body>
 </html>
 HTML
@@ -188,6 +249,22 @@ get '/snapshot_id/default' do
     <<-EOHTML
     <html>
         <body>
+        </body>
+    </html>
+    EOHTML
+end
+
+get '/each_element_with_events/set-cookie' do
+    <<-EOHTML
+    <html>
+        <script type="text/javascript">
+            function setCookie() {
+                document.cookie = 'cookie_name="cookie value"';
+            }
+        </script>
+
+        <body>
+            <button onclick="setCookie()">Set cookie</button>
         </body>
     </html>
     EOHTML
@@ -394,6 +471,7 @@ end
 
 get '/test.png' do
     @@image_hit_count += 1
+    200
 end
 
 Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
@@ -416,7 +494,6 @@ Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
 </html>
         EOHTML
     end
-
 end
 
 get '/lots_of_sinks' do
@@ -651,7 +728,8 @@ get '/level2' do
         <div id="level3">
         </div>
 
-        <a onmouseover="writeButton();" href="javascript:level3();">level3 link</a>
+        <a onmouseover="writeButton();" href="#">Write button</a>
+        <a href="javascript:level3();">level3 link</a>
     </div>
 HTML
 end
@@ -754,14 +832,27 @@ get '/update-cookies' do
     cookies[:update] = 'this'
 end
 
-get '/update-cookies' do
-    cookies[:update] = 'this'
-end
-
 get '/dom-cookies-names' do
-    cookies['my-cookie']  = 'stuff'
-    cookies['my-cookie2'] = 'stuff'
-    cookies['my-cookie3'] = 'stuff'
+    cookies['http_only_cookie'] = 'stuff1'
+
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
 
     <<HTML
     <html>
@@ -781,18 +872,37 @@ get '/dom-cookies-names' do
                 return '';
             }
 
-            getCookie('my-cookie');
-            getCookie('my-cookie2');
+            getCookie('http_only_cookie');
+            getCookie('js_cookie1');
+            getCookie('js_cookie2');
+            getCookie('other_path');
         </script>
     </html>
 HTML
 end
 
 get '/dom-cookies-values' do
-    cookies['my-cookie']  = 'stuff1'
-    cookies['my-cookie2'] = 'stuff2'
-    cookies['my-cookie3'] = 'stuff3'
+    cookies['http_only_cookie'] = 'stuff1'
 
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
     <<HTML
     <html>
         <script>
@@ -802,6 +912,8 @@ get '/dom-cookies-values' do
 
             cookiesHaveValue('stuff1');
             cookiesHaveValue('stuff2');
+            cookiesHaveValue('stuff3');
+            cookiesHaveValue('stuff4');
         </script>
     </html>
 HTML
@@ -959,6 +1071,18 @@ post '/href-ajax-sleep' do
     sleep 4
 end
 
+get '/5_windows' do
+    <<HTML
+    <script>
+        window.open();
+        window.open();
+        window.open();
+        window.open();
+        window.open();
+    </script>
+HTML
+end
+
 get '/trigger_events' do
     <<HTML
 <html>
@@ -994,6 +1118,49 @@ get '/trigger_events' do
 HTML
 end
 
+get '/trigger_events/with_new_timers/:delay' do |delay|
+    <<HTML
+<html>
+    <head>
+        <script>
+            function addForm() {
+                get_ajax = new XMLHttpRequest();
+                get_ajax.onreadystatechange = function() {
+                    if( get_ajax.readyState == 4 && get_ajax.status == 200 ) {
+                        document.getElementById( "my-div" ).innerHTML = get_ajax.responseText;
+                    }
+                }
+
+                get_ajax.open( "GET", "/get-ajax?ajax-token=my-token", true );
+                get_ajax.send();
+            }
+
+            function addFormAfterDelay() {
+                setTimeout( addForm, #{delay} )
+            }
+        </script>
+    <head>
+
+    <body>
+
+        <div id="my-div" onclick="addFormAfterDelay();">
+            Test
+        </div>
+    </body>
+</html>
+HTML
+end
+
+get '/trigger_events/invisible-div' do
+    <<HTML
+<html>
+    <body>
+        <div id="invisible-div" style="display: none">
+        </div>
+    </body>
+</html>
+HTML
+end
 
 get '/trigger_events-wait-for-ajax' do
     <<HTML

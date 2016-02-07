@@ -120,7 +120,7 @@ describe Arachni::Page do
             expect(restored.links.last.node.to_s).to eq(link.node.to_s)
         end
 
-        context Arachni::Page::DOM do
+        context 'Arachni::Page::DOM' do
             [:url, :skip_states, :transitions, :data_flow_sinks, :execution_flow_sinks].each do |m|
                 it "restores ##{m}" do
                     # Make sure we're not comparing nils.
@@ -140,7 +140,7 @@ describe Arachni::Page do
 
     describe '#initialize' do
         describe 'option' do
-            describe :response do
+            describe ':response' do
                 it 'uses it to populate the page data' do
                     page   = described_class.new( response: response )
                     parser = Arachni::Parser.new( response )
@@ -160,7 +160,7 @@ describe Arachni::Page do
                 end
             end
 
-            describe :parser do
+            describe ':parser' do
                 it 'uses it to populate the page data' do
                     parser = Arachni::Parser.new( response )
                     page   = described_class.new( parser: parser )
@@ -180,7 +180,7 @@ describe Arachni::Page do
                 end
             end
 
-            describe :dom do
+            describe ':dom' do
                 it 'uses it to populate the DOM data' do
                     dom = described_class.new(
                         url:      'http://test/',
@@ -229,22 +229,22 @@ describe Arachni::Page do
 
     describe '#update_element_audit_whitelist' do
         context 'when passed a' do
-            context Arachni::Element::Capabilities::Auditable do
+            context 'Arachni::Element::Capabilities::Auditable' do
                 it 'updates the #element_audit_whitelist' do
                     subject.update_element_audit_whitelist subject.elements.first
                     expect(subject.element_audit_whitelist).to include subject.elements.first.coverage_hash
                 end
             end
 
-            context Integer do
+            context 'Integer' do
                 it 'updates the #element_audit_whitelist' do
                     subject.update_element_audit_whitelist subject.elements.first.coverage_hash
                     expect(subject.element_audit_whitelist).to include subject.elements.first.coverage_hash
                 end
             end
 
-            context Array do
-                context Arachni::Element::Capabilities::Auditable do
+            context 'Array' do
+                context 'Arachni::Element::Capabilities::Auditable' do
                     it 'updates the #element_audit_whitelist' do
                         subject.update_element_audit_whitelist [subject.elements[0],subject.elements[1]]
                         expect(subject.element_audit_whitelist).to include subject.elements[0].coverage_hash
@@ -252,7 +252,7 @@ describe Arachni::Page do
                     end
                 end
 
-                context Integer do
+                context 'Integer' do
                     it 'updates the #element_audit_whitelist' do
                         subject.update_element_audit_whitelist [subject.elements[0].coverage_hash, subject.elements[1].coverage_hash]
                         expect(subject.element_audit_whitelist).to include subject.elements[0].coverage_hash
@@ -285,14 +285,14 @@ describe Arachni::Page do
         context 'when there is an #element_audit_whitelist' do
             context 'and the element is in it' do
                 context 'represented by' do
-                    context Integer do
+                    context 'Integer' do
                         it 'returns true' do
                             subject.update_element_audit_whitelist subject.elements.first
                             expect(subject.audit_element?( subject.elements.first.coverage_hash )).to be_truthy
                         end
                     end
 
-                    context Arachni::Element::Capabilities::Auditable do
+                    context 'Arachni::Element::Capabilities::Auditable' do
                         it 'returns true' do
                             subject.update_element_audit_whitelist subject.elements.first
                             expect(subject.audit_element?( subject.elements.first )).to be_truthy
@@ -302,14 +302,14 @@ describe Arachni::Page do
             end
             context 'and the element is not in it' do
                 context 'represented by' do
-                    context Integer do
+                    context 'Integer' do
                         it 'returns false' do
                             subject.update_element_audit_whitelist subject.elements.first
                             expect(subject.audit_element?( subject.elements.last.coverage_hash )).to be_falsey
                         end
                     end
 
-                    context Arachni::Element::Capabilities::Auditable do
+                    context 'Arachni::Element::Capabilities::Auditable' do
                         it 'returns false' do
                             subject.update_element_audit_whitelist subject.elements.first
                             expect(subject.audit_element?( subject.elements.last )).to be_falsey
@@ -894,7 +894,7 @@ describe Arachni::Page do
                 end
             end
 
-            context Arachni::Page::DOM do
+            context 'Arachni::Page::DOM' do
                 [:url, :skip_states, :transitions, :data_flow_sinks, :execution_flow_sinks].each do |m|
                     it "preserves ##{m}" do
                         dupped = subject.send(method)
@@ -937,7 +937,7 @@ describe Arachni::Page do
 
             data = {
                 url:  'http://test/',
-                body: 'test',
+                body: 'http://test/1 http://test/2',
                 paths: [ 'http://test/1', 'http://test/2' ],
                 links: [Arachni::Element::Link.new( elem_opts )],
                 forms: [Arachni::Element::Form.new( elem_opts )],

@@ -8,7 +8,7 @@ end
 def get_result( str )
     str = str.to_s
 
-    if str.include?( '!this' ) || str.include?( 'return false' ) || str == '-1'
+    if str.include?( '!this' ) || str.include?( 'return false' ) || str == '-1839'
         'Could not find any results, bugger off!'
     elsif str.include?( 'this' ) || str.include?( 'return true' ) || str == default
         '1 item found: Blah blah blah...'

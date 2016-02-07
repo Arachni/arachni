@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -54,6 +54,39 @@ class Parser
             end
 
         end
+    end
+
+    CACHE_SIZES = {
+        parse:          50,
+        parse_xml:      50,
+        parse_fragment: 100
+    }
+
+    CACHE = {}
+    CACHE_SIZES.each do |name, size|
+        CACHE[name] = Support::Cache::LeastRecentlyPushed.new( size )
+    end
+
+    class <<self
+
+        def parse( html )
+            CACHE[__method__].fetch html do
+                Nokogiri::HTML( html ).freeze
+            end
+        end
+
+        def parse_fragment( html )
+            CACHE[__method__].fetch html do
+                Nokogiri::HTML.fragment( html ).children.first.freeze
+            end
+        end
+
+        def parse_xml( xml )
+            CACHE[__method__].fetch xml do
+                Nokogiri::XML( xml ).freeze
+            end
+        end
+
     end
 
     alias :skip? :skip_path?
@@ -133,8 +166,12 @@ class Parser
     #   `nil` if the response data wasn't {#text? text-based} or the response
     #   couldn't be parsed.
     def document
+        return if !text?
         return @document.freeze if @document
-        @document = Nokogiri::HTML( body ) if text? rescue nil
+
+        @document = self.class.parse( body )
+    rescue
+        nil
     end
 
     # @note It will include common request headers as well headers from the HTTP
@@ -160,7 +197,7 @@ class Parser
     #   Forms from {#document}.
     def forms
         return @forms.freeze if @forms
-        return [] if !text? || !(body =~ /<\s*form/i)
+        return [] if !text? || !Form.in_html?( body )
 
         f = Form.from_document( @url, document )
         return f if !@secondary_responses
@@ -211,7 +248,7 @@ class Parser
     #   Links in {#document}.
     def links
         return @links.freeze if @links
-        return @links = [link].compact if !text? || !(body =~ /\?.*=/)
+        return @links = [link].compact if !text? || !Link.in_html?( body )
 
         @links = [link].compact | Link.from_document( @url, document )
     end
@@ -260,7 +297,7 @@ class Parser
         return @cookies.freeze if @cookies
 
         @cookies = Cookie.from_headers( @url, @response.headers )
-        return @cookies if !text?
+        return @cookies if !text? || !Cookie.in_html?( body )
 
         @cookies |= Cookie.from_document( @url, document )
     end

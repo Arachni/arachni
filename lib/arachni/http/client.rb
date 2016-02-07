@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -123,6 +123,20 @@ class Client
         reset
     end
 
+    def reset_options
+        @original_max_concurrency = Options.http.request_concurrency || MAX_CONCURRENCY
+        self.max_concurrency      = @original_max_concurrency
+
+        headers.clear
+        headers.merge!(
+            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent'      => Options.http.user_agent,
+            'Accept-Language' => 'en-US,en;q=0.8,he;q=0.6'
+        )
+        headers['From'] = Options.authorized_by if Options.authorized_by
+        headers.merge!( Options.http.request_headers )
+    end
+
     # @return   [Arachni::HTTP]
     #   Reset `self`.
     def reset( hooks_too = true )
@@ -134,24 +148,24 @@ class Client
 
         client_initialize
 
-        headers.merge!(
-            'Accept'     => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent' => Options.http.user_agent
-        )
-        headers['From'] = Options.authorized_by if Options.authorized_by
-        headers.merge!( Options.http.request_headers )
+        reset_options
 
-        cookie_jar.load( Options.http.cookie_jar_filepath ) if Options.http.cookie_jar_filepath
+        if Options.http.cookie_jar_filepath
+            cookie_jar.load( Options.http.cookie_jar_filepath )
+        end
 
         Options.http.cookies.each do |name, value|
             update_cookies( name => value )
         end
 
-        update_cookies( Options.http.cookie_string ) if Options.http.cookie_string
+        if Options.http.cookie_string
+            update_cookies( Options.http.cookie_string )
+        end
 
         reset_burst_info
 
         @request_count  = 0
+        @async_response_count = 0
         @response_count = 0
         @time_out_count = 0
 
@@ -278,8 +292,8 @@ class Client
 
     # @return   [Float] Responses/second.
     def total_responses_per_second
-        if @response_count > 0 && total_runtime > 0
-            return @response_count / Float( total_runtime )
+        if @async_response_count > 0 && total_runtime > 0
+            return @async_response_count / Float( total_runtime )
         end
         0
     end
@@ -301,8 +315,8 @@ class Client
     # @return   [Float]
     #   Responses/second for the running requests (i.e. the current burst).
     def burst_responses_per_second
-        if @burst_response_count > 0 && burst_runtime > 0
-            return @burst_response_count / burst_runtime
+        if @async_burst_response_count > 0 && burst_runtime > 0
+            return @async_burst_response_count / burst_runtime
         end
         0
     end
@@ -343,27 +357,28 @@ class Client
     def request( url = @url, options = {}, &block )
         fail ArgumentError, 'URL cannot be empty.' if !url
 
-        options = options.dup
-        cookies = options.delete( :cookies ) || {}
+        options     = options.dup
+        cookies     = options.delete( :cookies ) || {}
+        raw_cookies = []
 
         exception_jail false do
             if !options.delete( :no_cookie_jar )
-                cookies = begin
-                    cookie_jar.for_url( url ).inject({}) do |h, c|
-                        h[c.name] = c.value
-                        h
-                    end.merge( cookies )
+                raw_cookies = begin
+                    cookie_jar.for_url( url ).reject do |c|
+                        cookies.include? c.name
+                    end
                 rescue => e
                     print_error "Could not get cookies for URL '#{url}' from Cookiejar (#{e})."
                     print_error_backtrace e
-                    cookies
+                    []
                 end
             end
 
             request = Request.new( options.merge(
-                url:     url,
-                headers: headers.merge( options.delete( :headers ) || {} ),
-                cookies: cookies
+                url:         url,
+                headers:     headers.merge( options.delete( :headers ) || {} ),
+                cookies:     cookies,
+                raw_cookies: raw_cookies
             ))
 
             if block_given?
@@ -474,14 +489,7 @@ class Client
 
         reset_burst_info
 
-        # Lots of new objects are about to be generated, make sure that old ones
-        # have been collected to prevent RAM spikes.
-        gc
-
         client_run
-
-        # Collect the new objects as well.
-        gc
 
         @queue_size = 0
         @running    = false
@@ -490,17 +498,10 @@ class Client
         @total_runtime += @burst_runtime
     end
 
-    def gc
-        # Don't GC after every little run, only do it when we're past the
-        # maximum queue size.
-        return if @queue_size < Options.http.request_queue_size
-
-        GC.start
-    end
-    
     def reset_burst_info
         @burst_response_time_sum = 0
         @burst_response_count    = 0
+        @async_burst_response_count = 0
         @burst_runtime           = 0
         @burst_runtime_start     = Time.now
     end
@@ -514,19 +515,19 @@ class Client
         request.id    = @request_count
 
         if debug_level_3?
-            print_debug_level_3 '------------'
-            print_debug_level_3 'Queued request.'
-            print_debug_level_3 "ID#: #{request.id}"
-            print_debug_level_3 "Performer: #{request.performer.inspect}"
-            print_debug_level_3 "URL: #{request.url}"
-            print_debug_level_3 "Method: #{request.method}"
-            print_debug_level_3 "Params: #{request.parameters}"
-            print_debug_level_3 "Body: #{request.body}"
-            print_debug_level_3 "Headers: #{request.headers}"
-            print_debug_level_3 "Cookies: #{request.cookies}"
-            print_debug_level_3 "Train?: #{request.train?}"
-            print_debug_level_3 "Fingerprint?: #{request.fingerprint?}"
-            print_debug_level_3  '------------'
+            print_debug_level_4 '------------'
+            print_debug_level_4 'Queued request.'
+            print_debug_level_4 "ID#: #{request.id}"
+            print_debug_level_4 "Performer: #{request.performer.inspect}"
+            print_debug_level_4 "URL: #{request.url}"
+            print_debug_level_4 "Method: #{request.method}"
+            print_debug_level_4 "Params: #{request.parameters}"
+            print_debug_level_4 "Body: #{request.body}"
+            print_debug_level_4 "Headers: #{request.headers}"
+            print_debug_level_4 "Cookies: #{request.cookies}"
+            print_debug_level_4 "Train?: #{request.train?}"
+            print_debug_level_4 "Fingerprint?: #{request.fingerprint?}"
+            print_debug_level_4  '------------'
         end
 
         if add_callbacks
@@ -556,6 +557,11 @@ class Client
             @response_count       += 1
             @burst_response_count += 1
 
+            if request.asynchronous?
+                @async_response_count       += 1
+                @async_burst_response_count += 1
+            end
+
             response_time = response.timed_out? ?
                 request.timeout / 1_000.0 :
                 response.time
@@ -575,37 +581,35 @@ class Client
             parse_and_set_cookies( response ) if request.update_cookies?
 
             if debug_level_3?
-                print_debug_level_3 '------------'
-                print_debug_level_3 "Got response for request ID#: #{response.request.id}\n#{response.request}"
-                print_debug_level_3 "Performer: #{response.request.performer.inspect}"
-                print_debug_level_3 "Status: #{response.code}"
-                print_debug_level_3 "Code: #{response.return_code}"
-                print_debug_level_3 "Message: #{response.return_message}"
-                print_debug_level_3 "URL: #{response.url}"
-                print_debug_level_3 "Headers:\n#{response.headers_string}"
-                print_debug_level_3 "Parsed headers: #{response.headers}"
+                print_debug_level_4 '------------'
+                print_debug_level_4 "Got response for request ID#: #{response.request.id}\n#{response.request}"
+                print_debug_level_4 "Performer: #{response.request.performer.inspect}"
+                print_debug_level_4 "Status: #{response.code}"
+                print_debug_level_4 "Code: #{response.return_code}"
+                print_debug_level_4 "Message: #{response.return_message}"
+                print_debug_level_4 "URL: #{response.url}"
+                print_debug_level_4 "Headers:\n#{response.headers_string}"
+                print_debug_level_4 "Parsed headers: #{response.headers}"
             end
 
             if response.timed_out?
-                print_debug_level_3 "Request timed-out! -- ID# #{response.request.id}"
+                print_debug_level_4 "Request timed-out! -- ID# #{response.request.id}"
                 @time_out_count += 1
             end
 
-            print_debug_level_3 '------------'
+            print_debug_level_4 '------------'
         end
     end
 
     def client_initialize
-        @original_max_concurrency = Options.http.request_concurrency || MAX_CONCURRENCY
-
-        @hydra = Typhoeus::Hydra.new(
-            max_concurrency: @original_max_concurrency
-        )
+        @hydra = Typhoeus::Hydra.new
     end
 
     def client_run
         # Can get Ethon select errors.
         exception_jail( false ) { @hydra.run }
+
+        Arachni.collect_young_objects if @queue_size > 0
     end
 
     def client_abort

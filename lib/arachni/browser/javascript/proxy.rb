@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -34,7 +34,6 @@ class Proxy < BasicObject
         @javascript = javascript
         @object     = object
         @stub       = Stub.new( self )
-        @isFunction = {}
     end
 
     # @param    [#to_sym] name
@@ -44,20 +43,7 @@ class Proxy < BasicObject
     #   `true` if the `name` property of the current object points to a function,
     #   `false` otherwise.
     def function?( name )
-        return @isFunction[name.to_sym] if @isFunction.include?( name.to_sym )
-
-        if name.to_s.end_with? '='
-            name = name.to_s
-            return @isFunction[name.to_sym] = @javascript.run(
-                "return ('#{name[0...-1]}' in #{js_object})"
-            )
-        end
-
-        @isFunction[name.to_sym] =
-            @javascript.run(
-                "return Object.prototype.toString.call( #{js_object}." <<
-                    "#{name} ) == '[object Function]'"
-            )
+        self.class.function?( @javascript, js_object, name )
     end
 
     # @return   [String]
@@ -86,6 +72,32 @@ class Proxy < BasicObject
     def class
         Proxy
     end
+
+    def self.function?( env, object, name )
+        mutex.synchronize do
+            @isFunction ||= {}
+            key = "#{object}.#{name}".hash
+
+            return @isFunction[key] if @isFunction.include?( key )
+
+            if name.to_s.end_with? '='
+                name = name.to_s
+                return @isFunction[key] = env.run(
+                    "return ('#{name[0...-1]}' in #{object})"
+                )
+            end
+
+            @isFunction[key] = env.run(
+                "return Object.prototype.toString.call( #{object}." <<
+                    "#{name} ) == '[object Function]'"
+            )
+        end
+    end
+    def self.mutex
+        @mutex ||= ::Mutex.new
+    end
+    mutex
+
 end
 
 end

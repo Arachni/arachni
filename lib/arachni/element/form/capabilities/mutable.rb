@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -87,23 +87,24 @@ module Mutable
         yield elem if !generated.include?( elem )
         generated << elem
 
-        # Default values, in case they reveal new resources.
-        if node
-            inputs.keys.each do |input|
-                next if field_type_for( input ) != :select
+        # Default select values, in case they reveal new resources.
+        inputs.keys.each do |input|
+            next if field_type_for( input ) != :select
 
-                escape = "'#{input.split( "'" ).join( "', \"'\", '" )}', ''"
-                node.xpath( "select[@name=concat(#{escape})]" ).css('option').each do |option|
-                    try_input do
-                        elem = self.dup
-                        elem.mutation_with_original_values
-                        elem.affected_input_name  = input
-                        elem.affected_input_value = option['value'] || option.text
-                        yield elem if !generated.include?( elem )
-                        generated << elem
-                    end
+            # We do the break inside the loop because #node is lazy parsed
+            # and we don't want to parse it unless we have a select input.
+            break if !node
+
+            escape = "'#{input.split( "'" ).join( "', \"'\", '" )}', ''"
+            node.xpath( "select[@name=concat(#{escape})]" ).css('option').each do |option|
+                try_input do
+                    elem = self.dup
+                    elem.mutation_with_original_values
+                    elem.affected_input_name  = input
+                    elem.affected_input_value = option['value'] || option.text
+                    yield elem if !generated.include?( elem )
+                    generated << elem
                 end
-
             end
         end
 

@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>1.3.2</td>
+        <td>1.4</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -38,7 +38,7 @@
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2015 Tasos Laskos</td>
+        <td>2010-2016 Tasos Laskos</td>
     </tr>
     <tr>
         <th>License</th>
@@ -236,20 +236,38 @@ Arachni is able to extract and audit the following elements and their inputs:
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
-- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
-    - `MessagePack` serialization for performance, efficiency and ease of
-        integration with 3rd party systems.
-- Remote monitoring and management of Dispatchers and Instances.
-- Parallel scans -- Each scan is compartmentalized to its own OS process to take
-    advantage of:
+Arachni is designed to fit into your workflow and easily integrate with your
+existing infrastructure.
+
+Depending on the level of control you require over the process, you can either
+choose the REST service or the custom RPC protocol.
+
+Both approaches allow you to:
+
+- Remotely monitor and manage scans.
+- Perform multiple scans at the same time -- Each scan is compartmentalized to
+    its own OS process to take advantage of:
     - Multi-core/SMP architectures.
     - OS-level scheduling/restrictions.
     - Sandboxed failure propagation.
-- Multi-Instance scans for parallelization of _individual scans_ using multiple
-    Instances to:
-    - Take advantage of multi-core/SMP architectures.
-    - Greatly diminish scan-times.
-- Dispatcher Grid:
+- Communicate over a secure channel.
+
+#### [REST service](https://github.com/Arachni/arachni/wiki/REST-service)
+
+- Very simple and straightforward API.
+- Easy interoperability with non-Ruby systems.
+    - Operates over HTTP.
+    - Uses JSON to format messages.
+- Stateful scan monitoring.
+    - Unique sessions automatically only receive updates when polling for progress,
+        rather than full data.
+
+#### [RPC API](https://github.com/Arachni/arachni/wiki/RPC-API)
+
+- High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
+    - `MessagePack` serialization for performance, efficiency and ease of
+        integration with 3rd party systems.
+- Grid:
     - Self-healing.
     - Scale up/down by hot-plugging/hot-unplugging nodes.
         - Can scale up infinitely by adding nodes to increase scan capacity.
@@ -259,7 +277,6 @@ Arachni is able to extract and audit the following elements and their inputs:
     - _(Optional)_ High-Performance mode -- Combines the resources of
         multiple nodes to perform multi-Instance scans.
         - Enabled on a per-scan basis.
-- SSL encryption (with optional peer authentication).
 
 ### Scope configuration
 
@@ -301,8 +318,9 @@ Arachni is able to extract and audit the following elements and their inputs:
     - JSON request data.
     - XML request data.
  - Can ignore binary/non-text pages.
- - Can optionally audit elements using both `GET` and `POST` HTTP methods.
- - Can optionally submit all links and forms of the page along with the cookie
+ - Can audit elements using both `GET` and `POST` HTTP methods.
+ - Can inject both raw and HTTP encoded payloads.
+ - Can submit all links and forms of the page along with the cookie
     permutations to provide extensive cookie-audit coverage.
  - Can exclude specific input vectors by name.
  - Can include specific input vectors by name.

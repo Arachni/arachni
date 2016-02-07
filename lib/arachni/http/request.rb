@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -14,6 +14,8 @@ module HTTP
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Request < Message
     require_relative 'request/scope'
+
+    ENCODE_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
 
     # Default redirect limit, RFC says 5 max.
     REDIRECT_LIMIT = 5
@@ -61,6 +63,9 @@ class Request < Message
     #   Cookies set for this request.
     attr_reader   :cookies
 
+    # @return   [Array<Element::Cookie>]
+    attr_reader   :raw_cookies
+
     # @return   [Symbol]
     #   Mode of operation for the request.
     #
@@ -101,6 +106,10 @@ class Request < Message
     #   Maximum HTTP response size to accept, in bytes.
     attr_accessor :response_max_size
 
+    # @return   [Array]
+    #   Parameters which should not be encoded, by name.
+    attr_accessor :raw_parameters
+
     # @param  [Hash]  options
     #   Request options.
     # @option options [String] :url
@@ -132,10 +141,20 @@ class Request < Message
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
         @on_complete     = []
 
-        @timeout       ||= Options.http.request_timeout
-        @mode          ||= :async
-        @parameters    ||= {}
-        @cookies       ||= {}
+        @raw_parameters ||= []
+        @timeout        ||= Options.http.request_timeout
+        @mode           ||= :async
+        @parameters     ||= {}
+        @cookies        ||= {}
+        @raw_cookies    ||= []
+    end
+
+    def raw_parameters=( names )
+        if names
+            @raw_parameters = names
+        else
+            @raw_parameters.clear
+        end
     end
 
     def high_priority?
@@ -209,14 +228,29 @@ class Request < Message
     end
 
     def effective_cookies
-        Cookie.from_string( url, headers['Cookie'] || '' ).inject({}) do |h, cookie|
-            h[cookie.name] = cookie.value
+        effective_cookies = self.cookies.dup
+
+        if !headers['Cookie'].to_s.empty?
+            Cookie.from_string( url, headers['Cookie'] ).
+                inject( effective_cookies ) do |h, cookie|
+                h[cookie.name] ||= cookie.value
+                h
+            end
+        end
+
+        @raw_cookies.inject( effective_cookies ) do |h, cookie|
+            h[cookie.raw_name] ||= cookie.raw_value
             h
-        end.merge( cookies )
+        end
+
+        effective_cookies
     end
 
     def effective_parameters
-        Utilities.uri_parse_query( url ).merge( parameters || {} )
+        ep = Utilities.uri_parse_query( url )
+        return ep if parameters.empty?
+
+        ep.merge!( parameters )
     end
 
     def body_parameters
@@ -337,12 +371,22 @@ class Request < Message
         max_size = 1   if max_size == 0
         max_size = nil if max_size < 0
 
+        ep = self.class.encode_hash( self.effective_parameters, @raw_parameters )
+
+        eb = self.body
+        if eb.is_a?( Hash )
+            eb = self.class.encode_hash( eb, @raw_parameters )
+        end
+
         options = {
             method:          method,
             headers:         headers,
-            body:            body,
-            params:          effective_parameters,
+
+            body:            eb,
+            params:          ep,
+
             userpwd:         userpwd,
+
             followlocation:  follow_location?,
             maxredirs:       @max_redirects,
 
@@ -365,10 +409,19 @@ class Request < Message
             # the reading of the response body if it exceeds this limit.
             maxfilesize:     max_size,
 
-            # Don't keep the socket alive if this is a blocking request because
-            # it's going to be performed by an one-off Hydra.
-            forbid_reuse:    blocking?,
-            verbose:         true
+            # Reusing connections for blocking requests used to cause FD leaks
+            # but doesn't appear to do so anymore.
+            #
+            # Let's allow reuse for all request types again but keep an eye on it.
+            # forbid_reuse:    blocking?,
+
+            # Enable debugging messages in order to capture raw traffic data.
+            verbose:         true,
+
+            # We're going to be escaping **a lot** of the same strings during
+            # the scan, so bypass Ethon's encoding and do our own cache-based
+            # encoding.
+            escape:          false
         }
 
         options[:timeout_ms] = timeout if timeout
@@ -404,8 +457,7 @@ class Request < Message
             end
         end
 
-        curl             = parsed_url.query ? url.gsub( "?#{parsed_url.query}", '' ) : url
-        typhoeus_request = Typhoeus::Request.new( curl, options )
+        typhoeus_request = Typhoeus::Request.new( url.split( '?').first, options )
 
         if @on_complete.any?
             response_body_buffer = ''
@@ -418,7 +470,10 @@ class Request < Message
                 end
 
                 fill_in_data_from_typhoeus_response typhoeus_response
-                handle_response Response.from_typhoeus( typhoeus_response )
+                handle_response Response.from_typhoeus(
+                    typhoeus_response,
+                    normalize_url: @normalize_url
+                )
             end
         end
 
@@ -446,10 +501,12 @@ class Request < Message
     end
 
     def marshal_dump
-        callbacks = @on_complete.dup
-        performer = @performer
+        raw_cookies = @raw_cookies.dup
+        callbacks   = @on_complete.dup
+        performer   = @performer
 
         @performer   = nil
+        @raw_cookies = []
         @on_complete = []
 
         instance_variables.inject( {} ) do |h, iv|
@@ -458,6 +515,7 @@ class Request < Message
             h
         end
     ensure
+        @raw_cookies = raw_cookies
         @on_complete = callbacks
         @performer   = performer
     end
@@ -500,31 +558,70 @@ class Request < Message
         # @return   [Hash]
         #   Parameters.
         def parse_body( body )
-            return {} if !body
+            return {} if body.to_s.empty?
 
-            body.to_s.split( '&' ).inject( {} ) do |h, pair|
+            body.split( '&' ).inject( {} ) do |h, pair|
                 name, value = pair.split( '=', 2 )
                 h[Form.decode( name.to_s )] = Form.decode( value )
                 h
             end
         end
 
+        def encode_hash( hash, skip = [] )
+            hash.inject({}) do |h, (k, v)|
+
+                if skip.include?( k )
+                    # We need to at least encode null-bytes since they can't
+                    # be transported at all.
+                    # If we don't Typhoeus/Ethon will raise errors.
+                    h.merge!( encode_null_byte( k ) => encode_null_byte( v ) )
+                else
+                    h.merge!( encode( k ) => encode( v ) )
+                end
+
+                h
+            end
+        end
+
+        def encode_null_byte( string )
+            string.to_s.gsub "\0", '%00'
+        end
+
         def encode( string )
+            string = string.to_s
             @easy ||= Ethon::Easy.new( url: 'www.example.com' )
-            @easy.escape string
+            ENCODE_CACHE.fetch( string ) { @easy.escape( string ) }
         end
     end
 
     def prepare_headers
-        headers['User-Agent'] ||= Options.http.user_agent
-        headers['Accept']     ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
-        headers['From']       ||= Options.authorized_by if Options.authorized_by
+        headers['User-Agent']      ||= Options.http.user_agent
+        headers['Accept']          ||= 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8'
+        headers['From']            ||= Options.authorized_by if Options.authorized_by
+        headers['Accept-Language'] ||= 'en-US,en;q=0.8,he;q=0.6'
 
         headers.each { |k, v| headers[k] = Header.encode( v ) if v }
 
-        headers['Cookie'] = effective_cookies.
-            map { |k, v| "#{Cookie.encode( k, true )}=#{Cookie.encode( v )}" }.
-            join( ';' )
+        final_cookies_hash = self.cookies
+        final_raw_cookies  = self.raw_cookies
+
+        if headers['Cookie']
+            final_raw_cookies_set = Set.new( final_raw_cookies.map(&:name) )
+            final_raw_cookies |= Cookie.from_string( url, headers['Cookie'] ).reject do |c|
+                final_cookies_hash.include?( c.name ) ||
+                    final_raw_cookies_set.include?( c.name )
+            end
+        end
+
+        headers['Cookie'] = final_cookies_hash.
+            map { |k, v| "#{Cookie.encode( k )}=#{Cookie.encode( v )}" }.join( ';' )
+
+        if !headers['Cookie'].empty? && final_raw_cookies.any?
+            headers['Cookie'] += ';'
+        end
+
+        headers['Cookie'] += final_raw_cookies.map { |c| c.to_s }.join( ';' )
+
         headers.delete( 'Cookie' ) if headers['Cookie'].empty?
 
         headers

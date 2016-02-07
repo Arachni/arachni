@@ -84,7 +84,7 @@ describe Arachni::Trainer do
                 expect(@framework.pages.size).to eq(0)
             end
         end
-        describe false do
+        describe 'false' do
             it 'skips the Trainer' do
                 expect(@framework.pages.size).to eq(0)
 
@@ -94,7 +94,7 @@ describe Arachni::Trainer do
                 expect(@framework.pages.size).to eq(0)
             end
         end
-        describe true do
+        describe 'true' do
             it 'passes the response to the Trainer' do
                 expect(@framework.pages.size).to eq(0)
 
@@ -213,6 +213,50 @@ describe Arachni::Trainer do
             end
         end
 
+        context 'when the response has already been seen' do
+            before do
+                @trainer.page = @page
+
+                r = request( @url )
+                expect(@trainer).to receive(:analyze).with(r)
+                expect(@trainer.push( r )).to be_truthy
+            end
+
+            it 'returns nil' do
+                r = request( @url )
+                expect(@trainer).to_not receive(:analyze)
+                expect(@trainer.push( r )).to be_nil
+            end
+
+            context 'but URL param names are different' do
+                it 'returns true' do
+                    r = request( "#{@url}/?stuff=1" )
+                    expect(@trainer).to receive(:analyze).with(r)
+                    expect(@trainer.push( r )).to be_truthy
+                end
+            end
+
+            context 'but cookie names are different' do
+                it 'returns true' do
+                    r = request( @url )
+                    r.headers['set-cookie'] = 'name=val'
+
+                    expect(@trainer).to receive(:analyze).with(r)
+                    expect(@trainer.push( r )).to be_truthy
+                end
+            end
+
+            context 'but the body is different' do
+                it 'returns true' do
+                    r = request( @url )
+                    r.body = '1'
+
+                    expect(@trainer).to receive(:analyze).with(r)
+                    expect(@trainer.push( r )).to be_truthy
+                end
+            end
+        end
+
         context 'when the resource is out-of-scope' do
             it 'returns false' do
                 @trainer.page = @page
@@ -309,7 +353,7 @@ describe Arachni::Trainer do
 
             let(:subject) { TrainerMockFramework.new.trainer }
 
-            context true do
+            context 'true' do
                 before { allow_any_instance_of(TrainerMockFramework).to receive(:accepts_more_pages?){ true } }
 
                 it 'processes pages' do
@@ -322,7 +366,7 @@ describe Arachni::Trainer do
                 end
             end
 
-            context false do
+            context 'false' do
                 before { allow_any_instance_of(TrainerMockFramework).to receive(:accepts_more_pages?){ false } }
 
                 it 'does not process the page' do

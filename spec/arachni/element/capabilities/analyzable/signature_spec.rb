@@ -49,7 +49,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     php:     @seed,
                 }
 
-                @positive.signature_analysis( payloads, substring: @seed )
+                @positive.signature_analysis( payloads, signature: @seed )
                 @auditor.http.run
                 expect(issues.size).to eq(1)
                 issue = issues.first
@@ -67,12 +67,13 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
         end
 
         context 'when called with option' do
-            describe :regexp do
-                context String do
+            describe ':signatures' do
+                context 'String' do
                     it 'tries to match the provided pattern' do
-                        @positive.signature_analysis( @seed,
-                                                  regexp: @seed,
-                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
+                        @positive.signature_analysis(
+                            @seed,
+                            signatures: @seed,
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         expect(issues.size).to eq(1)
@@ -80,11 +81,26 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     end
                 end
 
-                context Array do
+                context 'String' do
+                    it 'tries to match the provided pattern' do
+                        @positive.signature_analysis(
+                            @seed,
+                            signatures: Regexp.new( @seed ),
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
+                        )
+                        @auditor.http.run
+                        expect(issues.size).to eq(1)
+                        expect(issues.first.vector.seed).to eq(@seed)
+                        expect(issues.first).to be_trusted
+                    end
+                end
+
+                context 'Array' do
                     it 'tries to match the provided patterns' do
-                        @positive.signature_analysis( @seed,
-                                                  regexp: [@seed],
-                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
+                        @positive.signature_analysis(
+                            @seed,
+                            signatures: [@seed],
+                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
                         expect(issues.size).to eq(1)
@@ -92,7 +108,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     end
                 end
 
-                context Hash do
+                context 'Hash' do
                     it 'assigns the relevant platform to the issue' do
                         regexps = {
                             windows: /#{@seed} w.*/,
@@ -101,7 +117,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
 
                         @positive.signature_analysis(
                             "#{@seed} windows",
-                            regexp: regexps.dup,
+                            signatures: regexps.dup,
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
 
@@ -136,7 +152,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
 
                             @positive.signature_analysis(
                                 payloads.dup,
-                                regexp: regexps.dup,
+                                signatures: regexps.dup,
                                 format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                             )
 
@@ -167,7 +183,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
 
                                 @positive.signature_analysis(
                                     payloads.dup,
-                                    regexp: regexps.dup,
+                                    signatures: regexps.dup,
                                     format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                                 )
 
@@ -186,7 +202,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                 context 'when the page matches the regexp even before we audit it' do
                     it 'does not log an issue' do
                         @positive.signature_analysis( 'Inject here',
-                            regexp: 'Inject he[er]',
+                            signatures: 'Inject he[er]',
                             format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
                         )
                         @auditor.http.run
@@ -195,160 +211,15 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                 end
             end
 
-            describe :substring do
-                context String do
-                    it 'tries to match the provided pattern' do
-                        @positive.signature_analysis( @seed,
-                                                  substring: @seed,
-                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                        )
-                        @auditor.http.run
-                        expect(issues.size).to eq(1)
-                        expect(issues.first.vector.seed).to eq(@seed)
-                        expect(issues.first).to be_trusted
-                    end
-                end
-
-                context Array do
-                    it 'tries to match the provided patterns' do
-                        @positive.signature_analysis( @seed,
-                                                  substring: [@seed],
-                                                  format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                        )
-                        @auditor.http.run
-                        expect(issues.size).to eq(1)
-                        expect(issues.first.vector.seed).to eq(@seed)
-                        expect(issues.first).to be_trusted
-                    end
-                end
-
-                context Hash do
-                    it 'assigns the relevant platform to the issue' do
-                        substrings = {
-                            windows: "#{@seed} w",
-                            php:     "#{@seed} p",
-                        }
-
-                        @positive.signature_analysis(
-                            "#{@seed} windows",
-                            substring: substrings.dup,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                        )
-
-                        @auditor.http.run
-
-                        expect(issues.size).to eq(1)
-                        expect(issues[0].platform_name).to eq(:windows)
-                        expect(issues[0].signature).to eq(substrings[:windows].to_s)
-                        expect(issues[0]).to be_trusted
-                    end
-
-                    context 'when the payloads are per platform' do
-                        it 'only tries to matches the regexps for that platform' do
-                            issues = []
-                            Arachni::Data.issues.on_new_pre_deduplication do |issue|
-                                issues << issue
-                            end
-
-                            payloads = {
-                                windows: "#{@seed} windows",
-                                php:     "#{@seed} php",
-                                asp:     "#{@seed} asp"
-                            }
-
-                            substrings = {
-                                windows: "#{@seed} w",
-                                php:     "#{@seed} p",
-
-                                # Can match all but should only match
-                                # against responses of the ASP payload.
-                                asp:     @seed
-                            }
-
-                            @positive.signature_analysis(
-                                payloads.dup,
-                                substring: substrings.dup,
-                                format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                            )
-
-                            @auditor.http.run
-
-                            expect(issues.size).to eq(3)
-                            payloads.keys.each do |platform|
-                                issue = issues.find{ |i| i.platform_name == platform }
-
-                                expect(issue.vector.seed).to eq(payloads[platform])
-                                expect(issue.platform_name).to eq(platform)
-                                expect(issue.signature).to eq(substrings[platform].to_s)
-                                expect(issue).to be_trusted
-                            end
-                        end
-                    end
-                end
-
-                context 'when the page includes the substring even before we audit it' do
-                    it 'does not log any issues' do
-                        @positive.signature_analysis( 'Inject here',
-                            regexp: 'Inject here',
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                        )
-                        @auditor.http.run
-                        expect(issues).to be_empty
-                    end
-                end
-
-                context 'when there is not a payload for the substring platform' do
-                    it 'matches against all payload responses and assigns the pattern platform to the issue' do
-                        payloads = {
-                            windows: "#{@seed} windows",
-                            php:     "#{@seed} php",
-                        }
-
-                        substrings = {
-                            # Can match all but should only match
-                            # against responses of the ASP payload.
-                            asp: @seed
-                        }
-
-                        @positive.signature_analysis(
-                            payloads.dup,
-                            substring: substrings.dup,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                        )
-
-                        @auditor.http.run
-
-                        expect(issues.size).to eq(1)
-                        issue = issues.first
-
-                        expect(issue.platform_name).to eq(:asp)
-                        expect(issue.signature).to eq(substrings[:asp].to_s)
-                        expect(issue).to be_trusted
-                    end
-                end
-            end
-
-            describe :ignore do
+            describe ':ignore' do
                 it 'ignores matches whose response also matches the ignore patterns' do
                     @positive.signature_analysis( @seed,
-                        substring: @seed,
+                        signatures: @seed,
                         format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
                         ignore: @seed
                     )
                     @auditor.http.run
                     expect(issues).to be_empty
-                end
-            end
-
-            describe :longest_word_optimization do
-                it 'optimizes the pattern matching process by first matching against the largest word in the regexp' do
-                    @positive.signature_analysis(
-                        @seed,
-                        regexp: @seed,
-                        longest_word_optimization: true
-                    )
-                    @auditor.http.run
-                    expect(issues).to be_any
                 end
             end
         end

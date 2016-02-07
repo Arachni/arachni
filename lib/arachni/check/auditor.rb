@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -180,6 +180,15 @@ module Auditor
         self.class.max_issues
     end
 
+    FILE_SIGNATURES_PER_PLATFORM =
+        Arachni::Element::Capabilities::Analyzable::Signature::FILE_SIGNATURES_PER_PLATFORM
+
+    FILE_SIGNATURES =
+        Arachni::Element::Capabilities::Analyzable::Signature::FILE_SIGNATURES
+
+    SOURCE_CODE_SIGNATURES_PER_PLATFORM =
+        Arachni::Element::Capabilities::Analyzable::Signature::SOURCE_CODE_SIGNATURES_PER_PLATFORM
+
     # Holds constant bitfields that describe the preferred formatting of
     # injection strings.
     Format = Element::Capabilities::Mutable::Format
@@ -293,6 +302,11 @@ module Auditor
         else
             page = self.page
         end
+
+        # Don't check the page scope, the check may have exceeded the DOM depth
+        # limit but the check is allowed to do that, only check for an out of
+        # scope response.
+        return if !page.response.parsed_url.seed_in_host? && page.response.scope.out?
 
         msg = "In #{vector.type}"
 

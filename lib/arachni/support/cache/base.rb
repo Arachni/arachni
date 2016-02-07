@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -72,9 +72,7 @@ class Base
     #
     # @return   [Object]    `v`
     def store( k, v )
-        prune while capped? && (size > max_size - 1)
-
-        @cache[make_key( k )] = v
+        store_with_internal_key( make_key( k ), v )
     end
 
     # @see {#store}
@@ -90,7 +88,7 @@ class Base
     # @return   [Object, nil]
     #   Value for key `k`, `nil` if there is no key `k`.
     def []( k )
-        @cache[make_key( k )]
+        get_with_internal_key( make_key( k ) )
     end
 
     # @note If key `k` exists, its corresponding value will be returned.
@@ -101,9 +99,13 @@ class Base
     #   Entry key.
     #
     # @return   [Object]
-    #   Value of key `k` or `block.call` if key `k` does not exist.
-    def fetch_or_store( k, &block )
-        include?( k ) ? self[k] : store( k, block.call )
+    #   Value for key `k` or `block.call` if key `k` does not exist.
+    def fetch( k, &block )
+        k = make_key( k )
+
+        @cache.include?( k ) ?
+            get_with_internal_key( k ) :
+            store_with_internal_key( k, block.call )
     end
 
     # @return   [Bool]
@@ -153,6 +155,16 @@ class Base
     end
 
     private
+
+    def store_with_internal_key( k, v )
+        prune while capped? && (size > max_size - 1)
+
+        @cache[k] = v
+    end
+
+    def get_with_internal_key( k )
+        @cache[k]
+    end
 
     def make_key( k )
         k.hash

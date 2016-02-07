@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,12 +7,13 @@
 =end
 
 # @author  Tasos Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.2
+# @version 0.1.3
 class Arachni::Checks::Hsts < Arachni::Check::Base
 
     def run
         return if audited?( page.parsed_url.host ) ||
             page.parsed_url.scheme != 'https' ||
+            page.response.headers.empty? ||
             page.response.headers['Strict-Transport-Security']
 
         audited( page.parsed_url.host )
@@ -28,7 +29,7 @@ class Arachni::Checks::Hsts < Arachni::Check::Base
             name:        'HTTP Strict Transport Security',
             description: %q{Checks HTTPS pages for missing `Strict-Transport-Security` headers.},
             author:      'Tasos Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             elements:    [ Element::Server ],
 
             issue:       {

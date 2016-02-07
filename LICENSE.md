@@ -1,6 +1,6 @@
 # License
 
-Copyright 2010-2015 [Tasos Laskos](mailto:tasos.laskos@arachni-scanner.com).
+Copyright 2010-2016 [Tasos Laskos](mailto:tasos.laskos@arachni-scanner.com).
 
 ```
                     Arachni Public Source License

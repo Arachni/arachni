@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Arachni::Element::UIInput do
     html = '<input type=password name="my_first_input" value="my_first_value"" />'
 
+    it_should_behave_like 'with_auditor'
     it_should_behave_like 'dom_only', html
 
     def new_element( html )

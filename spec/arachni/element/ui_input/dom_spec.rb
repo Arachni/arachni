@@ -7,6 +7,7 @@ describe Arachni::Element::UIInput::DOM do
 
     it_should_behave_like 'with_node'
 
+    it_should_behave_like 'locatable_dom'
     it_should_behave_like 'submittable_dom'
     it_should_behave_like 'inputtable_dom', single_input: true, inputs: inputs
     it_should_behave_like 'mutable_dom',    single_input: true, inputs: inputs
@@ -72,28 +73,6 @@ describe Arachni::Element::UIInput::DOM do
         end
     end
 
-    describe '#locate' do
-        it 'locates the live element' do
-            called = false
-            subject.with_browser do |browser|
-                subject.browser = browser
-                browser.load subject.page
-
-                element = subject.locate
-                expect(element).to be_kind_of Watir::HTMLElement
-
-                expect(Arachni::Browser::ElementLocator.
-                           from_html( element.opening_tag ).attributes
-                ).to eq(subject.locator.attributes)
-
-                called = true
-            end
-
-            subject.auditor.browser_cluster.wait
-            expect(called).to be_truthy
-        end
-    end
-
     describe '#trigger' do
         let(:new_inputs) { { subject.inputs.keys.first  => 'The.Dude' } }
 
@@ -154,4 +133,67 @@ describe Arachni::Element::UIInput::DOM do
         end
     end
 
+    describe '#coverage_id' do
+        let(:action) { @page.url }
+        let(:method) { 'click' }
+        let(:source) { '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1" />' }
+        let(:options) do
+            {
+                method: method,
+                action: action,
+                source: source,
+                inputs: inputs
+            }
+        end
+
+        def get_element( o = {} )
+            Arachni::Element::UIInput.new( options.merge( o ) ).dom
+        end
+
+        it 'takes the #method into consideration' do
+            s1 = get_element
+            s2 = get_element( method: 'mouseover' )
+
+            expect(s1.coverage_id).to_not eq s2.coverage_id
+        end
+
+        it 'takes the #locator into consideration' do
+            s1 = get_element
+            s2 = get_element( source: '<input oninput="handleOnInput();" id="my-input2" name="my-input" value="1" />' )
+
+            expect(s1.coverage_id).to_not eq s2.coverage_id
+        end
+    end
+
+    describe '#id' do
+        let(:action) { @page.url }
+        let(:method) { 'click' }
+        let(:source) { '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1" />' }
+        let(:options) do
+            {
+                method: method,
+                action: action,
+                source: source,
+                inputs: inputs
+            }
+        end
+
+        def get_element( o = {} )
+            Arachni::Element::UIInput.new( options.merge( o ) ).dom
+        end
+
+        it 'takes the #method into consideration' do
+            s1 = get_element
+            s2 = get_element( method: 'mouseover' )
+
+            expect(s1.id).to_not eq s2.id
+        end
+
+        it 'takes the #locator into consideration' do
+            s1 = get_element
+            s2 = get_element( source: '<input oninput="handleOnInput();" id="my-input2" name="my-input" value="1" />' )
+
+            expect(s1.id).to_not eq s2.id
+        end
+    end
 end

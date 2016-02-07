@@ -4,7 +4,7 @@ describe Arachni::Support::LookUp::Moolb do
     it_behaves_like 'lookup'
 
     describe '#initialize' do
-        describe :strategy do
+        describe ':strategy' do
             it 'sets the strategy for the internal cache' do
                 options = {
                     strategy: Arachni::Support::Cache::LeastRecentlyUsed,
@@ -24,7 +24,7 @@ describe Arachni::Support::LookUp::Moolb do
                 end
             end
         end
-        describe :max_size do
+        describe ':max_size' do
             it 'sets the maximum size of the cache' do
                 options = { max_size: 3 }
 

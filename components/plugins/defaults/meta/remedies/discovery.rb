@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -30,7 +30,7 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
         # URL path => size of response bodies.
         response_size_per_path  = {}
 
-        processed_issues = 0
+        issue_count_per_path = {}
 
         Data.issues.each do |issue|
             next if !issue.tags.includes_tags?( :discovery )
@@ -38,11 +38,12 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
             # Skip it if already flagged as untrusted.
             next if issue.untrusted?
 
-            processed_issues += 1
-
             # We'll do this per path since 404 handlers and such operate per
             # directory...usually...probably...hopefully.
             path = File.dirname( uri_parse( issue.vector.action ).path )
+
+            issue_count_per_path[path] ||= 0
+            issue_count_per_path[path]  += 1
 
             # Gather total response sizes per path.
             response_size_per_path[path] ||= 0
@@ -66,11 +67,11 @@ class Arachni::Plugins::Discovery < Arachni::Plugin::Base
                 diffs_per_path[path].rdiff( issue.response.body )
         end
 
-        # Not a lot of sense in comparing a single issue with itself.
-        return if processed_issues < 2
-
         diffs_per_path.each_pair do |path, diff|
-            # calculate the similarity ratio of the responses under the current path
+            # Not a lot of sense in comparing a single issue with itself.
+            next if issue_count_per_path[path] <= 1
+
+            # Calculate the similarity ratio of the responses under the current path.
             similarity = Float( diff.size * issue_digests_per_path[path].size ) /
                 response_size_per_path[path]
 
@@ -91,7 +92,7 @@ while the server responses were exhibiting an anomalous factor of similarity.
 There's a good chance that these issues are false positives.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.2',
+            version:     '0.3.3',
             tags:        %w(anomaly discovery file directories meta)
         }
     end

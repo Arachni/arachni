@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -104,6 +104,10 @@ class Manager < Hash
     def initialize( lib, namespace )
         @lib       = lib
         @namespace = namespace
+
+        @helper_check_cache = {}
+        @name_to_path_cache = {}
+        @path_to_name_cache = {}
     end
 
     # Loads components.
@@ -236,7 +240,7 @@ class Manager < Hash
                 component[0] = ''
 
                 if component[WILDCARD]
-                    unload |= wilcard_to_names( component )
+                    unload |= glob_to_names( component )
                 else
                     unload << component
                 end
@@ -251,7 +255,7 @@ class Manager < Hash
             components.each do |component|
 
                 if component.include?( WILDCARD )
-                    load |= wilcard_to_names( component )
+                    load |= glob_to_names( component )
                 else
 
                     if avail_components.include?( component )
@@ -302,9 +306,13 @@ class Manager < Hash
     def delete( name )
         name = name.to_s
         begin
-            @namespace.send( :remove_const, fetch( name ).to_s.split( ':' ).last.to_sym )
+            @namespace.send(
+                :remove_const,
+                fetch( name ).to_s.split( ':' ).last.to_sym
+            )
         rescue
         end
+
         super( name )
     end
     alias :unload :delete
@@ -312,7 +320,7 @@ class Manager < Hash
     # @return    [Array]
     #   Names of available components.
     def available
-        paths.map{ |path| path_to_name( path ) }
+        paths.map { |path| path_to_name( path ) }
     end
 
     # @return    [Array]
@@ -329,8 +337,8 @@ class Manager < Hash
     # @return   [String]
     #   Path to component file.
     def name_to_path( name )
-        paths.each { |path| return path if name.to_s == path_to_name( path ) }
-        nil
+        @name_to_path_cache[name] ||=
+            paths.find { |path| name.to_s == path_to_name( path ) }
     end
 
     # Converts the path of a component to a component name.
@@ -341,21 +349,39 @@ class Manager < Hash
     # @return   [String]
     #   Component name.
     def path_to_name( path )
-        File.basename( path, '.rb' )
+        @path_to_name_cache[path] ||= File.basename( path, '.rb' )
     end
 
     # @return   [Array]
     #   Paths of all available components (excluding helper files).
     def paths
-        Dir.glob( File.join( "#{@lib}**", "*.rb" ) ).reject{ |path| helper?( path ) }
+        @paths_cache ||=
+            Dir.glob( File.join( "#{@lib}**", "*.rb" ) ).
+                reject{ |path| helper?( path ) }
+    end
+
+    def matches_globs?( path, globs )
+        !![globs].flatten.compact.find { |glob| matches_glob?( path, glob ) }
+    end
+
+    def matches_glob?( path, glob )
+        relative_path = File.dirname( path.gsub( @lib, '' ) )
+        relative_path << '/' if !relative_path.end_with?( '/' )
+
+        name = path_to_name( path )
+
+        Support::Glob.new( glob ) =~ name ||
+            Support::Glob.new( glob ) =~ relative_path
     end
 
     private
 
-    def wilcard_to_names( name )
-        if name[WILDCARD]
+    def glob_to_names( glob )
+        if glob[WILDCARD]
             paths.map do |path|
-                path_to_name( path ) if path.match( name.gsub( '*', '(.*)' ) )
+                next if !matches_glob?( path, glob )
+
+                path_to_name( path )
             end.compact
         end
     end
@@ -393,7 +419,7 @@ class Manager < Hash
     end
 
     def helper?( path )
-        File.exist?( File.dirname( path ) + '.rb' )
+        @helper_check_cache[path] ||= File.exist?( File.dirname( path ) + '.rb' )
     end
 
 end

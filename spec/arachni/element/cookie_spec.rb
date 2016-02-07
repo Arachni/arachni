@@ -84,7 +84,7 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#mutations' do
-        describe :parameter_names do
+        describe ':parameter_names' do
             it 'creates a new cookie' do
                 expect(subject.mutations( 'seed', parameter_names: true ).last.inputs.keys).to eq(
                     %w(seed)
@@ -223,6 +223,8 @@ describe Arachni::Element::Cookie do
             expect(subject.data).to eq({
                 name:        'mycookie',
                 value:       'myvalue',
+                raw_name:    nil,
+                raw_value:   nil,
                 url:         subject.action,
                 expires:     subject.expires_at,
                 version:     0,
@@ -263,42 +265,22 @@ describe Arachni::Element::Cookie do
     describe '.encode' do
 
         it 'encodes the string in a way that makes is suitable to be included in a cookie header' do
-            expect(described_class.encode( 'some stuff \'";%=&' )).to eq('some+stuff+\'%22%3B%25=%26')
+            expect(described_class.encode( 'some stuff \'";%=&' )).to eq('some+stuff+\'%22%3B%25%3D%26')
         end
 
-        context 'when encoding values' do
-            %w(! = ' / : ).each do |character|
-                it "preserves '#{character}'" do
-                    expect(described_class.encode( character )).to eq(character)
-                end
-            end
-
-            ['+', ';', '%', "\0", '&', '"', "\n", "\r"].each do |character|
-                it "encodes '#{character}'" do
-                    expect(described_class.encode( character )).to eq("%#{character.unpack('H*')[0]}".upcase)
-                end
-
-                it "encodes space as '+'" do
-                    expect(described_class.encode( ' ' )).to eq('+')
-                end
+        %w(! ' / : ).each do |character|
+            it "preserves '#{character}'" do
+                expect(described_class.encode( character )).to eq(character)
             end
         end
 
-        context 'when encoding names' do
-            %w(! ' / : ).each do |character|
-                it "preserves '#{character}'" do
-                    expect(described_class.encode( character, true )).to eq(character)
-                end
+        ['+', ';', '%', "\0", '&', '"', "\n", "\r", '='].each do |character|
+            it "encodes '#{character}'" do
+                expect(described_class.encode( character )).to eq("%#{character.unpack('H*')[0]}".upcase)
             end
 
-            ['=', '+', ';', '%', "\0", '&', '"', "\n", "\r"].each do |character|
-                it "encodes '#{character}'" do
-                    expect(described_class.encode( character, true )).to eq("%#{character.unpack('H*')[0]}".upcase)
-                end
-
-                it "encodes space as '+'" do
-                    expect(described_class.encode( ' ', true )).to eq('+')
-                end
+            it "encodes space as '+'" do
+                expect(described_class.encode( ' ' )).to eq('+')
             end
         end
     end
@@ -323,32 +305,64 @@ describe Arachni::Element::Cookie do
             )
 
             expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/; Domain=127.0.0.2; Secure; HttpOnly'
+                'blah%3Dha%25=some+stuff+%3B; Path=/; Secure; HttpOnly'
             )
             expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
 
             c = described_class.new(
                 url:    url,
-                name:  'blah=ha%',
-                value: 'some stuff ;',
-                path:  '/stuff'
+                name:   'blah=ha%',
+                value:  'some stuff ;',
+                path:   '/stuff',
+                domain: '.localhost'
             )
 
             expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
             expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=127.0.0.2'
+                'blah%3Dha%25=some+stuff+%3B; Path=/stuff'
             )
         end
     end
 
     describe '#to_s' do
-        it 'returns a string representation of the cookie' do
-            c = described_class.new(
-                url:    url,
-                name:  'blah=ha%',
-                value: 'some stuff ;',
-            )
-            expect(c.to_s).to eq('blah%3Dha%25=some+stuff+%3B')
+        context 'when there are no raw data' do
+            it 'returns the encoded name/value pair' do
+                c = described_class.new(
+                    url:    url,
+                    name:  'blah=ha%',
+                    value: 'some stuff ;',
+                )
+                expect(c.to_s).to eq('blah%3Dha%25=some+stuff+%3B')
+            end
+        end
+
+        context 'when there are raw data' do
+            context 'and is not a mutation' do
+                it 'returns them' do
+                    c = described_class.new(
+                        url:    url,
+                        name:  'blah=ha%',
+                        value: 'some stuff ;',
+                        raw_name: 'blah',
+                        raw_value: 'blah2'
+                    )
+                    expect(c.to_s).to eq('blah=blah2')
+                end
+            end
+
+            context 'and is a mutation' do
+                it 'returns the encoded name/value pair' do
+                    c = described_class.new(
+                        url:    url,
+                        name:  'blah=ha%',
+                        value: 'some stuff ;',
+                        raw_name: 'blah',
+                        raw_value: 'blah2'
+                    )
+                    expect(c).to receive(:mutation?) { true }
+                    expect(c.to_s).to eq('blah%3Dha%25=some+stuff+%3B')
+                end
+            end
         end
     end
 
@@ -444,8 +458,8 @@ describe Arachni::Element::Cookie do
                     html = <<-EOHTML
                     <html>
                     <head>
-                        <meta http-equiv="Set-Cookie" content="cookie=val; httponly">
-                        <meta http-equiv="Set-Cookie" content="cookie2=val2; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly; secure">
+                        <meta http-equiv="Set-Cookie" content="cookie=val+1; httponly">
+                        <meta http-equiv="Set-Cookie" content="cookie2+1=val2; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly; secure">
                     </head>
                     </html>
                     EOHTML
@@ -455,14 +469,18 @@ describe Arachni::Element::Cookie do
 
                     cookie = cookies.shift
                     expect(cookie.name).to eq('cookie')
-                    expect(cookie.value).to eq('val')
+                    expect(cookie.value).to eq('val 1')
+                    expect(cookie.raw_name).to eq('cookie')
+                    expect(cookie.raw_value).to eq('val+1')
                     expect(cookie.expired?).to eq(false)
                     expect(cookie.session?).to eq(true)
                     expect(cookie.secure?).to eq(false)
 
                     cookie = cookies.shift
-                    expect(cookie.name).to eq('cookie2')
+                    expect(cookie.name).to eq('cookie2 1')
                     expect(cookie.value).to eq('val2')
+                    expect(cookie.raw_name).to eq('cookie2+1')
+                    expect(cookie.raw_value).to eq('val2')
                     expect(cookie.path).to eq('/')
                     expect(cookie.domain).to eq('.foo.com')
                     expect(cookie.secure?).to eq(true)
@@ -489,6 +507,8 @@ describe Arachni::Element::Cookie do
                     expect(cookies.size).to eq(1)
                     expect(cookies.first.name).to eq('coo@ki e2')
                     expect(cookies.first.value).to eq('blah val2@')
+                    expect(cookies.first.raw_name).to eq('coo%40ki+e2')
+                    expect(cookies.first.raw_value).to eq('blah+val2%40')
                 end
             end
             context 'with an empty string' do
@@ -513,24 +533,44 @@ describe Arachni::Element::Cookie do
             expect(c1.name).to eq('SomeCookie')
             expect(c1.value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==')
 
+            expect(c1.raw_name).to eq('SomeCookie')
+            expect(c1.raw_value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D')
+
+            expect(c2.raw_name).to eq('SomeCookie')
+            expect(c2.raw_value).to eq('"MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA=="')
+
             sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/stuff; Domain=.foo.com; HttpOnly"
             cookies = described_class.from_set_cookie( 'http://test.com', sc3 )
             expect(cookies.size).to eq(1)
             cookie = cookies.first
             expect(cookie.name).to eq('coo@ki e2')
             expect(cookie.value).to eq('blah val2@')
+            expect(cookie.raw_name).to eq('coo%40ki+e2')
+            expect(cookie.raw_value).to eq('blah+val2%40')
             expect(cookie.path).to eq('/stuff')
             expect(cookie.source).to eq(sc3)
         end
 
+        it 'can handle v1 values' do
+            cookie = described_class.from_set_cookie(
+                'http://owner-url.com',
+                'cookie="blah stuff"'
+            ).first
+
+            expect(cookie.value).to eq('blah stuff')
+            expect(cookie.raw_value).to eq('"blah stuff"')
+        end
+
         context 'when there is no path' do
-            it 'reverts to \'/\'' do
+            it "'reverts to '/'" do
                 sc3 = "coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.foo.com; HttpOnly"
                 cookies = described_class.from_set_cookie( 'http://test.com/stuff', sc3 )
                 expect(cookies.size).to eq(1)
                 cookie = cookies.first
                 expect(cookie.name).to eq('coo@ki e2')
                 expect(cookie.value).to eq('blah val2@')
+                expect(cookie.raw_name).to eq('coo%40ki+e2')
+                expect(cookie.raw_value).to eq('blah+val2%40')
                 expect(cookie.path).to eq('/')
             end
         end
@@ -583,21 +623,30 @@ describe Arachni::Element::Cookie do
              c = cookies.shift
              expect(c.name).to eq('coo@ki e2')
              expect(c.value).to eq('blah val2@')
+             expect(c.raw_name).to eq('coo%40ki+e2')
+             expect(c.raw_value).to eq('blah+val2%40')
 
              c = cookies.shift
              expect(c.name).to eq('name')
              expect(c.value).to eq('value')
+             expect(c.raw_name).to eq('name')
+             expect(c.raw_value).to eq('value')
 
              c = cookies.shift
              expect(c.name).to eq('name2')
              expect(c.value).to eq('value2')
+             expect(c.raw_name).to eq('name2')
+             expect(c.raw_value).to eq('value2')
         end
 
         it 'can handle v1 values' do
-            expect(described_class.from_string(
+            cookie = described_class.from_string(
                 'http://owner-url.com',
                 'cookie="blah stuff"'
-            ).first.value).to eq('blah stuff')
+            ).first
+
+            expect(cookie.value).to eq('blah stuff')
+            expect(cookie.raw_value).to eq('"blah stuff"')
         end
 
         context 'when its value is' do

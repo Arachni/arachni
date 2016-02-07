@@ -8,8 +8,18 @@ describe name_from_filename do
     end
 
     def issue_count
-        6
+        5
     end
 
-    easy_test
+    easy_test do
+        emails = issues.map(&:proof).sort
+
+        expect(emails).to eq [
+            'tasos@example.com',
+            'john@www.example.com',
+            'john32.21d@example.com',
+            'a.little.more.unusual@example.com',
+            'a.little.more.unusual[at]example[dot]com'
+        ].sort
+    end
 end

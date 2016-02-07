@@ -25,7 +25,7 @@ describe Arachni::Support::LookUp::HashSet do
 
             subject.replace new
             expect(subject).to include 'test2'
-            expect(subject).not_to include 'test'
+            expect(subject.include?( 'test' )).to be_falsey
         end
     end
 

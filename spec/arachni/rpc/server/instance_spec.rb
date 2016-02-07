@@ -107,7 +107,7 @@ describe 'Arachni::RPC::Server::Instance' do
     describe '#suspended?' do
         context 'when the scan has not been suspended' do
             it 'returns false' do
-                expect(@shared_instance.service).not_to be_suspended
+                expect(@shared_instance.service.suspended?).to be_falsey
             end
         end
 
@@ -131,7 +131,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     sleep 1 while @instance.service.status != :suspended
                 end
 
-                expect(@instance.service).to be_suspended
+                expect(@instance.service.suspended?).to be_truthy
             end
         end
     end
@@ -166,7 +166,7 @@ describe 'Arachni::RPC::Server::Instance' do
 
             File.delete snapshot_path
 
-            sleep 1 while @instance.service.busy?
+            sleep 1 while @instance.service.status != :scanning
 
             expect(@instance.service.report[:options]).to eq(options)
         end
@@ -357,11 +357,11 @@ describe 'Arachni::RPC::Server::Instance' do
                 end
             end
 
-            describe :spawns do
+            describe ':spawns' do
                 context 'when it has a Dispatcher' do
                     context 'which is a Grid member' do
                         context 'with OptionGroup::Dispatcher#grid_mode set to' do
-                            context :aggregate do
+                            context ':aggregate' do
                                 it 'requests slaves from grid members with unique Pipe-IDs' do
                                     @instance = instance = instance_grid_spawn
 
@@ -386,7 +386,7 @@ describe 'Arachni::RPC::Server::Instance' do
                                     expect(instance.service.report['issues']).to be_any
                                 end
                             end
-                            context :balance do
+                            context ':balance' do
                                 it 'requests its slaves from it' do
                                     @instance = instance = instance_grid_spawn
 
@@ -431,7 +431,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         end
 
                         context 'with :grid set to' do
-                            context true do
+                            context 'true' do
                                 it 'it a shorthand for grid_mode: :balance' do
                                     @instance = instance = instance_grid_spawn
 
@@ -530,7 +530,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 @progress_instance.service.scan(
                     url: web_server_url_for( :framework_multi ),
                     scope: {
-                        page_limit: 50
+                        page_limit: 10
                     },
                     audit:  { elements: [:links, :forms] },
                     checks: :test,
@@ -556,15 +556,15 @@ describe 'Arachni::RPC::Server::Instance' do
                 expect(p[:seed]).not_to be_empty
             end
 
-            describe :without do
-                describe :statistics do
+            describe ':without' do
+                describe ':statistics' do
                     it 'includes statistics' do
                         expect(@progress_instance.service.progress(
                             without: :statistics
                         )).not_to include :statistics
                     end
                 end
-                describe :issues do
+                describe ':issues' do
                     it 'does not include issues with the given Issue#digest hashes' do
                         p = @progress_instance.service.progress( with: :issues )
                         issue = p[:issues].first
@@ -596,8 +596,8 @@ describe 'Arachni::RPC::Server::Instance' do
                 end
             end
 
-            describe :with do
-                describe :issues do
+            describe ':with' do
+                describe ':issues' do
                     it 'includes issues' do
                         instance = @progress_instance
 
@@ -608,7 +608,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
                 end
 
-                describe :instances do
+                describe ':instances' do
                     it 'includes instances' do
                         instance = @progress_instance
 
@@ -626,11 +626,11 @@ describe 'Arachni::RPC::Server::Instance' do
                         end
 
                         expect(stats1.size).to eq(2)
-                        expect(stats1).to eq(stats2)
+                        expect(stats1.to_s).to eq(stats2.to_s)
                     end
                 end
 
-                describe :sitemap do
+                describe ':sitemap' do
                     context 'when set to true' do
                         it 'returns entire sitemap' do
                             instance = @progress_instance
@@ -700,15 +700,15 @@ describe 'Arachni::RPC::Server::Instance' do
                 expect(p[:issues]).to be_nil
             end
 
-            describe :without do
-                describe :statistics do
+            describe ':without' do
+                describe ':statistics' do
                     it 'includes statistics' do
                         expect(@progress_instance.service.native_progress(
                             without: :statistics
                         )).not_to include :statistics
                     end
                 end
-                describe :issues do
+                describe ':issues' do
                     it 'does not include issues with the given Issue#digest hashes' do
                         p = @progress_instance.service.native_progress( with: :issues )
                         issue = p[:issues].first
@@ -740,8 +740,8 @@ describe 'Arachni::RPC::Server::Instance' do
                 end
             end
 
-            describe :with do
-                describe :issues do
+            describe ':with' do
+                describe ':issues' do
                     it 'includes issues as Arachni::Issue objects' do
                         instance = @progress_instance
 
@@ -751,7 +751,7 @@ describe 'Arachni::RPC::Server::Instance' do
                     end
                 end
 
-                describe :instances do
+                describe ':instances' do
                     it 'includes instances' do
                         instance = @progress_instance
 
@@ -769,7 +769,7 @@ describe 'Arachni::RPC::Server::Instance' do
                         end
 
                         expect(stats1.size).to eq(2)
-                        expect(stats1).to eq(stats2)
+                        expect(stats1.to_s).to eq(stats2.to_s)
                     end
                 end
 
@@ -798,7 +798,7 @@ describe 'Arachni::RPC::Server::Instance' do
                 expect(instance.service.shutdown).to be_truthy
                 sleep 4
 
-                expect { instance.service.alive? }.to raise_error
+                expect { instance.service.alive? }.to raise_error Arachni::RPC::Exceptions::ConnectionError
             end
         end
     end

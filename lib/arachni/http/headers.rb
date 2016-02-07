@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -18,7 +18,7 @@ module HTTP
 # @author Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Headers < Hash
 
-    FORMATTED_NAMES_CACHE = Support::Cache::LeastRecentlyPushed.new( 100 )
+    FORMATTED_NAMES_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
 
     CONTENT_TYPE = 'content-type'
     SET_COOKIE   = 'set-cookie'
@@ -138,8 +138,9 @@ class Headers < Hash
         # audit payload.
         return field if field.include?( '--' )
 
-        FORMATTED_NAMES_CACHE[field] ||=
+        FORMATTED_NAMES_CACHE.fetch field do
             field.split( '-' ).map( &:capitalize ).join( '-' )
+        end
     end
 
 end

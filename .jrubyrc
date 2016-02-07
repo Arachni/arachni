@@ -7,7 +7,7 @@ backtrace.color=true
 backtrace.style=mri
 
 # Keep a lot of methods in the JIT cache.
-jruby.jit.max=16384
+jit.max=16384
 
 # Could be trouble.
 compile.fastest=true

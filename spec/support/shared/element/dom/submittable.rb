@@ -38,19 +38,6 @@ shared_examples_for 'submittable_dom' do
             expect(called).to be_truthy
         end
 
-        it 'sets the #element on the #performer',
-           if: described_class.ancestors.include?( Arachni::Element::Capabilities::WithNode ) do
-
-            called = false
-            subject.submit do |page|
-                expect(page.performer.element).to be_kind_of Watir::HTMLElement
-                called = true
-            end
-
-            subject.auditor.browser_cluster.wait
-            expect(called).to be_truthy
-        end
-
         it 'adds the submission transitions to the Page::DOM#transitions' do
             transitions = []
             subject.with_browser do |browser|
@@ -74,7 +61,7 @@ shared_examples_for 'submittable_dom' do
 
         context 'when the element could not be submitted' do
             it 'does not call the block' do
-                allow(subject).to receive( :trigger ) { false }
+                allow(subject).to receive( :trigger ) { [nil] }
 
                 called = false
                 subject.submit do
@@ -85,8 +72,8 @@ shared_examples_for 'submittable_dom' do
             end
         end
 
-        describe :options do
-            describe :custom_code do
+        describe ':options' do
+            describe ':custom_code' do
                 it 'injects the given code' do
                     called = false
                     title = 'Injected title'
@@ -101,7 +88,7 @@ shared_examples_for 'submittable_dom' do
                 end
             end
 
-            describe :taint do
+            describe ':taint' do
                 it 'sets the Browser::Javascript#taint' do
                     taint = Arachni::Utilities.generate_token
 

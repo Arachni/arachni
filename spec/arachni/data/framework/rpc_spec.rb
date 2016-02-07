@@ -41,7 +41,7 @@ describe Arachni::Data::Framework::RPC do
 
             pages = []
             Dir["#{dump_directory}/distributed_page_queue/*"].each do |page_file|
-                pages << Marshal.load( IO.read( page_file ) )
+                pages << Marshal.load( IO.binread( page_file ) )
             end
             expect(pages).to eq([page, page])
         end

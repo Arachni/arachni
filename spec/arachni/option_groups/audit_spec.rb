@@ -5,7 +5,8 @@ describe Arachni::OptionGroups::Audit do
     subject { described_class.new }
 
     %w(with_both_http_methods exclude_vector_patterns include_vector_patterns
-        links forms cookies cookies_extensively headers link_templates).each do |method|
+        links forms cookies cookies_extensively headers link_templates with_raw_payloads
+    ).each do |method|
         it { is_expected.to respond_to method }
         it { is_expected.to respond_to "#{method}=" }
     end
@@ -15,10 +16,10 @@ describe Arachni::OptionGroups::Audit do
             templates = %w(/param\/(?<param>\w+)/ /param2\/(?<param2>\w+)/)
 
             subject.link_templates = templates.first
-            expect(subject.link_templates).to eq([Regexp.new( templates.first )])
+            expect(subject.link_templates).to eq([Regexp.new( templates.first, Regexp::IGNORECASE )])
 
             subject.link_templates = templates
-            expect(subject.link_templates).to eq(templates.map { |p| Regexp.new( p ) })
+            expect(subject.link_templates).to eq(templates.map { |p| Regexp.new( p, Regexp::IGNORECASE ) })
         end
 
         context 'when given nil' do
@@ -47,6 +48,22 @@ describe Arachni::OptionGroups::Audit do
         end
     end
 
+    describe '#with_raw_payloads?' do
+        context 'when #with_raw_payloads is' do
+            it 'true' do
+                subject.with_raw_payloads = true
+                expect(subject.with_raw_payloads?).to eq(true)
+            end
+        end
+
+        context 'when #with_raw_payloads is' do
+            it 'returns false' do
+                subject.with_raw_payloads = false
+                expect(subject.with_raw_payloads?).to eq(false)
+            end
+        end
+    end
+
     describe '#link_templates?' do
         context 'when templates are available' do
             it 'returns true' do
@@ -66,14 +83,14 @@ describe Arachni::OptionGroups::Audit do
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms].each do |attribute|
         describe "#{attribute}?" do
             context "when ##{attribute} is" do
-                context true do
+                context 'true' do
                     it 'returns true' do
                         subject.send "#{attribute}=", true
                         expect(subject.send("#{attribute}?")).to eq(true)
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'returns false' do
                         subject.send "#{attribute}=", false
                         expect(subject.send("#{attribute}?")).to eq(false)
@@ -93,14 +110,14 @@ describe Arachni::OptionGroups::Audit do
     describe '#exclude_vector_patterns=' do
         it 'converts the argument to a flat array of Regexp' do
             subject.exclude_vector_patterns = [ [:test], 'string' ]
-            expect(subject.exclude_vector_patterns).to eq([/test/, /string/])
+            expect(subject.exclude_vector_patterns).to eq([/test/i, /string/i])
         end
     end
 
     describe '#include_vector_patterns=' do
         it 'converts the argument to a flat array of Regexp' do
             subject.include_vector_patterns = [ [:test], 'string' ]
-            expect(subject.include_vector_patterns).to eq([/test/, /string/])
+            expect(subject.include_vector_patterns).to eq([/test/i, /string/i])
         end
     end
 
@@ -324,7 +341,7 @@ describe Arachni::OptionGroups::Audit do
 
         it "converts 'link_templates' to strings" do
             subject.link_templates << /param\/(?<param>\w+)/
-            expect(data['link_templates']).to eq(subject.link_templates.map(&:to_s))
+            expect(data['link_templates']).to eq(subject.link_templates.map(&:source))
         end
     end
 end

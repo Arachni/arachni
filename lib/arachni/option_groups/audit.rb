@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -41,6 +41,14 @@ class Audit < Arachni::OptionGroup
     #
     # @see Element::Capabilities::Mutable#each_mutation
     attr_accessor :parameter_names
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Allows checks to sent payloads in raw format, without HTTP encoding.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :with_raw_payloads
 
     # @note Default is `false`.
     #
@@ -170,6 +178,10 @@ class Audit < Arachni::OptionGroup
         link_templates:          []
     )
 
+    def with_raw_payloads?
+        !!@with_raw_payloads
+    end
+
     # @param    [Array<Regexp>] templates
     #   Regular expressions with named captures, serving as templates used to
     #   extract input vectors from paths.
@@ -181,7 +193,9 @@ class Audit < Arachni::OptionGroup
         return @link_templates = [] if !templates
 
         @link_templates = [templates].flatten.compact.map do |s|
-            template = s.is_a?( Regexp ) ? s : Regexp.new( s.to_s )
+            template = s.is_a?( Regexp ) ?
+                s :
+                Regexp.new( s.to_s, Regexp::IGNORECASE )
 
             if template.names.empty?
                 fail Error::InvalidLinkTemplate,
@@ -196,7 +210,9 @@ class Audit < Arachni::OptionGroup
     %w(include_vector_patterns exclude_vector_patterns).each do |m|
         define_method "#{m}=" do |patterns|
             patterns = [patterns].flatten.compact.
-                map { |s| s.is_a?( Regexp ) ? s : Regexp.new( s.to_s ) }
+                map { |s| s.is_a?( Regexp ) ?
+                s :
+                Regexp.new( s.to_s, Regexp::IGNORECASE ) }
 
             instance_variable_set "@#{m}".to_sym, patterns
         end
@@ -295,7 +311,7 @@ class Audit < Arachni::OptionGroup
     def to_h
         h = super
         [:link_templates, :include_vector_patterns, :exclude_vector_patterns].each do |k|
-            h[k] = h[k].map(&:to_s)
+            h[k] = h[k].map(&:source)
         end
         h
     end

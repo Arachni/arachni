@@ -1,6 +1,6 @@
 # coding: utf-8
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -35,21 +35,27 @@ Gem::Specification.new do |s|
     s.files            += %w(Gemfile Rakefile arachni.gemspec)
     s.test_files        = Dir.glob( 'spec/**/**' )
 
-    s.executables       = [ 'arachni', 'arachni_rpcd_monitor', 'arachni_rpcd',
-                            'arachni_rpc', 'arachni_console', 'arachni_script',
-                            'arachni_multi', 'arachni_reporter', 'arachni_restore' ]
+    s.executables       = Dir.glob( 'bin/*' ).map { |e| File.basename e }
 
     s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
                             AUTHORS.md CHANGELOG.md CONTRIBUTORS.md)
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
+    s.add_dependency 'awesome_print'
+
     s.add_dependency 'rack'
 
     s.add_dependency 'bundler'
 
+    s.add_dependency 'concurrent-ruby',     '1.0.0'
+    s.add_dependency 'concurrent-ruby-ext', '1.0.0'
+
     # For compressing/decompressing system state archives.
     s.add_dependency 'rubyzip',           '1.1.6'
+
+    # HTTP proxy server
+    s.add_dependency 'http_parser.rb'
 
     # HTML report
     s.add_dependency 'coderay',           '1.1.0'
@@ -57,17 +63,26 @@ Gem::Specification.new do |s|
     s.add_dependency 'childprocess',      '0.5.3'
 
     # RPC serialization.
-    if RUBY_PLATFORM == 'java'
-        s.add_dependency 'msgpack-jruby', '1.4.0'
-    else
-        s.add_dependency 'msgpack',       '0.5.8'
+    s.add_dependency 'msgpack',           '0.7.0'
+
+    if RUBY_PLATFORM != 'java'
+        # Optimized JSON.
+        s.add_dependency 'oj',            '~> 2.14.3'
+        s.add_dependency 'oj_mimic_json'
     end
 
+    # Web server
+    s.add_dependency 'puma',              '2.14.0'
+
+    # REST API
+    s.add_dependency 'sinatra',           '1.4.6'
+    s.add_dependency 'sinatra-contrib',   '1.4.6'
+
     # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc',       '0.2.1.2'
+    s.add_dependency 'arachni-rpc',       '0.2.1.3'
 
     # HTTP client.
-    s.add_dependency 'typhoeus',          '0.6.9'
+    s.add_dependency 'typhoeus',          '1.0.1'
 
     # Fallback URI parsing and encoding utilities.
     s.add_dependency 'addressable',       '2.3.6'
@@ -75,24 +90,17 @@ Gem::Specification.new do |s|
     # E-mail plugin.
     s.add_dependency 'pony',              '1.8'
 
-    # Printing complex objects.
-    s.add_dependency 'awesome_print',     '~> 1.2.0'
-
-    # Optimized JSON.
-    s.add_dependency 'oj',                '~> 2.12.9'
-    s.add_dependency 'oj_mimic_json'
-
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '~> 1.6.5'
+    s.add_dependency 'nokogiri',          '1.6.8rc2'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'
 
     # Browser support for DOM/JS/AJAX analysis stuff.
-    s.add_dependency 'watir-webdriver',   '0.6.9'
+    s.add_dependency 'watir-webdriver',   '0.8.0'
 
     # Markdown to HTML conversion, used by the HTML report for component
     # descriptions.
@@ -116,7 +124,7 @@ License            - Arachni Public Source License v1.0
                         (https://github.com/Arachni/arachni/blob/master/LICENSE.md)
 Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
 Twitter            - http://twitter.com/ArachniScanner
-Copyright          - 2010-2015 Tasos Laskos
+Copyright          - 2010-2016 Tasos Laskos
 
 Please do not hesitate to ask for assistance (via the support portal)
 or report a bug (via GitHub Issues) if you come across any problem.

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,7 +9,6 @@
 # Simple OS command injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.5
 #
 # @see http://cwe.mitre.org/data/definitions/78.html
 # @see https://www.owasp.org/index.php/OS_Command_Injection
@@ -17,14 +16,11 @@ class Arachni::Checks::OsCmdInjection < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            regexp: {
+            signatures: {
                 unix: [
-                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
+                    FILE_SIGNATURES['passwd']
                 ],
-                windows: [
-                    /\[boot loader\].*\[operating systems\]/im,
-                    /\[fonts\].*\[extensions\]/im
-                ]
+                windows: FILE_SIGNATURES_PER_PLATFORM[:windows]
             },
             format: [Format::STRAIGHT]
         }
@@ -73,7 +69,7 @@ Tries to find Operating System command injections.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.5',
+            version:     '0.2.6',
             platforms:   payloads.keys,
 
             issue:       {

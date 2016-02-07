@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -199,7 +199,7 @@ class Dispatcher
             cjob['currtime'] = currtime.to_s
             cjob['age']      = currtime - Time.parse( cjob['birthdate'] )
             cjob['runtime']  = currtime - Time.parse( cjob['starttime'] )
-            cjob['alive']    = !!Process.kill( 0, pid ) rescue false
+            cjob['alive']    = Arachni::Processes::Manager.alive?( pid )
 
             return cjob
         end
@@ -330,8 +330,8 @@ class Dispatcher
         @operation_in_progress = true
 
         owner = 'dispatcher'
-        port  = available_port
-        token = generate_token
+        port  = Utilities.available_port
+        token = Utilities.generate_token
 
         pid = Processes::Manager.spawn( :instance, port: port, token: token )
         Process.detach( pid )

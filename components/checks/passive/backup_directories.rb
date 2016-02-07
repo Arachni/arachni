@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -14,6 +14,8 @@ class Arachni::Checks::BackupDirectories < Arachni::Check::Base
     end
 
     def run
+        return if page.code != 200
+
         if page.parsed_url.path.to_s.empty? || page.parsed_url.path == '/'
             print_info "Backing out, couldn't extract directory name from: #{page.url}"
             return
@@ -38,7 +40,7 @@ class Arachni::Checks::BackupDirectories < Arachni::Check::Base
             description:      %q{Tries to find backed-up directories.},
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:          '0.1.1',
+            version:          '0.1.2',
             exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {

@@ -85,6 +85,26 @@ shared_examples_for 'mutable' do |options = {}|
         end
     end
 
+    describe '#with_raw_payload?' do
+        let(:mutation) do
+            mutable.mutations( seed ).first
+        end
+
+        context 'when #affected_input_name is in #raw_inputs' do
+            it 'returns true' do
+                mutation.raw_inputs << mutation.affected_input_name
+                expect(mutation).to be_with_raw_payload
+            end
+        end
+
+        context 'when #affected_input_name is not in #raw_inputs' do
+            it 'returns true' do
+                mutation.raw_inputs = []
+                expect(mutation).to_not be_with_raw_payload
+            end
+        end
+    end
+
     describe '#affected_input_value' do
         it 'returns the value of the affected_input_name input' do
             elem = mutable.mutations( seed ).first
@@ -155,15 +175,15 @@ shared_examples_for 'mutable' do |options = {}|
         end
 
         context 'with option' do
-            describe :parameter_values do
-                describe true do
+            describe ':parameter_values' do
+                describe 'true' do
                     it 'injects the payload into parameter values' do
                         expect(mutable.mutations( seed, parameter_values: true ).
                             find { |m| m.affected_input_value.include? seed }).
                             to be_truthy
                     end
                 end
-                describe false do
+                describe 'false' do
                     it 'does not inject the payload into parameter values' do
                         expect(mutable.mutations( seed, parameter_values: false ).
                             find { |m| m.affected_input_value.include? seed }).
@@ -193,7 +213,59 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :with_extra_parameter,
+            describe ':with_raw_payloads',
+                     if: !described_class.ancestors.include?(
+                         Arachni::Element::DOM
+                     ) && described_class != Arachni::Element::JSON &&
+                             described_class != Arachni::Element::XML &&
+                             described_class != Arachni::Element::Header &&
+                             described_class != Arachni::Element::Cookie do
+
+                describe 'true' do
+                    it 'adds an unencoded payload' do
+                        expect(
+                            mutable.mutations( seed, with_raw_payloads: true ).
+                                find(&:with_raw_payload?)
+                        ).to be_truthy
+                    end
+                end
+                describe 'false' do
+                    it 'does not add an unencoded payload' do
+                        expect(mutable.mutations( seed, with_raw_payloads: false ).find do |m|
+                            next if !m.audit_options[:submit]
+
+                            m.audit_options[:submit][:raw_parameters] &&
+                                m.audit_options[:submit][:raw_parameters].include?( m.affected_input_name )
+                        end).to be_falsey
+                    end
+                end
+                describe 'nil' do
+                    it 'does not add an unencoded payload' do
+                        expect(mutable.mutations( seed ).find do |m|
+                            next if !m.audit_options[:submit]
+
+                            m.audit_options[:submit][:raw_parameters] &&
+                                m.audit_options[:submit][:raw_parameters].include?( m.affected_input_name )
+                        end).to be_falsey
+                    end
+                end
+
+                describe "#{Arachni::OptionGroups::Audit}#with_raw_payloads" do
+                    it 'serves as the default value of :with_raw_payloads' do
+                        Arachni::Options.audit.with_raw_payloads = true
+                        expect(
+                            mutable.mutations( seed ).find(&:with_raw_payload?)
+                        ).to be_truthy
+
+                        Arachni::Options.audit.with_raw_payloads = false
+                        expect(
+                            mutable.mutations( seed ).find(&:with_raw_payload?)
+                        ).to be_falsey
+                    end
+                end
+            end
+
+            describe 'with_extra_parameter',
                      if: !described_class.ancestors.include?(
                          Arachni::Element::DOM
                      ) && described_class != Arachni::Element::LinkTemplate &&
@@ -201,13 +273,13 @@ shared_examples_for 'mutable' do |options = {}|
 
                 let(:extra_name) { described_class::EXTRA_NAME }
 
-                describe true do
+                describe 'true' do
                     it 'injects the payload into an extra parameter' do
                         expect(mutable.mutations( seed, with_extra_parameter: true ).
                             find { |m| m[extra_name].to_s.include? seed }).to be_truthy
                     end
                 end
-                describe false do
+                describe 'false' do
                     it 'does not inject the payload into an extra parameter' do
                         expect(mutable.mutations( seed, with_extra_parameter: false ).
                             find { |m| m[extra_name].to_s.include? seed }).to be_falsey
@@ -233,19 +305,19 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :with_both_http_methods,
+            describe 'with_both_http_methods',
                      if: !described_class.ancestors.include?(
                          Arachni::Element::DOM
                      ) && described_class != Arachni::Element::JSON &&
                              described_class != Arachni::Element::XML do
 
-                describe false do
+                describe 'false' do
                     it 'does not fuzz methods' do
                         expect(mutable.mutations( seed, with_both_http_methods: false ).
                             map(&:method).uniq).to eq [mutable.method]
                     end
                 end
-                describe true do
+                describe 'true' do
                     it 'fuzzes methods' do
                         expect(mutable.mutations( seed, with_both_http_methods: true ).
                             map(&:method).uniq).to eq [:get, :post]
@@ -271,19 +343,19 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :parameter_names,
+            describe 'parameter_names',
                      if: !described_class.ancestors.include?( Arachni::Element::DOM) &&
                              described_class != Arachni::Element::LinkTemplate &&
                              described_class != Arachni::Element::XML do
 
-                describe true do
+                describe 'true' do
                     it 'uses the seed as a parameter name' do
                         expect(mutable.mutations( seed, parameter_names: true ).
                             find { |m| m.inputs.keys.include? seed }).
                             to be_truthy
                     end
                 end
-                describe false do
+                describe 'false' do
                     it 'does not use the seed as a parameter name' do
                         allow_any_instance_of(mutable.class).
                             to receive(:valid_input_name_data?) { |instance, name| name != seed }
@@ -319,13 +391,13 @@ shared_examples_for 'mutable' do |options = {}|
                 end
             end
 
-            describe :skip do
+            describe ':skip' do
                 it 'skips mutation of parameters with these names' do
                     mutable.mutations( seed, skip: [ 'input_one' ] )
                 end
             end
 
-            describe :format do
+            describe ':format' do
                 describe 'Format::STRAIGHT' do
                     it 'injects the seed as is' do
                         m = mutable.mutations( seed,

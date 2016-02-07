@@ -26,6 +26,58 @@ describe String do
         }
     end
 
+    describe '#has_html_tag?' do
+        context 'when the string contains the given tag' do
+            subject { '<test> stuff' }
+
+            expect_it { to have_html_tag 'test' }
+        end
+
+        context 'when the name is preceded by whitespace' do
+            subject { '< test> stuff' }
+
+            expect_it { to have_html_tag 'test' }
+        end
+
+        context 'when the tag spans multiple lines' do
+            subject { "< \n test \n > stuff" }
+
+            expect_it { to have_html_tag 'test' }
+        end
+
+        context 'when the tag is mixed case' do
+            subject { "< \n tEsT \n > stuff" }
+
+            expect_it { to have_html_tag 'test' }
+        end
+
+        context 'when the tag does not close' do
+            subject { "< \n test \n stuff" }
+
+            expect_it { to_not have_html_tag 'test' }
+        end
+
+        context 'when attributes are given' do
+            context 'and the tag attributes match them' do
+                subject { '<input type="text">' }
+
+                expect_it { to have_html_tag 'input', /t[e]xt/ }
+            end
+
+            context 'and the tag attributes span multiple lines' do
+                subject { "<input \n type='text' \n>" }
+
+                expect_it { to have_html_tag 'input', /t[e]xt/ }
+            end
+
+            context 'and the tag attributes do notmatch them' do
+                subject { '<input type="text">' }
+
+                expect_it { to_not have_html_tag 'input', /blah/ }
+            end
+        end
+    end
+
     describe '#scan_in_groups' do
         it 'returns regexp matches in named groups' do
             expect(path.scan_in_groups( regex_with_names )).to eq({

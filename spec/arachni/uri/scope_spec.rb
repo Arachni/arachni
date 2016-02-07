@@ -199,6 +199,50 @@ describe Arachni::URI::Scope do
                 expect(subject.exclude?).to be_falsey
             end
         end
+
+        context 'when #exclude_file_extension?' do
+            context 'is true' do
+                before do
+                    expect(subject).to receive(:exclude_file_extension?).and_return( true )
+                end
+
+                it 'returns true' do
+                    expect(subject.exclude?).to be_truthy
+                end
+            end
+        end
+
+        context 'when #exclude_file_extension?' do
+            context 'is false' do
+                before do
+                    expect(subject).to receive(:exclude_file_extension?).and_return( false )
+                end
+
+                it 'returns false' do
+                    expect(subject.exclude?).to be_falsey
+                end
+            end
+        end
+    end
+
+    describe '#exclude_file_extension?' do
+        subject { Arachni::URI.parse( 'http://test.com/exclude.gif' ).scope }
+
+        context 'when self matches the provided exclude rules' do
+            it 'returns true' do
+                scope.exclude_file_extensions = [ 'gif' ]
+
+                expect(subject.exclude?).to be_truthy
+            end
+        end
+
+        context 'when self does not match the provided exclude rules' do
+            it 'returns false' do
+                scope.exclude_file_extensions = [ 'gi' ]
+
+                expect(subject.exclude?).to be_falsey
+            end
+        end
     end
 
     describe '#include?' do
@@ -231,7 +275,7 @@ describe Arachni::URI::Scope do
         let(:without_subdomain) { Arachni::URI.parse( url_without_subdomain ).scope }
 
         context "when #{Arachni::OptionGroups::Scope}#include_subdomains is" do
-            context true do
+            context 'true' do
                 before :each do
                     scope.include_subdomains = true
                 end
@@ -281,7 +325,7 @@ describe Arachni::URI::Scope do
                 end
             end
 
-            context false do
+            context 'false' do
                 before :each do
                     scope.include_subdomains = false
                 end
@@ -347,14 +391,14 @@ describe Arachni::URI::Scope do
                 context 'and the checked URL uses' do
                     context 'HTTPS' do
                         context 'and Options#scope_https_only is' do
-                            context true do
+                            context 'true' do
                                 it 'returns true' do
                                     scope.https_only = true
                                     expect(https.follow_protocol?).to be_truthy
                                 end
                             end
 
-                            context false do
+                            context 'false' do
                                 it 'returns true' do
                                     scope.https_only = false
                                     expect(https.follow_protocol?).to be_truthy
@@ -365,14 +409,14 @@ describe Arachni::URI::Scope do
 
                     context 'HTTP' do
                         context 'and Options#scope_https_only is' do
-                            context true do
+                            context 'true' do
                                 it 'returns false' do
                                     scope.https_only = true
                                     expect(http.follow_protocol?).to be_falsey
                                 end
                             end
 
-                            context false do
+                            context 'false' do
                                 it 'returns true' do
                                     scope.https_only = false
                                     expect(http.follow_protocol?).to be_truthy
@@ -391,14 +435,14 @@ describe Arachni::URI::Scope do
                 context 'and the checked URL uses' do
                     context 'HTTPS' do
                         context 'and Options#scope_https_only is' do
-                            context true do
+                            context 'true' do
                                 it 'returns true' do
                                     scope.https_only = true
                                     expect(https.follow_protocol?).to be_truthy
                                 end
                             end
 
-                            context false do
+                            context 'false' do
                                 it 'returns true' do
                                     scope.https_only = false
                                     expect(https.follow_protocol?).to be_truthy
@@ -408,14 +452,14 @@ describe Arachni::URI::Scope do
                     end
                     context 'HTTP' do
                         context 'and Options#scope_https_only is' do
-                            context true do
+                            context 'true' do
                                 it 'returns true' do
                                     scope.https_only = true
                                     expect(http.follow_protocol?).to be_truthy
                                 end
                             end
 
-                            context false do
+                            context 'false' do
                                 it 'returns true' do
                                     scope.https_only = false
                                     expect(http.follow_protocol?).to be_truthy

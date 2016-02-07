@@ -7,7 +7,7 @@ describe Arachni::OptionGroups::Scope do
     %w(directory_depth_limit dom_depth_limit page_limit restrict_paths extend_paths
         redundant_path_patterns auto_redundant_paths include_path_patterns
         exclude_path_patterns exclude_content_patterns include_subdomains https_only
-        url_rewrites exclude_binaries
+        url_rewrites exclude_binaries exclude_file_extensions
     ).each do |method|
         it { is_expected.to respond_to method }
         it { is_expected.to respond_to "#{method}=" }
@@ -20,7 +20,7 @@ describe Arachni::OptionGroups::Scope do
             }
 
             expect(subject.url_rewrites.to_s).to eq({
-                /\/article\/(\d+)/ => 'articles?id=\1'
+                /\/article\/(\d+)/i => 'articles?id=\1'
             }.to_s)
         end
     end
@@ -70,7 +70,7 @@ describe Arachni::OptionGroups::Scope do
             subject.redundant_path_patterns = { /pattern/ => '45', 'regexp' => 39 }
             expect(subject.redundant_path_patterns).to eq({
                 /pattern/ => 45,
-                /regexp/  => 39
+                /regexp/i => 39
             })
         end
     end
@@ -170,10 +170,22 @@ describe Arachni::OptionGroups::Scope do
             expect(subject.include_path_patterns).to eq([/test/])
 
             subject.include_path_patterns = include.first
-            expect(subject.include_path_patterns).to eq([Regexp.new( include.first )])
+            expect(subject.include_path_patterns).to eq([Regexp.new( include.first, Regexp::IGNORECASE )])
 
             subject.include_path_patterns = include
-            expect(subject.include_path_patterns).to eq(include.map { |p| Regexp.new( p ) })
+            expect(subject.include_path_patterns).to eq(include.map { |p| Regexp.new( p, Regexp::IGNORECASE ) })
+        end
+    end
+
+    describe '#exclude_file_extensions=' do
+        it 'converts its param to an array of strings' do
+            exclude_extensions = %w(my_extend_paths my_other_extend_paths)
+
+            subject.exclude_file_extensions = exclude_extensions.first
+            expect(subject.exclude_file_extensions).to eq(Set.new([exclude_extensions.first]))
+
+            subject.exclude_file_extensions = exclude_extensions
+            expect(subject.exclude_file_extensions).to eq(Set.new(exclude_extensions))
         end
     end
 
@@ -185,10 +197,10 @@ describe Arachni::OptionGroups::Scope do
             expect(subject.exclude_path_patterns).to eq([/test/])
 
             subject.exclude_path_patterns= exclude.first
-            expect(subject.exclude_path_patterns).to eq([Regexp.new( exclude.first )])
+            expect(subject.exclude_path_patterns).to eq([Regexp.new( exclude.first, Regexp::IGNORECASE )])
 
             subject.exclude_path_patterns= exclude
-            expect(subject.exclude_path_patterns).to eq(exclude.map { |p| Regexp.new( p ) })
+            expect(subject.exclude_path_patterns).to eq(exclude.map { |p| Regexp.new( p, Regexp::IGNORECASE ) })
         end
     end
 
@@ -200,10 +212,10 @@ describe Arachni::OptionGroups::Scope do
             expect(subject.exclude_content_patterns).to eq([/test/])
 
             subject.exclude_content_patterns = exclude_pages.first
-            expect(subject.exclude_content_patterns).to eq([Regexp.new( exclude_pages.first )])
+            expect(subject.exclude_content_patterns).to eq([Regexp.new( exclude_pages.first, Regexp::IGNORECASE )])
 
             subject.exclude_content_patterns = exclude_pages
-            expect(subject.exclude_content_patterns).to eq(exclude_pages.map { |p| Regexp.new( p ) })
+            expect(subject.exclude_content_patterns).to eq(exclude_pages.map { |p| Regexp.new( p, Regexp::IGNORECASE ) })
         end
     end
 
@@ -211,17 +223,21 @@ describe Arachni::OptionGroups::Scope do
         let(:data) { subject.to_rpc_data }
 
         it "converts 'redundant_path_patterns' to strings" do
-            values = { /redundant_path_patterns/ => 1 }
-            subject.redundant_path_patterns = values
+            subject.redundant_path_patterns = { /redundant_path_patterns/ => 1 }
 
-            expect(data['redundant_path_patterns']).to eq(values.my_stringify)
+            expect(data['redundant_path_patterns']).to eq({ 'redundant_path_patterns' => 1 })
         end
 
         it "converts 'url_rewrites' to strings" do
-            values = { /url_rewrites/ => 'test' }
-            subject.url_rewrites = values
+            subject.url_rewrites = { /url_rewrites/ => 'test' }
 
-            expect(data['url_rewrites']).to eq(values.my_stringify)
+            expect(data['url_rewrites']).to eq({ 'url_rewrites' => 'test' })
+        end
+
+        it "converts 'exclude_file_extensions' to Array of string" do
+            subject.exclude_file_extensions = Set.new( ['stuff'] )
+
+            expect(data['exclude_file_extensions']).to eq(['stuff'])
         end
 
         %w(exclude_path_patterns exclude_content_patterns include_path_patterns).each do |k|
@@ -229,7 +245,7 @@ describe Arachni::OptionGroups::Scope do
                 values = [/#{k}/]
                 subject.send( "#{k}=", values )
 
-                expect(data[k]).to eq([/#{k}/.to_s])
+                expect(data[k]).to eq([/#{k}/.source])
             end
         end
     end

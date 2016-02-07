@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -27,7 +27,9 @@ module Mutable
     #
     # @see Capabilities::Mutable#each_mutation
     def each_mutation( payload, options = {}, &block )
+        options = options.dup
         parameter_names = options.delete( :parameter_names )
+
         super( payload, options, &block )
 
         return if !parameter_names
@@ -42,6 +44,14 @@ module Mutable
         elem.affected_input_name = FUZZ_NAME
         elem.inputs = { payload => FUZZ_NAME_VALUE }
         yield elem
+    end
+
+    private
+
+    def prepare_mutation_options( options )
+        options = super( options )
+        options.delete( :with_raw_payloads )
+        options
     end
 
 end

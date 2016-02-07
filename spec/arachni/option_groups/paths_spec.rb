@@ -14,7 +14,7 @@ describe Arachni::OptionGroups::Paths do
         end
     end
 
-    let(:paths_config_file) { "#{Dir.tmpdir}/paths-#{Process.pid}.yml" }
+    let(:paths_config_file) { "#{Arachni.tmpdir}/paths-#{Process.pid}.yml" }
 
     %w(root arachni components logs checks reporters plugins services
         path_extractors fingerprinters lib support mixins snapshots).each do |method|
@@ -79,7 +79,7 @@ describe Arachni::OptionGroups::Paths do
     describe '.config' do
         let(:config) { described_class.config }
 
-        it 'expands ~ to $HOME' do
+        it 'expands ~ to $HOME', if: !Arachni.windows? do
             yaml = {
                 'stuff' => {
                     'blah' => "~/foo-#{Process.pid}/"

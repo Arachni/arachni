@@ -5,9 +5,35 @@ describe Arachni::OptionGroups::BrowserCluster do
     subject { described_class.new }
 
     %w(pool_size job_timeout worker_time_to_live ignore_images screen_width
-        screen_height local_storage).each do |method|
+        screen_height wait_for_elements local_storage).each do |method|
         it { is_expected.to respond_to method }
         it { is_expected.to respond_to "#{method}=" }
+    end
+
+    context '#wait_for_elements' do
+        it 'converts the keys to Regexp' do
+            subject.wait_for_elements = {
+                'article' => '.articles'
+            }
+
+            expect(subject.wait_for_elements).to eq({
+                /article/i => '.articles'
+            })
+        end
+    end
+
+    describe '#to_rpc_data' do
+        let(:data) { subject.to_rpc_data }
+
+        it "converts 'wait_for_elements' to strings" do
+            subject.wait_for_elements = {
+                /stuff/ => '.my-element'
+            }
+
+            expect(data['wait_for_elements']).to eq({
+                'stuff' => '.my-element'
+            })
+        end
     end
 
     describe '#local_storage' do

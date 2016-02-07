@@ -14,6 +14,7 @@ describe Arachni::Browser::Javascript do
     after( :each ) do
         Arachni::Options.reset
         @browser.shutdown
+        Arachni::Browser.asset_domains.clear
     end
 
     subject { @browser.javascript }
@@ -21,8 +22,22 @@ describe Arachni::Browser::Javascript do
     describe '.events_for' do
         it 'returns events for the given element' do
             described_class::EVENTS_PER_ELEMENT.each do |element, events|
-                expect(described_class.events_for( element )).to eq(described_class::GLOBAL_EVENTS | events)
+                expect(described_class.events_for( element )).to eq(Set.new(described_class::GLOBAL_EVENTS | events))
             end
+        end
+    end
+
+    describe '.select_events' do
+        it 'selects only events valid for the given element' do
+            events = {
+                onclick:   'blah();',
+                mouseover: 'blah2();',
+                onselect:  'my-id'
+            }
+            expect(described_class.select_events( :div, events )).to eq({
+                onclick:   'blah();',
+                mouseover: 'blah2();',
+            })
         end
     end
 
@@ -158,27 +173,24 @@ describe Arachni::Browser::Javascript do
 
                 expect(subject.dom_elements_with_events).to eq([
                     {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:onclick, 'handler_1()']
-                        ],
+                        'events'     => {
+                            onclick: [ 'handler_1()' ]
+                        },
                         'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
                     },
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:onclick, 'handler_2()']
-                        ],
+                        'events'     => {
+                            onclick: ['handler_2()']
+                        },
                         'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
                     },
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:onclick, 'handler_3()']
-                        ],
+                        'events'     => {
+                            onclick: ['handler_3()']
+                        },
                         'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
                     }
                 ])
@@ -191,43 +203,24 @@ describe Arachni::Browser::Javascript do
 
                 expect(subject.dom_elements_with_events).to eq([
                     {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:click, 'function (my_button_click) {}'],
-                            [:click, 'function (my_button_click2) {}'],
-                            [:onmouseover, 'function (my_button_onmouseover) {}']
-                        ],
+                        'events'     => {
+                            click: ['function (my_button_click) {}', 'function (my_button_click2) {}'],
+                            onmouseover: ['function (my_button_onmouseover) {}']
+                        },
                         'attributes' => { 'id' => 'my-button' } },
                     {
                         'tag_name'   => 'button',
-                        'events'     => [
-                            [:click, 'function (my_button2_click) {}']
-                        ],
-                        'attributes' => { 'id' => 'my-button2' } },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [],
-                        'attributes' => { 'id' => 'my-button3' }
-                    }
+                        'events'     => {
+                            click: ['function (my_button2_click) {}']
+                        },
+                        'attributes' => { 'id' => 'my-button2' } }
                 ])
             end
 
             it 'does not include custom events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/listeners/custom'
-
-                expect(subject.dom_elements_with_events).to eq([
-                    {
-                        'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                    },
-                    {
-                        'tag_name'   => 'button',
-                        'events'     => [],
-                        'attributes' => { 'id' => 'my-button' }
-                    }
-                ])
+                expect(subject.dom_elements_with_events).to be_empty
             end
         end
     end
@@ -243,6 +236,52 @@ describe Arachni::Browser::Javascript do
         it 'keeps track of setInterval() timers' do
             @browser.load( @dom_monitor_url + 'interval-tracker' )
             expect(subject.intervals).to eq(subject.dom_monitor.intervals)
+        end
+    end
+
+    describe '#has_sinks?' do
+        context 'when there are execution-flow sinks' do
+            it 'returns true' do
+                expect(subject).to_not have_sinks
+
+                @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_execution_flow_sink_stub(1)}"
+                @browser.watir.form.submit
+
+                expect(subject).to have_sinks
+            end
+        end
+
+        context 'when there are data-flow sinks' do
+            context 'for the given taint' do
+                it 'returns true' do
+                    expect(subject).to_not have_sinks
+
+                    subject.taint = 'taint'
+                    @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( subject.taint, function: { name: 'blah' } )}"
+                    @browser.watir.form.submit
+
+                    expect(subject).to have_sinks
+                end
+            end
+
+            context 'for other taints' do
+                it 'returns false' do
+                    expect(subject).to_not have_sinks
+
+                    subject.taint = 'taint'
+                    @browser.load "#{@taint_tracer_url}/debug?input=#{subject.log_data_flow_sink_stub( subject.taint, function: { name: 'blah' } )}"
+                    @browser.watir.form.submit
+
+                    subject.taint = 'taint2'
+                    expect(subject).to_not have_sinks
+                end
+            end
+        end
+
+        context 'when there are no sinks' do
+            it 'returns false' do
+                expect(subject).to_not have_sinks
+            end
         end
     end
 
@@ -425,17 +464,6 @@ EOHTML
                 it 'appends a semicolon and newline to the body' do
                     expect(injected.body).to include "#{response.body};\n"
                 end
-
-                it 'updates the Content-Length' do
-                    old_content_length = response.headers['content-length'].to_i
-
-                    subject.inject( response )
-
-                    new_content_length = response.headers['content-length'].to_i
-
-                    expect(new_content_length).to be > old_content_length
-                    expect(new_content_length).to eq(response.body.bytesize)
-                end
             end
 
             context 'HTML' do
@@ -450,17 +478,6 @@ EOHTML
                     </body>
 EOHTML
                     )
-                end
-
-                it 'updates the Content-Length' do
-                    old_content_length = response.headers['content-length'].to_i
-
-                    subject.inject( response )
-
-                    new_content_length = response.headers['content-length'].to_i
-
-                    expect(new_content_length).to be > old_content_length
-                    expect(new_content_length).to eq(response.body.bytesize)
                 end
 
                 context 'when the response does not already contain the JS code' do
@@ -506,11 +523,17 @@ EOHTML
                         subject.inject( response )
 
                         presponse = response.deep_clone
-                        pintializer = subject.taint_tracer.stub.function( :initialize, [] )
+                        pintializer = subject.taint_tracer.stub.function( :initialize, {} )
 
                         subject.taint = [ 'taint1', 'taint2' ]
                         subject.inject( response )
-                        intializer = subject.taint_tracer.stub.function( :initialize, subject.taint )
+                        intializer = subject.taint_tracer.stub.function(
+                            :initialize,
+                            {
+                                "taint1" => { "stop_at_first" => false, "trace" => true },
+                                "taint2" => { "stop_at_first" => false, "trace" => true }
+                            }
+                        )
 
                         expect(response.body).to eq(presponse.body.gsub( pintializer, intializer ))
                     end
@@ -553,6 +576,10 @@ EOHTML
 
         context 'when the body does not include HTML identifiers such as' do
             it 'returns false'
+        end
+
+        context 'when it starts with an HTML doctype' do
+            it 'returns true'
         end
 
         context 'when it matches the last loaded URL' do

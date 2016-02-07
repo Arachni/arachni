@@ -63,7 +63,17 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 taint1 = 'taint1'
                 taint2 = 'taint2'
 
-                @javascript.custom_code = @taint_tracer.stub.function( :taints=, [taint1, taint2] )
+                @javascript.custom_code = @taint_tracer.stub.function(
+                    :taints=,
+                    {
+                        taint1 => {
+                            trace: true
+                        },
+                        taint2 => {
+                            trace: true
+                        }
+                    }
+                )
 
                 load "/data_trace/multiple-taints?taint1=#{taint1}&taint2=#{taint2}"
 
@@ -1198,8 +1208,8 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
     describe '#taints' do
         context 'by default' do
-            it 'returns []' do
-                expect(subject.taints).to eq([])
+            it 'returns {' do
+                expect(subject.taints).to eq({})
             end
         end
     end
@@ -1235,6 +1245,8 @@ describe Arachni::Browser::Javascript::TaintTracer do
 
     describe '#data_flow_sinks' do
         it 'returns sink data' do
+            @javascript.taint = 'taint'
+
             load "debug?input=#{subject.stub.function(:log_data_flow_sink, 'taint', { function: 'blah' })}"
             @browser.watir.form.submit
             expect(subject.data_flow_sinks['taint']).to be_any
@@ -1248,6 +1260,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
     end
 
     describe '#flush_data_flow_sinks' do
+        before do
+            @javascript.taint = 'taint'
+        end
+
         it 'returns sink data' do
             load "debug?input=#{subject.stub.function(:log_data_flow_sink, 'taint', { function: { name: 'blah' } })}"
             @browser.watir.form.submit
@@ -1278,7 +1294,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
         end
 
         it 'empties the sink' do
-            load "debug?input=#{subject.stub.function(:log_data_flow_sink, { function: { name: 'blah' } })}"
+            load "debug?input=#{subject.stub.function(:log_data_flow_sink, 'taint', { function: { name: 'blah' } })}"
             @browser.watir.form.submit
             subject.flush_data_flow_sinks
             expect(subject.data_flow_sinks).to be_empty
@@ -1370,6 +1386,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
     end
 
     describe '#log_data_flow_sink' do
+        before do
+            @javascript.taint = 'taint'
+        end
+
         it 'logs a sink' do
             load "debug?input=#{subject.stub.function(:log_data_flow_sink, 'taint', { function: { name: 'blah' } })}"
             @browser.watir.form.submit

@@ -56,7 +56,7 @@ describe Arachni::HTTP::Request do
         let(:data) { subject.to_rpc_data }
 
         %w(url method parameters body headers_string effective_body timeout
-            headers cookies username password).each do |attribute|
+            headers cookies username password raw_parameters).each do |attribute|
             it "includes '#{attribute}'" do
                 expect(data[attribute]).to eq(subject.send( attribute ))
             end
@@ -98,15 +98,15 @@ describe Arachni::HTTP::Request do
             expect(r.parameters).to eq({ 'test' => 'blah' })
         end
 
-        describe :fingerprint do
-            context true do
+        describe ':fingerprint' do
+            context 'true' do
                 it 'enables fingerprinting' do
                     r = described_class.new( options.merge( fingerprint: true ) )
                     expect(r.fingerprint?).to be_truthy
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'disables fingerprinting' do
                     r = described_class.new( options.merge( fingerprint: false ) )
                     expect(r.fingerprint?).not_to be_truthy
@@ -117,6 +117,94 @@ describe Arachni::HTTP::Request do
                 it 'enables fingerprinting' do
                     r = described_class.new( options.merge( fingerprint: nil ) )
                     expect(r.fingerprint?).to be_truthy
+                end
+            end
+        end
+
+        describe '#raw_parameters=' do
+            it 'assigns #raw_parameters' do
+                subject.raw_parameters = ['stuff']
+                expect(subject.raw_parameters).to eq ['stuff']
+            end
+
+            context 'when nil' do
+                it 'clears #raw_parameters' do
+                    subject.raw_parameters = ['stuff']
+                    subject.raw_parameters = nil
+                    expect(subject.raw_parameters).to be_empty
+                end
+            end
+        end
+
+        describe ':raw_parameters' do
+            let(:url){ "#{@url}/raw" }
+            let(:request) { described_class.new( options ) }
+            let(:options) do
+                {
+                    url:            url,
+                    method:         method,
+                    parameters:     parameters,
+                    body:           body,
+                    raw_parameters: raw_parameters
+                }
+            end
+            let(:parameters) { { '1 ' => '2 ', '3 ' => '4 ' } }
+            let(:body) { {} }
+            let(:method) { :get }
+            let(:response) { request.run }
+
+            context 'when a query parameter name is' do
+                context 'included' do
+                    let(:raw_parameters) { ['1 '] }
+
+                    it 'does not encode it' do
+                        expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1 =2 &3%20=4%20 HTTP/1.1'
+                    end
+
+                    context 'and contains null-bytes' do
+                        let(:parameters) { { '1 ' => "\0", '3 ' => '4 ' } }
+
+                        it 'sencodes them' do
+                            expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1 =%00&3%20=4%20 HTTP/1.1'
+                        end
+                    end
+                end
+
+                context 'not included' do
+                    let(:raw_parameters) { ['stuff'] }
+
+                    it 'encodes it' do
+                        expect(response.request.to_s.lines.first.strip).to eq 'GET /raw?1%20=2%20&3%20=4%20 HTTP/1.1'
+                    end
+                end
+            end
+
+            context 'when a body parameter name is' do
+                let(:method) { :post }
+                let(:body) { { '5 ' => '6 ', '7 ' => '8 ' } }
+
+                context 'included' do
+                    let(:raw_parameters) { ['5 '] }
+
+                    it 'does not encode it' do
+                        expect(response.request.to_s.lines.last.strip).to eq '5 =6 &7%20=8%20'
+                    end
+
+                    context 'and contains null-bytes' do
+                        let(:body) { { '5 ' => "\0", '7 ' => '8 ' } }
+
+                        it 'sencodes them' do
+                            expect(response.request.to_s.lines.last.strip).to eq '5 =%00&7%20=8%20'
+                        end
+                    end
+                end
+
+                context 'not included' do
+                    let(:raw_parameters) { ['stuff'] }
+
+                    it 'encodes it' do
+                        expect(response.request.to_s.lines.last.strip).to eq '5%20=6%20&7%20=8%20'
+                    end
                 end
             end
         end
@@ -199,7 +287,8 @@ describe Arachni::HTTP::Request do
             expect(described_class.new( url: @url ).run.request.headers_string).to eq(
                 "GET / HTTP/1.1\r\nHost: #{host}\r\nAccept-Encoding: gzip, " +
                     "deflate\r\nUser-Agent: Arachni/v#{Arachni::VERSION}\r\nAccept: text/html," +
-                    "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n\r\n"
+                    "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n" +
+                    "Accept-Language: en-US,en;q=0.8,he;q=0.6\r\n\r\n"
             )
         end
 
@@ -353,7 +442,7 @@ describe Arachni::HTTP::Request do
     end
 
     describe '#effective_cookies' do
-        it 'returns the given :cookies merged with the cookies in Headers' do
+        it 'returns the given :cookies merged with the cookies in Headers and raw cookies' do
             request = described_class.new(
                 url: url,
                 headers: {
@@ -362,7 +451,16 @@ describe Arachni::HTTP::Request do
                 cookies: {
                     'cookie2' => 'updated_value',
                     'cookie3' => 'value3',
-                }
+                },
+                raw_cookies: [
+                    Arachni::Element::Cookie.new(
+                        url: url,
+                        name: 'name',
+                        value: 'value',
+                        raw_name: 'name1',
+                        raw_value: 'value1'
+                    )
+                ]
             )
 
             expect(request.cookies).to eq({
@@ -372,7 +470,8 @@ describe Arachni::HTTP::Request do
             expect(request.effective_cookies).to eq({
                 'my_cookie' => 'my_value',
                 'cookie2'   => 'updated_value',
-                'cookie3'   => 'value3'
+                'cookie3'   => 'value3',
+                'name1'     => 'value1'
             })
         end
     end
@@ -411,21 +510,21 @@ describe Arachni::HTTP::Request do
             expect(subject).to be_kind_of Typhoeus::Request
         end
 
-        context 'when the request is blocking' do
-            let(:request) { described_class.new( url: url, mode: :sync ) }
-
-            it 'forbids socket reuse' do
-                expect(subject.options[:forbid_reuse]).to be_truthy
-            end
-        end
-
-        context 'when the request is non-blocking' do
-            let(:request) { described_class.new( url: url, mode: :async ) }
-
-            it 'reuses sockets' do
-                expect(subject.options[:forbid_reuse]).to be_falsey
-            end
-        end
+        # context 'when the request is blocking' do
+        #     let(:request) { described_class.new( url: url, mode: :sync ) }
+        #
+        #     it 'forbids socket reuse' do
+        #         expect(subject.options[:forbid_reuse]).to be_truthy
+        #     end
+        # end
+        #
+        # context 'when the request is non-blocking' do
+        #     let(:request) { described_class.new( url: url, mode: :async ) }
+        #
+        #     it 'reuses sockets' do
+        #         expect(subject.options[:forbid_reuse]).to be_falsey
+        #     end
+        # end
 
         context 'when cookies are available' do
             let(:request) do
@@ -440,6 +539,31 @@ describe Arachni::HTTP::Request do
 
             it 'encodes and puts them in the Cookie header' do
                 expect(subject.options[:headers]['Cookie']).to eq('na+me=stu+ff;na+me2=stu+ff2')
+            end
+        end
+
+        context 'when raw cookies are available' do
+            let(:request) do
+                described_class.new(
+                    url:     url,
+                    cookies: {
+                        'na me'  => 'stu ff',
+                        'na me2' => 'stu ff2'
+                    },
+                    raw_cookies: [
+                        Arachni::Element::Cookie.new(
+                            url: url,
+                            name: 'name',
+                            value: 'value',
+                            raw_name: 'name1',
+                            raw_value: '"v alue1"'
+                        )
+                    ]
+                )
+            end
+
+            it 'places raw data in the Cookie header' do
+                expect(subject.options[:headers]['Cookie']).to eq('na+me=stu+ff;na+me2=stu+ff2;name1="v alue1"')
             end
         end
 
@@ -694,7 +818,7 @@ describe Arachni::HTTP::Request do
 
     describe '#body_parameters' do
         context 'when #method is' do
-            context :post do
+            context ':post' do
                 context 'and there are #parameters' do
                     it 'returns #parameters' do
                         parameters = { 'stuff' => 'here' }

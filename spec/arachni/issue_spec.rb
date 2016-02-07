@@ -85,18 +85,18 @@ describe Arachni::Issue do
     [:page=, :referring_page=, :vector=].each do |m|
         describe "##{m}" do
             let(:obj) do
-                obj = Object.new
-                allow(obj).to receive(:deep_clone).and_return(obj)
-                allow(obj).to receive(:prepare_for_report)
-                obj
+                Factory[{ :page= => :page, :referring_page= => :page, :vector= => :vector }[m]]
             end
 
-            it 'calls #deep_clone' do
-                expect(obj).to receive(:deep_clone)
+            it 'clones the object' do
+                expect(obj).to receive(:rpc_clone).and_return(obj.rpc_clone)
                 empty_issue.send( "#{m}", obj )
             end
+
             it 'calls #prepare_for_report' do
+                expect(obj).to receive(:rpc_clone).and_return(obj)
                 expect(obj).to receive(:prepare_for_report)
+
                 empty_issue.send( "#{m}", obj )
             end
         end

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -75,7 +75,7 @@ class Dispatchers
                 pool_size:        options[:pool_size]
             },
             rpc:        {
-                server_port:    options[:port]    || available_port,
+                server_port:    options[:port]    || Utilities.available_port,
                 server_address: options[:address] || '127.0.0.1'
             }
         }

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,7 +12,7 @@ module Jobs
 class TaintTrace
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class EventTrigger < ResourceExploration::EventTrigger
+class EventTrigger < DOMExploration::EventTrigger
 
     require_relative 'event_trigger/result'
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -33,19 +33,19 @@ class Base
 
     class <<self
         def fullname
-            info[:name]
+            @fullname ||= info[:name]
         end
 
         def description
-            info[:description]
+            @description ||= info[:description]
         end
 
         def author
-            info[:author]
+            @author ||= info[:author]
         end
 
         def version
-            info[:version]
+            @version ||= info[:version]
         end
 
         def shortname=( shortname )

@@ -38,21 +38,21 @@ describe Arachni::Component::Manager do
     describe '#load' do
         context 'when passed a' do
 
-            context String do
+            context 'String' do
                 it 'loads the component by name' do
                     @components.load( 'wait' )
                     expect(@components.loaded).to eq(%w(wait))
                 end
             end
 
-            context Symbol do
+            context 'Symbol' do
                 it 'loads the component by name' do
                     @components.load( :wait )
                     expect(@components.loaded).to eq(%w(wait))
                 end
             end
 
-            context Array do
+            context 'Array' do
                 it 'loads the components by name' do
                     @components.load( %w(bad distributable) )
                     expect(@components.loaded.sort).to eq(%w(bad distributable).sort)
@@ -60,21 +60,21 @@ describe Arachni::Component::Manager do
             end
 
             context 'vararg' do
-                context String do
+                context 'String' do
                     it 'loads components by name' do
                         @components.load( 'wait', 'bad' )
                         expect(@components.loaded.sort).to eq(%w(bad wait).sort)
                     end
                 end
 
-                context Symbol do
+                context 'Symbol' do
                     it 'loads components by name' do
                         @components.load :wait, :distributable
                         expect(@components.loaded.sort).to eq(%w(wait distributable).sort)
                     end
                 end
 
-                context Array do
+                context 'Array' do
                     it 'loads components by name' do
                         @components.load( :wait, %w(bad distributable) )
                         expect(@components.loaded.sort).to eq(%w(bad distributable wait).sort)
@@ -92,8 +92,8 @@ describe Arachni::Component::Manager do
 
                 context 'with a category name' do
                     it 'loads all of its components' do
-                        @components.load( 'plugins/*' )
-                        expect(@components.loaded.sort).to eq(@components.available.sort)
+                        @components.load( 'defaults/*' )
+                        expect(@components.loaded.sort).to eq(%w(default))
                     end
                 end
 
@@ -153,7 +153,7 @@ describe Arachni::Component::Manager do
                 end
             end
 
-            context String do
+            context 'String' do
                 it 'loads components whose tags include the given tag (as either a String or a Symbol)' do
                     expect(@components.empty?).to be_truthy
 
@@ -176,7 +176,7 @@ describe Arachni::Component::Manager do
                 end
             end
 
-            context Symbol do
+            context 'Symbol' do
                 it 'loads components whose tags include the given tag (as either a String or a Symbol)' do
                     expect(@components.empty?).to be_truthy
 
@@ -198,7 +198,7 @@ describe Arachni::Component::Manager do
                 end
             end
 
-            context Array do
+            context 'Array' do
                 it 'loads components which include any of the given tags (as either Strings or a Symbols)' do
                     expect(@components.empty?).to be_truthy
 
@@ -223,19 +223,19 @@ describe Arachni::Component::Manager do
     describe '#parse' do
         context 'when passed a' do
 
-            context String do
+            context 'String' do
                 it 'returns an array including the component\'s name' do
                     expect(@components.parse( 'wait' )).to eq(%w(wait))
                 end
             end
 
-            context Symbol do
+            context 'Symbol' do
                 it 'returns an array including the component\'s name' do
                     expect(@components.parse( :wait )).to eq(%w(wait))
                 end
             end
 
-            context Array do
+            context 'Array' do
                 it 'loads the component by name' do
                     expect(@components.parse( %w(bad distributable) ).sort).to eq(
                         %w(bad distributable).sort
@@ -252,10 +252,9 @@ describe Arachni::Component::Manager do
 
                 context 'with a category name' do
                     it 'returns all of its components' do
-                        expect(@components.parse( 'plugins/*' ).sort).to eq(@components.available.sort)
+                        expect(@components.parse( 'defaults/*' ).sort).to eq(%w(default))
                     end
                 end
-
             end
 
             context 'exclusion filter (-)' do
@@ -346,14 +345,14 @@ describe Arachni::Component::Manager do
 
     describe '#[]' do
         context 'when passed a' do
-            context String do
+            context 'String' do
                 it 'should load and return the component' do
                     expect(@components.loaded).to be_empty
                     expect(@components['wait'].name).to eq('Arachni::Plugins::Wait')
                     expect(@components.loaded).to eq(%w(wait))
                 end
             end
-            context Symbol do
+            context 'Symbol' do
                 it 'should load and return the component' do
                     expect(@components.loaded).to be_empty
                     expect(@components[:wait].name).to eq('Arachni::Plugins::Wait')
@@ -365,7 +364,7 @@ describe Arachni::Component::Manager do
 
     describe '#include?' do
         context 'when passed a' do
-            context String do
+            context 'String' do
                 context 'when the component has been loaded' do
                     it 'returns true' do
                         expect(@components.loaded).to be_empty
@@ -383,7 +382,7 @@ describe Arachni::Component::Manager do
                     end
                 end
             end
-            context Symbol do
+            context 'Symbol' do
                 context 'when the component has been loaded' do
                     it 'returns true' do
                         expect(@components.loaded).to be_empty

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -110,12 +110,18 @@ module Data
     # @return   [Page, nil]
     #   A page if the queue wasn't empty, `nil` otherwise.
     def pop_page_from_url_queue( &block )
-        return if url_queue.empty?
+        url = nil
+
+        # Scope may have changed since the URL was pushed.
+        loop do
+            return if url_queue.empty?
+
+            url = url_queue.pop
+            break if !skip_path?( url )
+        end
 
         grabbed_page = nil
-        Page.from_url(
-            url_queue.pop,
-           http: {
+        Page.from_url( url, http: {
                update_cookies: true,
                performer:      self
            }
@@ -158,8 +164,17 @@ module Data
     # @return   [Page, nil]
     #   A page if the queue wasn't empty, `nil` otherwise.
     def pop_page_from_queue
-        return if page_queue.empty?
-        page_queue.pop
+        page = nil
+
+        # Scope may have changed since the page was pushed.
+        loop do
+            return if page_queue.empty?
+
+            page = page_queue.pop
+            break if !page.scope.out?
+        end
+
+        page
     end
 
     def replenish_page_queue_from_url_queue
@@ -174,7 +189,7 @@ module Data
 
             # We push directly to the queue instead of using #push_to_page_queue
             # because it's too early to deduplicate.
-            pop_page_from_url_queue { |p| page_queue << p }
+            pop_page_from_url_queue { |p| page_queue << p if p }
         end
 
         !url_queue.empty?

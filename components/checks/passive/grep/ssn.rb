@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -26,7 +26,7 @@ class Arachni::Checks::Ssn < Arachni::Check::Base
                 'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>', # original
                 'haliphax' # tweaked regexp
             ],
-            version:     '0.1.3',
+            version:     '0.1.4',
 
             issue:       {
                 name:            %q{Disclosed US Social Security Number (SSN)},
@@ -54,7 +54,10 @@ If the response does contain a valid SSN, then all efforts should be taken to
 remove or further protect this information. This can be achieved by removing the
 SSN altogether or by masking the number so that only the last few digits are
 present within the response (eg. _**********123_).
-}
+},
+                # Well, we can't know whether the logged number actually is an
+                # SSN now can we?
+                trusted: false
             }
         }
     end

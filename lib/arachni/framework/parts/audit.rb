@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -82,7 +82,13 @@ module Audit
         add_to_sitemap( page )
 
         print_line
-        print_status "[HTTP: #{page.code}] #{page.dom.url}"
+
+        if page.response.ok?
+            print_status "[HTTP: #{page.code}] #{page.dom.url}"
+        else
+            print_error "[HTTP: #{page.code}] #{page.dom.url}"
+            print_error "[#{page.response.return_code}] #{page.response.return_message}"
+        end
 
         if page.platforms.any?
             print_info "Identified as: #{page.platforms.to_a.join( ', ' )}"

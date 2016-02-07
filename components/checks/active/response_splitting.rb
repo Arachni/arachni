@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -28,7 +28,13 @@ class Arachni::Checks::ResponseSplitting < Arachni::Check::Base
 
         # try to inject the headers into all vectors
         # and pass a block that will check for a positive result
-        audit( header, submit: { follow_location: false } ) do |response, element|
+        audit(
+            header,
+            submit: {
+                follow_location:   false,
+                response_max_size: 0
+            }
+        ) do |response, element|
             next if response.headers[header_name].to_s.downcase != 'no'
 
             log(

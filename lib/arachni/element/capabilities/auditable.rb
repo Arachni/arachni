@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -114,8 +114,7 @@ module Auditable
         return false if self.inputs.empty?
 
         if scope.out?
-            print_debug_level_2 "#{__method__}: Element is out of scope, " <<
-                                    "skipping: #{audit_id}"
+            print_debug_level_2 "Element is out of scope, skipping: #{audit_id}"
             return false
         end
 
@@ -235,8 +234,13 @@ module Auditable
     #
     # @param  [Block]   block
     #   Block to be used for analysis of the response.
-    def submit_and_process( options = {}, &block )
-        submit( options ) do |response|
+    def submit_and_process( &block )
+        submit( @audit_options[:submit] || {} ) do |response|
+            # In case of redirection or runtime scope changes.
+            if !response.parsed_url.seed_in_host? && response.scope.out?
+                next
+            end
+
             element = response.request.performer
             if !element.audit_options[:silent]
                 print_status "Analyzing response ##{response.request.id} for " <<
@@ -316,8 +320,6 @@ module Auditable
         skip_like_option = [@audit_options.delete(:skip_like)].flatten.compact
         each_mutation    = @audit_options.delete(:each_mutation)
 
-        submit_options = @audit_options[:submit] || {}
-
         # Iterate over all fuzz variations and audit each one.
         each_mutation( payload, @audit_options ) do |elem|
             if !audit_input?( elem.affected_input_name )
@@ -345,8 +347,14 @@ module Auditable
             if skip_like_option.any?
                 should_skip = false
                 skip_like_option.each do |like|
-                    break should_skip = true if like.call( elem )
+                    if like.call( elem )
+                        mid = elem.audit_id( payload  )
+                        print_debug_level_2 ":skip_like callbacks returned true for mutation, skipping: #{mid}"
+                        print_debug_level_2 "--> #{like}"
+                        break should_skip = true
+                    end
                 end
+
                 next if should_skip
             end
 
@@ -361,21 +369,18 @@ module Auditable
                 [elements].flatten.compact.each do |e|
                     next if !e.is_a?( self.class )
 
-                    e.submit_and_process( submit_options, &block )
+                    e.submit_and_process( &block )
                 end
             end
 
-            elem.submit_and_process( submit_options, &block )
+            elem.submit_and_process( &block )
         end
 
         true
     end
 
-    def audit_input?( path )
-        [path].flatten.each do |name|
-            return false if !Options.audit.vector?( name )
-        end
-        true
+    def audit_input?( name )
+        Options.audit.vector?( name )
     end
 
     # Checks whether or not an audit has been already performed.

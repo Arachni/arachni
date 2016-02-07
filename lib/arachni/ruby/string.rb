@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,6 +13,9 @@ require 'zlib'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class String
 
+    HAS_HTML_TAG_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
+    BINARY_CACHE       = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
+
     # @param    [Regexp]    regexp
     #   Regular expression with named captures.
     #
@@ -23,6 +26,20 @@ class String
         return {} if !(matches = scan( regexp ).first)
 
         Hash[regexp.names.zip( matches )].reject { |_, v| v.empty? }
+    end
+
+    # @param    [String] tag
+    #   Tag name to look for, in lower case.
+    # @param    [String,Regexp] attributes
+    #   Content to look for in attributes, in lower case.
+    def has_html_tag?( tag, attributes = nil )
+        HAS_HTML_TAG_CACHE.fetch [self, tag, attributes] do
+            if attributes
+                attributes = ".*#{attributes}"
+            end
+
+            self =~ /<\s*#{tag}#{attributes}.*?>/mi
+        end
     end
 
     # @param    [Regexp]    regexp
@@ -156,9 +173,11 @@ class String
 
     def binary?
         # Stolen from YAML.
-        encoding == Encoding::ASCII_8BIT ||
-            index("\x00") ||
-            count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3
+        BINARY_CACHE.fetch self do
+            (encoding == Encoding::ASCII_8BIT ||
+                index("\x00") ||
+                count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3)
+        end
     end
 
 end

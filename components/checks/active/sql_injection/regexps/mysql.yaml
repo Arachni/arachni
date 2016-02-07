@@ -1,0 +1,4 @@
+Table ': Table '[^']+' doesn't exist
+SQL syntax: SQL syntax.*MySQL
+mysql_: Warning.*mysql_.*
+

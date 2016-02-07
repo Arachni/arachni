@@ -4,6 +4,7 @@ describe Arachni::Plugin::Base do
     before( :each ) do
         reset_options
 
+        Arachni::Options.url = web_server_url_for(:framework)
         @framework = Arachni::Framework.new
         @framework.state.running = true
 

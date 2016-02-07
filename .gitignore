@@ -13,3 +13,4 @@ TODO
 .rvmrc
 coverage/
 .env
+.bundle/

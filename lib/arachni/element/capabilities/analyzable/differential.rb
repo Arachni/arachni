@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -36,8 +36,9 @@ module Differential
         # content -- like banners etc.
         precision:      2,
 
-        # Override global fuzzing settings and only use the default method of the
-        # element under audit.
+        # Override global fuzzing settings and only use the default method of
+        # the element under audit.
+        with_raw_payloads:      false,
         with_both_http_methods: false,
         parameter_names:        false,
         with_extra_parameter:   false,
@@ -58,6 +59,8 @@ module Differential
         # Default value for a forceful 'false' response.
         false:          '-1'
     }
+
+    DIFFERENTIAL_ALLOWED_STATUS = Set.new([200, 404])
 
     attr_accessor :differential_analysis_options
 
@@ -422,10 +425,17 @@ module Differential
     def response_check( response, signatures, elem, pair = nil )
         corrupted = false
 
-        if response.code != 200
-            print_status "Server returned non 200 status (#{response.code})," <<
+        if !DIFFERENTIAL_ALLOWED_STATUS.include?( response.code )
+            print_status "Server returned status (#{response.code})," <<
                 " aborting analysis for #{elem.type} variable " <<
                 "'#{elem.affected_input_name}' with action '#{elem.action}'."
+            corrupted = true
+        end
+
+        if !corrupted && response.partial?
+            print_status "Server returned partial response, aborting analysis " <<
+                "for #{elem.type} variable '#{elem.affected_input_name}' with " <<
+                "action '#{elem.action}'."
             corrupted = true
         end
 

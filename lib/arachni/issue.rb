@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -256,7 +256,7 @@ class Issue
             if object
                 # Once the object is logged we need a deep copy of it to ensure
                 # integrity.
-                object = object.deep_clone
+                object = object.rpc_clone
                 object.prepare_for_report
             end
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,7 +9,6 @@
 # XPath Injection check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/91.html
 # @see https://www.owasp.org/index.php/XPATH_Injection
@@ -26,7 +25,7 @@ class Arachni::Checks::XpathInjection < Arachni::Check::Base
     end
 
     def self.options
-        @options ||= { format: [Format::APPEND], substring: error_strings }
+        @options ||= { format: [Format::APPEND], signatures: error_strings }
     end
 
     def run
@@ -39,7 +38,7 @@ class Arachni::Checks::XpathInjection < Arachni::Check::Base
             description: %q{XPath injection check},
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
 
             issue:       {
                 name:            %q{XPath Injection},

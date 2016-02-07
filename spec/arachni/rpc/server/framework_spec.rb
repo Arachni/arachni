@@ -236,7 +236,7 @@ describe 'Arachni::RPC::Server::Framework' do
         end
 
         context 'when called with option' do
-            describe :errors do
+            describe ':errors' do
                 context 'when set to true' do
                     it 'includes all error messages' do
                         expect(@instance_clean.framework.
@@ -265,7 +265,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 end
             end
 
-            describe :sitemap do
+            describe ':sitemap' do
                 context 'when set to true' do
                     it 'returns entire sitemap' do
                         expect(@instance_clean.framework.
@@ -294,7 +294,7 @@ describe 'Arachni::RPC::Server::Framework' do
                 end
             end
 
-            describe :issue do
+            describe ':issue' do
                 context 'when set to false' do
                     it 'excludes issues' do
                         expect(@instance_clean.framework.progress(
@@ -303,7 +303,7 @@ describe 'Arachni::RPC::Server::Framework' do
                     end
                 end
             end
-            describe :as_hash do
+            describe ':as_hash' do
                 context 'when set to true' do
                     it 'includes issues as a hash' do
                         expect(@instance_clean.framework.progress(

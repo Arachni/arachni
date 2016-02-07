@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,25 +7,14 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
 class Arachni::Checks::Xxe < Arachni::Check::Base
 
     ENTITY = 'xxe_entity'
 
     def self.options
         @options ||= {
-            format: [Format::STRAIGHT],
-            regexp: {
-                unix: [
-                    /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
-                ],
-                windows: [
-                    /\[boot loader\].*\[operating systems\]/im,
-                    /\[fonts\].*\[extensions\]/im
-                ]
-            },
-
+            format:        [Format::STRAIGHT],
+            signatures:    FILE_SIGNATURES_PER_PLATFORM.select { |k, _| payloads.include? k },
             each_mutation: proc do |mutation|
                 mutation.platforms.pick( payloads ).map do |platform, payloads|
                     payloads.map do |payload|
@@ -74,8 +63,8 @@ processed based on the resulting HTTP response.
 },
             elements:    [Element::XML],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
-            platforms:   options[:regexp].keys,
+            version:     '0.1.2',
+            platforms:   options[:signatures].keys,
 
             issue:       {
                 name:            %q{XML External Entity},

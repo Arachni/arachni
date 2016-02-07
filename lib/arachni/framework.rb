@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,20 +12,17 @@ require 'rubygems'
 require 'monitor'
 require 'bundler/setup'
 
-require 'ap'
-require 'pp'
-
 require_relative 'options'
 
 module Arachni
 
 lib = Options.paths.lib
 require lib + 'version'
+require lib + 'support'
 require lib + 'ruby'
 require lib + 'error'
 require lib + 'scope'
 require lib + 'utilities'
-require lib + 'support'
 require lib + 'uri'
 require lib + 'component'
 require lib + 'platform'

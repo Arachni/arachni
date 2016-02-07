@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -669,7 +669,6 @@ class Instance
     # @private
     def consumed_pids( &block )
         pids  = ([Process.pid] | @consumed_pids)
-        pids |= browser_cluster.consumed_pids if browser_cluster
 
         if @consumed_pids.empty?
             return block.call pids
@@ -796,7 +795,6 @@ class Instance
             instance_info[:url] = "#{Options.rpc.server_address}:#{options[:port]}"
 
             pid = Processes::Manager.spawn( :instance, options )
-            Process.detach pid
             @consumed_pids << pid
 
             Client::Instance.when_ready( instance_info[:url], instance_info[:token] ) do

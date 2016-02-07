@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -35,7 +35,7 @@ class HTTP < Arachni::OptionGroup
 
     # @return   [Array<String>]
     #   Supported proxy types.
-    PROXY_TYPES = %w(http http_1_0 socks4 socks5 socks4a)
+    PROXY_TYPES = %w(http http_1_0 socks4 socks4a socks5 socks5h)
 
     # @return   [Array<String>]
     #   Supported SSL certificate types.

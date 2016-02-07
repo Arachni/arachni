@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -79,7 +79,7 @@ module Report
                      "Reporter '#{name}' cannot format the audit results as a String."
             end
 
-            outfile = "#{Dir.tmpdir}/#{generate_token}"
+            outfile = "#{Arachni.tmpdir}/#{generate_token}"
             @reporters.run( name, external_report, outfile: outfile )
 
             IO.binread( outfile )
@@ -99,7 +99,7 @@ module Report
             @reporters.clear
             @reporters.available.map do |report|
                 path = @reporters.name_to_path( report )
-                next if !list_reporter?( path, patterns )
+                next if patterns && !@reporters.matches_globs?( path, patterns )
 
                 @reporters[report].info.merge(
                     options:   @reporters[report].info[:options] || [],
@@ -113,12 +113,6 @@ module Report
             @reporters.clear
             @reporters.load loaded
         end
-    end
-
-    private
-
-    def list_reporter?( path, patterns = nil )
-        regexp_array_match( patterns, path )
     end
 
 end

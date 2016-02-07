@@ -61,17 +61,17 @@ describe Arachni::Element::Form do
     end
 
     describe '#initialize' do
-        describe :method do
+        describe ':method' do
             it 'defaults to :get' do
                 expect(described_class.new( url: url ).method).to eq(:get)
             end
         end
-        describe :name do
+        describe ':name' do
             it 'sets #name' do
                 expect(described_class.new( url: url, name: 'john' ).name).to eq('john')
             end
         end
-        describe :action do
+        describe ':action' do
             it 'sets #action' do
                 action = "#{url}stuff"
                 expect(described_class.new( url: url, action: action ).action).to eq(action)
@@ -121,7 +121,7 @@ describe Arachni::Element::Form do
     end
 
     describe '#audit' do
-        describe :each_mutation do
+        describe ':each_mutation' do
             it 'ignores #mutation_with_original_values' do
                 had_mutation_with_original_values = false
                 each_mutation = proc do |mutation|
@@ -235,7 +235,7 @@ describe Arachni::Element::Form do
         end
 
         context 'when #method is' do
-            describe :get do
+            describe ':get' do
                 let(:method) { :get }
 
                 it 'removes the URL query' do
@@ -260,7 +260,7 @@ describe Arachni::Element::Form do
                 end
             end
 
-            describe :post do
+            describe ':post' do
                 let(:method) { :post }
 
                 it 'preserves the URL query' do
@@ -532,7 +532,7 @@ describe Arachni::Element::Form do
             end
         end
 
-        describe :skip_original do
+        describe ':skip_original' do
             it 'does not add mutations with original nor default values' do
                 e = described_class.new( options )
                 mutations = e.mutations( @seed, skip_original: true )

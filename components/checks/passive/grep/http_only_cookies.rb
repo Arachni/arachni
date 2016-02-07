@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,7 +12,9 @@
 class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
 
     def run
-        page.cookies.each do |cookie|
+        # We grab the parser cookies because the Page#cookies will also include
+        # stuff from the cookiejar.
+        page.parser.cookies.each do |cookie|
             next if cookie.http_only? || audited?( cookie.name )
 
             log( vector: cookie )
@@ -26,7 +28,7 @@ class Arachni::Checks::HttpOnlyCookies < Arachni::Check::Base
             description: %q{Logs cookies that are accessible via JavaScript.},
             elements:    [ Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.4',
+            version:     '0.1.5',
 
             issue:       {
                 name:            %q{HttpOnly cookie},

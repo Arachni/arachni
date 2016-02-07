@@ -1,22 +1,19 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
     web site for more information on licensing and terms of use.
 =end
 
-#
 # Credit Card Number recon check.
 #
 # Scans page for credit card numbers.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.3
 #
 # @see http://en.wikipedia.org/wiki/Bank_card_number
 # @see http://en.wikipedia.org/wiki/Luhn_algorithm
-#
 class Arachni::Checks::CreditCard < Arachni::Check::Base
 
     def self.cc_regexp
@@ -61,8 +58,6 @@ class Arachni::Checks::CreditCard < Arachni::Check::Base
         sum % 10 == 0
     end
 
-    # TODO: Someone needs to re-check these associations, some don't
-    #   work and I've no idea how to resolve this.
     def valid_association?( number )
         number = number.to_s.gsub( /\D/, '' )
 
@@ -81,7 +76,7 @@ class Arachni::Checks::CreditCard < Arachni::Check::Base
             description: %q{Scans pages for credit card numbers.},
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.3',
+            version:     '0.2.4',
 
             issue:       {
                 name:            %q{Credit card number disclosure},
@@ -117,6 +112,9 @@ Additionally, credit card numbers should not be stored by the application, unles
 the organisation also complies with other security controls as outlined in the
 Payment Card Industry Data Security Standard (PCI DSS).
 },
+                # Well, we can't know whether the logged number actually is an
+                # CC now can we?
+                trusted: false
             }
         }
     end

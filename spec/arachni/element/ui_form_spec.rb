@@ -3,6 +3,7 @@ require 'spec_helper'
 describe Arachni::Element::UIForm do
     html = '<button id="insert">Insert into DOM</button'
 
+    it_should_behave_like 'with_auditor'
     it_should_behave_like 'dom_only', html
 
     def new_element( source )

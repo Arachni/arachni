@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,6 +17,20 @@ class Object
     #   Duplicate of self.
     def deep_clone
         Marshal.load( Marshal.dump( self ) )
+    end
+
+    def rpc_clone
+        if self.class.respond_to?( :from_rpc_data )
+            self.class.from_rpc_data(
+                Arachni::RPC::Serializer.serializer.load(
+                    Arachni::RPC::Serializer.serializer.dump( to_rpc_data_or_self )
+                )
+            )
+        else
+            Arachni::RPC::Serializer.serializer.load(
+                Arachni::RPC::Serializer.serializer.dump( self )
+            )
+        end
     end
 
     def to_rpc_data_or_self

@@ -23,7 +23,7 @@ get '/static/*' do
     'This is a custom 404, try to catch it. ;)'
 end
 
-get '/dynamic/erratic/*' do
+get '/dynamic/erratic/code/*' do
     if @@erratic > 3
         return 500
     end
@@ -32,6 +32,12 @@ get '/dynamic/erratic/*' do
 
     'This is a custom 404 which includes the requested resource, try to catch it. ;)' +
         '<br/>You asked for "' + params[:splat].first.to_s + '", which could not be found.'
+end
+
+get '/dynamic/erratic/body/*' do
+    @@erratic += 1
+
+    "#{'cra' * rand( 99 )} aa#{rand( @@erratic )}azy! #{rand(@@erratic)} " * rand( @@erratic )
 end
 
 get '/dynamic/*' do

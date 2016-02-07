@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,7 +9,6 @@
 # Path Traversal check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.6
 #
 # @see http://cwe.mitre.org/data/definitions/22.html
 # @see https://www.owasp.org/index.php/Path_Traversal
@@ -21,20 +20,8 @@ class Arachni::Checks::PathTraversal < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format: [Format::STRAIGHT],
-            regexp: {
-                unix: [
-                    /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
-                ],
-                windows: [
-                    /\[boot loader\].*\[operating systems\]/im,
-                    /\[fonts\].*\[extensions\]/im
-                ],
-                java: [
-                    /<web\-app/im
-                ]
-            },
+            format:     [Format::STRAIGHT],
+            signatures: FILE_SIGNATURES_PER_PLATFORM,
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
@@ -111,7 +98,7 @@ of relevant content in the HTML responses.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.6',
+            version:     '0.4.7',
             platforms:   payloads.keys,
 
             issue:       {

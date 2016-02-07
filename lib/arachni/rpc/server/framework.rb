@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -129,6 +129,8 @@ class Framework < ::Arachni::Framework
     #
     # @return   [Hash<String=>Integer>]
     def sitemap_entries( from_index = 0 )
+        return {} if sitemap.size <= from_index + 1
+
         Hash[sitemap.to_a[from_index..-1] || {}]
     end
 

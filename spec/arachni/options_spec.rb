@@ -187,7 +187,7 @@ describe Arachni::Options do
                     scope: {
                         exclude_path_patterns:   [ 'exclude me2' ],
                         include_path_patterns:   [ 'include me2' ],
-                        redundant_path_patterns: { 'redundant' => 4 },
+                        redundant_path_patterns: { 'redundant' => 4 }
                     },
                     datastore: {
                         key2: 'val2'
@@ -196,9 +196,9 @@ describe Arachni::Options do
 
                 subject.update( opts )
 
-                expect(subject.scope.exclude_path_patterns).to eq([/exclude me2/])
-                expect(subject.scope.include_path_patterns).to eq([/include me2/])
-                expect(subject.scope.redundant_path_patterns).to eq({ /redundant/ => 4 })
+                expect(subject.scope.exclude_path_patterns).to eq([/exclude me2/i])
+                expect(subject.scope.include_path_patterns).to eq([/include me2/i])
+                expect(subject.scope.redundant_path_patterns).to eq({ /redundant/i => 4 })
                 expect(subject.datastore.to_h).to eq(opts[:datastore])
             end
         end

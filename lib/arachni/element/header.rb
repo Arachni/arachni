@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -32,6 +32,9 @@ class Header < Base
     ENCODE_CHARACTERS      = ["\n", "\r"]
     ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
 
+    ENCODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+    DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+
     def initialize( options )
         super( options )
 
@@ -59,13 +62,22 @@ class Header < Base
     class <<self
         def encode( str )
             str = str.to_s
-            return str if !ENCODE_CHARACTERS.find { |c| str.include? c }
 
-            ::URI.encode( str, ENCODE_CHARACTERS_LIST )
+            ENCODE_CACHE.fetch( str ) do
+                if !ENCODE_CHARACTERS.find { |c| str.include? c }
+                    str
+                else
+                    ::URI.encode( str, ENCODE_CHARACTERS_LIST )
+                end
+            end
         end
 
         def decode( header )
-            ::URI.decode( header.to_s )
+            header = header.to_s
+
+            DECODE_CACHE.fetch( header ) do
+                ::URI.decode( header )
+            end
         end
     end
 

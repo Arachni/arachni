@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -22,7 +22,8 @@ class Javascript
     require_relative 'javascript/dom_monitor'
 
     CACHE = {
-        select_event_attributes: Support::Cache::LeastRecentlyPushed.new( 1_000 )
+        events_for:    Support::Cache::LeastRecentlyPushed.new( 1_000 ),
+        select_events: Support::Cache::LeastRecentlyPushed.new( 1_000 )
     }
 
     TOKEN = 'arachni_js_namespace'
@@ -43,7 +44,7 @@ class Javascript
 
     NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
-        :title, :link
+        :title, :link, :hr
     ])
 
     # Events that apply to all elements.
@@ -68,7 +69,7 @@ class Javascript
                   :onreset
               ],
 
-        # These need to be covered via Watir's API, #send_keys etc.
+        # These need to be covered via Selenium's API, #send_keys etc.
         input: [
                   :onselect,
                   :onchange,
@@ -80,7 +81,7 @@ class Javascript
                   :oninput
               ],
 
-        # These need to be covered via Watir's API, #send_keys etc.
+        # These need to be covered via Selenium's API, #send_keys etc.
         textarea: [
                   :onselect,
                   :onchange,
@@ -138,12 +139,31 @@ class Javascript
         @event_whitelist ||= Set.new( events.flatten.map(&:to_s) )
     end
 
-    # @param    [Symbol]    element
+    # @param    [Symbol]    tag_name
     #
-    # @return   [Array<Symbol>]
+    # @return   [Set<Symbol>]
     #   Events for `element`.
-    def self.events_for( element )
-        GLOBAL_EVENTS | EVENTS_PER_ELEMENT[element.to_sym]
+    def self.events_for( tag_name )
+        CACHE[:events_for].fetch tag_name.to_sym do
+            Set.new(
+                GLOBAL_EVENTS + (EVENTS_PER_ELEMENT[tag_name.to_sym] || [])
+            ).freeze
+        end
+    end
+
+    # @param    [Symbol]    tag_name
+    # @param    [Hash]    events
+    #   Event data with the event name as the key.
+    #
+    # @return   [Hash]
+    #   `events` filtered to only include valid events for the given element type.
+    def self.select_events( tag_name, events )
+        CACHE[:select_events].fetch [tag_name, events] do
+            supported = events_for( tag_name )
+            events.reject do |name, _|
+                !supported.include?( ('on' + name.to_s.gsub( /^on/, '' )).to_sym )
+            end.freeze
+        end
     end
 
     # @param    [Hash]  attributes
@@ -152,11 +172,13 @@ class Javascript
     # @return   [Hash]
     #   `attributes` that include {.events}.
     def self.select_event_attributes( attributes = {} )
-        CACHE[:select_event_attributes][attributes] ||=
-            attributes.inject({}) do |h, (event, handler)|
-                next h if !event_whitelist.include?( event.to_s )
-                h.merge!( event.to_sym => handler )
-            end
+        # NOTICE: Don't cache this, attributes can include all kinds of weird
+        # random crap (framework-specific data nonce attributes etc.) which will
+        # keep filling the cache due to constant misses.
+        attributes.inject({}) do |h, (event, handler)|
+            next h if !event_whitelist.include?( event.to_s )
+            h.merge!( event.to_sym => handler )
+        end.freeze
     end
 
     # @param    [Browser]   browser
@@ -231,8 +253,8 @@ class Javascript
     #
     # @return   [Object]
     #   Result of `script`.
-    def run( script )
-        @browser.watir.execute_script script
+    def run( *args )
+        @browser.selenium.execute_script *args
     end
 
     # Executes the given code but unwraps Watir elements.
@@ -242,8 +264,13 @@ class Javascript
     #
     # @return   [Object]
     #   Result of `script`.
-    def run_without_elements( script )
-        unwrap_elements run( script )
+    def run_without_elements( *args )
+        unwrap_elements run( *args )
+    end
+
+    def has_sinks?
+        return false if !supported?
+        taint_tracer.has_sinks( @taint )
     end
 
     # @return   (see TaintTracer#debug)
@@ -300,8 +327,6 @@ class Javascript
         dom_monitor.elements_with_events.map do |element|
             next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name'].to_sym
 
-            attributes = element['attributes']
-
             element['events'] = (element['events'].map do |event, fn|
                 next if !(self.class.event_whitelist.include?( event ) ||
                     self.class.event_whitelist.include?( "on#{event}" ))
@@ -309,7 +334,15 @@ class Javascript
                 [event.to_sym, fn]
             end.compact)
 
-            element['events'] |= self.class.select_event_attributes( attributes ).to_a
+            element['events'] |= self.class.select_event_attributes( element['attributes'] ).to_a
+            element['events']  = self.class.select_events( element['tag_name'], element['events'] ).dup
+
+            categorized = {}
+            element['events'].each do |event, callback|
+                categorized[event] ||= []
+                categorized[event] << callback
+            end
+            element['events'] = categorized
 
             element
         end.compact
@@ -382,7 +415,7 @@ class Javascript
 
             body = response.body.dup
 
-            update_taints( body )
+            update_taints( body, response )
             update_custom_code( body )
 
             response.body = body
@@ -410,10 +443,11 @@ class Javascript
 
             # Include and initialize our JS interfaces.
             response.body = <<-EOHTML
+<script src="#{script_url_for( :polyfills )}"></script> #{html_comment}
 <script src="#{script_url_for( :taint_tracer )}"></script> #{html_comment}
 <script src="#{script_url_for( :dom_monitor )}"></script> #{html_comment}
 <script>
-#{wrapped_taint_tracer_initializer}
+#{wrapped_taint_tracer_initializer( response )}
 #{js_initialization_signal};
 
 #{wrapped_custom_code}
@@ -422,8 +456,6 @@ class Javascript
 #{body}
             EOHTML
         end
-
-        response.headers['content-length'] = response.body.size
 
         true
     end
@@ -440,8 +472,11 @@ class Javascript
 
         # Let's check that the response at least looks like it contains HTML
         # code of interest.
-        body = response.body.downcase
+        body = response.body.downcase.strip
         return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
+
+        # If there's a doctype then we're good to go.
+        return true if body.start_with?( '<!doctype html' )
 
         # The last check isn't fool-proof, so don't do it when loading the page
         # for the first time, but only when the page loads stuff via AJAX and whatnot.
@@ -455,8 +490,10 @@ class Javascript
         #
         # For example, it may have been JSON with the wrong content-type that
         # includes HTML -- it happens.
+        #
+        # Beware, if there's a doctype in the beginning this will fail.
         begin
-            return false if Nokogiri::XML( response.body ).children.empty?
+            return false if Parser.parse_xml( response.body ).children.empty?
         rescue => e
             print_debug "Does not look like HTML: #{response.url}"
             print_debug "\n#{response.body}"
@@ -477,22 +514,48 @@ class Javascript
         "<!-- Injected by #{self.class} -->"
     end
 
-    def taints
-        taints = [@taint]
+    def taints( response )
+        taints = {}
+
+        [@taint].flatten.compact.each do |t|
+            taints[t] = {
+                stop_at_first: false,
+                trace:         true
+            }
+        end
 
         # Include cookie names and values in the trace so that the browser will
         # be able to infer if they're being used, to avoid unnecessary audits.
         if Options.audit.cookie_doms?
-            taints |= HTTP::Client.cookies.map { |c| c.inputs.to_a }.flatten
+            cookies = begin
+                HTTP::Client.cookie_jar.for_url( response.url )
+            rescue
+                print_debug "Could not get cookies for URL '#{response.url}' from Cookiejar (#{e})."
+                print_debug_exception e
+                HTTP::Client.cookies
+            end
+
+            cookies.each do |c|
+                next if c.http_only?
+
+                c.inputs.to_a.flatten.each do |input|
+                    next if input.empty?
+
+                    taints[input] ||= {
+                        stop_at_first: true,
+                        trace:         false
+                    }
+                end
+            end
         end
 
-        taints.flatten.reject { |v| v.to_s.empty? }
+        taints
     end
 
-    def update_taints( body )
+    def update_taints( body, response )
         body.gsub!(
             /\/\* #{token}_initialize_start \*\/(.*)\/\* #{token}_initialize_stop \*\//,
-            wrapped_taint_tracer_initializer
+            wrapped_taint_tracer_initializer( response )
         )
     end
 
@@ -503,9 +566,9 @@ class Javascript
         )
     end
 
-    def wrapped_taint_tracer_initializer
+    def wrapped_taint_tracer_initializer( response )
         "/* #{token}_initialize_start */ " <<
-            "#{@taint_tracer.stub.function( :initialize, taints )} " <<
+            "#{@taint_tracer.stub.function( :initialize, taints( response ) )} " <<
             "/* #{token}_initialize_stop */"
     end
 
@@ -548,6 +611,9 @@ class Javascript
             when Watir::Element
                 unwrap_element( obj )
 
+            when Selenium::WebDriver::Element
+                unwrap_element( obj )
+
             when Array
                 obj.map { |e| unwrap_elements( e ) }
 
@@ -562,6 +628,8 @@ class Javascript
 
     def unwrap_element( element )
         element.html
+    rescue Selenium::WebDriver::Error::StaleElementReferenceError
+        ''
     end
 
 end

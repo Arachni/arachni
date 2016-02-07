@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -57,6 +57,14 @@ class Session
 
     # @return   [Block]
     attr_reader :login_sequence
+
+    # @return   [Hash]
+    #   {HTTP::Client#request} options for {#logged_in?}.
+    attr_accessor :check_options
+
+    def initialize
+        @check_options = {}
+    end
 
     def clean_up
         configuration.clear
@@ -267,18 +275,25 @@ class Session
         fail Error::NoLoginCheck if !has_login_check?
 
         http_options = http_options.merge(
+            method:          :get,
             mode:            block_given? ? :async : :sync,
             follow_location: true,
             performer:       self
         )
+        http_options.merge!( @check_options )
 
         print_debug 'Performing login check.'
 
         bool = nil
-        http.get( Options.session.check_url, http_options ) do |response|
+        http.request( Options.session.check_url, http_options ) do |response|
             bool = !!response.body.match( Options.session.check_pattern )
 
-            print_debug "Login check done: #{bool}\n#{response}"
+            print_debug "Login check done: #{bool}"
+
+            if !bool
+                print_debug "\n#{response.request}#{response}"
+            end
+
             block.call( bool ) if block
         end
 
@@ -351,7 +366,7 @@ class Session
             form = form.dom
             form.browser = browser
 
-            if !form.element.visible?
+            if !form.locate.displayed?
                 fail Error::FormNotVisible, 'Login form is not visible in the DOM.'
             end
         end

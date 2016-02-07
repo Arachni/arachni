@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -341,9 +341,24 @@ module Utilities
     # @return   [Fixnum]
     #   Random available port number.
     def available_port
-        nil while !port_available?( port = rand_port )
-        port
+        available_port_mutex.synchronize do
+            @used_ports ||= Set.new
+
+            loop do
+                port = self.rand_port
+
+                if port_available?( port ) && !@used_ports.include?( port )
+                    @used_ports << port
+                    return port
+                end
+            end
+        end
     end
+
+    def self.available_port_mutex
+        @available_port_mutex ||= Mutex.new
+    end
+    available_port_mutex
 
     # @return   [Integer]
     #   Random port within the user specified range.
@@ -367,9 +382,11 @@ module Utilities
     # @return   [Bool]
     def port_available?( port )
         begin
-            TCPServer.new( '127.0.0.1', port ).close
+            socket = ::Socket.new( :INET, :STREAM, 0 )
+            socket.bind( ::Socket.sockaddr_in( port, '127.0.0.1' ) )
+            socket.close
             true
-        rescue
+        rescue Errno::EADDRINUSE, Errno::EACCES
             false
         end
     end

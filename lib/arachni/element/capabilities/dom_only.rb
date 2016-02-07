@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -15,6 +15,7 @@ module Element::Capabilities
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module DOMOnly
+    include Arachni::Element::Capabilities::WithAuditor
     include Arachni::Element::Capabilities::Inputtable
     include Arachni::Element::Capabilities::WithNode
     include Arachni::Element::Capabilities::WithDOM
@@ -35,15 +36,15 @@ module DOMOnly
     end
 
     def coverage_id
-        dom.coverage_id
+        "#{type}:#{dom.coverage_id}"
     end
 
     def coverage_hash
-        dom.coverage_hash
+        coverage_id.persistent_hash
     end
 
     def id
-        dom.id
+        "#{type}:#{dom.id}"
     end
 
     def dup

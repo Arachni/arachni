@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -27,7 +27,7 @@ class Arachni::Checks::InsecureCrossDomainPolicyAccess < Arachni::Check::Base
     def check_and_log( response )
         return if response.code != 200
 
-        policy = Nokogiri::XML( response.body )
+        policy = Arachni::Parser.parse_xml( response.body )
         return if !policy
 
         INSECURE_WILDCARDS.each do |wildcard|

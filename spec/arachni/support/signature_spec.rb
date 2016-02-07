@@ -19,7 +19,7 @@ describe Arachni::Support::Signature do
 
     describe '#initialize' do
         describe 'option' do
-            describe :threshold do
+            describe ':threshold' do
                 it 'sets the maximum difference ratio when performing comparisons' do
                     seed1 = 'test this here 1'
                     seed2 = 'test that here 2'
@@ -98,12 +98,12 @@ describe Arachni::Support::Signature do
             signature3 = described_class.new( different_string_with_noise )
             signature4 = described_class.new( different_string_with_noise )
 
-            expect(signature1.differences( signature2 ).round(3)).to eq(0.348)
+            expect(signature1.differences( signature2 ).round(3)).to eq(0.4)
             expect(signature2.differences( signature2 )).to eq(0)
 
-            expect(signature3.differences( signature4 )).to eq(0.2)
+            expect(signature3.differences( signature4 ).round(3)).to eq(0.286)
             expect(signature4.differences( signature4 )).to eq(0)
-            expect(signature1.differences( signature3 ).round(3)).to eq(0.667)
+            expect(signature1.differences( signature3 ).round(3)).to eq(0.778)
         end
     end
 

@@ -14,7 +14,8 @@ describe Arachni::Browser do
     after( :each ) do
         Arachni::Options.reset
         Arachni::Framework.reset
-        @browser.shutdown
+        @browser.shutdown if @browser
+        described_class.asset_domains.clear
         clear_hit_count
     end
 
@@ -27,7 +28,7 @@ describe Arachni::Browser do
 
             options = {}
             if element == :page && event == :load
-                options.merge!( url: @browser.watir.url, cookies: {} )
+                options.merge!( url: @browser.dom_url, cookies: {} )
             end
 
             if element.is_a? Hash
@@ -60,6 +61,46 @@ describe Arachni::Browser do
         pages_should_have_form_with_input( pages, 'by-ajax' )
     end
 
+    context 'when the browser dies' do
+        it 'kills the lifeline too' do
+            Arachni::Processes::Manager.kill subject.browser_pid
+            expect(Arachni::Processes::Manager.alive?(subject.lifeline_pid)).to be_falsey
+        end
+    end
+
+    context 'when the lifeline dies' do
+        it 'kills the browser too' do
+            Arachni::Processes::Manager.kill subject.lifeline_pid
+            expect(Arachni::Processes::Manager.alive?(subject.browser_pid)).to be_falsey
+        end
+    end
+
+    describe '#alive?' do
+        context 'when the lifeline is alive' do
+            it 'returns true' do
+                expect(Arachni::Processes::Manager.alive?(subject.lifeline_pid)).to be_truthy
+                expect(subject).to be_alive
+            end
+        end
+
+        context 'when the browser is dead' do
+            it 'returns false' do
+                Arachni::Processes::Manager.kill subject.browser_pid
+
+                expect(subject).to_not be_alive
+            end
+        end
+
+        context 'when the lifeline is dead' do
+            it 'returns false' do
+                Arachni::Processes::Manager << subject.browser_pid
+                Arachni::Processes::Manager.kill subject.lifeline_pid
+
+                expect(subject).to_not be_alive
+            end
+        end
+    end
+
     describe '.has_executable?' do
         context 'when there is no executable browser' do
             it 'returns false' do
@@ -85,12 +126,12 @@ describe Arachni::Browser do
     end
 
     describe '#initialize' do
-        describe :concurrency do
+        describe ':concurrency' do
             it 'sets the HTTP request concurrency'
         end
 
-        describe :ignore_scope do
-            context true do
+        describe ':ignore_scope' do
+            context 'true' do
                 it 'ignores scope restrictions' do
                     @browser.shutdown
 
@@ -103,7 +144,7 @@ describe Arachni::Browser do
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'enforces scope restrictions' do
                     @browser.shutdown
 
@@ -116,7 +157,7 @@ describe Arachni::Browser do
                 end
             end
 
-            context :default do
+            context ':default' do
                 it 'enforces scope restrictions' do
                     @browser.shutdown
 
@@ -130,35 +171,45 @@ describe Arachni::Browser do
             end
         end
 
-        describe :width do
+        describe ':width' do
             it 'sets the window width' do
                 @browser.shutdown
 
                 width = 100
                 @browser = described_class.new( width: width )
+
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerWidth')).to eq(width)
             end
 
             it 'defaults to 1600' do
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerWidth')).to eq(1600)
             end
         end
 
-        describe :height do
+        describe ':height' do
             it 'sets the window height' do
                 @browser.shutdown
 
                 height = 100
                 @browser = described_class.new( height: height )
+
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerHeight')).to eq(height)
             end
 
             it 'defaults to 1200' do
+                subject.load @url
+
                 expect(subject.javascript.run('return window.innerHeight')).to eq(1200)
             end
         end
 
-        describe :store_pages do
+        describe ':store_pages' do
             describe 'default' do
                 it 'stores snapshot pages' do
                     @browser.shutdown
@@ -174,7 +225,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe true do
+            describe 'true' do
                 it 'stores snapshot pages' do
                     @browser.shutdown
                     @browser = described_class.new( store_pages: true )
@@ -189,7 +240,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'stores snapshot pages' do
                     @browser.shutdown
                     @browser = described_class.new( store_pages: false )
@@ -292,7 +343,7 @@ describe Arachni::Browser do
             end
 
             context '#store_pages?' do
-                context true do
+                context 'true' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: true )}
 
                     it 'stores it in #page_snapshots' do
@@ -307,7 +358,7 @@ describe Arachni::Browser do
                     end
                 end
 
-                context false do
+                context 'false' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: false ) }
 
                     it 'does not store it' do
@@ -365,7 +416,7 @@ describe Arachni::Browser do
             end
 
             context '#store_pages?' do
-                context true do
+                context 'true' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: true )}
 
                     it 'stores it in #page_snapshots_with_sinks' do
@@ -374,7 +425,7 @@ describe Arachni::Browser do
                     end
                 end
 
-                context false do
+                context 'false' do
                     subject { @browser.shutdown; @browser = described_class.new( store_pages: false )}
 
                     it 'does not store it in #page_snapshots_with_sinks' do
@@ -399,24 +450,21 @@ describe Arachni::Browser do
         end
 
         context 'when there are multiple windows open' do
-            before :each do
-                subject.load( ajax_url, take_snapshot: false )
-            end
 
             it 'captures snapshots from all windows' do
-                subject.javascript.run( 'window.open()' )
-                subject.watir.windows.last.use
-                subject.load sink_url, take_snapshot: false
+                url = "#{@url}open-new-window"
+
+                subject.load url, take_snapshot: false
 
                 expect(subject.capture_snapshot.map(&:url).sort).to eq(
-                    [ajax_url, sink_url].sort
+                    [url, "#{@url}with-ajax"].sort
                 )
             end
         end
 
         context 'when an error occurs' do
             it 'ignores it' do
-                allow(subject.watir).to receive(:windows) { raise }
+                allow(subject).to receive(:to_page) { raise }
                 expect(subject.capture_snapshot( blah: :stuff )).to be_empty
             end
         end
@@ -496,8 +544,8 @@ describe Arachni::Browser do
                 calls << [element.opening_tag, event]
             end
 
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :mouseover
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :mouseover
 
             expect(calls).to eq([
                 [ "<div id=\"my-div\" onclick=\"addForm();\">", :click ],
@@ -590,7 +638,7 @@ describe Arachni::Browser do
                             tag_name: 'a',
                             attributes: {
                                 'onmouseover' => 'writeButton();',
-                                'href'        => 'javascript:level3();'
+                                'href'        => '#'
                             }
                         } => :mouseover
                     }
@@ -603,11 +651,11 @@ describe Arachni::Browser do
                         {
                             tag_name: 'a',
                             attributes: {
-                                'onmouseover' => 'writeButton();',
                                 'href'        => 'javascript:level3();'
                             }
                         } => :click
                     },
+                    { "#{@url}level4" => :request },
                     { "#{@url}level4" => :request }
                 ],
                 [
@@ -619,7 +667,7 @@ describe Arachni::Browser do
                             tag_name: 'a',
                             attributes: {
                                 'onmouseover' => 'writeButton();',
-                                'href'        => 'javascript:level3();'
+                                'href'        => '#'
                             }
                         } => :mouseover
                     },
@@ -640,11 +688,11 @@ describe Arachni::Browser do
                         {
                             tag_name: 'a',
                             attributes: {
-                                'onmouseover' => 'writeButton();',
                                 'href'        => 'javascript:level3();'
                             }
                         } => :click
                     },
+                    { "#{@url}level4" => :request },
                     { "#{@url}level4" => :request },
                     {
                         {
@@ -680,7 +728,7 @@ describe Arachni::Browser do
                                 tag_name: 'a',
                                 attributes: {
                                     'onmouseover' => 'writeButton();',
-                                    'href'        => 'javascript:level3();'
+                                    'href'        => '#'
                                 }
                             } => :mouseover
                         }
@@ -693,11 +741,11 @@ describe Arachni::Browser do
                             {
                                 tag_name: 'a',
                                 attributes: {
-                                    'onmouseover' => 'writeButton();',
                                     'href'        => 'javascript:level3();'
                                 }
                             } => :click
                         },
+                        { "#{@url}level4" => :request },
                         { "#{@url}level4" => :request }
                     ]
                 ].map { |transitions| transitions_from_array( transitions ) })
@@ -991,13 +1039,60 @@ describe Arachni::Browser do
             it 'returns nil'
         end
 
-        context 'when the resource is out-of-scope' do
+        context 'when the resource is out of scope' do
             it 'returns nil' do
                 Arachni::Options.url = @url
-                @browser.load 'http://google.com/'
+                @browser.load @url
+
+                subject.javascript.run( 'window.location = "http://google.com/";' )
+                sleep 1
+
                 expect(@browser.response).to be_nil
             end
         end
+    end
+
+    describe '#state' do
+        it 'returns a Page::DOM with enough info to reproduce the current state' do
+            @browser.load "#{web_server_url_for( :taint_tracer )}/debug" <<
+                "?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
+
+            dom   = subject.to_page.dom
+            state = subject.state
+
+            expect(state.page).to be_nil
+            expect(state.url).to eq dom.url
+            expect(state.digest).to eq dom.digest
+            expect(state.transitions).to eq dom.transitions
+            expect(state.skip_states).to eq dom.skip_states
+            expect(state.data_flow_sinks).to be_empty
+            expect(state.execution_flow_sinks).to be_empty
+        end
+
+        context 'when the URL is about:blank' do
+            it 'returns nil' do
+                Arachni::Options.url = @url
+                subject.load @url
+
+                subject.javascript.run( 'window.location = "about:blank";' )
+                sleep 1
+
+                expect(subject.state).to be_nil
+            end
+        end
+
+        context 'when the resource is out-of-scope' do
+            it 'returns an empty page' do
+                Arachni::Options.url = @url
+                subject.load @url
+
+                subject.javascript.run( 'window.location = "http://google.com/";' )
+                sleep 1
+
+                expect(subject.state).to be_nil
+            end
+        end
+
     end
 
     describe '#to_page' do
@@ -1017,10 +1112,12 @@ describe Arachni::Browser do
         it "assigns the proper #{Arachni::Page::DOM}#digest" do
             @browser.load( @url )
             expect(@browser.to_page.dom.instance_variable_get(:@digest)).to eq(
-                '<HTML><HEAD><SCRIPT src=http://javascript.browser.arachni/' <<
-                    'taint_tracer.js><SCRIPT src=http://javascript.' <<
-                    'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
-                    'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
+                '<HTML><HEAD><SCRIPT src=http://' <<
+                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://' <<
+                'javascript.browser.arachni/' <<
+                'taint_tracer.js><SCRIPT src=http://javascript.' <<
+                'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
+                'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
             )
         end
 
@@ -1078,7 +1175,7 @@ describe Arachni::Browser do
         context 'when the page has' do
             context "#{Arachni::Element::UIForm} elements" do
                 context "and #{Arachni::OptionGroups::Audit}#inputs is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :ui_forms
                         end
@@ -1126,7 +1223,7 @@ describe Arachni::Browser do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :ui_forms
                         end
@@ -1141,7 +1238,7 @@ describe Arachni::Browser do
 
             context "#{Arachni::Element::UIInput} elements" do
                 context "and #{Arachni::OptionGroups::Audit}#inputs is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :ui_inputs
                         end
@@ -1189,7 +1286,7 @@ describe Arachni::Browser do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :ui_inputs
                         end
@@ -1204,7 +1301,7 @@ describe Arachni::Browser do
 
             context "#{Arachni::Element::Form::DOM} elements" do
                 context "and #{Arachni::OptionGroups::Audit}#forms is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :forms
                         end
@@ -1231,7 +1328,7 @@ describe Arachni::Browser do
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :forms
                         end
@@ -1248,7 +1345,7 @@ describe Arachni::Browser do
                 let(:cookies) { @browser.to_page.cookies }
 
                 context "and #{Arachni::OptionGroups::Audit}#cookies is" do
-                    context true do
+                    context 'true' do
                         before do
                             Arachni::Options.audit.elements :cookies
 
@@ -1261,8 +1358,16 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-names' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
-                                    expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie1' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie2' }.skip_dom).to be_nil
+                                end
+
+                                it 'does not track HTTP-only cookies' do
+                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be true
+                                end
+
+                                it 'does not track cookies for other paths' do
+                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be true
                                 end
                             end
 
@@ -1270,8 +1375,16 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-values' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie' }.skip_dom).to be_nil
-                                    expect(cookies.find { |c| c.name == 'my-cookie2' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie1' }.skip_dom).to be_nil
+                                    expect(cookies.find { |c| c.name == 'js_cookie2' }.skip_dom).to be_nil
+                                end
+
+                                it 'does not track HTTP-only cookies' do
+                                    expect(cookies.find { |c| c.name == 'http_only_cookie' }.skip_dom).to be true
+                                end
+
+                                it 'does not track cookies for other paths' do
+                                    expect(cookies.find { |c| c.name == 'other_path' }.skip_dom).to be true
                                 end
                             end
                         end
@@ -1281,7 +1394,7 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-names' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
+                                    expect(cookies.find { |c| c.name == 'js_cookie3' }.skip_dom).to be_truthy
                                 end
                             end
 
@@ -1289,13 +1402,13 @@ describe Arachni::Browser do
                                 let(:page) { 'dom-cookies-values' }
 
                                 it 'does not set #skip_dom' do
-                                    expect(cookies.find { |c| c.name == 'my-cookie3' }.skip_dom).to be_truthy
+                                    expect(cookies.find { |c| c.name == 'js_cookie3' }.skip_dom).to be_truthy
                                 end
                             end
                         end
                     end
 
-                    context false do
+                    context 'false' do
                         before do
                             Arachni::Options.audit.skip_elements :cookies
 
@@ -1319,13 +1432,17 @@ describe Arachni::Browser do
         context 'when the resource is out-of-scope' do
             it 'returns an empty page' do
                 Arachni::Options.url = @url
-                subject.load 'http://google.com/'
+                subject.load @url
+
+                subject.javascript.run( 'window.location = "http://google.com/";' )
+                sleep 1
+
                 page = subject.to_page
 
                 expect(page.code).to eq(0)
-                expect(page.url).to  eq(subject.url)
+                expect(page.url).to  eq('http://google.com/')
                 expect(page.body).to be_empty
-                expect(page.dom.url).to eq(subject.watir.url)
+                expect(page.dom.url).to eq('http://google.com/')
             end
         end
     end
@@ -1337,22 +1454,22 @@ describe Arachni::Browser do
         end
 
         it 'fires the given event' do
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
         it 'accepts events without the "on" prefix' do
             pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :onclick
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :onclick
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
-            @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
         it 'returns a playable transition' do
-            transition = @browser.fire_event @browser.watir.div( id: 'my-div' ), :click
+            transition = @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
             @browser.load( url ).start_capture
@@ -1362,12 +1479,51 @@ describe Arachni::Browser do
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
+        context 'when new timers are introduced' do
+            let(:url) { "#{@url}/trigger_events/with_new_timers/3000" }
+
+            it 'waits for them' do
+                @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+                pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+            end
+
+            context 'when a new timer exceeds Options.http.request_timeout' do
+                let(:url) { "#{@url}/trigger_events/with_new_timers/#{Arachni::Options.http.request_timeout + 5000}" }
+
+                it 'waits for Options.http.request_timeout' do
+                    t = Time.now
+
+                    @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+                    pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
+
+                    expect(Time.now - t).to be <= Arachni::Options.http.request_timeout
+                end
+            end
+        end
+
+        context 'when cookies are set' do
+            let(:url) { @url + '/each_element_with_events/set-cookie' }
+
+            it 'sets them globally' do
+                expect(Arachni::HTTP::Client.cookies).to be_empty
+
+                @browser.fire_event described_class::ElementLocator.new(
+                    tag_name: :button,
+                    attributes: {
+                        onclick: 'setCookie()'
+                    }
+                ), :click
+
+                cookie = Arachni::HTTP::Client.cookies.first
+                expect(cookie.name).to eq 'cookie_name'
+                expect(cookie.value).to eq 'cookie value'
+            end
+        end
+
         context 'when the element is not visible' do
             it 'returns nil' do
-                element = @browser.watir.div( id: 'my-div' )
-
-                allow(element).to receive(:visible?) { false }
-
+                @browser.goto "#{url}/invisible-div"
+                element = @browser.selenium.find_element( id: 'invisible-div' )
                 expect(@browser.fire_event( element, :click )).to be_nil
             end
         end
@@ -1382,57 +1538,45 @@ describe Arachni::Browser do
 
                     allow(element).to receive(:locate){ raise Selenium::WebDriver::Error::WebDriverError }
                     expect(@browser.fire_event( element, :click )).to be_nil
-
-                    allow(element).to receive(:locate){ raise Watir::Exception::Error }
-                    expect(@browser.fire_event( element, :click )).to be_nil
                 end
-            end
-        end
-
-        context 'when the element never appears' do
-            it 'returns nil' do
-                element = @browser.watir.div( id: 'my-div' )
-
-                allow(element).to receive(:exists?) { false }
-
-                expect(@browser.fire_event( element, :click )).to be_nil
             end
         end
 
         context 'when the trigger fails with' do
-            let(:element) { @browser.watir.div( id: 'my-div' ) }
+            let(:element) { @browser.selenium.find_element( id: 'my-div' ) }
 
-            context Selenium::WebDriver::Error::WebDriverError do
+            context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'returns nil' do
-                    allow(element).to receive(:fire_event){ raise Selenium::WebDriver::Error::WebDriverError }
-                    expect(@browser.fire_event( element, :click )).to be_nil
-                end
-            end
+                    allow(@browser).to receive(:wait_for_pending_requests) do
+                        raise Selenium::WebDriver::Error::WebDriverError
+                    end
 
-            context Watir::Exception::Error do
-                it 'returns nil' do
-                    allow(element).to receive(:fire_event){ raise Watir::Exception::Error }
                     expect(@browser.fire_event( element, :click )).to be_nil
                 end
             end
         end
 
         context 'form' do
-            context :submit do
+            context ':submit' do
                 let(:url) { "#{@url}/fire_event/form/onsubmit" }
 
                 context 'when option' do
-                    describe :inputs do
+                    describe ':inputs' do
+
+                        def element
+                            @browser.selenium.find_element(:tag_name, :form)
+                        end
+
                         context 'is given' do
                             let(:inputs) do
                                 {
-                                    name:  "The Dude",
+                                    name:  'The Dude',
                                     email: 'the.dude@abides.com'
                                 }
                             end
 
                             before(:each) do
-                                @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                @browser.fire_event element, :submit, inputs: inputs
                             end
 
                             it 'fills in its inputs with the given values' do
@@ -1447,7 +1591,7 @@ describe Arachni::Browser do
                             it 'returns a playable transition' do
                                 @browser.load url
 
-                                transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                transition = @browser.fire_event element, :submit, inputs: inputs
 
                                 @browser.load url
 
@@ -1513,7 +1657,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                    transition = @browser.fire_event element, :submit, inputs: inputs
 
                                     @browser.load url
 
@@ -1541,7 +1685,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.form, :submit, inputs: inputs
+                                    transition = @browser.fire_event element, :submit, inputs: inputs
 
                                     @browser.load url
 
@@ -1570,7 +1714,7 @@ describe Arachni::Browser do
                         context 'is not given' do
                             it 'fills in its inputs with sample values' do
                                 @browser.load url
-                                @browser.fire_event @browser.watir.form, :submit
+                                @browser.fire_event element, :submit
 
                                 expect(@browser.watir.div( id: 'container-name' ).text).to eq(
                                     Arachni::Options.input.value_for_name( 'name' )
@@ -1582,7 +1726,7 @@ describe Arachni::Browser do
 
                             it 'returns a playable transition' do
                                 @browser.load url
-                                transition = @browser.fire_event @browser.watir.form, :submit
+                                transition = @browser.fire_event element, :submit
 
                                 @browser.load url
 
@@ -1603,7 +1747,7 @@ describe Arachni::Browser do
                                 let(:url) { "#{@url}/fire_event/form/disabled_inputs" }
 
                                 it 'is skips those inputs' do
-                                    @browser.fire_event @browser.watir.form, :submit
+                                    @browser.fire_event element, :submit
 
                                     expect(@browser.watir.div( id: 'container-name' ).text).to eq(
                                         Arachni::Options.input.value_for_name( 'name' )
@@ -1617,13 +1761,17 @@ describe Arachni::Browser do
             end
 
             context 'image button' do
-                context :click do
+                context ':click' do
                     before( :each ) { @browser.start_capture }
                     let(:url) { "#{@url}fire_event/form/image-input" }
 
+                    def element
+                        @browser.selenium.find_element( :xpath, '//input[@type="image"]')
+                    end
+
                     it 'submits the form with x, y coordinates' do
                         @browser.load( url )
-                        @browser.fire_event @browser.watir.input( type: 'image'), :click
+                        @browser.fire_event element, :click
 
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
                         pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
@@ -1631,7 +1779,7 @@ describe Arachni::Browser do
 
                     it 'returns a playable transition' do
                         @browser.load( url )
-                        transition = @browser.fire_event @browser.watir.input( type: 'image'), :click
+                        transition = @browser.fire_event element, :click
 
                         captured_pages = @browser.flush_pages
                         pages_should_have_form_with_input captured_pages, 'myImageButton.x'
@@ -1658,18 +1806,22 @@ describe Arachni::Browser do
                         string[0...-1] : string
                 end
 
-                context event do
+                context event.to_s do
                     let( :url ) { "#{@url}/fire_event/input/#{event}" }
 
                     context 'when option' do
-                        describe :inputs do
+                        describe ':inputs' do
+                            def element
+                                @browser.selenium.find_element(:tag_name, :input)
+                            end
+
                             context 'is given' do
                                 let(:value) do
                                     'The Dude'
                                 end
 
                                 before(:each) do
-                                    @browser.fire_event @browser.watir.input, event, value: value
+                                    @browser.fire_event element, event, value: value
                                 end
 
                                 it 'fills in its inputs with the given values' do
@@ -1680,7 +1832,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.input, event, value: value
+                                    transition = @browser.fire_event element, event, value: value
 
                                     @browser.load url
                                     expect(@browser.watir.div( id: 'container' ).text).to be_empty
@@ -1702,7 +1854,7 @@ describe Arachni::Browser do
 
                                     it 'returns a playable transition' do
                                         @browser.load url
-                                        transition = @browser.fire_event @browser.watir.input, event, value: value
+                                        transition = @browser.fire_event element, event, value: value
 
                                         @browser.load url
                                         expect(@browser.watir.div( id: 'container' ).text).to be_empty
@@ -1715,7 +1867,7 @@ describe Arachni::Browser do
 
                             context 'is not given' do
                                 it 'fills in a sample value' do
-                                    @browser.fire_event @browser.watir.input, event
+                                    @browser.fire_event element, event
 
                                     expect(@browser.watir.div( id: 'container' ).text).to eq(
                                         calculate_expectation.call( Arachni::Options.input.value_for_name( 'name' ) )
@@ -1724,7 +1876,7 @@ describe Arachni::Browser do
 
                                 it 'returns a playable transition' do
                                     @browser.load url
-                                    transition = @browser.fire_event @browser.watir.input, event
+                                    transition = @browser.fire_event element, event
 
                                     @browser.load url
                                     expect(@browser.watir.div( id: 'container' ).text).to be_empty
@@ -1738,6 +1890,44 @@ describe Arachni::Browser do
                         end
                     end
                 end
+            end
+        end
+    end
+
+    describe '#elements_with_events' do
+        before :each do
+            @browser.load url
+        end
+
+        let(:elements_with_events) do
+            elements_with_events = {}
+            @browser.each_element_with_events do |locator, events|
+                elements_with_events[locator] = events
+            end
+            elements_with_events
+        end
+
+        let(:url) { @url + '/trigger_events' }
+
+        it 'returns all elements with associated events' do
+            expect(subject.elements_with_events.to_s).to eq elements_with_events.to_s
+        end
+
+        it 'caches results' do
+            expect(subject).to receive(:each_element_with_events)
+            subject.elements_with_events
+
+            expect(subject).to_not receive(:each_element_with_events)
+            subject.elements_with_events
+        end
+
+        context 'when passed true' do
+            it 'clears the cache' do
+                expect(subject).to receive(:each_element_with_events)
+                subject.elements_with_events
+
+                expect(subject).to receive(:each_element_with_events)
+                subject.elements_with_events( true )
             end
         end
     end
@@ -1762,19 +1952,19 @@ describe Arachni::Browser do
                         tag_name:   'body',
                         attributes: { 'onmouseover' => 'makePOST();' }
                     ),
-                    [[:onmouseover, 'makePOST();']]
+                    { onmouseover: ['makePOST();'] }
                 ],
                 [
                     described_class::ElementLocator.new(
                         tag_name:   'div',
                         attributes: { 'id' => 'my-div', 'onclick' => 'addForm();' }
                     ),
-                    [[:onclick, 'addForm();']]
+                    { onclick: ['addForm();']}
                 ]
             ])
         end
 
-        context :a do
+        context ':a' do
             context 'and the href is not empty' do
                 context 'and it starts with javascript:' do
                     let(:url) { @url + '/each_element_with_events/a/href/javascript' }
@@ -1786,7 +1976,7 @@ describe Arachni::Browser do
                                     tag_name:   'a',
                                     attributes: { 'href' => 'javascript:doStuff()' }
                                 ),
-                                [[:click, 'javascript:doStuff()']]
+                                {click: [ 'javascript:doStuff()']}
                             ]
                         ])
                     end
@@ -1810,8 +2000,8 @@ describe Arachni::Browser do
             end
         end
 
-        context :form do
-            context :input do
+        context ':form' do
+            context ':input' do
                 context 'of type "image"' do
                     let(:url) { @url + '/each_element_with_events/form/input/image' }
 
@@ -1826,7 +2016,7 @@ describe Arachni::Browser do
                                         'src'  => '/__sinatra__/404.png'
                                     }
                                 ),
-                                [[:click, 'image']]
+                                {click: ['image']}
                             ]
                         ])
                     end
@@ -1846,7 +2036,7 @@ describe Arachni::Browser do
                                         'action' => 'javascript:doStuff()'
                                     }
                                 ),
-                                [[:submit, 'javascript:doStuff()']]
+                                {submit: ['javascript:doStuff()']}
                             ]
                         ])
                     end
@@ -1855,7 +2045,7 @@ describe Arachni::Browser do
                 context 'and it does not start with javascript:' do
                     let(:url) { @url + '/each_element_with_events/form/action/regular' }
 
-                    it 'is ignored'do
+                    it 'is ignored' do
                         expect(elements_with_events).to be_empty
                     end
                 end
@@ -1863,7 +2053,7 @@ describe Arachni::Browser do
                 context 'and is out of scope' do
                     let(:url) { @url + '/each_element_with_events/form/action/out-of-scope' }
 
-                    it 'is ignored'do
+                    it 'is ignored' do
                         expect(elements_with_events).to be_empty
                     end
                 end
@@ -1876,7 +2066,7 @@ describe Arachni::Browser do
             @browser.load( @url + '/trigger_events' ).start_capture
 
             locators = []
-            @browser.watir.elements.each do |element|
+            @browser.selenium.find_elements(:css, '*').each do |element|
                 begin
                     locators << described_class::ElementLocator.from_html( element.opening_tag )
                 rescue
@@ -1899,6 +2089,10 @@ describe Arachni::Browser do
     end
 
     describe '#trigger_events' do
+        it 'returns self' do
+            expect(@browser.load( @url + '/explore' ).trigger_events).to eq(@browser)
+        end
+
         it 'waits for AJAX requests to complete' do
             @browser.load( @url + '/trigger_events-wait-for-ajax' ).start_capture.trigger_events
 
@@ -1916,6 +2110,7 @@ describe Arachni::Browser do
 
         it 'assigns the proper page transitions' do
             pages = @browser.load( @url + '/explore' ).trigger_events.page_snapshots
+
             expect(pages.map(&:dom).map(&:transitions)).to eq([
                 [
                     { :page => :load },
@@ -1933,7 +2128,8 @@ describe Arachni::Browser do
                             }
                         } => :click
                     },
-                    { "#{@url}get-ajax?ajax-token=my-token" => :request }
+                    { "#{@url}get-ajax?ajax-token=my-token" => :request },
+                    { "#{@url}post-ajax" => :request }
                 ],
                 [
                     { :page => :load },
@@ -1947,6 +2143,8 @@ describe Arachni::Browser do
                         } => :click
                     },
                     { "#{@url}href-ajax" => :request },
+                    { "#{@url}post-ajax" => :request },
+                    { "#{@url}href-ajax" => :request }
                 ]
             ].map { |transitions| transitions_from_array( transitions ) })
         end
@@ -1974,10 +2172,6 @@ describe Arachni::Browser do
                 pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.x'
                 pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
             end
-        end
-
-        it 'returns self' do
-            expect(@browser.load( @url + '/explore' ).trigger_events).to eq(@browser)
         end
     end
 
@@ -2190,7 +2384,7 @@ describe Arachni::Browser do
                 end
 
                 it "waits a maximum of #{Arachni::OptionGroups::BrowserCluster}#job_timeout" do
-                    Arachni::Options.browser_cluster.job_timeout = 4
+                    Arachni::Options.browser_cluster.job_timeout = 2
 
                     t = Time.now
                     @browser.goto( @url + '/wait_for_elements#stuff/here' )
@@ -2216,7 +2410,7 @@ describe Arachni::Browser do
         end
 
         context "#{Arachni::OptionGroups::BrowserCluster}#ignore_images" do
-            context true do
+            context 'true' do
                 it 'does not load images' do
                     Arachni::Options.browser_cluster.ignore_images = true
                     @browser.shutdown
@@ -2228,7 +2422,7 @@ describe Arachni::Browser do
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'loads images' do
                     Arachni::Options.browser_cluster.ignore_images = false
                     @browser.shutdown
@@ -2266,16 +2460,19 @@ describe Arachni::Browser do
         context "with #{Arachni::OptionGroups::Scope}#auto_redundant_paths has bee configured" do
             it 'respects scope restrictions' do
                 Arachni::Options.scope.auto_redundant_paths = 0
-                expect(@browser.load( @url + '/explore?test=1&test2=2' ).response.code).to eq(0)
+                expect(@browser.load( @url + '/explore?test=1&test2=2' ).response).to be_nil
             end
         end
 
-        describe :cookies do
+        describe ':cookies' do
             it 'loads the given cookies' do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.goto @url, cookies: cookie
 
-                expect(@browser.cookies.find { |c| c.name == cookie.keys.first }.inputs).to eq(cookie)
+                cookie_data = @browser.cookies.
+                    find { |c| c.name == cookie.keys.first }.inputs
+
+                expect(cookie_data).to eq(cookie)
             end
 
             it 'includes them in the transition' do
@@ -2284,23 +2481,10 @@ describe Arachni::Browser do
 
                 expect(transition.options[:cookies]).to eq(cookie)
             end
-
-            context 'when auditing existing cookies' do
-                it 'preserves the HttpOnly attribute' do
-                    @browser.goto( @url )
-                    expect(@browser.cookies.size).to eq(1)
-
-                    cookies = { @browser.cookies.first.name => 'updated' }
-                    @browser.goto( @url, cookies: cookies )
-
-                    @browser.cookies.first.value == 'updated'
-                    expect(@browser.cookies.first).to be_http_only
-                end
-            end
         end
 
-        describe :take_snapshot do
-            describe true do
+        describe ':take_snapshot' do
+            describe 'true' do
                 it 'captures a snapshot of the loaded page' do
                     @browser.goto @url, take_snapshot: true
                     pages = @browser.page_snapshots
@@ -2313,7 +2497,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'does not capture a snapshot of the loaded page' do
                     @browser.goto @url, take_snapshot:  false
                     expect(@browser.page_snapshots).to be_empty
@@ -2334,15 +2518,15 @@ describe Arachni::Browser do
             end
         end
 
-        describe :update_transitions do
-            describe true do
+        describe ':update_transitions' do
+            describe 'true' do
                 it 'pushes the page load to the transitions' do
                     t = @browser.goto( @url, update_transitions: true )
                     expect(@browser.to_page.dom.transitions).to include t
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'does not push the page load to the transitions' do
                     t = @browser.goto( @url, update_transitions: false )
                     expect(@browser.to_page.dom.transitions).to be_empty
@@ -2363,7 +2547,16 @@ describe Arachni::Browser do
             expect(@browser.load( @url )).to eq(@browser)
         end
 
-        describe :cookies do
+        it 'updates the global cookie-jar' do
+            @browser.load @url
+
+            cookie = Arachni::HTTP::Client.cookies.find(&:http_only?)
+
+            expect(cookie.name).to  eq('This name should be updated; and properly escaped')
+            expect(cookie.value).to eq('This value should be updated; and properly escaped')
+        end
+
+        describe ':cookies' do
             it 'loads the given cookies' do
                 cookie = { 'myname' => 'myvalue' }
                 @browser.load @url, cookies: cookie
@@ -2372,8 +2565,8 @@ describe Arachni::Browser do
             end
         end
 
-        describe :take_snapshot do
-            describe true do
+        describe ':take_snapshot' do
+            describe 'true' do
                 it 'captures a snapshot of the loaded page' do
                     @browser.load @url, take_snapshot: true
                     pages = @browser.page_snapshots
@@ -2386,7 +2579,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe false do
+            describe 'false' do
                 it 'does not capture a snapshot of the loaded page' do
                     @browser.load @url, take_snapshot: false
                     expect(@browser.page_snapshots).to be_empty
@@ -2408,7 +2601,7 @@ describe Arachni::Browser do
         end
 
         context 'when given a' do
-            describe String do
+            describe 'String' do
                 it 'treats it as a URL' do
                     expect(hit_count).to eq(0)
 
@@ -2420,7 +2613,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::HTTP::Response do
+            describe 'Arachni::HTTP::Response' do
                 it 'loads it' do
                     expect(hit_count).to eq(0)
 
@@ -2432,34 +2625,89 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::Page do
+            describe 'Arachni::Page::DOM' do
                 it 'loads it' do
                     expect(hit_count).to eq(0)
 
-                    @browser.load Arachni::HTTP::Client.get( @url, mode: :sync ).to_page
+                    page = Arachni::HTTP::Client.get( @url, mode: :sync ).to_page
+
+                    expect(hit_count).to eq(1)
+
+                    @browser.load page.dom
+
                     expect(@browser.source).to include( ua )
                     expect(@browser.preloads).not_to include( @url )
 
+                    expect(hit_count).to eq(2)
+                end
+
+                it 'replays its #transitions' do
+                    @browser.load "#{@url}play-transitions"
+                    page = @browser.explore_and_flush.last
+                    expect(page.body).to include ua
+
+                    @browser.load page.dom
+                    expect(@browser.source).to include ua
+
+                    page.dom.transitions.clear
+                    @browser.load page.dom
+                    expect(@browser.source).not_to include ua
+                end
+
+                it 'loads its #skip_states' do
+                    @browser.load( @url )
+                    pages = @browser.load( @url + '/explore' ).trigger_events.
+                        page_snapshots
+
+                    page = pages.last
+                    expect(page.dom.skip_states).to be_subset @browser.skip_states
+
+                    token = @browser.generate_token
+
+                    dpage = page.dup
+                    dpage.dom.skip_states << token
+
+                    @browser.load dpage.dom
+                    expect(@browser.skip_states).to include token
+                end
+            end
+
+            describe 'Arachni::Page' do
+                it 'loads it' do
+                    expect(hit_count).to eq(0)
+
+                    page = Arachni::HTTP::Client.get( @url, mode: :sync ).to_page
+
                     expect(hit_count).to eq(1)
+
+                    @browser.load page
+
+                    expect(@browser.source).to include( ua )
+                    expect(@browser.preloads).not_to include( @url )
+
+                    expect(hit_count).to eq(2)
                 end
 
                 it 'uses its #cookie_jar' do
                     expect(@browser.cookies).to be_empty
 
-                    page = Arachni::Page.from_data(
-                        url:        @url,
-                        cookie_jar:  [
-                            Arachni::Cookie.new(
-                                url:    @url,
-                                inputs: {
-                                    'my-name' => 'my-value'
-                                }
-                            )
-                        ]
+                    cookie = Arachni::Cookie.new(
+                        url:    @url,
+                        inputs: {
+                            'my-name' => 'my-value'
+                        }
                     )
 
+                    page = Arachni::Page.from_data(
+                        url:        @url,
+                        cookie_jar:  [ cookie ]
+                    )
+
+                    expect(@browser.cookies).to_not include cookie
+
                     @browser.load( page )
-                    expect(@browser.cookies).to eq(page.cookie_jar)
+
+                    expect(@browser.cookies).to include cookie
                 end
 
                 it 'replays its DOM#transitions' do
@@ -2491,7 +2739,6 @@ describe Arachni::Browser do
                     @browser.load dpage
                     expect(@browser.skip_states).to include token
                 end
-
             end
 
             describe 'other' do
@@ -2534,7 +2781,7 @@ describe Arachni::Browser do
         end
 
         context 'when given a' do
-            describe Arachni::HTTP::Response do
+            describe 'Arachni::HTTP::Response' do
                 it 'preloads it' do
                     @browser.preload Arachni::HTTP::Client.get( @url, mode: :sync )
                     clear_hit_count
@@ -2549,7 +2796,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::Page do
+            describe 'Arachni::Page' do
                 it 'preloads it' do
                     @browser.preload Arachni::Page.from_url( @url )
                     clear_hit_count
@@ -2605,7 +2852,7 @@ describe Arachni::Browser do
         end
 
         context 'when given a' do
-            describe Arachni::HTTP::Response do
+            describe 'Arachni::HTTP::Response' do
                 it 'caches it' do
                     @browser.cache Arachni::HTTP::Client.get( @url, mode: :sync )
                     clear_hit_count
@@ -2620,7 +2867,7 @@ describe Arachni::Browser do
                 end
             end
 
-            describe Arachni::Page do
+            describe 'Arachni::Page' do
                 it 'caches it' do
                     @browser.cache Arachni::Page.from_url( @url )
                     clear_hit_count
@@ -2795,19 +3042,72 @@ describe Arachni::Browser do
     end
 
     describe '#cookies' do
-        it 'returns the browser cookies' do
+        it 'returns cookies visible via JavaScript' do
             @browser.load @url
-            expect(@browser.cookies.size).to eq(1)
-            cookie = @browser.cookies.first
 
-            expect(cookie).to be_kind_of Arachni::Cookie
-            expect(cookie.name).to  eq('This name should be updated; and properly escaped')
-            expect(cookie.value).to eq('This value should be updated; and properly escaped')
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'cookie_name'
+            expect(cookie.value).to eq 'cookie value'
+            expect(cookie.raw_name).to  eq 'cookie_name'
+            expect(cookie.raw_value).to eq '"cookie value"'
         end
 
-        it 'preserves the HttpOnly attribute' do
-            @browser.load @url
-            expect(@browser.cookies.first).to be_http_only
+        it 'preserves expiration value' do
+            @browser.load "#{@url}/cookies/expires"
+
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'without_expiration'
+            expect(cookie.value).to eq 'stuff'
+            expect(cookie.expires).to be_nil
+
+            cookie = @browser.cookies.last
+            expect(cookie.name).to  eq 'with_expiration'
+            expect(cookie.value).to eq 'bar'
+            expect(cookie.expires.to_s).to eq Time.parse( '2047-08-01 09:30:11 +0000' ).to_s
+        end
+
+        it 'preserves the domain' do
+            @browser.load "#{@url}/cookies/domains"
+
+            cookies = @browser.cookies
+
+            cookie = cookies.find { |c| c.name == 'include_subdomains' }
+            expect(cookie.name).to  eq 'include_subdomains'
+            expect(cookie.value).to eq 'bar1'
+            expect(cookie.domain).to eq '.127.0.0.2'
+        end
+
+        it 'ignores cookies for other domains' do
+            @browser.load "#{@url}/cookies/domains"
+
+            cookies = @browser.cookies
+            expect(cookies.find { |c| c.name == 'other_domain' }).to be_nil
+        end
+
+        it 'preserves the path' do
+            @browser.load "#{@url}/cookies/under/path"
+
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'cookie_under_path'
+            expect(cookie.value).to eq 'value'
+            expect(cookie.path).to eq '/cookies/under/'
+        end
+
+        it 'preserves httpOnly' do
+            @browser.load "#{@url}/cookies/under/path"
+
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'cookie_under_path'
+            expect(cookie.value).to eq 'value'
+            expect(cookie.path).to eq '/cookies/under/'
+            expect(cookie).to_not be_http_only
+
+            @browser.load "#{@url}/cookies/httpOnly"
+
+            cookie = @browser.cookies.first
+            expect(cookie.name).to  eq 'http_only'
+            expect(cookie.value).to eq 'stuff'
+            expect(cookie).to be_http_only
         end
 
         context 'when parsing v1 cookies' do
@@ -2817,7 +3117,9 @@ describe Arachni::Browser do
                 @browser.load @url
                 @browser.javascript.run( "document.cookie = '#{cookie}';" )
 
-                expect(@browser.cookies.first.value).to eq('06142010_0:e275d357943e9a2de0')
+                cookie = @browser.cookies.find { |c| c.name == 'rsession' }
+                expect(cookie.value).to eq('06142010_0:e275d357943e9a2de0')
+                expect(cookie.raw_value).to eq('"06142010_0%3Ae275d357943e9a2de0"')
             end
         end
 
@@ -2829,14 +3131,20 @@ describe Arachni::Browser do
     end
 
     describe '#snapshot_id' do
-        before(:each) { Arachni::Options.url = @url }
+        before(:each) do
+            Arachni::Options.url = @url
+
+            @empty_snapshot_id ||= @browser.load( empty_snapshot_id_url ).snapshot_id
+
+            @snapshot_id = @browser.load( url ).snapshot_id
+        end
 
         let(:empty_snapshot_id_url) { @url + '/snapshot_id/default' }
         let(:empty_snapshot_id) do
-            @browser.load( empty_snapshot_id_url ).snapshot_id
+            @empty_snapshot_id
         end
         let(:snapshot_id) do
-            @browser.load( url ).snapshot_id
+            @snapshot_id
         end
 
         let(:url) { @url + '/trigger_events' }
@@ -2845,7 +3153,22 @@ describe Arachni::Browser do
             expect(snapshot_id).to eq(@browser.load( url ).snapshot_id)
         end
 
-        context :a do
+        context 'when there are new cookies' do
+            let(:url) { @url + '/each_element_with_events/set-cookie' }
+
+            it 'takes them into account' do
+                @browser.fire_event described_class::ElementLocator.new(
+                    tag_name: :button,
+                    attributes: {
+                        onclick: 'setCookie()'
+                    }
+                ), :click
+
+                expect(@browser.snapshot_id).not_to eq(snapshot_id)
+            end
+        end
+
+        context ':a' do
             context 'and the href is not empty' do
                 context 'and it starts with javascript:' do
                     let(:url) { @url + '/each_element_with_events/a/href/javascript' }
@@ -2881,10 +3204,10 @@ describe Arachni::Browser do
             end
         end
 
-        context :form do
+        context ':form' do
             let(:empty_snapshot_id_url) { @url + '/snapshot_id/form/default' }
 
-            context :input do
+            context ':input' do
                 context 'of type "image"' do
                     let(:url) { @url + '/each_element_with_events/form/input/image' }
 

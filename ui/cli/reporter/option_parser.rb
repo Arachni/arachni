@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -39,9 +39,9 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Reporters'
 
-        on( '--reporters-list [PATTERN]', Regexp,
-            'List available reporters based on the provided pattern.',
-            '(If no pattern is provided all will be listed.)'
+        on( '--reporters-list [GLOB]',
+            'List available reporters based on the provided glob.',
+            '(If no glob is provided all will be listed.)'
         ) do |pattern|
             list_reporters( framework.list_reporters( pattern ) )
             exit

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -80,7 +80,7 @@ class Paths < Arachni::OptionGroup
     end
 
     def self.paths_config_file
-        "#{root_path}config/write_paths.yml"
+        Arachni.get_long_win32_filename "#{root_path}config/write_paths.yml"
     end
 
     def self.clear_config_cache
@@ -106,8 +106,15 @@ class Paths < Arachni::OptionGroup
                     next
                 end
 
-                dir.gsub!( '~', ENV['HOME'] )
+                dir = Arachni.get_long_win32_filename( dir )
+
+                if !Arachni.windows?
+                    dir.gsub!( '~', ENV['HOME'] )
+                end
+
                 dir << '/' if !dir.end_with?( '/' )
+
+                @config[category][subcat] = dir
 
                 FileUtils.mkdir_p dir
             end

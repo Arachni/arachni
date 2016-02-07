@@ -100,21 +100,21 @@ describe Arachni::BrowserCluster::Job do
         subject { JobTest.new }
 
         context 'when #never_ending is' do
-            context true do
+            context 'true' do
                 it 'returns true' do
                     subject.never_ending = true
                     expect(subject.never_ending?).to be_truthy
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'returns false' do
                     subject.never_ending = false
                     expect(subject.never_ending?).to be_falsey
                 end
             end
 
-            context nil do
+            context 'nil' do
                 it 'returns false' do
                     expect(subject.never_ending?).to be_falsey
                 end

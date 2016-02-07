@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -35,16 +35,17 @@ class Cookie < Base
     include Capabilities::Inputtable
     include Capabilities::Mutable
 
-    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", '&', ' ', '"', "\n", "\r"]
+    ENCODE_CHARACTERS      = ['+', ';', '%', "\0", '&', ' ', '"', "\n", "\r", '=']
     ENCODE_CHARACTERS_LIST = ENCODE_CHARACTERS.join
 
-    ENCODE_CHARACTERS_IN_NAME      = ENCODE_CHARACTERS + ['=']
-    ENCODE_CHARACTERS_IN_NAME_LIST = ENCODE_CHARACTERS_IN_NAME.join
+    ENCODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     # Default cookie values
     DEFAULT = {
         name:        nil,
         value:       nil,
+        raw_name:    nil,
+        raw_value:   nil,
         version:     0,
         port:        nil,
         discard:     nil,
@@ -94,7 +95,7 @@ class Cookie < Base
         end
 
         if @data[:expires] && !@data[:expires].is_a?( Time )
-            @data[:expires] = Time.parse( @data[:expires] ) rescue nil
+            @data[:expires] = Time.parse( @data[:expires].to_s ) rescue nil
         end
 
         @data[:domain] ||= parsed_uri.host
@@ -171,7 +172,14 @@ class Cookie < Base
     # @return   [String]
     #   To be used in a `Cookie` HTTP request header.
     def to_s
-        "#{encode( name, true )}=#{encode( value )}"
+        # Only do encoding if we're dealing with a mutation, otherwise pass
+        # along the raw data as set in order to deal with server-side decoding
+        # quirks.
+        if mutation? || !(raw_name || raw_value )
+            "#{encode( name )}=#{encode( value )}"
+        else
+            "#{raw_name}=#{raw_value}"
+        end
     end
 
     # @return   [String]
@@ -311,9 +319,9 @@ class Cookie < Base
             if !document.is_a?( Nokogiri::HTML::Document )
                 document = document.to_s
 
-                return [] if !(document =~ /set-cookie/i )
+                return [] if !in_html?( document )
 
-                document = Nokogiri::HTML( document )
+                document = Arachni::Parser.parse( document )
             end
 
             Arachni::Utilities.exception_jail {
@@ -323,6 +331,10 @@ class Cookie < Base
                     from_set_cookie( url, elem['content'] )
                 end.flatten.compact
             } rescue []
+        end
+
+        def in_html?( html )
+            html =~ /http-equiv/i && html =~ /set-cookie/i
         end
 
         # Extracts cookies from the `Set-Cookie` HTTP response header field.
@@ -360,11 +372,19 @@ class Cookie < Base
                 cookie_hash['expires'] = cookie.expires
 
                 cookie_hash['path'] ||= '/'
+                cookie_hash['raw_name']  = cookie.name
                 cookie_hash['name']  = decode( cookie.name )
 
                 if too_big?( cookie.value )
                     cookie_hash['value'] = ''
                 else
+                    quoted = "\"#{cookie.value}\""
+                    if str.include? quoted
+                        cookie_hash['raw_value']  = quoted
+                    else
+                        cookie_hash['raw_value']  = cookie.value
+                    end
+
                     cookie_hash['value'] = decode( cookie.value )
                 end
 
@@ -393,9 +413,12 @@ class Cookie < Base
                 v = '' if too_big?( v )
 
                 new(
-                    url:    url,
-                    source: cookie_pair,
-                    inputs: { decode( k ) => value_to_v0( v ) }
+                    url:       url,
+                    source:    cookie_pair,
+                    raw_name:  k,
+                    raw_value: v,
+                    name:      decode( k ),
+                    value:     value_to_v0( v )
                 )
             end.flatten.compact
         end
@@ -412,35 +435,32 @@ class Cookie < Base
         #
         # @example
         #    p Cookie.encode "+;%=\0 "
-        #    #=> "%2B%3B%25=%00+"
-        #
-        #    p Cookie.encode "+;%=\0 ", true
         #    #=> "%2B%3B%25%3D%00+"
         # @param    [String]    str
         #
         # @return   [String]
-        def encode( str, name = false )
+        def encode( str )
             str = str.to_s
 
-            return str if !(name ? ENCODE_CHARACTERS_IN_NAME : ENCODE_CHARACTERS).
-                find { |c| str.include? c }
+            ENCODE_CACHE.fetch( [str, name] )  do
+                if ENCODE_CHARACTERS.find { |c| str.include? c }
 
-            # Instead of just encoding everything we do this selectively because:
-            #
-            #  * Some webapps don't actually decode some cookies, they just get
-            #    the raw value, so if we encode something may break.
-            #  * We need to encode spaces as '+' because of the above.
-            #    Since we decode values, any un-encoded '+' will be converted
-            #    to spaces, and in order to send back a value that the server
-            #    expects we use '+' for spaces.
+                    # Instead of just encoding everything we do this selectively because:
+                    #
+                    #  * Some webapps don't actually decode some cookies, they just get
+                    #    the raw value, so if we encode something may break.
+                    #  * We need to encode spaces as '+' because of the above.
+                    #    Since we decode values, any un-encoded '+' will be converted
+                    #    to spaces, and in order to send back a value that the server
+                    #    expects we use '+' for spaces.
 
-            s = ::URI.encode(
-                str,
-                name ? ENCODE_CHARACTERS_IN_NAME_LIST :
-                    ENCODE_CHARACTERS_LIST
-            )
-            s.gsub!( '%20', '+' )
-            s
+                    s = ::URI.encode( str, ENCODE_CHARACTERS_LIST )
+                    s.gsub!( '%20', '+' )
+                    s
+                else
+                    str
+                end
+            end
         end
 
         # Decodes a {String} encoded for the `Cookie` header field.
@@ -462,6 +482,9 @@ class Cookie < Base
             @keep = Set.new( DEFAULT.keys )
             @keep.delete( :name )
             @keep.delete( :value )
+            @keep.delete( :raw_name )
+            @keep.delete( :raw_value )
+            @keep.delete( :domain )
             @keep.delete( :url )
             @keep.delete( :secure )
             @keep.delete( :httponly )

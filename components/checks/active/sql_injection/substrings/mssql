@@ -1,0 +1,17 @@
+System.Data.OleDb.OleDbException
+[Microsoft][ODBC SQL Server Driver]
+[Macromedia][SQLServer JDBC Driver]
+[SqlException
+System.Data.SqlClient.SqlException
+Unclosed quotation mark after the character string
+'80040e14'
+mssql_query()
+Microsoft OLE DB Provider for ODBC Drivers
+Microsoft OLE DB Provider for SQL Server
+Incorrect syntax near
+Sintaxis incorrecta cerca de
+Syntax error in string in query expression
+Unclosed quotation mark before the character string
+Data type mismatch in criteria expression.
+ADODB.Field (0x800A0BCD)
+the used select statements have different number of columns

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -57,20 +57,6 @@ class DOM < Base
     def page
         return @page if @page
         @page = parent.page if parent
-    end
-
-    # @return   [Watir::HTMLElement]
-    def element
-        @element ||= locate
-    end
-
-    def locator
-        @locator ||= Arachni::Browser::ElementLocator.from_node( node )
-    end
-
-    # Locates the element in the page.
-    def locate
-        locator.locate( browser )
     end
 
     # Triggers the event on the subject {#element}.

@@ -10,7 +10,8 @@ shared_examples_for 'cache' do
                     expect(described_class.new.capped?).to be_falsey
                 end
             end
-            describe Integer do
+
+            describe 'Integer' do
                 it 'imposes a limit to the size of the cache' do
                     expect(described_class.new( 10 ).capped?).to be_truthy
                 end
@@ -175,7 +176,7 @@ shared_examples_for 'cache' do
         end
     end
 
-    describe '#fetch_or_store' do
+    describe '#fetch' do
         context 'when the passed key exists' do
             it 'returns its value' do
                 old_val = 'my val'
@@ -183,7 +184,7 @@ shared_examples_for 'cache' do
 
                 cache = described_class.new
                 cache[:my_key] = old_val
-                cache.fetch_or_store( :my_key ) { new_val }
+                cache.fetch(:my_key ) { new_val }
 
                 expect(cache[:my_key]).to eq(old_val)
             end
@@ -193,7 +194,7 @@ shared_examples_for 'cache' do
             it 'assigns to it the return value of the given block' do
                 new_val = 'new val'
                 cache = described_class.new
-                cache.fetch_or_store( :my_key ) { new_val }
+                cache.fetch(:my_key ) { new_val }
 
                 expect(cache[:my_key]).to eq(new_val)
             end

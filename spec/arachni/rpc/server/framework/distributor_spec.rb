@@ -253,7 +253,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     distributor.split_page_workload( pages )
 
                     pages.each do |page|
-                        page.body << 'stuff'
+                        page.body += 'stuff'
                     end
 
                     workload = []
@@ -272,7 +272,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
                     distributor.split_page_workload( pages )
 
                     pages.each do |page|
-                        page.body << 'stuff'
+                        page.body += 'stuff'
                     end
 
                     workload = []

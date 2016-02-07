@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -43,17 +43,42 @@ class Manager
         Timeout.timeout 10 do
             while sleep 0.1 do
                 begin
-                    # I'd rather this be an INT but WEBrick's INT traps write to
-                    # the Logger and multiple INT signals force it to write to a
-                    # closed logger and crash.
-                    Process.kill( Gem.win_platform? ? 'QUIT' : 'KILL', pid )
-                rescue Errno::ESRCH
+                    Process.kill( Arachni.windows? ? 'KILL' : 'TERM', pid )
+                # Either kill was succesful or we don't have enough perms or
+                # we hit a reused PID for someone else's process, either way,
+                # consider the process gone.
+                rescue Errno::ESRCH, Errno::EPERM
                     @pids.delete pid
                     return
                 end
             end
         end
     rescue Timeout::Error
+    end
+
+    # @param    [Integer]   pid
+    # @return   [Boolean]
+    #   `true` if the process is alive, `false` otherwise.
+    def alive?( pid )
+        # Windows is not big on POSIX so try it its own way if possible.
+        if Arachni.windows?
+            begin
+                alive = false
+                wmi = WIN32OLE.connect( 'winmgmts://' )
+                processes = wmi.ExecQuery( "select ProcessId from win32_process where ProcessID='#{pid}'" )
+                processes.each do |proc|
+                    proc.ole_free
+                    alive = true
+                end
+                processes.ole_free
+                wmi.ole_free
+
+                return alive
+            rescue WIN32OLERuntimeError
+            end
+        end
+
+        !!(Process.kill( 0, pid ) rescue false)
     end
 
     # @param    [Array<Integer>]   pids
@@ -104,8 +129,29 @@ class Manager
         fork = options.delete(:fork)
         fork = true if fork.nil?
 
+        stdin      = options.delete(:stdin)
+        stdout     = options.delete(:stdout)
+        stderr     = options.delete(:stderr)
+        new_pgroup = options.delete(:new_pgroup)
+
+        spawn_options = {}
+
+        if new_pgroup
+            if Arachni.windows?
+                spawn_options[:new_pgroup] = new_pgroup
+            else
+                spawn_options[:pgroup] = new_pgroup
+            end
+        end
+
+        spawn_options[:in]     = stdin  if stdin
+        spawn_options[:out]    = stdout if stdout
+        spawn_options[:err]    = stderr if stderr
+
+        options[:ppid]  = Process.pid
+
         options[:options] ||= {}
-        options[:options] = Options.to_h.merge( options[:options] )
+        options[:options]   = Options.to_h.merge( options[:options] )
 
         # Paths are not included in RPC nor Hash representations as they're
         # considered local, in this case though they're necessary to provide
@@ -122,8 +168,17 @@ class Manager
         # have a fallback ready.
         if fork && Process.respond_to?( :fork )
             pid = Process.fork do
-                if discard_output?
+                $stdin = spawn_options[:in] if spawn_options[:in]
+
+                if spawn_options[:out]
+                    $stdout = spawn_options[:out]
+                elsif discard_output?
                     $stdout.reopen( Arachni.null_device, 'w' )
+                end
+
+                if spawn_options[:err]
+                    $stderr = spawn_options[:err]
+                elsif discard_output?
                     $stderr.reopen( Arachni.null_device, 'w' )
                 end
 
@@ -146,7 +201,11 @@ class Manager
             # It's very, **VERY** important that we use this argument format as
             # it bypasses the OS shell and we can thus count on a 1-to-1 process
             # creation and that the PID we get will be for the actual process.
-            pid = Process.spawn( RbConfig.ruby, RUNNER, *argv )
+            pid = Process.spawn(
+                RbConfig.ruby,
+                RUNNER,
+                *(argv + [spawn_options])
+            )
         end
 
         self << pid

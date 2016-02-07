@@ -10,7 +10,7 @@ shared_examples_for 'with_dom' do |html = nil|
 
     describe '#skip_dom' do
         context 'when' do
-            context true do
+            context 'true' do
                 before do
                     with_dom.skip_dom = true
                 end
@@ -20,7 +20,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
             end
 
-            context false do
+            context 'false' do
                 before do
                     with_dom.skip_dom = false
                 end
@@ -34,7 +34,7 @@ shared_examples_for 'with_dom' do |html = nil|
 
     describe '#skip_dom?' do
         context 'when #skip_dom is' do
-            context true do
+            context 'true' do
                 before do
                     with_dom.skip_dom = true
                 end
@@ -44,7 +44,7 @@ shared_examples_for 'with_dom' do |html = nil|
                 end
             end
 
-            context false do
+            context 'false' do
                 before do
                     with_dom.skip_dom = false
                 end
@@ -75,6 +75,15 @@ shared_examples_for 'with_dom' do |html = nil|
     describe '#dom' do
         it "returns #{described_class::DOM}" do
             expect(with_dom.dom).to be_kind_of described_class::DOM
+        end
+
+        context "when #{described_class::DOM}.new raises Inputtable::Error" do
+            it 'returns nil' do
+                subject.auditor = nil
+
+                allow(described_class::DOM).to receive(:new) { raise Arachni::Element::Capabilities::Inputtable::Error }
+                expect(subject.dom).to be_nil
+            end
         end
     end
 

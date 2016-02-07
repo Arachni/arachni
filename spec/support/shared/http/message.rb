@@ -11,6 +11,7 @@ shared_examples_for 'Arachni::HTTP::Message' do
                     'X-Stuff' => 'Blah'
                 }
             }
+
             r = described_class.new(options)
             expect(r.headers).to eq(options[:headers])
         end
@@ -41,11 +42,42 @@ shared_examples_for 'Arachni::HTTP::Message' do
             expect(r.url).to be_frozen
         end
 
-        it 'normalizes it' do
-            url = 'HttP://Stuff.Com/'
-            r = described_class.new( url: url )
-            r.url = url
-            expect(r.url).to eq(url.downcase)
+        context 'when :normalize_url is' do
+            context 'not given' do
+                it 'normalizes it' do
+                    url = 'HttP://Stuff.Com/'
+                    r = described_class.new( url: url )
+                    r.url = url
+                    expect(r.url).to eq(url.downcase)
+                end
+            end
+
+            context 'nil' do
+                it 'normalizes it' do
+                    url = 'HttP://Stuff.Com/'
+                    r = described_class.new( url: url, normalize_url: nil )
+                    r.url = url
+                    expect(r.url).to eq(url.downcase)
+                end
+            end
+
+            context 'true' do
+                it 'normalizes it' do
+                    url = 'HttP://Stuff.Com/'
+                    r = described_class.new( url: url, normalize_url: true )
+                    r.url = url
+                    expect(r.url).to eq(url.downcase)
+                end
+            end
+
+            context 'false' do
+                it 'does not normalize it' do
+                    url = 'HttP://Stuff.Com/'
+                    r = described_class.new( url: url, normalize_url: false )
+                    r.url = url
+                    expect(r.url).to eq(url)
+                end
+            end
         end
     end
 

@@ -72,17 +72,17 @@ describe Arachni::Browser::ElementLocator do
     end
 
     describe '#initialize' do
-        describe :tag_name do
+        describe ':tag_name' do
             it 'sets #tag_name' do
                 expect(described_class.new( tag_name: :a ).tag_name).to eq(:a)
             end
 
-            it 'converts it to a Sybmol' do
+            it 'converts it to a Symbol' do
                 expect(described_class.new( tag_name: 'a' ).tag_name).to eq(:a)
             end
         end
 
-        describe :attributes do
+        describe ':attributes' do
             it 'sets #attributes' do
                 expect(described_class.new( attributes: attributes ).attributes).to eq(attributes)
             end
@@ -90,19 +90,21 @@ describe Arachni::Browser::ElementLocator do
     end
 
     describe '#locate' do
-        it "returns a #{Watir} locator" do
+        it "returns a #{Selenium::WebDriver::Element} locator" do
             browser.load "#{url}/digest"
 
             l = described_class.new( tag_name: :a, attributes: { href: '#stuff'} )
             element = l.locate( browser )
-            expect(element).to be_kind_of Watir::HTMLElement
-            expect(element.exists?).to be_truthy
+            expect(element).to be_kind_of Selenium::WebDriver::Element
         end
 
         context 'when the element cannot be located' do
-            it "returns a #{Watir} locator" do
+            it "raises #{Selenium::WebDriver::Error::NoSuchElementError}" do
                 browser.load "#{url}/digest"
-                expect(subject.locate( browser ).exists?).to be_falsey
+
+                expect do
+                    subject.locate( browser )
+                end.to raise_error Selenium::WebDriver::Error::NoSuchElementError
             end
         end
     end
@@ -128,12 +130,38 @@ describe Arachni::Browser::ElementLocator do
         context 'when there are multiple attributes' do
             it 'returns a CSS locator with the attributes' do
                 expect(described_class.new(
-                    tag_name: :a,
-                    attributes: {
-                        stuff:  'blah',
-                        stuff2: 'blah2'
-                    }
-                ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
+                           tag_name: :a,
+                           attributes: {
+                               stuff:  'blah',
+                               stuff2: 'blah2'
+                           }
+                       ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
+            end
+
+            context 'and an ID' do
+                it 'only includes the ID' do
+                    expect(described_class.new(
+                               tag_name: :a,
+                               attributes: {
+                                   stuff:  'blah',
+                                   stuff2: 'blah2',
+                                   id:     'my-id'
+                               }
+                           ).css).to eq('a[id="my-id"]')
+                end
+            end
+
+            context 'and includes data ones' do
+                it "excludes all but #{described_class::ARACHNI_ID}" do
+                    expect(described_class.new(
+                        tag_name: :a,
+                        attributes: {
+                            'data-stuff'                => 'blah',
+                            'data-stuff2'               => 'blah2',
+                            described_class::ARACHNI_ID => 'blah3'
+                        }
+                    ).css).to eq("a[#{described_class::ARACHNI_ID}=\"blah3\"]")
+                end
             end
         end
     end

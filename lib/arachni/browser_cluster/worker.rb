@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -19,13 +19,6 @@ class BrowserCluster
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Worker < Arachni::Browser
     personalize_output
-
-    # @return   [Integer]
-    #   We can't just close all windows because PhantomJS for some reason
-    #   freezes after we do it a lot of times and we can't just leave open
-    #   windows accumulate, so we've got to take more drastic measures and kill
-    #   it when the amount of open windows reaches or exceeds this setting.
-    RESPAWN_WHEN_WINDOW_COUNT_REACHES = 5
 
     # @return    [BrowserCluster]
     attr_reader   :master
@@ -82,6 +75,10 @@ class Worker < Arachni::Browser
         # If we can't respawn, then bail out.
         return if browser_respawn_if_necessary.nil?
 
+        # ap '=' * 250
+        # ap '=' * 250
+        # pre = $WATIR_REQ_COUNT
+
         time = Time.now
         begin
             with_timeout @job_timeout do
@@ -110,12 +107,7 @@ class Worker < Arachni::Browser
             browser_respawn
         end
 
-        begin
-            watir.cookies.clear
-        # Working window was closed by JS (probably), start from scratch.
-        rescue Selenium::WebDriver::Error::NoSuchWindowError
-            browser_respawn
-        end
+        # ap $WATIR_REQ_COUNT - pre
 
         decrease_time_to_live
         browser_respawn_if_necessary
@@ -136,24 +128,6 @@ class Worker < Arachni::Browser
         clear_observers
 
         @job = nil
-    end
-
-    # We change the default scheduling to distribute elements and events to all
-    # available browsers ASAP, instead of building a list and then consuming it,
-    # since we're don't have to worry about messing up our page's state in this
-    # setup.
-    #
-    # @see Browser#trigger_events
-    def trigger_events
-        root_page = to_page
-
-        each_element_with_events do |element, events|
-            events.each do |name, _|
-                distribute_event( root_page, element, name.to_sym )
-            end
-        end
-
-        true
     end
 
     # Direct the distribution to the master and let it take it from there.
@@ -183,7 +157,7 @@ class Worker < Arachni::Browser
 
         # Keep checking to see if any of the 'done' criteria are true.
         kill_check = Thread.new do
-            sleep 0.1 while browser_alive? && wait && @job
+            sleep 0.1 while alive? && wait && @job
             @done_signal << nil
         end
 
@@ -198,7 +172,7 @@ class Worker < Arachni::Browser
 
     def inspect
         s = "#<#{self.class} "
-        s << "pid=#{@pid} "
+        s << "pid=#{@lifeline_pid} "
         s << "job=#{@job.inspect} "
         s << "last-url=#{@last_url.inspect} "
         s << "transitions=#{@transitions.size}"
@@ -247,9 +221,7 @@ class Worker < Arachni::Browser
     end
 
     def browser_respawn_if_necessary
-        return false if !time_to_die? && browser_alive? &&
-            watir.windows.size < RESPAWN_WHEN_WINDOW_COUNT_REACHES
-
+        return false if !time_to_die? && alive?
         browser_respawn
     end
 
@@ -259,8 +231,9 @@ class Worker < Arachni::Browser
         begin
             # If PhantomJS is already dead this will block for quite some time so
             # beware.
-            @watir.close if browser_alive?
-        rescue Selenium::WebDriver::Error::WebDriverError
+            @watir.close if @watir && alive?
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error
         end
 
         kill_process
@@ -269,7 +242,6 @@ class Worker < Arachni::Browser
         # that, just leave it dead and try again at the next job.
         begin
             @watir = ::Watir::Browser.new( selenium )
-            ensure_open_window
             true
         rescue Selenium::WebDriver::Error::WebDriverError,
             Browser::Error::Spawn => e

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -11,8 +11,6 @@
 #
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.2.3
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://php.net/manual/en/function.eval.php
@@ -32,18 +30,18 @@ class Arachni::Checks::CodeInjection < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            substring: (rand1.to_i + rand2.to_i).to_s,
-            format:    [Format::STRAIGHT]
+            signatures: (rand1.to_i * rand2.to_i).to_s,
+            format:     [Format::STRAIGHT]
         }
     end
 
     def self.code_strings
         # code strings to be injected to the webapp
         @code_strings ||= {
-            php:    "print #{rand1}+#{rand2};",
-            perl:   "print #{rand1}+#{rand2};",
-            python: "print #{rand1}+#{rand2}",
-            asp:    "Response.Write\x28#{rand1}+#{rand2}\x29"
+            php:    "print #{rand1}*#{rand2};",
+            perl:   "print #{rand1}*#{rand2};",
+            python: "print #{rand1}*#{rand2}",
+            asp:    "Response.Write\x28#{rand1}*#{rand2}\x29"
         }
     end
 
@@ -70,7 +68,7 @@ Injects code snippets and assess whether or not execution was successful.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.3',
+            version:     '0.2.5',
             platforms:   payloads.keys,
 
             issue:       {

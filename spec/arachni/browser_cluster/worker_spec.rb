@@ -17,7 +17,7 @@ describe Arachni::BrowserCluster::Worker do
 
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
     let(:job) do
-        Arachni::BrowserCluster::Jobs::ResourceExploration.new(
+        Arachni::BrowserCluster::Jobs::DOMExploration.new(
             resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync )
         )
     end
@@ -26,7 +26,7 @@ describe Arachni::BrowserCluster::Worker do
     let(:subject) { @cluster.workers.first }
 
     describe '#initialize' do
-        describe :job_timeout do
+        describe ':job_timeout' do
             it 'sets how much time to allow each job to run' do
                 @worker = described_class.new( job_timeout: 10 )
                 expect(@worker.job_timeout).to eq(10)
@@ -39,7 +39,7 @@ describe Arachni::BrowserCluster::Worker do
             end
         end
 
-        describe :max_time_to_live do
+        describe ':max_time_to_live' do
             it 'sets how many jobs should be run before respawning' do
                 @worker = described_class.new( max_time_to_live: 10 )
                 expect(@worker.max_time_to_live).to eq(10)
@@ -70,16 +70,41 @@ describe Arachni::BrowserCluster::Worker do
         end
 
         context 'before running the job' do
-            it 'ensures that there is a live PhantomJS process' do
-                Arachni::Processes::Manager.kill subject.pid
-                expect{ Process.getpgid( subject.pid ) }.to raise_error Errno::ESRCH
-                dead_pid = subject.pid
+            context 'when PhantomJS is dead' do
+                it 'spawns a new one' do
+                    Arachni::Processes::Manager.kill subject.browser_pid
 
-                @cluster.queue( custom_job ){}
-                @cluster.wait
+                    dead_lifeline_pid = subject.lifeline_pid
+                    dead_browser_pid  = subject.browser_pid
 
-                expect(subject.pid).not_to eq(dead_pid)
-                expect(Process.getpgid( subject.pid )).to be_truthy
+                    @cluster.queue( custom_job ){}
+                    @cluster.wait
+
+                    expect(subject.browser_pid).not_to eq(dead_browser_pid)
+                    expect(subject.lifeline_pid).not_to eq(dead_lifeline_pid)
+
+                    expect(Arachni::Processes::Manager.alive?( subject.lifeline_pid )).to be_truthy
+                    expect(Arachni::Processes::Manager.alive?( subject.browser_pid )).to be_truthy
+                end
+            end
+
+            context 'when the lifeline is dead' do
+                it 'spawns a new one' do
+                    Arachni::Processes::Manager << subject.browser_pid
+                    Arachni::Processes::Manager.kill subject.lifeline_pid
+
+                    dead_lifeline_pid = subject.lifeline_pid
+                    dead_browser_pid  = subject.browser_pid
+
+                    @cluster.queue( custom_job ){}
+                    @cluster.wait
+
+                    expect(subject.browser_pid).not_to eq(dead_browser_pid)
+                    expect(subject.lifeline_pid).not_to eq(dead_lifeline_pid)
+
+                    expect(Arachni::Processes::Manager.alive?( subject.lifeline_pid )).to be_truthy
+                    expect(Arachni::Processes::Manager.alive?( subject.browser_pid )).to be_truthy
+                end
             end
         end
 
@@ -89,23 +114,23 @@ describe Arachni::BrowserCluster::Worker do
                 expect(subject.run_job( custom_job )).to be_truthy
             end
 
-            context Selenium::WebDriver::Error::WebDriverError do
+            context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'respawns' do
-                    allow(subject.watir).to receive(:cookies) do
+                    expect(custom_job).to receive(:configure_and_run) do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
-                    allow(subject.watir).to receive(:close) do
+                    expect(subject.watir).to receive(:close) do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
                     watir = subject.watir
-                    pid   = subject.pid
+                    pid   = subject.browser_pid
 
                     subject.run_job( custom_job )
 
                     expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.pid)
+                    expect(pid).not_to eq(subject.browser_pid)
                 end
             end
         end
@@ -120,19 +145,6 @@ describe Arachni::BrowserCluster::Worker do
                 @cluster.wait
 
                 expect(subject.javascript.taint).to be_nil
-            end
-
-            it 'clears #cookies' do
-                subject.preload page
-                expect(subject.preloads).to be_any
-
-                @cluster.with_browser do |browser|
-                    browser.load page
-                    expect(subject.cookies).to be_any
-                end
-                @cluster.wait
-
-                expect(subject.cookies).to be_empty
             end
 
             it 'clears #preloads' do
@@ -236,39 +248,6 @@ describe Arachni::BrowserCluster::Worker do
                 expect(custom_job.time).to be > 0
             end
 
-            context 'when there are 5 or more windows open' do
-                before(:each) do
-                    5.times do
-                        subject.javascript.run( 'window.open()' )
-                    end
-                end
-
-                it 'respawns PhantomJS' do
-                    watir         = subject.watir
-                    pid = subject.pid
-
-                    expect(subject.watir.windows.size).to be > 5
-                    @cluster.explore( page ) {}
-                    @cluster.wait
-
-                    expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.pid)
-                    expect(subject.watir.windows.size).to eq(2)
-                end
-
-                it 'clears the cached HTTP responses' do
-                    subject.preload page
-                    expect(subject.preloads).to be_any
-                    subject.instance_variable_get(:@window_responses)
-
-                    expect(subject.watir.windows.size).to be > 5
-                    @cluster.queue( custom_job ) {}
-                    @cluster.wait
-
-                    expect(subject.instance_variable_get(:@window_responses)).to be_empty
-                end
-            end
-
             context 'when #time_to_live reaches 0' do
                 it 'respawns the browser' do
                     @cluster.shutdown
@@ -279,30 +258,30 @@ describe Arachni::BrowserCluster::Worker do
                     subject.max_time_to_live = 1
 
                     watir         = subject.watir
-                    pid = subject.pid
+                    pid = subject.browser_pid
 
                     @cluster.queue( custom_job ) {}
                     @cluster.wait
 
                     expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.pid)
+                    expect(pid).not_to eq(subject.browser_pid)
                 end
             end
 
             context 'when cookie clearing raises' do
-                context Selenium::WebDriver::Error::NoSuchWindowError do
+                context 'Selenium::WebDriver::Error::NoSuchWindowError' do
                     it 'respawns' do
                         allow(subject.watir).to receive(:cookies) do
                             raise Selenium::WebDriver::Error::NoSuchWindowError
                         end
 
                         watir = subject.watir
-                        pid   = subject.pid
+                        pid   = subject.browser_pid
 
                         subject.run_job( custom_job )
 
                         expect(watir).not_to eq(subject.watir)
-                        expect(pid).not_to eq(subject.pid)
+                        expect(pid).not_to eq(subject.browser_pid)
                     end
                 end
             end

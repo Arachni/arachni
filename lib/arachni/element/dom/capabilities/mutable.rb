@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,6 +13,16 @@ module Capabilities
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Mutable
     include Arachni::Element::Capabilities::Mutable
+
+    private
+
+    def prepare_mutation_options( options )
+        options = super( options )
+        # No sense in doing this for the DOM, either payload will be raw in the
+        # first place or the browser will override us.
+        options.delete :with_raw_payloads
+        options
+    end
 
 end
 

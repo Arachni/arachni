@@ -11,7 +11,7 @@ describe Arachni::RPC::Server::Base do
         @server = Arachni::RPC::Server::Base.new( opts )
     end
 
-    it 'supports UNIX sockets' do
+    it 'supports UNIX sockets', if: Arachni::Reactor.supports_unix_sockets? do
         opts = Arachni::Options.instance
         opts.rpc.server_address = nil
         opts.rpc.server_port    = nil

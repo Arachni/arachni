@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -61,6 +61,7 @@ module Mutable
                 element                     = self.dup
                 element.affected_input_name = FUZZ_NAME
                 element.inputs              = { payload => FUZZ_NAME_VALUE }
+                element.seed                = payload
                 yield element if block_given?
             else
                 print_debug_level_2 'Payload not supported as input name by' <<
@@ -86,6 +87,14 @@ module Mutable
 
             yield c
         end
+    end
+
+    private
+
+    def prepare_mutation_options( options )
+        options = super( options )
+        options.delete( :with_raw_payloads )
+        options
     end
 
 end

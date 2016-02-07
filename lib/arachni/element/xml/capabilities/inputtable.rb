@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -16,6 +16,12 @@ module Capabilities
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Inputtable
     include Arachni::Element::Capabilities::Inputtable
+
+    INVALID_INPUT_DATA = [ "\0" ]
+
+    def valid_input_data?( data )
+        !INVALID_INPUT_DATA.find { |c| data.include? c }
+    end
 
     # @param    [String]    name
     #   Input name.

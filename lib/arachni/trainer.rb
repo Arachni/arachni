@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -33,6 +33,8 @@ class Trainer
 
         @framework  = framework
         @updated    = false
+
+        @seen_pages = Support::LookUp::HashSet.new
 
         @trainings_per_url = Hash.new( 0 )
 
@@ -73,8 +75,6 @@ class Trainer
             return
         end
 
-        return false if !response.text?
-
         skip_message = nil
         if @trainings_per_url[response.url] >= MAX_TRAININGS_PER_URL
             skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
@@ -89,6 +89,20 @@ class Trainer
             return false
         end
 
+        param_names = response.parsed_url.query_parameters.keys
+        cookies     = Cookie.from_headers( response.url, response.headers ).map(&:name)
+
+        k = "#{param_names.hash}:#{cookies.hash}:#{response.body}"
+
+        # Naive optimization but it works a lot of the time. :)
+        if @seen_pages.include? k
+            print_debug "Already seen response for request ID: ##{response.request.id}"
+            return
+        end
+        @seen_pages << k
+
+        return false if !response.text?
+
         analyze response
         true
     rescue => e
@@ -102,7 +116,7 @@ class Trainer
     # @param    [Arachni::Page]    page
     def page=( page )
         ElementFilter.update_from_page page
-        @page = page.dup
+        @page = page
     end
 
     private

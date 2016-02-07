@@ -222,6 +222,23 @@ describe Arachni::Session do
         end
 
         context 'when a login check is available' do
+            it 'takes into account #check_options' do
+                subject.check_options = {
+                    cookies: {
+                        'custom-cookie' => 'value'
+                    }
+                }
+
+                Arachni::Options.session.check_url = @url
+
+                expect(subject.http).to receive(:request).with(
+                    Arachni::Options.session.check_url,
+                    hash_including( subject.check_options )
+                )
+
+                configured.logged_in?
+            end
+
             context 'and a valid session is available' do
                 it 'returns true' do
                     configured.login
@@ -365,7 +382,7 @@ describe Arachni::Session do
             end
         end
         context 'when passed an :action' do
-            context Regexp do
+            context 'Regexp' do
                 it 'should use it to match against form actions' do
                     expect(subject.find_login_form(
                         url:    @url + '/multiple',
@@ -373,7 +390,7 @@ describe Arachni::Session do
                     ).coverage_id).to eq(@id)
                 end
             end
-            context String do
+            context 'String' do
                 it 'should use it to match against form actions' do
                     expect(subject.find_login_form(
                         url:    @url + '/multiple',

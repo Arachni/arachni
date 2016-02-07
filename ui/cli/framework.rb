@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -54,7 +54,8 @@ class Framework
     def run
         print_status 'Initializing...'
 
-        get_user_command
+        # Won't work properly on MS Windows.
+        get_user_command if !Arachni.windows?
 
         begin
             # We may need to kill the audit so put it in a thread.
@@ -203,7 +204,7 @@ class Framework
                         'g'     => 'generate a report',
                         'v'     => "#{verbose? ? 'dis' : 'en'}able verbose messages",
                         'd'     => "#{debug? ? 'dis' : 'en'}able debugging messages.\n" <<
-                            "#{' ' * 11}(You can set it to the desired level by sending d[1-3]," <<
+                            "#{' ' * 11}(You can set it to the desired level by sending d[1-4]," <<
                             " current level is #{debug_level})"
                     }.each do |key, action|
                         next if %w(Enter s p).include?( key ) && !@framework.scanning?

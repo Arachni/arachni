@@ -15,38 +15,38 @@ describe name_from_filename do
     def issue_count_per_element_per_platform
         {
             php:    {
-                Element::Form         => 4,
+                Element::Form         => 8,
                 Element::Link         => 4,
                 Element::Cookie       => 4,
                 Element::Header       => 4,
-                Element::LinkTemplate => 4,
+                Element::LinkTemplate => 8,
                 Element::JSON         => 4,
                 Element::XML          => 8
             },
             perl:    {
-                Element::Form         => 4,
+                Element::Form         => 8,
                 Element::Link         => 4,
                 Element::Cookie       => 4,
                 Element::Header       => 4,
-                Element::LinkTemplate => 4,
+                Element::LinkTemplate => 8,
                 Element::JSON         => 4,
                 Element::XML          => 8
             },
             python:  {
-                Element::Form         => 2,
+                Element::Form         => 4,
                 Element::Link         => 2,
                 Element::Cookie       => 2,
                 Element::Header       => 2,
-                Element::LinkTemplate => 2,
+                Element::LinkTemplate => 4,
                 Element::JSON         => 2,
                 Element::XML          => 4
             },
             asp:    {
-                Element::Form         => 4,
-                Element::Link         => 4,
+                Element::Form         => 8,
+                Element::Link         => 5,
                 Element::Cookie       => 4,
                 Element::Header       => 4,
-                Element::LinkTemplate => 4,
+                Element::LinkTemplate => 8,
                 Element::JSON         => 4,
                 Element::XML          => 8
             },

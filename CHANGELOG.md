@@ -1,5 +1,113 @@
 # ChangeLog
 
+## 1.4 _(February 7, 2016)_
+
+- Native MS Windows compatibility.
+- Options
+    - `--http-proxy-type` -- Added `socks5h`, enabling hostname resolution via the proxy.
+    - Added
+        - Scope
+            - `--scope-exclude-file-extensions` -- CSV of file extensions to exclude.
+        - Audit
+            - `--audit-with-raw-payloads` -- Injects both raw and HTTP encoded payloads.
+- `URI` -- Optimized and re-written to completely bypass Ruby's `URI` lib.
+- `Plugin::Manager`
+    - Run `#prepare` methods of plugins in the Framework thread, ordered by plugin priority.
+- `HTTP`
+    - `ProxyServer` -- Replaced the previous `WEBrick`-based one with a custom
+        written server with support for `keep-alive` and low-overhead SSL interception.
+    - `Client`
+        - Added default value for `Accept-Language` header.
+        - Updated to treat cookie-jar cookies as dumb storage and not encode/decode
+            names and values.
+        - `Dynamic404Handler` -- Check for excessive amounts of noise during
+            custom-404 signature generation and abort if an accurate reading is
+            impossible.
+- `Page`
+    - `DOM`
+        - `#restore` -- Don't preload the stored page to avoid stale nonces,
+            instead rely solely on browser for caching.
+- `Browser`
+    - Replaced internal use of `Watir` with direct access to `Selenium`, resulting
+        in much better performance and lower CPU utilization.
+    - Sped up process spawning,
+    - Switched to `Selenium`'s default HTTP client for `WebDriver` communications
+        in order to resolve JRuby and MS Windows issues.
+    - Added support for tracking event delegation.
+    - `#spawn_phantomjs` -- Use a Ruby lifeline process to kill the browser
+            if the parent dies for whatever reason.
+    - `#fire_event` -- Track changes in timers caused by event triggers to identify
+        and wait for effects and transitions.
+- `Support`
+    - `Signature` -- Optimized signature tokenization, deduplication and compression
+        to be less resource intensive when processing large data sets.
+    - `Cache` -- Minimized calls to `Base#make_key`.
+    - Added
+        - `Glob` -- Glob matcher.
+- `Session`
+    - Added `#check_options`, allowing login scripts to set advanced HTTP request
+        options for login checks.
+- `REST::Server` -- Added REST API.
+- `RPC`
+    - `Server`
+        - `ActiveOptions#set` -- Allow options to be set during runtime and adjust
+            the scan scope accordingly.
+- `Element`
+    - `UIInput::DOM` -- Updated coverage identifier calculation.
+    - `UIForm::DOM` -- Updated coverage identifier calculation.
+    - `Capabilities`
+        - `Analyzable`
+            - `Signature`
+                - Replaced `regexp` and `substring` options with `signature` --
+                    type of matching depends on `signature` type.
+                - Allow `signature` to be generated dynamically based on the
+                    `HTTP::Response` about to be checked, from a `#call`able object.
+            - `Differential`
+                - Abort on partial responses to avoid FPs caused by server stress
+                    or Firewall/IDS/IPS.
+            - `Timeout`
+                - Added one more verification phase to further reduce the possibility
+                    of random FPs.
+- Checks
+    - Active -- Updated all checks that make use of `Element::Capabilities::Analyzable::Signature`
+        to provide simple substring signatures whenever possible.
+        Alternatively, when a `Regexp` is necessary, they take advantage of dynamic
+        signature generation based on the current response and perform a lightweight
+        preliminary check for hints of vulnerability, only then is the more
+        resource intensive `Regexp` matched.
+        - `xss`, `xss_dom`, `xss_tag`, `xss_event`, `xss_script_context` --
+            Optimized identification of tainted responses to avoid parsing as
+                much as possible.
+        - `xss_dom` -- Updated payloads to improve coverage.
+        - `sql_injection_differential`
+            - Replaced `-1` control `false` value with `-1839`
+            - When using quotes, quote all parts of the conditional in the SQL query.
+        - `no_sql_injection_differential`
+            - Replaced `-1` control `false` value with `-1839`
+    - Passive
+        - `directory_listing` - Bail out on failed requests to avoid FPs.
+        - `backdoors`, `backup_directories`, `backup_files`, `common_admin_interfaces`,
+            `common_directories`, `common_files` -- Bail out if the seed resource
+            is already a 404.
+        - Grep
+            - `emails` -- Verify e-mail addresses by resolving the identified domains.
+            - `credit_card`, `ssn` -- Mark issues as untrusted by default since
+                there's no way to verify SSNs.
+            - `http_only_cookies`, `insecure_cookies` -- Only check current page
+                cookies, don't let the CookieJar ones sneak in.
+- Plugins
+    - `proxy`
+        - Removed injection of control toolbar to each response.
+        - Cleaned up control panel design.
+        - Updated description to list management URLs and SSL interception info.
+    - `email_notify` -- Made username and password optional.
+    - `defaults/meta/remedy/`
+        - `discovery` -- Updated similarity check to prevent analysis of singular issues.
+- Reporters
+    - `xml` -- Updated validation messages to point to relevant markup.
+- Path extractors
+    - `meta_refresh` -- Strip whitespaces from URLs when not in quotes.
+
 ## 1.3.2 _(October 19, 2015)_
 
 - `UI`

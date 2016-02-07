@@ -1,9 +1,0 @@
-PostgreSQL query failed:
-supplied argument is not a valid PostgreSQL result
-pg_query\(\) \[:
-pg_exec\(\) \[:
-PostgreSQL.*ERROR
-Warning.*pg_.*
-valid PostgreSQL result
-Npgsql\.
-PG::([a-zA-Z]*)Error

@@ -5,12 +5,15 @@ require 'sinatra/contrib'
 
 @@errors ||= {}
 if @@errors.empty?
-    Dir.glob( File.dirname( __FILE__ ) + '/sql_injection/*' ).each do |path|
+    Dir.glob( File.dirname( __FILE__ ) + '/sql_injection/**/*' ).each do |path|
         @@errors[File.basename( path )] = IO.read( path )
     end
 end
 
-@@ignore ||= IO.read( File.dirname( __FILE__ ) + '/../../../../../components/checks/active/sql_injection/regexp_ignore.txt' )
+@@ignore ||= IO.read(
+    File.dirname( __FILE__ ) +
+        '/../../../../../components/checks/active/sql_injection/ignore_substrings'
+)
 
 def variations
     @@variations ||= [ '"\'`--', ')' ]

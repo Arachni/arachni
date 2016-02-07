@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -15,6 +15,7 @@ class UIForm
 class DOM < DOM
     include Arachni::Element::Capabilities::WithNode
 
+    include Arachni::Element::DOM::Capabilities::Locatable
     include Arachni::Element::DOM::Capabilities::Mutable
     include Arachni::Element::DOM::Capabilities::Inputtable
     include Arachni::Element::DOM::Capabilities::Submittable
@@ -42,16 +43,24 @@ class DOM < DOM
         transitions = fill_in_inputs
 
         print_debug "Submitting: #{self.source}"
-        submission_transition = browser.fire_event( element, @method )
+        submission_transition = browser.fire_event( locate, @method )
         print_debug "Submitted: #{self.source}"
 
-        return if !submission_transition
+        return [] if !submission_transition
 
         transitions + [submission_transition]
     end
 
     def valid_input_name?( name )
         @valid_input_names.include? name.to_s
+    end
+
+    def coverage_id
+        "#{super}:#{@method}:#{locator}"
+    end
+
+    def id
+        "#{super}:#{@method}:#{locator}"
     end
 
     def type

@@ -190,6 +190,50 @@ describe Arachni::Element::Capabilities::Analyzable::Differential do
                 expect(issues).to be_empty
             end
         end
+
+        context 'when a true response is incomplete' do
+            let(:url) { @url + '/partial_true' }
+
+            it 'does not log any issues' do
+                subject.differential_analysis( @opts )
+                auditor.http.run
+
+                expect(issues).to be_empty
+            end
+        end
+
+        context 'when a true response is incomplete' do
+            let(:url) { @url + '/partial_false' }
+
+            it 'does not log any issues' do
+                subject.differential_analysis( @opts )
+                auditor.http.run
+
+                expect(issues).to be_empty
+            end
+        end
+
+        context 'when a true response is incomplete' do
+            let(:url) { @url + '/partial_stream_true' }
+
+            it 'does not log any issues' do
+                subject.differential_analysis( @opts )
+                auditor.http.run
+
+                expect(issues).to be_empty
+            end
+        end
+
+        context 'when a true response is incomplete' do
+            let(:url) { @url + '/partial_stream_false' }
+
+            it 'does not log any issues' do
+                subject.differential_analysis( @opts )
+                auditor.http.run
+
+                expect(issues).to be_empty
+            end
+        end
     end
 
 end

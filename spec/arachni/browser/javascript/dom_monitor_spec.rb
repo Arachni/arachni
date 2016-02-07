@@ -68,7 +68,8 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     describe '#digest' do
         it 'returns a string digest of the current DOM tree' do
             load '/digest'
-            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://javascri' <<
+            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
+                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascri' <<
                 'pt.browser.arachni/' <<'taint_tracer.js><SCRIPT src' <<
                 '=http://javascript.browser.arachni/dom_monitor.js><SCRIPT>' <<
                 '<BODY onload=void();><DIV id=my-id-div><DIV class=my-class' <<
@@ -78,14 +79,16 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
         it 'does not include <p> elements' do
             load '/digest/p'
-            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://javascript' <<
+            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
+                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascript' <<
                 '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
                 'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><STRONG>')
         end
 
         it "does not include 'data-arachni-id' attributes" do
             load '/digest/data-arachni-id'
-            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://javascript' <<
+            expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
+                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascript' <<
                 '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
                 'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><DIV ' <<
                 'id=my-id-div><DIV class=my-class-div>')
@@ -148,16 +151,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
             expect(subject.elements_with_events).to eq([
                 {
-                    'tag_name' => 'html',
-                    'events' => [],
-                    'attributes' => {}
-                },
-                {
-                    'tag_name' => 'body',
-                    'events' => [],
-                    'attributes' => {}
-                },
-                {
                     'tag_name' => 'button',
                     'events' => [
                         [
@@ -179,24 +172,16 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
                 expect(subject.elements_with_events).to eq([
                     {
-                        "tag_name"   => "html",
-                        "events"     => [],
-                        "attributes" => {}
-                    },
-                    {
-                        "tag_name"   => "body",
-                        "events"     => [],
-                        "attributes" => {
-                            "style" => ""
-                        }
-                    },
-                    {
                         "tag_name"   => "button",
                         "events"     =>
                             [
                                 [
                                     "click",
                                     "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                ],
+                                [
+                                    "load",
+                                    "function () {\n\t\tdocument.removeEventListener( \"DOMContentLoaded\", completed, false );\n\t\twindow.removeEventListener( \"load\", completed, false );\n\t\tjQuery.ready();\n\t}"
                                 ]
                             ],
                         "attributes" => {
@@ -213,11 +198,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     load '/elements_with_events/attributes'
 
                     expect(subject.elements_with_events).to eq([
-                        { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
-                        },
-                        {
-                            'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                        },
                         {
                             'tag_name'   => 'button',
                             'events'     => [],
@@ -242,11 +222,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     load '/elements_with_events/listeners'
 
                     expect(subject.elements_with_events).to eq([
-                        { 'tag_name' => 'html', 'events' => [], 'attributes' => {}
-                        },
-                        {
-                            'tag_name' => 'body', 'events' => [], 'attributes' => {}
-                        },
                         {
                             'tag_name'   => 'button',
                             'events'     => [
@@ -262,281 +237,36 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                                 ['click', 'function (my_button2_click) {}']
                             ],
                             'attributes' => { 'id' => 'my-button2' }
-                        },
-                        {
-                            'tag_name' => 'button',
-                            'events' => [],
-                            'attributes' => { 'id' => 'my-button3' }
                         }
                     ])
                 end
             end
 
-            context 'jQuery' do
-                describe 'on()' do
-                    it 'returns information about all DOM elements along with their events' do
-                        load '/elements_with_events/jQuery.on'
+            context 'inherited events' do
+                it 'returns information about all DOM elements along with their events' do
+                    load 'elements_with_events/inherited'
 
-                        expect(subject.elements_with_events).to eq([
-                            {
-                                'tag_name'   => 'html',
-                                'events'     => [],
-                                'attributes' => {}
-                            },
-                            {
-                                'tag_name'   => 'body',
-                                'events'     => [],
-                                'attributes' => {
-                                    'style' => ''
-                                }
-                            },
-                            {
-                                'tag_name'   => 'button',
-                                'events'     => [
-                                    [
-                                        'click',
-                                        "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                    ]
-                                ],
-                                'attributes' => {
-                                    'id' => 'my-button'
-                                }
-                            }
-                        ])
-                    end
-
-                    context 'when using a selector' do
-                        it 'assigns the events to elements that match it' do
-                            load '/elements_with_events/jQuery.on-selector'
-
-                            expect(subject.elements_with_events).to eq([
-                                {
-                                    "tag_name"   => "html",
-                                    "events"     => [],
-                                    "attributes" => {}
-                                },
-                                {
-                                    "tag_name"   => "body",
-                                    "events"     =>
-                                        [
-                                            [
-                                                "click",
-                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                            ],
-                                            [
-                                                "hover",
-                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                            ]
-                                        ],
-                                    "attributes" => {
-                                        "style" => "",
-                                        "id"    => "body"
-                                    }
-                                },
-                                {
-                                    "tag_name"   => "button",
-                                    "events"     =>
-                                        [
-                                            [
-                                                "click",
-                                                "function () {\n\n            }"
-                                            ],
-                                            [
-                                                "hover",
-                                                "function () {\n\n            }"
-                                            ]
-                                        ],
-                                    "attributes" => {
-                                        "id" => "my-button"
-                                    }
-                                },
-                                {
-                                    "tag_name"   => "button",
-                                    "events"     => [
-                                        [
-                                            "click", "function () {\n\n            }"
-                                        ]
-                                    ],
-                                    "attributes" => {
-                                        "id" => "my-button-2"
-                                    }
-                                }
-                            ])
-
-                        end
-                    end
-
-                    context 'when using object types' do
-                        it 'returns information about all DOM elements along with their events' do
-                            load '/elements_with_events/jQuery.on-object-types'
-
-                            expect(subject.elements_with_events).to eq([
-                                {
-                                    "tag_name"   => "html",
-                                    "events"     => [],
-                                    "attributes" => {}
-                                },
-                                {
-                                    "tag_name"   => "body",
-                                    "events"     => [],
-                                    "attributes" => {
-                                        "style" => ""
-                                    }
-                                },
-                                {
-                                    "tag_name"   => "button",
-                                    "events"     =>
-                                        [
-                                            [
-                                                "click",
-                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                            ],
-                                            [
-                                                "hover",
-                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                            ]
-                                        ],
-                                    "attributes" => {
-                                        "id" => "my-button"
-                                    }
-                                }
-                            ])
-
-                        end
-
-                        context 'when using a selector' do
-                            it 'assigns the events to elements that match it' do
-                                load '/elements_with_events/jQuery.on-object-types-selector'
-
-                                pp expect(subject.elements_with_events).to eq([
-                                    {
-                                        "tag_name"   => "html",
-                                        "events"     => [],
-                                        "attributes" => {}
-                                    },
-                                    {
-                                        "tag_name"   => "body",
-                                        "events"     => [
-                                            ["click",
-                                             "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                            ],
-                                            [
-                                                "hover",
-                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                            ]
-                                        ],
-                                        "attributes" => {
-                                            "id"    => "body",
-                                            "style" => ""
-                                        }
-                                    },
-                                    {
-                                        "tag_name"   => "button",
-                                        "events"     => [
-                                            [
-                                                "click", "function () {}"
-                                            ],
-                                            [
-                                                "hover", "function () {}"
-                                            ]
-                                        ],
-                                        "attributes" => {
-                                            "id" => "my-button"
-                                        }
-                                    },
-                                    {
-                                        "tag_name"   => "button",
-                                        "events"     => [],
-                                        "attributes" => {
-                                            "id" => "my-button-2"
-                                        }
-                                    }
-                                ])
-
-                            end
-                        end
-                    end
-                end
-
-                describe 'delegate()' do
-                    it 'returns information about all DOM elements along with their events' do
-                        load '/elements_with_events/jQuery.delegate'
-
-                        expect(subject.elements_with_events).to eq([
-                            {
-                                "tag_name"   => "html",
-                                "events"     => [],
-                                "attributes" => {}
-                            },
-                            {
-                                "tag_name"   => "body",
-                                "events"     =>
-                                    [
-                                        [
-                                            "click",
-                                            "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                        ]
-                                    ],
-                                "attributes" => {
-                                    "style" => "",
-                                    "id"    => "body"
-                                }
-                            },
-                            {
-                                "tag_name"   => "button",
-                                "events"     => [
-                                    [
-                                        "click",
-                                        "function () {}"
-                                    ]
-                                ],
-                                "attributes" => {
-                                    "id" => "my-button"
-                                }
-                            }
-                        ])
-
-                    end
-
-                    context 'when using object types' do
-                        it 'returns information about all DOM elements along with their events' do
-                            load '/elements_with_events/jQuery.delegate'
-
-                            expect(subject.elements_with_events).to eq([
-                                {
-                                    "tag_name"   => "html",
-                                    "events"     => [],
-                                    "attributes" => {}
-                                },
-                                {
-                                    "tag_name"   => "body",
-                                    "events"     =>
-                                        [
-                                            [
-                                                "click",
-                                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                            ]
-                                        ],
-                                    "attributes" => {
-                                        "id"    => "body",
-                                        "style" => ""
-                                    }
-                                },
-                                {
-                                    "tag_name"   => "button",
-                                    "events"     => [
-                                        [
-                                            "click",
-                                            "function () {}"
-                                        ]
-                                    ],
-                                    "attributes" => {
-                                        "id" => "my-button"
-                                    }
-                                }
-                            ])
-                        end
-                    end
+                    expect(subject.elements_with_events).to eq([
+                       { "tag_name"   => "div",
+                         "events"     => [["click", "function (parent_click) {}"]],
+                         "attributes" => { "id" => "parent" } },
+                       { "tag_name"   => "button",
+                         "events"     => [["click", "function (parent_click) {}"],
+                                          ["click", "function (window_click) {}"],
+                                          ["click", "function (document_click) {}"]],
+                         "attributes" => { "id" => "parent-button" } },
+                       { "tag_name"   => "div",
+                         "events"     =>
+                             [["click", "function (child_click) {}"]],
+                         "attributes" => { "id" => "child" } },
+                       { "tag_name"   => "button",
+                         "events"     =>
+                             [["click", "function (parent_click) {}"],
+                              ["click", "function (child_click) {}"],
+                              ["click", "function (window_click) {}"],
+                              ["click", "function (document_click) {}"]],
+                         "attributes" => { "id" => "child-button" } }]
+                )
                 end
             end
         end

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -28,8 +28,15 @@ module WithDOM
     private
 
     def dom_data
+        return if !@source
         return @dom_data if @dom_data
         return if @dom_data == false
+
+        # Don't bother parsing the source if it doesn't have anything interesting.
+        if !(@source =~ /href=['"]?.*#.*?>/mi)
+            return @dom_data = false
+        end
+
         return if !node
 
         @dom_data ||= (self.class::DOM.data_from_node( node ) || false)

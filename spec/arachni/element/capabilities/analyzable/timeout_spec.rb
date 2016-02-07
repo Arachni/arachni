@@ -398,7 +398,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
             end
         end
 
-        describe :timeout do
+        describe ':timeout' do
             it 'sets the delay' do
                 c = Arachni::Element::Link.new(
                     url:    @url + '/true',
@@ -415,7 +415,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
             end
         end
 
-        describe :timeout_divider do
+        describe ':timeout_divider' do
             it 'modifies the final timeout value' do
                 subject.timeout_analysis( '__TIME__',
                                             options.merge(
@@ -430,7 +430,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
             end
         end
 
-        describe :add do
+        describe ':add' do
             it 'adds the given integer to the expected webapp delay' do
                 c = Arachni::Element::Link.new( url: @url + '/add', inputs: inputs )
                 c.auditor = auditor
@@ -446,7 +446,7 @@ describe Arachni::Element::Capabilities::Analyzable::Timeout do
                 run
 
                 expect(issues).to be_any
-                expect(issues.flatten.first.response.time.to_i).to eq(11)
+                expect(issues.flatten.first.request.timeout).to eq(11_000)
             end
         end
     end

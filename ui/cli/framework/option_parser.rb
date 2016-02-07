@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -43,7 +43,7 @@ class OptionParser < UI::CLI::OptionParser
             verbose_on
         end
 
-        on( '--output-debug [LEVEL 1-3]', Integer, 'Show debugging information.' ) do |level|
+        on( '--output-debug [LEVEL 1-4]', Integer, 'Show debugging information.' ) do |level|
             debug_on( level || 1 )
         end
 
@@ -74,6 +74,12 @@ class OptionParser < UI::CLI::OptionParser
                '(Can be used multiple times.)'
         ) do |pattern|
             options.scope.exclude_path_patterns << pattern
+        end
+
+        on( '--scope-exclude-file-extensions EXTENSION,EXTENSION2,..',
+            'Exclude resources with the specified extensions.'
+        ) do |extensions|
+            options.scope.exclude_file_extensions = extensions.split(',')
         end
 
         on( '--scope-exclude-content-pattern PATTERN', Regexp,
@@ -221,6 +227,12 @@ class OptionParser < UI::CLI::OptionParser
             'Inject payloads into parameter names.'
         ) do
             options.audit.parameter_names = true
+        end
+
+        on( '--audit-with-raw-payloads',
+            'Inject payloads with and without HTTP encoding.'
+        ) do
+            options.audit.with_raw_payloads = true
         end
 
         on( '--audit-with-extra-parameter',
@@ -403,9 +415,9 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Checks'
 
-        on( '--checks-list [PATTERN]', Regexp,
-               'List available checks based on the provided pattern.',
-               '(If no pattern is provided all checks will be listed.)'
+        on( '--checks-list [GLOB]',
+               'List available checks based on the provided glob.',
+               '(If no glob is provided all checks will be listed.)'
         ) do |pattern|
             list_checks( framework.list_checks( pattern ) )
             exit
@@ -434,9 +446,9 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Plugins'
 
-        on( '--plugins-list [PATTERN]', Regexp,
-               'List available plugins based on the provided pattern.',
-               '(If no pattern is provided all plugins will be listed.)'
+        on( '--plugins-list [GLOB]',
+               'List available plugins based on the provided glob.',
+               '(If no glob is provided all plugins will be listed.)'
         ) do |pattern|
             list_plugins( framework.list_plugins( pattern ) )
             exit

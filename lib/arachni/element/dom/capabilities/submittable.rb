@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -23,7 +23,7 @@ module Submittable
 
             # If we've wondered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
-            if (transitions = self.trigger)
+            if (transitions = self.trigger.compact).any?
                 page = browser.to_page
                 page.dom.transitions += transitions
                 block.call page.tap { |p| p.request.performer = self }

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -86,6 +86,9 @@ module Timeout
             @candidates_phase_3    = []
             @phase_3_candidate_ids = Support::LookUp::HashSet.new( hasher: :timeout_id )
 
+            @candidates_phase_4    = []
+            @phase_4_candidate_ids = Support::LookUp::HashSet.new( hasher: :timeout_id )
+
             @logged = Support::LookUp::HashSet.new( hasher: :timeout_id )
 
             deduplicate
@@ -124,18 +127,15 @@ module Timeout
             end
 
             while (candidate = @candidates_phase_3.pop)
-
-                # We've allowed multiple variations of the same element in
-                # previous operations because, during the audit, the payload
-                # that hit could have made the server unresponsive and fooled us
-                # into thinking that other valid variations exist too.
-                #
-                # That's why Phase 3 is here, to shift through these possible
-                # issues and verify them once again, however, if a variation
-                # is logged, it's game over for that input vector.
                 next if Timeout.deduplicate? && logged?( candidate )
 
                 analysis_phase_3( candidate )
+            end
+
+            while (candidate = @candidates_phase_4.pop)
+                next if Timeout.deduplicate? && logged?( candidate )
+
+                analysis_phase_4( candidate )
             end
         end
 
@@ -177,6 +177,26 @@ module Timeout
             elem.print_status "Phase 3 for #{elem.type} input " <<
                 "'#{elem.affected_input_name}' with action #{elem.action}"
 
+            elem.timing_attack_verify( delay ) do
+                elem.print_info '* Verification was successful, candidate can ' <<
+                    'progress to Phase 4.'
+
+                add_phase4_candidate( elem )
+            end
+        end
+
+        # (Called by {.run}, do *NOT* call manually.)
+        #
+        # Runs phase e of the timing attacks, auditing an individual element
+        # (which passed phase 3) with a higher delay and timeout.
+        def analysis_phase_4( elem )
+            # Use the same delay, we don't want to overdo it because the server
+            # might cut us off due to its own restrictions.
+            delay = elem.audit_options[:delay]
+
+            elem.print_status "Phase 4 for #{elem.type} input " <<
+                "'#{elem.affected_input_name}' with action #{elem.action}"
+
             elem.timing_attack_verify( delay ) do |response|
                 # Update the payload stub with a real value, for the user's
                 # sake at this point.
@@ -195,7 +215,7 @@ module Timeout
 
                 controls = elem.timing_attack_remark_data[:control_times]
                 remarks << ('Response times (in seconds) for control requests ' <<
-                    "prior to phases 2 & 3: #{controls.join(', ')}")
+                    "prior to phases 2, 3, 4: #{controls.join(', ')}")
 
                 stabilizations = elem.timing_attack_remark_data[:stabilization_times]
                 remarks << ('Response times (in seconds) for stabilization ' <<
@@ -213,6 +233,11 @@ module Timeout
         def add_phase3_candidate( elem )
             @phase_3_candidate_ids << elem
             @candidates_phase_3    << elem
+        end
+
+        def add_phase4_candidate( elem )
+            @phase_4_candidate_ids << elem
+            @candidates_phase_4    << elem
         end
 
         # @param    [Element::Capabilities::Analyzable::Timeout]    element
@@ -313,7 +338,9 @@ module Timeout
             'wear off, this may take a while (max waiting time is ' <<
              "#{options[:timeout] / 1000.0} seconds)."
 
-        if (response = timeout_control.submit( options )).timed_out?
+        response = timeout_control.submit( options )
+
+        if response.timed_out? || response.partial?
             print_bad "#{prepend}Max waiting time exceeded."
             false
         else
@@ -358,11 +385,11 @@ module Timeout
         }
 
         if debug_level_2?
-            print_debug_level_2 "#{__method__}: #{options}"
+            print_debug_level_2 "#{options}"
         end
 
         audit( payloads, options ) do |response, mutation|
-            next if !response.timed_out?
+            next if !response.timed_out? || response.partial?
 
             mutation.timing_attack_remark_data[:delays] << options[:delay]
             block.call( mutation, response )
@@ -420,7 +447,7 @@ module Timeout
             print_verbose "  * Payload:         #{payload.inspect}"
 
             submit( response_max_size: 0, timeout: timeout ) do |response|
-                if !response.timed_out?
+                if !response.timed_out? || response.partial?
                     print_info '* Verification failed.'
                     print_verbose "  * Server responded in #{response.time} seconds."
                     next
@@ -462,7 +489,7 @@ module Timeout
         # tricked by WAFs/IDS/IPS dropping packets.
         self.affected_input_value = seed.sub( '__TIME__', '0' )
         submit( response_max_size: 0, timeout: timeout ) do |control|
-            if control.timed_out?
+            if control.timed_out? || control.partial?
                 print_info '* Control check failed, aborting.'
                 next
             end

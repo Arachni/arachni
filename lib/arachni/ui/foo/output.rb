@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -63,10 +63,26 @@ module Output
     def print_debug_level_3(*)
     end
 
+    def print_debug_level_4(*)
+    end
+
     def print_debug_backtrace(*)
     end
 
     def print_error_backtrace(*)
+    end
+
+    def debug_level_1?
+        debug? 1
+    end
+    def debug_level_2?
+        debug? 2
+    end
+    def debug_level_3?
+        debug? 3
+    end
+    def debug_level_4?
+        debug? 4
     end
 
     def print_verbose(*)

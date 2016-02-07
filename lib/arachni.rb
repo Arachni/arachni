@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -8,8 +8,9 @@
 
 require 'rubygems'
 require 'bundler/setup'
-
-require 'oj_mimic_json'
+require 'concurrent'
+require 'pp'
+require 'ap'
 
 def ap( obj )
     super obj, raw: true
@@ -18,6 +19,20 @@ end
 module Arachni
 
     class <<self
+
+        # Runs a minor GC to collect young, short-lived objects.
+        #
+        # Generally called after analysis operations that generate a lot of
+        # new temporary objects.
+        def collect_young_objects
+            GC.start( full_mark: false )
+        end
+
+        def tmpdir
+            # On MS Windows Dir.tmpdir can return the path with a shortname,
+            # better avoid that as it can be insonsistent with other paths.
+            get_long_win32_filename( Dir.tmpdir )
+        end
 
         def null_device
             Gem.win_platform? ? 'NUL' : '/dev/null'
@@ -39,8 +54,38 @@ module Arachni
             !!ENV['ARACHNI_PROFILER']
         end
 
+        if Arachni.windows?
+            require 'find'
+            require 'fileutils'
+            require 'Win32API'
+            require 'win32ole'
+
+            def get_long_win32_filename( short_name )
+                short_name = short_name.dup
+                max_path   = 1024
+                long_name  = ' ' * max_path
+
+                lfn_size = Win32API.new(
+                    "kernel32", 
+                    "GetLongPathName",
+                    ['P','P','L'],
+                    'L'
+                ).call( short_name, long_name, max_path )
+
+                (1..max_path).include?( lfn_size ) ? 
+                    long_name[0..lfn_size-1] : short_name
+            end 
+        else
+            def get_long_win32_filename( short_name )
+                short_name
+            end
+        end
     end
 
+end
+
+if !Arachni.jruby?
+    require 'oj_mimic_json'
 end
 
 require_relative 'arachni/version'

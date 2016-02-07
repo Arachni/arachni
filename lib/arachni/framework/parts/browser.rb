@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -114,7 +114,7 @@ module Browser
         # needs to have a clean state.
         schedule_dom_metadata_application( page )
 
-        browser_cluster.queue( browser_job.forward( resource: page ) ) do |result|
+        browser_cluster.queue( browser_job.forward( resource: page.dom.state ) ) do |result|
             handle_browser_page result.page
         end
 
@@ -131,21 +131,20 @@ module Browser
         return if !checks.values.
             find { |c| c.check? page, [Element::Form::DOM, Element::Cookie::DOM], true }
 
-        page.clear_cache
-
+        dom = page.dom.state
         browser_cluster.with_browser do |browser|
-            apply_dom_metadata( browser, page )
+            apply_dom_metadata( browser, dom )
         end
     end
 
-    def apply_dom_metadata( browser, page )
+    def apply_dom_metadata( browser, dom )
         bp = nil
 
         begin
-            bp = browser.load( page ).to_page
+            bp = browser.load( dom ).to_page
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
-            print_debug "Could not apply metadata to '#{page.dom.url}'" <<
+            print_debug "Could not apply metadata to '#{dom.url}'" <<
                             " because: #{e} [#{e.class}"
             return
         end
@@ -163,7 +162,7 @@ module Browser
         #
         # Also, this job should never end so that all analysis operations
         # share the same state.
-        @browser_job ||= BrowserCluster::Jobs::ResourceExploration.new(
+        @browser_job ||= BrowserCluster::Jobs::DOMExploration.new(
             never_ending: true
         )
     end

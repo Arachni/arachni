@@ -1,7 +1,12 @@
 # encoding: utf-8
 require 'zlib'
+require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
+require 'sinatra/streaming'
+
+helpers Sinatra::Streaming
+
 set :logging, false
 
 helpers do
@@ -27,6 +32,47 @@ helpers do
         @auth ||=  Rack::Auth::Basic::Request.new(request.env)
         @auth.provided? and @auth.basic? and @auth.credentials and
             @auth.credentials == ['u se rname$@#@#%$3#@%@#', 'p a  :wo\'rd$@#@#%$3#@%@#' ]
+    end
+end
+
+
+get '/raw' do
+    {
+        'query' => env['QUERY_STRING'],
+        'body'  => request.body.read
+    }.to_json
+end
+
+post '/raw' do
+    {
+        'query' => env['QUERY_STRING'],
+        'body'  => request.body.read
+    }.to_json
+end
+
+get '/partial' do
+    [ 200, { 'Content-Length' => '1000' }, 'Hello!' ]
+end
+
+get '/partial_stream' do
+    stream do |out|
+        5.times do
+            out.puts "Hello!"
+            out.close
+        end
+
+        out.flush
+    end
+end
+
+get '/stream' do
+    stream do |out|
+        5.times do
+            out.puts 'Hello!'
+            sleep 1
+        end
+
+        out.flush
     end
 end
 

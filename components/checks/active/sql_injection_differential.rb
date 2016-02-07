@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,8 +13,6 @@
 # consistent with that of a vulnerable application
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.4.3
 #
 # @see http://cwe.mitre.org/data/definitions/89.html
 # @see http://capec.mitre.org/data/definitions/7.html
@@ -36,13 +34,13 @@ class Arachni::Checks::SqlInjectionDifferential < Arachni::Check::Base
         return @options if @options
 
         pairs  = []
-        falses = queries_for_expression( '1=%q%2' )
+        falses = queries_for_expression( '%q%1%q%=%q%2' )
 
-        queries_for_expression( '1=%q%1' ).each.with_index do |true_expr, i|
+        queries_for_expression( '%q%1%q%=%q%1' ).each.with_index do |true_expr, i|
             pairs << { true_expr => falses[i] }
         end
 
-        @options = { false: '-1', pairs: pairs }
+        @options = { false: '-1839', pairs: pairs }
     end
 
     def run
@@ -59,7 +57,7 @@ that of a vulnerable application.
 },
             elements:    [ Element::Link, Element::Form, Element::Cookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.4.3',
+            version:     '0.4.4',
             platforms:   [ :sql ],
 
             issue:       {

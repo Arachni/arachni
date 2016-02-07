@@ -65,7 +65,7 @@ describe Arachni::Framework::Parts::Scope do
         end
 
         context 'when #page_limit_reached?' do
-            context true do
+            context 'true' do
                 it 'returns false' do
                     allow(subject).to receive(:page_limit_reached?) { true }
                     expect(subject.accepts_more_pages?).to be_falsey
@@ -74,7 +74,7 @@ describe Arachni::Framework::Parts::Scope do
         end
 
         context 'when #crawl?' do
-            context false do
+            context 'false' do
                 it 'returns false' do
                     allow(subject).to receive(:crawl?) { false }
                     expect(subject.accepts_more_pages?).to be_falsey

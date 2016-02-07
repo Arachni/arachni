@@ -38,21 +38,20 @@ shared_examples_for 'dom_only' do |source|
     describe '#coverage_id' do
         it 'delegates to #dom' do
             allow(subject.dom).to receive(:coverage_id).and_return( 'stuff' )
-            expect(subject.coverage_id).to eq 'stuff'
+            expect(subject.coverage_id).to eq "#{described_class.type}:stuff"
         end
     end
 
     describe '#coverage_hash' do
-        it 'delegates to #dom' do
-            allow(subject.dom).to receive(:coverage_hash).and_return( 123 )
-            expect(subject.coverage_hash).to eq 123
+        it 'hashes #coverage_id' do
+            expect(subject.coverage_hash).to eq subject.coverage_id.persistent_hash
         end
     end
 
     describe '#id' do
         it 'delegates to #dom' do
-            allow(subject.dom).to receive(:id).and_return( '123' )
-            expect(subject.id).to eq '123'
+            allow(subject.dom).to receive(:id).and_return( 'stuff' )
+            expect(subject.id).to eq "#{described_class.type}:stuff"
         end
     end
 

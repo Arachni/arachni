@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -16,6 +16,8 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
     end
 
     def run
+        return if page.code != 200
+
         path = get_path( page.url )
         return if audited?( path )
 
@@ -29,7 +31,7 @@ class Arachni::Checks::Backdoors < Arachni::Check::Base
             description:      %q{Tries to find common backdoors on the server.},
             elements:         [Element::Server],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:          '0.2.5',
+            version:          '0.2.6',
             exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {

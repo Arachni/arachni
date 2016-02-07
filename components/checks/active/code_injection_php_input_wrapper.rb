@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,15 +7,14 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.2
 # @see OWASP    https://www.owasp.org/index.php/Top_10_2007-Malicious_File_Execution
 class Arachni::Checks::CodeInjectionPhpInputWrapper < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format:    [Format::STRAIGHT],
-            body:      "<?php echo 'vDBVBsbVdv'; ?> <?php echo chr(80).chr(76).chr(76).chr(33).chr(56).chr(111).chr(55) ?>",
-            substring: 'vDBVBsbVdv PLL!8o7',
+            format:     [Format::STRAIGHT],
+            body:       "<?php echo 'vDBVBsbVdv'; ?> <?php echo chr(80).chr(76).chr(76).chr(33).chr(56).chr(111).chr(55) ?>",
+            signatures: 'vDBVBsbVdv PLL!8o7',
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
@@ -53,7 +52,7 @@ to try and load it.
 },
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.2',
+            version:     '0.1.3',
             platforms:   [:php],
 
             issue:       {

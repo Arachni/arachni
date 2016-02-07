@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -67,7 +67,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             name:        'E-mail notify',
             description: %q{Sends a notification (and optionally a report) over SMTP at the end of the scan.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.5',
+            version:     '0.1.6',
             options:     [
                 Options::String.new( :to,
                     required:    true,
@@ -95,11 +95,9 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                     description: 'Use TLS/SSL?.'
                 ),
                 Options::String.new( :username,
-                    required:    true,
                     description: 'SMTP username.'
                 ),
                 Options::String.new( :password,
-                    required:    true,
                     description: 'SMTP password.'
                 ),
                 Options::String.new( :domain,
@@ -108,7 +106,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 ),
                 Options::MultipleChoice.new( :authentication,
                     description: 'Authentication.',
-                    default:     'plain',
+                    default:     '',
                     choices:     ['plain', 'login', 'cram_md5', '']
                 ),
                 Options::MultipleChoice.new( :report,

@@ -16,7 +16,7 @@ describe Arachni::Page::Scope do
         end
 
         context "when #{Arachni::HTTP::Response::Scope}#out?" do
-            context true do
+            context 'true' do
                 it 'returns true' do
                     # We can't stub #out? because we also override it.
                     allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:exclude?) { true }
@@ -24,7 +24,7 @@ describe Arachni::Page::Scope do
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'returns false' do
                     allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:exclude?) { false }
                     expect(subject.out?).to be_falsey
@@ -33,14 +33,14 @@ describe Arachni::Page::Scope do
         end
 
         context 'when #dom_depth_limit_reached?' do
-            context true do
+            context 'true' do
                 it 'returns true' do
                     allow(subject).to receive(:dom_depth_limit_reached?) { true }
                     expect(subject.out?).to be_truthy
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'returns false' do
                     allow(subject).to receive(:dom_depth_limit_reached?) { false }
                     expect(subject.out?).to be_falsey

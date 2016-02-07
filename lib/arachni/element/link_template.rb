@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -100,11 +100,13 @@ class LinkTemplate < Base
 
     def to_rpc_data
         data = super
+        data.delete 'dom_data'
+
         return data if !@template
 
         data.merge!( 'template' => @template.source )
         data['initialization_options']['template'] = data['template']
-        data.delete 'dom_data'
+
         data
     end
 
@@ -160,7 +162,10 @@ class LinkTemplate < Base
         def from_document( url, document, templates = Arachni::Options.audit.link_templates )
             return [] if templates.empty?
 
-            document = Nokogiri::HTML( document.to_s ) if !document.is_a?( Nokogiri::HTML::Document )
+            if !document.is_a?( Nokogiri::HTML::Document )
+                document = Arachni::Parser.parse( document.to_s )
+            end
+
             base_url = begin
                 document.search( '//base[@href]' )[0]['href']
             rescue

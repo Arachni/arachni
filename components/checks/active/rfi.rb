@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,7 +9,6 @@
 # Simple Remote File Inclusion (and tutorial) check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.3.1
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -58,8 +57,8 @@ class Arachni::Checks::Rfi < Arachni::Check::Base # *always* extend Arachni::Che
     #
     def self.options
         @options ||= {
-            substring:       '705cd559b16e6946826207c2199bd890',
-            submit: {
+            signatures: '705cd559b16e6946826207c2199bd890',
+            submit:     {
                 follow_location: false
             }
         }
@@ -106,7 +105,7 @@ the HTTP response body.
             # empty or don't define it at all.
             elements:    ELEMENTS_WITH_INPUTS - [Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3.1',
+            version:     '0.3.2',
 
             issue:       {
                 name:        %q{Remote File Inclusion},

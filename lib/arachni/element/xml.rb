@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -60,7 +60,7 @@ class XML < Base
     #
     #   If a {#transform_xml} callback has been set, it will return its value.
     def to_xml
-        doc = Nokogiri::XML( source )
+        doc = Arachni::Parser.parse_xml( source ).dup
 
         inputs.each do |path, content|
             doc.css( path ).each do |node|
@@ -153,7 +153,7 @@ class XML < Base
         end
 
         def parse_inputs( doc )
-            doc = doc.is_a?( Nokogiri::XML ) ? doc : Nokogiri::XML( doc )
+            doc = doc.is_a?( Nokogiri::XML ) ? doc : Arachni::Parser.parse_xml( doc )
 
             inputs = {}
             doc.traverse do |node|

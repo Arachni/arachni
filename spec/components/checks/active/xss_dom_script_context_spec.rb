@@ -14,7 +14,7 @@ describe name_from_filename do
             Element::Link::DOM         => 2,
             Element::Cookie::DOM       => 2,
             Element::LinkTemplate::DOM => 2,
-            Element::UIInput::DOM        => 2,
+            Element::UIInput::DOM      => 2,
             Element::UIForm::DOM       => 2
         }
     end

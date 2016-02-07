@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -56,7 +56,7 @@ module Mutable
         print_debug_formatting( options )
 
         options   = prepare_mutation_options( options )
-        generated = Arachni::Support::LookUp::HashSet.new( hasher: :mutable_id )
+        generated = Arachni::Support::LookUp::HashSet.new
 
         if options[:parameter_values]
             options[:format].each do |format|
@@ -106,6 +106,12 @@ module Mutable
     end
 
     private
+
+    def prepare_mutation_options( options )
+        options = super( options )
+        options.delete( :with_raw_payloads )
+        options
+    end
 
     def immutable_input?( path )
         [path].flatten.each do |name|

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -109,15 +109,14 @@ class Signature
     # @param    [Signature, String] data
     #
     # @return [Array<String,Integer>]
-    #   Words as tokens represented by either the words themselves or their
-    #   hashes, depending on which is smaller in size.
+    #   Words as tokens.
     def tokenize( data )
         return data.tokens if data.is_a? self.class
 
         if CACHE[:tokens][data]
             CACHE[:tokens][data].dup
         else
-            CACHE[:tokens][data] = compress( data.split( /(?![\w])/ ) )
+            CACHE[:tokens][data] = compress( data.split( /\W/ ) )
         end
     end
 
@@ -125,7 +124,15 @@ class Signature
     # Seems kinda silly but this can actually save us GB of RAM when comparing
     # large signatures, not to mention CPU cycles.
     def compress( tokens )
-        Set.new( tokens.map(&:hash) )
+        s = Set.new
+        tokens.each do |token|
+            # Left-over non-word characters will be on their own, this is a
+            # low-overhead way to dispose of them.
+            next if token.empty?
+
+            s << token.hash
+        end
+        s
     end
 
 end

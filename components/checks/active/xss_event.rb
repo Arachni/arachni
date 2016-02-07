@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,8 +9,6 @@
 # It injects a string and checks if it appears inside an event attribute of any HTML tag.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.1.5
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -43,30 +41,54 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
         'src'
     ]
 
+    def self.attribute_name
+        'arachni_xss_in_element_event'
+    end
+
     def self.strings
         @strings ||= [
-            ";arachni_xss_in_element_event=#{random_seed}//",
-            "\";arachni_xss_in_element_event=#{random_seed}//",
-            "';arachni_xss_in_element_event=#{random_seed}//"
-        ].map { |s| [ "script:#{s}", s ] }.flatten
+            ";#{attribute_name}=#{random_seed}//",
+            "\";#{attribute_name}=#{random_seed}//",
+            "';#{attribute_name}=#{random_seed}//"
+        ].map { |s| [ " script:#{s}", " #{s}" ] }.flatten
     end
 
     def self.options
         @options ||= { format: [ Format::APPEND ] }
     end
 
+    def self.optimization_cache
+        @optimization_cache ||= {}
+    end
+    def optimization_cache
+        self.class.optimization_cache
+    end
+
     def run
-        audit self.class.strings, self.class.options, &method(:check_and_log)
+        audit self.class.strings, self.class.options do |response, element|
+            next if optimization_cache[response.body.hash] == :checked
+
+            optimization_cache[response.body.hash] =
+                check_and_log( response, element )
+        end
     end
 
     def check_and_log( response, element )
-        body = response.body.downcase
-        return if element.seed.to_s.empty? || !body.include?( element.seed )
+        body = response.body
 
-        doc  = Nokogiri::HTML( body )
-        seed = element.seed.dup
+        return :checked if !(body =~ /#{self.class.attribute_name}/i)
+        return if element.seed.to_s.empty? || !(body =~ /#{element.seed}/i)
 
-        EVENT_ATTRS.each do |attribute|
+        included_attributes = EVENT_ATTRS.select do |attribute|
+            body =~ /#{attribute}/i
+        end
+
+        return :checked if included_attributes.empty?
+
+        doc  = Arachni::Parser.parse( body )
+        seed = element.seed
+
+        included_attributes.each do |attribute|
             doc.xpath( "//*[@#{attribute}]" ).each do |elem|
                 value = elem.attributes[attribute].to_s.downcase
                 seed  = seed.split( ':', 2 ).last
@@ -76,10 +98,12 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
                     # xss_script_context check. However VBScript doesn't have
                     # full support so we settle.
                     if value =~ /^(vb|)script:/ && value.include?( seed )
-                        return log vector: element, response: response, proof: value
+                        log vector: element, response: response, proof: value
+                        return
                     end
                 elsif value.include?( seed )
-                    return log vector: element, response: response, proof: value
+                    log vector: element, response: response, proof: value
+                    return
                 end
             end
         end
@@ -91,7 +115,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.5',
+            version:     '0.1.7',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in event tag of HTML element},
@@ -114,10 +138,9 @@ an HTML event attribute. For example `<div onmouseover="x=INJECTION_HERE"</div>`
 where `INJECTION_HERE` represents the location where the Arachni payload was detected.
 },
                 references:  {
-                    'ha.ckers' => 'http://ha.ckers.org/xss.html',
-                    'Secunia'  => 'http://secunia.com/advisories/9716/',
-                    'WASC'     => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
-                    'OWASP'    => 'https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
+                    'Secunia' => 'http://secunia.com/advisories/9716/',
+                    'WASC'    => 'http://projects.webappsec.org/w/page/13246920/Cross%20Site%20Scripting',
+                    'OWASP'   => 'https://www.owasp.org/index.php/XSS_%28Cross_Site_Scripting%29_Prevention_Cheat_Sheet'
                 },
                 tags:            %w(xss event injection dom attribute),
                 cwe:             79,

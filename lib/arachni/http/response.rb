@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -77,6 +77,16 @@ class Response < Message
         @time = t.to_f
     end
 
+    # @return   [Boolean]
+    #   `true` if the client could not read the entire response, `false` otherwise.
+    def partial?
+        # Streamed response which was aborted before completing.
+        return_code == :partial_file ||
+            # Normal response with some data written, but without reaching
+            # content-length.
+            (code != 0 && timed_out?)
+    end
+
     # @return   [Platform]
     #   Applicable platforms for the page.
     def platforms
@@ -117,6 +127,13 @@ class Response < Message
         code != 304
     end
 
+    # @return [Boolean]
+    #   `true` if the request was performed successfully and the response was
+    #   received in full, `false` otherwise.
+    def ok?
+        !return_code || return_code == :ok
+    end
+
     # @return [Bool]
     #   `true` if the response body is textual in nature, `false` if binary,
     #   `nil` if could not be determined.
@@ -142,7 +159,7 @@ class Response < Message
     # @return   [Boolean]
     #   `true` if timed out, `false` otherwise.
     def timed_out?
-        [:operation_timedout, :couldnt_connect].include? return_code
+        return_code == :operation_timedout
     end
 
     def body=( body )
@@ -168,6 +185,7 @@ class Response < Message
 
         hash[:headers] = {}.merge( hash[:headers] )
 
+        hash.delete( :normalize_url )
         hash.delete( :scope )
         hash.delete( :parsed_url )
         hash.delete( :redirections )
@@ -201,7 +219,7 @@ class Response < Message
         to_h.hash
     end
 
-    def self.from_typhoeus( response )
+    def self.from_typhoeus( response, options = {} )
         redirections = response.redirections.map do |redirect|
             rurl   = URI.to_absolute( redirect.headers['Location'],
                                       response.effective_url )
@@ -210,14 +228,26 @@ class Response < Message
             # Broken redirection, skip it...
             next if !rurl
 
-            new(
-                url:     rurl,
-                code:    redirect.code,
-                headers: redirect.headers
-            )
+            new( options.merge(
+                url:           rurl,
+                code:          redirect.code,
+                headers:       redirect.headers
+            ))
         end
 
-        new(
+        return_code    = response.return_code
+        return_message = response.return_message
+
+        # A write error in this case will be because body reading was aborted
+        # during our own callback in Request#set_body_reader.
+        #
+        # So, this is here just for consistency.
+        if response.return_code == :write_error
+            return_code    = :filesize_exceeded
+            return_message = 'Maximum file size exceeded'
+        end
+
+        new( options.merge(
             url:            response.effective_url,
             code:           response.code,
             ip_address:     response.primary_ip,
@@ -229,9 +259,9 @@ class Response < Message
             app_time:       (response.timed_out? ? response.time :
                                 response.start_transfer_time - response.pretransfer_time).to_f,
             total_time:     response.total_time.to_f,
-            return_code:    response.return_code,
-            return_message: response.return_message
-        )
+            return_code:    return_code,
+            return_message: return_message
+        ))
     end
 
 end

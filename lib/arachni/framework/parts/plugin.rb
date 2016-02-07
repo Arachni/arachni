@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -32,7 +32,7 @@ module Plugin
             @plugins.clear
             @plugins.available.map do |plugin|
                 path = @plugins.name_to_path( plugin )
-                next if !list_plugin?( path, patterns )
+                next if patterns && !@plugins.matches_globs?( path, patterns )
 
                 @plugins[plugin].info.merge(
                     options:   @plugins[plugin].info[:options] || [],
@@ -46,12 +46,6 @@ module Plugin
             @plugins.clear
             @plugins.load loaded
         end
-    end
-
-    private
-
-    def list_plugin?( path, patterns = nil )
-        regexp_array_match( patterns, path )
     end
 
 end

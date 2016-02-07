@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,7 +9,6 @@
 # File inclusion check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.6
 #
 # @see http://cwe.mitre.org/data/definitions/98.html
 # @see https://www.owasp.org/index.php/PHP_File_Inclusion
@@ -18,33 +17,28 @@ class Arachni::Checks::FileInclusion < Arachni::Check::Base
     def self.options
         @options ||= {
             format: [Format::STRAIGHT],
-            regexp: {
-                unix: [
-                    /DOCUMENT_ROOT.*HTTP_USER_AGENT/,
-                    /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/im
-                ],
-                windows: [
-                    /\[boot loader\].*\[operating systems\]/im,
-                    /\[fonts\].*\[extensions\]/im
-                ],
-                java:    [
-                    /<web\-app/im
-                ],
+            signatures: FILE_SIGNATURES_PER_PLATFORM.merge(
                 # Generic PHP errors.
                 php: [
-                    /An error occurred in script/,
-                    /Failed opening '.*?' for inclusion/,
-                    /Failed opening required/,
-                    /failed to open stream:/,
-                    /<b>Warning<\/b>:\s+file/,
-                    /<b>Warning<\/b>:\s+read_file/,
-                    /<b>Warning<\/b>:\s+highlight_file/,
-                    /<b>Warning<\/b>:\s+show_source/
+                    'An error occurred in script',
+                    'Failed opening required',
+                    'failed to open stream:',
+                    proc do |response|
+                        next if !response.body.include?( "Failed opening '" )
+                        /Failed opening '.*?' for inclusion/
+                    end,
+                    proc do |response|
+                        next if !response.body.include?( '<b>Warning</b>:' )
+                        /<b>Warning<\/b>:\s+(?:file|read_file|highlight_file|show_source)/
+                    end
                 ],
                 perl: [
-                    /in .* at .* line d+?\./
+                    proc do |response|
+                        next if !response.body.include?( ' line ' )
+                        /in .* at .* line d+?\./
+                    end
                 ]
-            },
+            ),
 
             # Add one more mutation (on the fly) which will include the extension
             # of the original value (if that value was a filename) after a null byte.
@@ -100,8 +94,8 @@ content or errors in the HTTP response body.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.6',
-            platforms:   options[:regexp].keys,
+            version:     '0.1.7',
+            platforms:   options[:signatures].keys,
 
             issue:       {
                 name:            %q{File Inclusion},

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -96,7 +96,7 @@ class Base
 
     def generate_filename
         # Should be unique enough...
-        "#{Dir.tmpdir}/#{self.class.name}_#{Process.pid}_#{object_id}_#{@filename_counter}".gsub( '::', '_' )
+        "#{Arachni.tmpdir}/#{self.class.name}_#{Process.pid}_#{object_id}_#{@filename_counter}".gsub( '::', '_' )
     ensure
         @filename_counter += 1
     end

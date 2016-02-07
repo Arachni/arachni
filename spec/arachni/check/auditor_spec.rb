@@ -161,7 +161,7 @@ describe Arachni::Check::Auditor do
             end
         end
 
-        context Arachni::Element::Body do
+        context 'Arachni::Element::Body' do
             before(:each) { auditor.class.info[:elements] = Arachni::Element::Body }
 
             context 'and page with a non-empty body' do
@@ -179,19 +179,19 @@ describe Arachni::Check::Auditor do
             end
         end
 
-        context Arachni::Element::GenericDOM do
+        context 'Arachni::Element::GenericDOM' do
             before(:each) { auditor.class.info[:elements] = Arachni::Element::GenericDOM }
             let(:page) { Arachni::Page.from_data( url: url, body: 'stuff' ) }
 
             context 'and Page#has_script? is' do
-                context true do
+                context 'true' do
                     it 'returns true' do
                         allow(page).to receive(:has_script?) { true }
                         expect(auditor.class.check?( page )).to be_truthy
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'returns false' do
                         allow(page).to receive(:has_script?) { false }
                         expect(auditor.class.check?( page )).to be_falsey
@@ -213,7 +213,7 @@ describe Arachni::Check::Auditor do
                 end
                 before(:each) { auditor.class.info[:elements] = [element] }
 
-                context true do
+                context 'true' do
                     before(:each) do
                         if element.type.to_s.start_with? 'link_template'
                             Arachni::Options.audit.link_templates =
@@ -247,14 +247,14 @@ describe Arachni::Check::Auditor do
                                 end
 
                                 context 'and Page#has_script? is' do
-                                    context true do
+                                    context 'true' do
                                         it 'returns true' do
                                             allow(page).to receive(:has_script?) { true }
                                             expect(auditor.class.check?( page )).to be_truthy
                                         end
                                     end
 
-                                    context false do
+                                    context 'false' do
                                         it 'returns false' do
                                             allow(page).to receive(:has_script?) { false }
                                             expect(auditor.class.check?( page )).to be_falsey
@@ -293,7 +293,7 @@ describe Arachni::Check::Auditor do
                                         e == Arachni::Element::Cookie::DOM
 
                                     context 'and Page#has_script? is' do
-                                        context true do
+                                        context 'true' do
                                             it 'returns true' do
                                                 allow(page).to receive(:has_script?) { true }
                                                 auditor.class.info[:elements] = e
@@ -301,7 +301,7 @@ describe Arachni::Check::Auditor do
                                             end
                                         end
 
-                                        context false do
+                                        context 'false' do
                                             it 'returns false' do
                                                 allow(page).to receive(:has_script?) { false }
                                                 auditor.class.info[:elements] = e
@@ -338,7 +338,7 @@ describe Arachni::Check::Auditor do
                     end
                 end
 
-                context false do
+                context 'false' do
                     before(:each) { Arachni::Options.audit.skip_elements element.type }
 
                     context "and the page contains #{element}" do
@@ -665,6 +665,15 @@ describe Arachni::Check::Auditor do
     end
 
     describe '#log' do
+        let(:issue_data) do
+            d = super()
+
+            d[:page].response.url = @opts.url
+            d.merge( page: d[:page] )
+
+            d
+        end
+
         it 'preserves the given remarks' do
             auditor.log( issue_data )
 
@@ -703,6 +712,42 @@ describe Arachni::Check::Auditor do
                 expect(issue.page.body).to eq(auditor.page.body)
                 expect(issue.response).to eq(auditor.page.response)
                 expect(issue.request).to eq(auditor.page.request)
+            end
+        end
+
+        context 'when the resource is out of scope' do
+            let(:issue_data) do
+                d = super()
+
+                d[:page].response.url = 'http://stuff/'
+                d.merge( page: d[:page] )
+
+                d
+            end
+
+            it 'returns nil' do
+                expect(auditor.log( issue_data )).to be_nil
+            end
+
+            it 'does not log the issue' do
+                auditor.log( issue_data )
+                expect(issues).to be_empty
+            end
+
+            context 'and the host includes the seed' do
+                let(:issue_data) do
+                    d = super()
+
+                    d[:page].response.url = "http://#{Arachni::Utilities.random_seed}.com/"
+                    d.merge( page: d[:page] )
+
+                    d
+                end
+
+                it 'does not log the issue' do
+                    auditor.log( issue_data )
+                    expect(issues).to be_any
+                end
             end
         end
     end
@@ -763,7 +808,7 @@ describe Arachni::Check::Auditor do
         end
 
         context 'when called with options' do
-            describe :elements do
+            describe ':elements' do
 
                 before { auditor.load_page_from( @url + '/elem_combo' ) }
 
@@ -844,7 +889,7 @@ describe Arachni::Check::Auditor do
                 end
             end
 
-            describe :train do
+            describe ':train' do
                 context 'default' do
                     it 'parses the responses of forms submitted with their default values and feed any new elements back to the framework to be audited' do
                         # page feedback queue
@@ -870,7 +915,7 @@ describe Arachni::Check::Auditor do
                     end
                 end
 
-                context true do
+                context 'true' do
                     it 'parses all responses and feed any new elements back to the framework to be audited' do
                         # page feedback queue
                         pages = [ Arachni::Page.from_url( @url + '/train/true' ) ]
@@ -896,7 +941,7 @@ describe Arachni::Check::Auditor do
                     end
                 end
 
-                context false do
+                context 'false' do
                     it 'skips analysis' do
                         # page feedback queue
                         page = Arachni::Page.from_url( @url + '/train/true' )
@@ -984,7 +1029,7 @@ describe Arachni::Check::Auditor do
             end
 
             context 'and the resource is a' do
-                context String do
+                context 'String' do
                     it 'loads the URL and traces the taint' do
                         pages = []
                         auditor.trace_taint( url, taint: taint ) do |page|
@@ -997,7 +1042,7 @@ describe Arachni::Check::Auditor do
                     end
                 end
 
-                context Arachni::HTTP::Response do
+                context 'Arachni::HTTP::Response' do
                     it 'loads it and traces the taint' do
                         pages = []
 
@@ -1012,7 +1057,7 @@ describe Arachni::Check::Auditor do
                     end
                 end
 
-                context Arachni::Page do
+                context 'Arachni::Page' do
                     it 'loads it and traces the taint' do
                         pages = []
 
@@ -1036,7 +1081,7 @@ describe Arachni::Check::Auditor do
                 end
 
                 context 'and the resource is a' do
-                    context String do
+                    context 'String' do
                         it 'loads the URL and traces the taint' do
                             pages = []
                             auditor.trace_taint( url,
@@ -1051,7 +1096,7 @@ describe Arachni::Check::Auditor do
                         end
                     end
 
-                    context Arachni::HTTP::Response do
+                    context 'Arachni::HTTP::Response' do
                         it 'loads it and traces the taint' do
                             pages = []
                             auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ),
@@ -1066,7 +1111,7 @@ describe Arachni::Check::Auditor do
                         end
                     end
 
-                    context Arachni::Page do
+                    context 'Arachni::Page' do
                         it 'loads it and traces the taint' do
                             pages = []
                             auditor.trace_taint( Arachni::Page.from_url( url ),
@@ -1091,7 +1136,7 @@ describe Arachni::Check::Auditor do
             end
 
             context 'and the resource is a' do
-                context String do
+                context 'String' do
                     it 'loads the URL and traces the taint' do
                         pages = []
                         auditor.trace_taint( url ) do |page|
@@ -1104,7 +1149,7 @@ describe Arachni::Check::Auditor do
                     end
                 end
 
-                context Arachni::HTTP::Response do
+                context 'Arachni::HTTP::Response' do
                     it 'loads it and traces the taint' do
                         pages = []
                         auditor.trace_taint( Arachni::HTTP::Client.get( url, mode: :sync ) ) do |page|
@@ -1117,7 +1162,7 @@ describe Arachni::Check::Auditor do
                     end
                 end
 
-                context Arachni::Page do
+                context 'Arachni::Page' do
                     it 'loads it and traces the taint' do
                         pages = []
                         auditor.trace_taint( Arachni::Page.from_url( url ) ) do |page|
@@ -1135,7 +1180,7 @@ describe Arachni::Check::Auditor do
         context 'when the block returns' do
             let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser )  ) + 'explore' }
 
-            context true do
+            context 'true' do
                 it 'marks the job as done' do
                     calls = 0
                     auditor.trace_taint( url ) do
@@ -1147,7 +1192,7 @@ describe Arachni::Check::Auditor do
                 end
             end
 
-            context false do
+            context 'false' do
                 it 'allows the job to continue' do
                     calls = 0
                     auditor.trace_taint( url ) do

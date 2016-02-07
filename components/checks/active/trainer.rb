@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,7 +12,6 @@
 # It also forces Arachni to train itself by analyzing the server responses.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.4
 class Arachni::Checks::Trainer < Arachni::Check::Base
 
     def run
@@ -21,7 +20,9 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
         # wasting bandwidth.
         return if framework.page_limit_reached?
 
-        audit( "_arachni_trainer_#{random_seed}", submit: { train: true } ){}
+        audit( "_arachni_trainer_#{random_seed}",
+               submit: { train: true, with_raw_parameters: false }
+        ){}
     end
 
     def self.info
@@ -33,7 +34,7 @@ It also forces Arachni to train itself by analyzing the server responses.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
-            version:     '0.1.4'
+            version:     '0.1.5'
         }
     end
 

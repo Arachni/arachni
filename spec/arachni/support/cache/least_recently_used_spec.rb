@@ -14,8 +14,6 @@ describe Arachni::Support::Cache::LeastRecentlyUsed do
 
         expect(subject.size).to eq(3)
 
-        ap subject
-
         expect(subject[:k]).to be_truthy
         expect(subject[:k4]).to be_truthy
         expect(subject[:k3]).to be_truthy

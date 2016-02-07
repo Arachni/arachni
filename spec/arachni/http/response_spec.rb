@@ -55,13 +55,13 @@ describe Arachni::HTTP::Response do
 
     describe '#modified?' do
         context 'when the #code is' do
-            describe 200 do
+            describe '200' do
                 it 'returns false' do
                     expect(described_class.new( url: @url, code: 200 )).to be_modified
                 end
             end
 
-            describe 304 do
+            describe '304' do
                 it 'returns true' do
                     expect(described_class.new( url: @url, code: 304 )).not_to be_modified
                 end
@@ -111,6 +111,64 @@ describe Arachni::HTTP::Response do
             response = @http.get( "#{@url}/sleep", mode: :sync )
             expect(response.app_time).to be > 5
             expect(response.app_time).to be < 5.01
+        end
+    end
+
+    describe '#ok?' do
+        before do
+            subject.return_code = return_code
+        end
+
+        context 'when #return_code is' do
+            context ':ok' do
+                let(:return_code) { :ok }
+
+                expect_it { to be_ok }
+            end
+
+            context 'not :ok' do
+                let(:return_code) { :blah }
+
+                expect_it { to_not be_ok }
+            end
+
+            context 'missing' do
+                let(:return_code) { nil }
+
+                expect_it { to be_ok }
+            end
+        end
+    end
+
+    describe '#partial?' do
+        context 'when the response body does not match the content-lenth' do
+            it 'returns true' do
+                response = @http.get( "#{@url}/partial", mode: :sync )
+                expect(response).to be_partial
+            end
+        end
+
+        context 'when the response body matches the content-lenth' do
+            it 'returns false' do
+                response = @http.get( @url, mode: :sync )
+                expect(response).to_not be_partial
+            end
+        end
+
+        context 'when dealing with a stream' do
+            context 'that does not complete' do
+                it 'returns true' do
+                    response = @http.get( "#{@url}/partial_stream", mode: :sync )
+                    expect(response).to be_partial
+                end
+            end
+
+            context 'that completes' do
+                it 'returns false' do
+                    response = @http.get( "#{@url}/stream", mode: :sync )
+                    expect(response).to_not be_partial
+                end
+            end
         end
     end
 
@@ -164,7 +222,7 @@ describe Arachni::HTTP::Response do
                 end
             end
 
-            context nil do
+            context 'nil' do
                 context 'and the response body is' do
                     context 'binary' do
                         it 'returns false' do
@@ -182,7 +240,7 @@ describe Arachni::HTTP::Response do
                                 url:  'http://test.com',
                                 body: 'stuff'
                             }
-                            expect(described_class.new( h ).text?).to be_truthy
+                            expect(described_class.new( h ).text?).to eq(true)
                         end
                     end
 

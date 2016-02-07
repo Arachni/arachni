@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -275,7 +275,7 @@ class Page
         @has_javascript = nil
         clear_cache
 
-        @body = string.to_s.dup.recode.freeze
+        @body = string.to_s.freeze
     end
 
     ELEMENTS.each do |type|
@@ -304,7 +304,7 @@ class Page
     #
     # @see Parser#paths
     def paths
-        @cache[:paths] ||= parser ? parser.paths : []
+        @cache[:paths] ||= (parser ? parser.paths : [])
     end
 
     # @return   [Platform]
@@ -338,7 +338,9 @@ class Page
     # @return   [Nokogiri::HTML]
     #   Parsed {#body HTML} document.
     def document
-        @cache[:document] ||= (parser.nil? ? Nokogiri::HTML( body ) : parser.document)
+        @cache[:document] ||= (parser.nil? ?
+            Arachni::Parser.parse( body ) :
+            parser.document)
     end
 
     # @note Will preserve caches for elements which have been externally modified.
@@ -411,7 +413,7 @@ class Page
         tags.flatten.each do |tag|
             tag = tag.to_s
 
-            next if !(body =~ /<\s*#{tag}/i)
+            next if !body.has_html_tag?( tag )
 
             return false if !document
             return true  if document.css( tag ).any?
@@ -502,10 +504,17 @@ class Page
         self
     end
 
-    def to_initialization_options
+    def to_initialization_options( deep = true )
         h = {}
-        [:body, :cookie_jar, :element_audit_whitelist, :metadata].each do |m|
-            h[m] = try_dup( instance_variable_get( "@#{m}".to_sym ) )
+        h[:body] = @body if @body
+
+        [:cookie_jar, :element_audit_whitelist, :metadata].each do |m|
+            h[m] = instance_variable_get( "@#{m}".to_sym )
+
+            if deep
+                h[m] = try_dup( h[m] )
+            end
+
             h.delete( m ) if !h[m]
         end
 
@@ -525,7 +534,12 @@ class Page
         h[:do_not_audit_elements] = @do_not_audit_elements
 
         h[:dom] = dom.to_h.keys.inject({}) do |dh, k|
-            dh[k] = try_dup( dom.send( k ) )
+            dh[k] = dom.send( k )
+
+            if deep
+                dh[k] = try_dup( dh[k] )
+            end
+
             dh
         end
 
@@ -535,7 +549,7 @@ class Page
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
-        data        = to_initialization_options.my_stringify_keys(false)
+        data        = to_initialization_options( false ).my_stringify_keys(false)
         data['dom'] = dom.to_rpc_data
         data['element_audit_whitelist'] = element_audit_whitelist.to_a
         data['response'] = data['response'].to_rpc_data
@@ -565,7 +579,7 @@ class Page
 
                         when *ELEMENTS.map(&:to_s)
                             value.map do |e|
-                                Element.const_get(name[0...-1].capitalize.to_sym).from_rpc_data( e )
+                                Element.type_to_class( name[0...-1].to_sym ).from_rpc_data( e )
                             end.to_a
 
                         else
@@ -583,7 +597,7 @@ class Page
     end
 
     def _dump( _ )
-        Marshal.dump( to_initialization_options )
+        Marshal.dump( to_initialization_options( false ) )
     end
 
     def self._load( data )

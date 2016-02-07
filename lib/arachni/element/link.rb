@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -31,6 +31,8 @@ class Link < Base
     include Capabilities::WithDOM
     include Capabilities::Submittable
     include Capabilities::Auditable
+
+    DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     # @param    [Hash]    options
     # @option   options [String]    :url
@@ -112,9 +114,9 @@ class Link < Base
             if !document.is_a?( Nokogiri::HTML::Document )
                 document = document.to_s
 
-                return [] if !(document =~ /\?.*=/)
+                return [] if !in_html?( document )
 
-                document = Nokogiri::HTML( document )
+                document = Arachni::Parser.parse( document )
             end
 
             base_url =  begin
@@ -129,9 +131,8 @@ class Link < Base
                 href = to_absolute( link['href'], base_url )
                 next if !href
 
-                if (parsed_url = Arachni::URI( href ))
-                    next if parsed_url.scope.out?
-                end
+                next if !(parsed_url = Arachni::URI( href )) ||
+                    parsed_url.scope.out?
 
                 new(
                     url:    url.freeze,
@@ -141,12 +142,18 @@ class Link < Base
             end.compact
         end
 
+        def in_html?( html )
+            html.has_html_tag? 'a', /\?.*=/
+        end
+
         def encode( string )
             Arachni::HTTP::Request.encode string
         end
 
         def decode( *args )
-            ::URI.decode( *args )
+            DECODE_CACHE.fetch( args ) do
+                ::URI.decode( *args )
+            end
         end
     end
 

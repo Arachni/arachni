@@ -53,7 +53,7 @@ describe Arachni::Element::Link do
     end
 
     describe '#initialize' do
-        describe :action do
+        describe ':action' do
             it 'sets #action' do
                 action = "#{url}stuff"
                 expect(described_class.new( url: url, action: action ).action).to eq(action)
@@ -214,6 +214,20 @@ describe Arachni::Element::Link do
                 expect(described_class.from_document( '', '' )).to be_empty
             end
         end
+
+        context 'when links have actions that just fragments' do
+            it 'ignores them' do
+                html = '
+                    <html>
+                        <body>
+                            <a href="#stuff"></a>
+                        </body>
+                    </html>'
+
+                expect(described_class.from_document( url, html )).to be_empty
+            end
+        end
+
         context 'when links have actions that are out of scope' do
             it 'ignores them' do
                 html = '
@@ -232,6 +246,7 @@ describe Arachni::Element::Link do
                 expect(links.first.action).to eq(url + 'stuff')
             end
         end
+
         context 'when the response contains links' do
             it 'should return an array of links' do
                 html = '
@@ -249,6 +264,7 @@ describe Arachni::Element::Link do
                     'param_two'  => 'value_two'
                 })
             end
+
             context 'and includes a base attribute' do
                 it 'should return an array of links with adjusted URIs' do
                     base_url = "#{url}this_is_the_base/"

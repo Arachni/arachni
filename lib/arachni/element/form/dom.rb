@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -18,6 +18,7 @@ class Form
 class DOM < DOM
     include Arachni::Element::Capabilities::WithNode
 
+    include Arachni::Element::DOM::Capabilities::Locatable
     include Arachni::Element::DOM::Capabilities::Mutable
     include Arachni::Element::DOM::Capabilities::Inputtable
     include Arachni::Element::DOM::Capabilities::Submittable
@@ -35,7 +36,7 @@ class DOM < DOM
 
     # Submits the form using the configured {#inputs}.
     def trigger
-        [ browser.fire_event( element, :submit, inputs: inputs.dup ) ]
+        [ browser.fire_event( locate, :submit, inputs: inputs.dup ) ]
     end
 
     def valid_input_name?( name )

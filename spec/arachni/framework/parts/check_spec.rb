@@ -11,7 +11,7 @@ describe Arachni::Framework::Parts::Check do
     end
 
     describe '#list_checks' do
-        context 'when a pattern is given' do
+        context 'when a glob is given' do
             it 'uses it to filter out checks that do not match it' do
                 subject.list_checks( 'boo' ).size == 0
 

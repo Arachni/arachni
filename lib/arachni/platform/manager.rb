@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -290,7 +290,7 @@ class Manager
         end
 
         return new_from_options if !(key = make_key( uri ))
-        synchronize { @platforms[key] ||= new_from_options }
+        synchronize { @platforms.fetch(key) { new_from_options } }
     end
 
     # Sets platform manager for the given `uri`.

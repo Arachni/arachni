@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -69,10 +69,6 @@ class BrowserCluster
     #   Number of pending jobs.
     attr_reader :pending_job_counter
 
-    attr_reader :consumed_pids
-
-    attr_reader :job_counter
-
     # @param    [Hash]  options
     # @option   options [Integer]   :pool_size (5)
     #   Amount of {Worker browsers} to add to the pool.
@@ -120,7 +116,6 @@ class BrowserCluster
         @mutex       = Monitor.new
         @done_signal = Queue.new
 
-        @consumed_pids = []
         initialize_workers
     end
 
@@ -183,15 +178,15 @@ class BrowserCluster
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.
     # @param    [Hash]  options
-    #   See {Jobs::ResourceExploration} accessors.
+    #   See {Jobs::DOMExploration} accessors.
     # @param    [Block]  block
     #   Callback to be passed the {Job::Result}.
     #
-    # @see Jobs::ResourceExploration
+    # @see Jobs::DOMExploration
     # @see #queue
     def explore( resource, options = {}, &block )
         queue(
-            Jobs::ResourceExploration.new( options.merge( resource: resource ) ),
+            Jobs::DOMExploration.new( options.merge( resource: resource ) ),
             &block
         )
     end
@@ -231,6 +226,8 @@ class BrowserCluster
                 @pending_job_counter = 0
                 @done_signal << nil
             end
+
+            Arachni.collect_young_objects
         end
 
         true
@@ -399,7 +396,8 @@ class BrowserCluster
     end
 
     def self.seconds_per_job
-        total_job_time / Float( completed_job_count )
+        n = (total_job_time / Float( completed_job_count ))
+        n.nan? ? 0 : n
     end
 
     def self.increment_queued_job_count
@@ -482,11 +480,9 @@ class BrowserCluster
                 height: Options.browser_cluster.screen_height
             )
             @workers << worker
-            @consumed_pids << worker.pid
-
-            print_status "Spawned ##{i+1} with PID #{worker.pid}."
+            print_status "Spawned ##{i+1} with PID #{worker.browser_pid} " <<
+                "[lifeline at PID #{worker.lifeline_pid}]."
         end
-        @consumed_pids.compact!
 
         print_status "Initialization completed with #{@workers.size} browsers in the pool."
     end

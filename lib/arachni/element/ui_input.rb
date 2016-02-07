@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,7 +12,7 @@ module Arachni::Element
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class UIInput < Base
-    require_relative 'input/dom'
+    require_relative 'ui_input/dom'
 
     include Arachni::Element::Capabilities::DOMOnly
 
@@ -25,20 +25,14 @@ class UIInput < Base
     def self.from_browser( browser, page )
         inputs = []
 
-        return inputs if !browser.javascript.supported?
+        return inputs if !browser.javascript.supported? || !in_html?( page.body )
 
-        if page.document.css( 'textarea' ).empty? &&
-            page.document.xpath( '//input[@type="text"]' ).empty? &&
-                page.document.xpath( '//input[not(@type)]' ).empty?
-            return inputs
-        end
-
-        browser.each_element_with_events false do |locator, events|
+        browser.elements_with_events.each do |locator, events|
             next if !SUPPORTED_TYPES.include?( locator.tag_name )
             next if locator.attributes['type'] &&
                 locator.attributes['type'] != 'text'
 
-            browser.filter_events( locator.tag_name, events ).each do |event, _|
+            events.each do |event, _|
                 name = locator.attributes['name'] || locator.attributes['id'] ||
                     locator.to_s
 
@@ -54,6 +48,18 @@ class UIInput < Base
         end
 
         inputs
+    end
+
+    def self.in_html?( html )
+        with_textarea_in_html?( html ) || with_input_in_html?( html )
+    end
+
+    def self.with_textarea_in_html?( html )
+        html.has_html_tag?( 'textarea' )
+    end
+
+    def self.with_input_in_html?( html )
+        html.has_html_tag?( 'input', /text|(?!type=)/ )
     end
 
 end

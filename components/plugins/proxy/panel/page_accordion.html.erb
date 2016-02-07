@@ -2,96 +2,131 @@
     <% (pages || []).each.with_index do |page, i| %>
         <div class="accordion-group">
             <div class="accordion-heading">
-                <p class="btn accordion-toggle" data-toggle="collapse"
+                <div class="btn accordion-toggle" data-toggle="collapse"
                    data-parent="#pages-accordion" href="#page<%= page.hash %>">
-                    <%= html_encode page.title %>
-                    -
+
+                    <% if !page.title.to_s.empty? %>
+                      <p>
+                          <%= html_encode page.title %>
+                      </p>
+                    <% end %>
+
+                    <p>
+                      <%= page.dom.url %>
+                    </p>
+
                     <%= page.forms.size %> forms,
                     <%= page.links.size %> links,
                     <%= page.cookies.size %> cookies,
                     <%= page.jsons.size %> JSONs and
                     <%= page.xmls.size %> XMLs.
-
-                    <br/>
-
-                    (<%= page.url %>)
-                </p>
+                </div>
             </div>
+
             <div id="page<%= page.hash %>" class="accordion-body collapse">
                 <div class="accordion-inner">
+
+                  <% if page.forms.any? %>
                     <div class="well forms">
                         <h2>Forms</h2>
                         <% page.forms.each do |form| %>
-                            <p>
+                            <div>
                                 <b>
                                     Action: <%= html_encode form.action %>
                                     (method <%= form.method.to_s.upcase %>)
                                 </b>
                                 <ul>
                                     <% form.inputs.each do |k, v| %>
-                                        <li><%= k.inspect %> = <%= v.inspect %></li>
+                                        <li>
+                                          <code><%= html_encode k %></code> =
+                                          <code><%= html_encode v %></code>
+                                        </li>
                                     <% end %>
                                 </ul>
-                            </p>
+                            </div>
+
                             <hr />
                         <% end %>
                     </div>
+                  <% end %>
+
+                  <% if page.links.any? %>
                     <div class="well links">
                         <h2>Links</h2>
                         <% page.links.each do |link| %>
-                            <p>
+                            <div>
                                 <b>Action: <%= html_encode link.action %></b>
-                            <ul>
-                                <% link.inputs.each do |k, v| %>
-                                    <li><%= k.inspect %> = <%= v.inspect %></li>
-                                <% end %>
-                            </ul>
-                            </p>
+                                <ul>
+                                    <% link.inputs.each do |k, v| %>
+                                      <code><%= html_encode k %></code> =
+                                      <code><%= html_encode v %></code>
+                                    <% end %>
+                                </ul>
+                            </div>
+
                             <hr />
                         <% end %>
                     </div>
-                    <div class="well links">
+                  <% end %>
+
+                  <% if page.cookies.any? %>
+                    <div class="well cookies">
                         <h2>Cookies</h2>
                         <% page.cookies.each do |cookie| %>
-                            <p>
+                            <div>
                                 <b>Action: <%= html_encode cookie.action %></b>
-                            <ul>
-                                <% cookie.inputs.each do |k, v| %>
-                                    <li><%= k.inspect %> = <%= v.inspect %></li>
-                                <% end %>
-                            </ul>
-                            </p>
+                                <ul>
+                                    <% cookie.inputs.each do |k, v| %>
+                                      <code><%= html_encode k %></code> =
+                                      <code><%= html_encode v %></code>
+                                    <% end %>
+                                </ul>
+                            </div>
+
                             <hr />
                         <% end %>
                     </div>
-                    <div class="well links">
+                  <% end %>
+
+                  <% if page.jsons.any? %>
+                    <div class="well jsons">
                         <h2>JSONs</h2>
                         <% page.jsons.each do |json| %>
-                            <p>
-                                <b>Action: <%= html_encode json.action %></b>
-                            <ul>
-                                <% json.inputs.each do |k, v| %>
-                                    <li><%= k.inspect %> = <%= v.inspect %></li>
-                                <% end %>
-                            </ul>
-                            </p>
+                            <div>
+                              <b>Action: <%= html_encode json.action %></b>
+
+                              <ul>
+                                  <% json.inputs.each do |k, v| %>
+                                    <code><%= html_encode k %></code> =
+                                    <code><%= html_encode v %></code>
+                                  <% end %>
+                              </ul>
+                            </div>
+
                             <hr />
                         <% end %>
                     </div>
-                    <div class="well links">
+                  <% end %>
+
+                  <% if page.xmls.any? %>
+                    <div class="well xmls">
                         <h2>XMLs</h2>
                         <% page.xmls.each do |xml| %>
-                            <p>
+                            <div>
                                 <b>Action: <%= html_encode xml.action %></b>
-                            <ul>
-                                <% xml.inputs.each do |k, v| %>
-                                    <li><%= k.inspect %> = <%= v.inspect %></li>
-                                <% end %>
-                            </ul>
-                            </p>
+                                <ul>
+                                    <% xml.inputs.each do |k, v| %>
+                                      <code><%= html_encode k %></code> =
+                                      <code><%= html_encode v %></code>
+                                    <% end %>
+                                </ul>
+
+                            </div>
+
                             <hr />
                         <% end %>
                     </div>
+                  <% end %>
                 </div>
             </div>
         </div>

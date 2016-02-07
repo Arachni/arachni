@@ -319,7 +319,7 @@ describe Arachni::Element::JSON do
 
     describe '#mutations' do
         context 'when #inputs have nested' do
-            context Hash do
+            context 'Hash' do
                 let(:inputs) do
                     {
                         'stuff' => 'blah',
@@ -380,7 +380,7 @@ describe Arachni::Element::JSON do
                 end
             end
 
-            context Array do
+            context 'Array' do
                 let(:inputs) do
                     {
                         'stuff' => 'blah',

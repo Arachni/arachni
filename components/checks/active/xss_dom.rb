@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2015 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -24,8 +24,8 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
             # Straight injection.
             tag,
 
-            # Break out of HTML comments.
-            "-->#{tag}<!--"
+            # Break out of HTML comments and text areas.
+            "</textarea>-->#{tag}<!--<textarea>"
         ]
     end
 
@@ -46,10 +46,13 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
 
     def check_and_log( page, element )
         return if !(proof = find_proof( page ))
+
         log vector: element, proof: proof, page: page
     end
 
     def find_proof( page )
+        return if !page.body.has_html_tag?( self.class.tag_name )
+
         proof = page.document.css( self.class.tag_name )
         return if proof.empty?
         proof.to_s
@@ -64,7 +67,7 @@ tainted responses to look for proof of vulnerability.
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.2',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS)},
