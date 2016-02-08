@@ -252,7 +252,7 @@ Both approaches allow you to:
     - Sandboxed failure propagation.
 - Communicate over a secure channel.
 
-#### [REST service](https://github.com/Arachni/arachni/wiki/REST-service)
+#### [REST API](https://github.com/Arachni/arachni/wiki/REST-API)
 
 - Very simple and straightforward API.
 - Easy interoperability with non-Ruby systems.
