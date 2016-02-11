@@ -1,5 +1,7 @@
 # ChangeLog
 
+## Under development
+
 ## 1.4 _(February 7, 2016)_
 
 - Native MS Windows compatibility.
