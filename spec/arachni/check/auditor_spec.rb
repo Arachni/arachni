@@ -364,7 +364,7 @@ describe Arachni::Check::Auditor do
 
     describe '#log_remote_file_if_exists' do
         it "delegates to #{Arachni::Element::Server}#log_remote_file_if_exists" do
-            sent     = [:stuff, false]
+            sent     = [:stuff, false, { blah: '1' }]
             received = nil
             b        = proc {}
 
@@ -390,6 +390,11 @@ describe Arachni::Check::Auditor do
         let(:page) { Arachni::Page.from_url @url }
         let(:issue) { Arachni::Data.issues.last }
         let(:vector) { Arachni::Element::Server.new( page.url ) }
+
+        it 'assigns the extra Issue options' do
+            expect(subject.log_remote_file( page, false )).to be_trusted
+            expect(subject.log_remote_file( page, false, trusted: false )).to_not be_trusted
+        end
 
         context 'given a' do
             describe Arachni::Page do

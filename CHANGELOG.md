@@ -2,6 +2,14 @@
 
 ## Under development
 
+- Checks
+    - Passive
+        - `backup_files`
+            - Ignore media files to avoid FPs when dealing with galleries and the like.
+            - Added issue remark explaining how the original resource name was manipulated.
+        - `backup_directories` -- Added issue remark explaining how the original
+            resource name was manipulated.
+
 ## 1.4 _(February 7, 2016)_
 
 - Native MS Windows compatibility.

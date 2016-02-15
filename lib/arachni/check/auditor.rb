@@ -263,9 +263,9 @@ module Auditor
     #   * `true` if everything went fine.
     #
     # @see Element::Server#remote_file_exist?
-    def log_remote_file_if_exists( url, silent = false, &block )
+    def log_remote_file_if_exists( url, silent = false, options = {}, &block )
         @server ||= Element::Server.new( page.url ).tap { |s| s.auditor = self }
-        @server.log_remote_file_if_exists( url, silent, &block )
+        @server.log_remote_file_if_exists( url, silent, options, &block )
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
@@ -376,15 +376,15 @@ module Auditor
     # @return   [Issue]
     #
     # @see #log_issue
-    def log_remote_file( page_or_response, silent = false )
+    def log_remote_file( page_or_response, silent = false, options = {} )
         page = page_or_response.is_a?( Page ) ?
             page_or_response : page_or_response.to_page
 
-        issue = log_issue(
+        issue = log_issue({
             vector: Element::Server.new( page.url ),
             proof:  page.response.status_line,
             page:   page
-        )
+        }.merge( options ))
 
         print_ok( "Found #{page.url}" ) if !silent
 

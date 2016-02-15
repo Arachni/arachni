@@ -28,7 +28,19 @@ class Arachni::Checks::BackupDirectories < Arachni::Check::Base
         name = File.basename( page.parsed_url.path )
 
         self.class.formats.each do |format|
-            log_remote_file_if_exists( path + format.gsub( '[name]', name ) )
+            backup_name = format.gsub( '[name]', name )
+            url = path + backup_name
+
+            remark = 'Identified by converting the original directory name of ' <<
+                "'#{name}' to '#{backup_name}' using format '#{format}'."
+
+            log_remote_file_if_exists(
+                url,
+                false,
+                remarks: {
+                    check: [ remark ]
+                }
+            )
         end
 
         audited( resource )
@@ -40,7 +52,7 @@ class Arachni::Checks::BackupDirectories < Arachni::Check::Base
             description:      %q{Tries to find backed-up directories.},
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:          '0.1.2',
+            version:          '0.1.3',
             exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {
