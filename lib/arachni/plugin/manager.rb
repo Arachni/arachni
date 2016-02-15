@@ -64,17 +64,20 @@ class Manager < Arachni::Component::Manager
 
         schedule.each do |name, options|
             instance = create( name, options )
-            instance.prepare
+
+            exception_jail do
+                instance.prepare
+            end rescue next
 
             @jobs[name] = Thread.new do
                 exception_jail( false ) do
                     Thread.current[:instance] = instance
                     Thread.current[:instance].run
                     Thread.current[:instance].clean_up
+                end
 
-                    synchronize do
-                        @jobs.delete name
-                    end
+                synchronize do
+                    @jobs.delete name
                 end
             end
         end
