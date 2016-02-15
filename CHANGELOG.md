@@ -11,6 +11,7 @@
             - Added issue remark explaining how the original resource name was manipulated.
         - `backup_directories` -- Added issue remark explaining how the original
             resource name was manipulated.
+        - `xst` -- Run once for each protocol, not just for the first page.
 
 ## 1.4 _(February 7, 2016)_
 
