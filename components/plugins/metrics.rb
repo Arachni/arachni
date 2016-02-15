@@ -182,14 +182,16 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 
         @metrics['http']['requests'] = framework.statistics[:http][:response_count]
 
-        @metrics['http']['response_time_average'] =
-            http_response_time_total / @metrics['http']['requests']
+        if @metrics['http']['requests'] > 0
+            @metrics['http']['response_time_average'] =
+                http_response_time_total / @metrics['http']['requests']
 
-        @metrics['http']['response_size_average'] =
-            @metrics['general']['ingress_traffic'] / @metrics['http']['requests']
+            @metrics['http']['response_size_average'] =
+                @metrics['general']['ingress_traffic'] / @metrics['http']['requests']
 
-        @metrics['http']['request_size_average'] =
-            @metrics['general']['egress_traffic'] / @metrics['http']['requests']
+            @metrics['http']['request_size_average'] =
+                @metrics['general']['egress_traffic'] / @metrics['http']['requests']
+        end
 
         @metrics['scan']['duration']      = framework.statistics[:runtime]
         @metrics['scan']['authenticated'] = !!Arachni::Options.session.check_url
@@ -228,7 +230,7 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 Captures metrics about multiple aspects of the scan and the web application.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1'
+            version:     '0.1.1'
         }
     end
 

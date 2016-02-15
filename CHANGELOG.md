@@ -2,6 +2,8 @@
 
 ## Under development
 
+- Plugins
+    - `metrics` -- Fixed division by 0 error when no requests have been performed.
 - Checks
     - Passive
         - `backup_files`
