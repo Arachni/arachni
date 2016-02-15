@@ -7,7 +7,6 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
 class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 
     def prepare
