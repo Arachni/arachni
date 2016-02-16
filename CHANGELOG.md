@@ -4,6 +4,9 @@
 
 - Plugins
     - `metrics` -- Fixed division by 0 error when no requests have been performed.
+    - `email_notify`
+        - Retry on error.
+        - Default to `afr` as a report format.
 - Checks
     - Passive
         - `backup_files`
