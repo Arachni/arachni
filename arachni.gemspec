@@ -88,7 +88,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'addressable',       '2.3.6'
 
     # E-mail plugin.
-    s.add_dependency 'pony',              '1.8'
+    s.add_dependency 'pony',              '1.11'
 
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',       '0.5.1'
