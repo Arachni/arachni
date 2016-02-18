@@ -2,6 +2,9 @@
 
 ## Under development
 
+- Session -- Allow for a submit input to be specified when the login needs to be
+    triggered by clicking it, rather than just triggering the submit event on
+    the form.
 - Plugins
     - `metrics` -- Fixed division by 0 error when no requests have been performed.
     - `email_notify`

@@ -379,7 +379,26 @@ class Session
         page = nil
         if has_browser?
             print_debug 'Submitting form.'
-            form.submit { |p| page = p }
+
+            click_button = configuration[:inputs].
+                find { |k, _| form.parent.details_for( k )[:type] == :submit }
+
+            if click_button
+                click_button = click_button.first
+
+                transitions = []
+                transitions << browser.fire_event( form.locate, :fill, inputs: form.inputs )
+                transitions << browser.fire_event( Browser::ElementLocator.new(
+                    tag_name:   :input,
+                    attributes: form.parent.details_for( click_button )
+                ), :click )
+
+                page = browser.to_page
+                page.dom.transitions += transitions
+            else
+                form.submit { |p| page = p }
+            end
+
             print_debug 'Form submitted.'
         else
             page = form.submit(

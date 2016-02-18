@@ -734,6 +734,10 @@ class Browser
                 if tag_name == :form
                     fill_in_form_inputs( element, options[:inputs] )
 
+                    if event == :fill
+                        force = false
+                    end
+
                     if event == :submit
                         force = false
 
