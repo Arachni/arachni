@@ -301,7 +301,7 @@ class Cookie < Base
         # @see .from_document
         # @see .from_headers
         def from_response( response )
-            from_document( response.url, response.body ) |
+            from_document( response.url, response.body ) +
                 from_headers( response.url, response.headers )
         end
 
