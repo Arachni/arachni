@@ -107,7 +107,8 @@ interactions in order to become visible, this plugin will not be able to submit 
                 ),
                 Options::String.new( :parameters,
                     required:    true,
-                    description: 'Form parameters to submit. ( username=user&password=pass )'
+                    description: 'Form parameters to submit -- special characters' +
+                                 ' need to be URL encoded.( username=user&password=pass )'
                 ),
                 Options::String.new( :check,
                     required:    true,
