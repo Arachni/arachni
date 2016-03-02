@@ -341,6 +341,11 @@ class OptionParser < UI::CLI::OptionParser
             options.http.authentication_password = password
         end
 
+        on( "--http-authentication-type #{OptionGroups::HTTP::AUTHENTICATION_TYPES.join(',')}",
+            'HTTP authentication type.', '(Default: auto)' ) do |type|
+            options.http.authentication_type = type
+        end
+
         on( '--http-proxy ADDRESS:PORT', 'Proxy to use.' ) do |url|
             options.http.proxy = url
             options.http.proxy_host, options.http.proxy_port = url.split( ':', 2 )

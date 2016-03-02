@@ -37,6 +37,21 @@ describe Arachni::OptionGroups::HTTP do
         end
     end
 
+    describe '#authentication_type=' do
+        it 'sets #authentication_type' do
+            subject.authentication_type = 'ntlm'
+            expect(subject.authentication_type).to eq('ntlm')
+        end
+
+        context 'when given an invalid type' do
+            it "raises #{described_class::Error::InvalidAuthenticationType}" do
+                expect do
+                    subject.authentication_type = 'stuff'
+                end.to raise_error described_class::Error::InvalidAuthenticationType
+            end
+        end
+    end
+
     describe '#proxy_type=' do
         it 'sets #proxy_type' do
             subject.proxy_type = 'http'

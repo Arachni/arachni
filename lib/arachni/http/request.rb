@@ -432,7 +432,7 @@ class Request < Message
             options[:userpwd]  = ':'
             options[:httpauth] = :gssnegotiate
         else
-            options[:httpauth] = :auto
+            options[:httpauth] = Options.http.authentication_type.to_sym
         end
 
         if proxy

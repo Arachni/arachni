@@ -21,6 +21,10 @@ class HTTP < Arachni::OptionGroup
         end
 
         # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+        class InvalidAuthenticationType < Error
+        end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class InvalidSSLCertificateType < Error
         end
 
@@ -36,6 +40,10 @@ class HTTP < Arachni::OptionGroup
     # @return   [Array<String>]
     #   Supported proxy types.
     PROXY_TYPES = %w(http http_1_0 socks4 socks4a socks5 socks5h)
+
+    # @return   [Array<String>]
+    #   Supported HTTP authentication types.
+    AUTHENTICATION_TYPES = %w(auto basic digest digest_ie negotiate ntlm)
 
     # @return   [Array<String>]
     #   Supported SSL certificate types.
@@ -102,6 +110,14 @@ class HTTP < Arachni::OptionGroup
     #
     # @see HTTP::Client
     attr_accessor :authentication_password
+
+    # @note Default is `auto`.
+    #
+    # @return   [String]
+    #   Authentication type
+    #
+    # @see AUTHENTICATION_TYPES
+    attr_accessor :authentication_type
 
     # @return   [Integer]
     #   Maximum HTTP {Arachni::HTTP::Response response} body size. If a
@@ -245,8 +261,24 @@ class HTTP < Arachni::OptionGroup
         request_queue_size:     100,
         request_headers:        {},
         response_max_size:      500_000,
-        cookies:                {}
+        cookies:                {},
+        authentication_type:    'auto'
     )
+
+    # @param    [String]    type
+    #   One of {AUTHENTICATION_TYPES}.
+    #
+    # @raise    Error::InvalidAuthenticationType
+    def authentication_type=( type )
+        return @authentication_type = defaults[:authentication_type].dup if !type
+
+        if !AUTHENTICATION_TYPES.include?( type.to_s )
+            fail Error::InvalidAuthenticationType,
+                 "Invalid authentication type: #{type} (supported: #{AUTHENTICATION_TYPES.join(', ')})"
+        end
+
+        @authentication_type = type
+    end
 
     # @param    [String]    type
     #   One of {PROXY_TYPES}.

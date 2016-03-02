@@ -676,6 +676,28 @@ describe Arachni::HTTP::Request do
             end
         end
 
+        context "#{Arachni::OptionGroups::HTTP}#authentication_type" do
+            before :each do
+                Arachni::Options.http.authentication_username = 'name'
+                Arachni::Options.http.authentication_password = 'secret'
+                Arachni::Options.http.authentication_type     = 'ntlm'
+            end
+
+            let(:request) do
+                described_class.new( url: url )
+            end
+
+            it 'forwards it' do
+                expect(subject.options[:httpauth]).to eq(:ntlm)
+            end
+
+            it 'defaults to :auto' do
+                Arachni::Options.http.authentication_type = nil
+
+                expect(subject.options[:httpauth]).to eq(:auto)
+            end
+        end
+
         context "#{Arachni::OptionGroups::HTTP}#response_max_size" do
             before :each do
                 Arachni::Options.http.response_max_size = 10
