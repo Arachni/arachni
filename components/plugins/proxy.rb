@@ -531,7 +531,8 @@ others' sessions.
                 ),
                 Options::Address.new( :bind_address,
                     description: 'IP address to bind to.',
-                    default:     '0.0.0.0'
+                    # Don't use 0.0.0.0, it breaks SSL interception on MS Windows.
+                    default:     '127.0.0.1'
                 ),
                 Options::Bool.new( :ignore_responses,
                     description: 'Forces the proxy to only extract vector '+

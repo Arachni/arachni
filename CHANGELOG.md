@@ -15,6 +15,8 @@
     triggered by clicking it, rather than just triggering the submit event on
     the form.
 - Plugins
+    - `proxy` -- `bind_address` default switched to `127.0.0.1`, `0.0.0.0` breaks
+        SSL interception on MS Windows.
     - `metrics` -- Fixed division by 0 error when no requests have been performed.
     - `email_notify`
         - Retry on error.
