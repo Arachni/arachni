@@ -34,7 +34,7 @@ class Arachni::Plugins::WebhookNotify < Arachni::Plugin::Base
             'response' => response.to_s
         )
 
-        print_status "Done with HTTP code #{response.return_message}: " <<
+        print_status "Done with HTTP code #{response.code}: " <<
                      "[#{response.return_code}] #{response.return_message}"
     end
 
