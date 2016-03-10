@@ -618,13 +618,21 @@ class Browser
     def trigger_events
         dom = self.state
 
+        count = 1
         elements_with_events( true ).each do |locator, events|
             state = "#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
             next if skip_state?( state )
             skip_state state
 
             events.each do |name, _|
+                if Options.scope.dom_event_limit_reached?( count )
+                    print_debug "DOM event limit reached for: #{dom.url}"
+                    next
+                end
+
                 distribute_event( dom, locator, name.to_sym )
+
+                count += 1
             end
         end
 

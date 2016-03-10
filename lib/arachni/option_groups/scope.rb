@@ -33,6 +33,14 @@ class Scope < Arachni::OptionGroup
     # @note `nil` is infinite -- default is `nil`.
     #
     # @return    [Integer]
+    #   How many DOM events to trigger for each snapshot.
+    #
+    # @see Browser#trigger_events
+    attr_accessor :dom_event_limit
+
+    # @note `nil` is infinite -- default is `nil`.
+    #
+    # @return    [Integer]
     #   How many pages to consider (crawl/audit)?
     #
     # @see Framework#push_to_page_queue
@@ -214,6 +222,10 @@ class Scope < Arachni::OptionGroup
 
     def page_limit_reached?( count )
         page_limit && page_limit.to_i > 0 && count >= page_limit
+    end
+
+    def dom_event_limit_reached?( count )
+        dom_event_limit && count >= dom_event_limit
     end
 
     # Sets the redundancy filters.

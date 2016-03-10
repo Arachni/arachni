@@ -160,6 +160,13 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.dom_depth_limit = limit
         end
 
+        on( '--scope-dom-event-limit LIMIT', Integer,
+            'How many DOM events to trigger for each DOM depth, for pages with JavaScript code.',
+            "(Default: #{options.scope.dom_event_limit.nil? ? 'inf' : options.scope.dom_event_limit })",
+        ) do |limit|
+            options.scope.dom_event_limit = limit
+        end
+
         on( '--scope-https-only', 'Forces the system to only follow HTTPS URLs.',
             "(Default: #{!!options.scope.https_only})"
         ) do

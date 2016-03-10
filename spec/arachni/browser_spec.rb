@@ -2226,6 +2226,28 @@ describe Arachni::Browser do
                 pages_should_have_form_with_input @browser.captured_pages, 'myImageButton.y'
             end
         end
+
+        context 'when OptionGroups::Scope#dom_event_limit' do
+            context 'has been set' do
+                it 'only triggers that amount of events' do
+                    Arachni::Options.scope.dom_event_limit = 1
+
+                    @browser.load( "#{@url}form-with-image-button" ).start_capture.trigger_events
+
+                    expect(@browser.flush_pages.size).to eq 1
+                end
+            end
+
+            context 'has not been set' do
+                it 'triggers all events' do
+                    Arachni::Options.scope.dom_event_limit = nil
+
+                    @browser.load( "#{@url}form-with-image-button" ).start_capture.trigger_events
+
+                    expect(@browser.flush_pages.size).to eq 2
+                end
+            end
+        end
     end
 
     describe '#source' do

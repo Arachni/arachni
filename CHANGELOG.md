@@ -11,6 +11,8 @@
             - `digest_ie`
             - `negotiate`
             - `ntlm`
+        - `--scope-dom-event-limit` -- Limits the amount of DOM events to be
+            triggered for each DOM depth.
 - Session -- Allow for a submit input to be specified when the login needs to be
     triggered by clicking it, rather than just triggering the submit event on
     the form.
