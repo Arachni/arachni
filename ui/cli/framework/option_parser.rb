@@ -221,7 +221,7 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.xmls = true
         end
 
-        on( '--audit-ui-inputs', 'Audit orphan Input elements with events.' ) do
+        on( '--audit-ui-inputs', 'Audit orphan <input> elements with events.' ) do
             options.audit.ui_inputs = true
         end
 
@@ -256,7 +256,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--audit-exclude-vector PATTERN', Regexp,
-               'Exclude input vectorS whose name matches PATTERN.',
+               'Exclude input vectors whose name matches PATTERN.',
                '(Can be used multiple times.)' ) do |name|
             options.audit.exclude_vector_patterns << name
         end
@@ -333,7 +333,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--http-cookie-string COOKIE',
-               "Cookie representation as an 'Cookie' HTTP request header."
+               "Cookie representation as a 'Cookie' HTTP request header."
         ) do |cookie|
             options.http.cookie_string = cookie
         end
