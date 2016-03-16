@@ -26,6 +26,7 @@ administrator
 administrator-login
 adminlogon
 authadmin
+backend
 console
 fpadmin
 iisadmin
