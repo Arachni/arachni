@@ -1406,6 +1406,24 @@ describe Arachni::Browser do
                                 end
                             end
                         end
+
+                        context 'when taints are not exact matches' do
+                            context 'names' do
+                                let(:page) { 'dom-cookies-names-substring' }
+
+                                it 'does not set #skip_dom' do
+                                    expect(cookies.find { |c| c.name == 'js_cookie3' }.skip_dom).to be_truthy
+                                end
+                            end
+
+                            context 'values' do
+                                let(:page) { 'dom-cookies-values-substring' }
+
+                                it 'does not set #skip_dom' do
+                                    expect(cookies.find { |c| c.name == 'js_cookie3' }.skip_dom).to be_truthy
+                                end
+                            end
+                        end
                     end
 
                     context 'false' do

@@ -968,8 +968,22 @@ class Browser
 
             if Options.audit.cookie_doms?
                 page.cookies.each do |cookie|
-                    next if data_flow_sinks.include?( cookie.name ) ||
-                        data_flow_sinks.include?( cookie.value )
+                    if (sinks = data_flow_sinks[cookie.name] ||
+                        data_flow_sinks[cookie.value])
+
+                        # Don't be satisfied with just a taint match, make sure
+                        # the full value is identical.
+                        #
+                        # For example, if a cookie has '1' as a name or value
+                        # that's too generic and can match irrelevant data.
+                        #
+                        # The current approach isn't perfect of course, but it's
+                        # the best we can do.
+                        next if sinks.find do |sink|
+                            sink.tainted_value == cookie.name ||
+                                sink.tainted_value == cookie.value
+                        end
+                    end
 
                     cookie.skip_dom = true
                 end

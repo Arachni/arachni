@@ -919,6 +919,93 @@ get '/dom-cookies-values' do
 HTML
 end
 
+get '/dom-cookies-names-substring' do
+    cookies['http_only_cookie'] = 'stuff1'
+
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
+
+    <<HTML
+    <html>
+        <script>
+            function getCookie( cname ) {
+                var name = cname + '=';
+                var ca = document.cookie.split(';');
+
+                for( var i = 0; i < ca.length; i++ ) {
+                    var c = ca[i].trim();
+
+                    if( c.indexOf( name ) == 0 ) {
+                        return c.substring( name.length, c.length )
+                    }
+                }
+
+                return '';
+            }
+
+            getCookie('http_only_cookie_substring');
+            getCookie('js_cookie1_substring');
+            getCookie('js_cookie2_substring');
+            getCookie('other_path_substring');
+        </script>
+    </html>
+HTML
+end
+
+get '/dom-cookies-values-substring' do
+    cookies['http_only_cookie'] = 'stuff1'
+
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
+    <<HTML
+    <html>
+        <script>
+            function cookiesHaveValue( value ) {
+                return document.cookie.indexOf( value ) != -1;
+            }
+
+            cookiesHaveValue('stuff1_substring');
+            cookiesHaveValue('stuff2_substring');
+            cookiesHaveValue('stuff3_substring');
+            cookiesHaveValue('stuff4_substring');
+        </script>
+    </html>
+HTML
+end
+
 get '/explore' do
     <<HTML
 <html>
