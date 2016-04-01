@@ -2,6 +2,8 @@
 
 ## Under development
 
+- Executables
+    - `arachni_rpcd_monitor` -- Brought up to date with Dispatcher refactoring.
 - Options
     - New
         - `--http-authentication-type`

@@ -12,8 +12,8 @@ require_relative 'dispatcher_monitor/option_parser'
 module Arachni
 
 require Options.paths.lib + 'rpc/client/dispatcher'
-require Options.paths.lib + 'ui/cli/output'
-require Options.paths.lib + 'ui/cli/utilities'
+require Options.paths.lib + 'utilities'
+require_relative '../../utilities'
 
 module UI::CLI
 module RPC::Client
@@ -59,7 +59,7 @@ class DispatcherMonitor
 
         loop do
             move_to_home
-            stats        = @dispatcher.stats
+            stats        = @dispatcher.statistics
             running_jobs = stats['running_jobs']
 
             print_banner
@@ -75,17 +75,15 @@ class DispatcherMonitor
     end
 
     def print_job_table( jobs )
-        headings = [ 'Parent PID', 'PID', 'Port', 'Owner', 'Birthdate (Server-side)',
+        headings = [ 'PID', 'Port', 'Owner', 'Birthdate (Server-side)',
             'Start time (Server-side)', 'Current time (Server-side)', 'Age',
-            'Run-time', 'Memory', 'Priority', 'State' ]
+            'Run-time']
 
         rows = []
         jobs.each do |job|
-            rows << [ job['proc']['ppid'], job['pid'], job['port'], job['owner'],
-                job['birthdate'].to_time, job['starttime'].to_time, job['currtime'].to_time,
-                seconds_to_hms( job['age'] ), seconds_to_hms( job['runtime'] ),
-                proc_mem( job['proc']['rss'] ), job['proc']['priority'],
-                proc_state( job['proc']['state'] ) ]
+            rows << [ job['pid'], job['port'], job['owner'],
+                job['birthdate'], job['starttime'], job['currtime'],
+                seconds_to_hms( job['age'] ), seconds_to_hms( job['runtime'] )]
         end
 
         return if rows.empty?
