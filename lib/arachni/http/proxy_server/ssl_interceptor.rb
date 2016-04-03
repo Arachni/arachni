@@ -32,6 +32,7 @@ class SSLInterceptor < Connection
 
     def on_close( reason = nil )
         print_debug_level_3 "Closed because: [#{reason.class}] #{reason}"
+        @parent.mark_connection_inactive self
     end
 
     def start_tls

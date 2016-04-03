@@ -1137,9 +1137,10 @@ class Browser
         delay = load_delay
         return if !delay
 
-        print_debug_level_2 'Waiting for timers...'
+        effective_delay = [Options.http.request_timeout, delay].min / 1000.0
+        print_debug_level_2 "Waiting for max timer #{effective_delay}s (original was #{delay}ms)..."
 
-        sleep [Options.http.request_timeout, delay].min / 1000.0
+        sleep effective_delay
 
         print_debug_level_2 '...done.'
     end
@@ -1423,12 +1424,26 @@ class Browser
     end
 
     def wait_for_pending_requests
-        print_debug_level_2 "Waiting for #{@proxy.pending_requests} requests to complete..."
-
         sleep 0.1
-        sleep 0.01 while @proxy.has_pending_requests?
 
-        print_debug_level_2 '...done.'
+        last_connections = []
+        while @proxy.has_pending_requests?
+            connections = @proxy.active_connections
+
+            if last_connections != connections
+                print_debug_level_2 "Waiting for #{@proxy.pending_requests} requests to complete:"
+                connections.each do |connection|
+                    if connection.request
+                        print_debug_level_2 " * #{connection.request.url}"
+                    else
+                        print_debug_level_2 ' * Still reading request data.'
+                    end
+                end
+            end
+            last_connections = connections
+
+            sleep 0.01
+        end
     end
 
     def load_cookies( url, cookies = {} )

@@ -97,6 +97,10 @@ class ProxyServer
         @active_connections.size
     end
 
+    def active_connections
+        @active_connections
+    end
+
     def mark_connection_active( connection )
         @active_connections << connection
     end

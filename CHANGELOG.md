@@ -15,6 +15,9 @@
             - `ntlm`
         - `--scope-dom-event-limit` -- Limits the amount of DOM events to be
             triggered for each DOM depth.
+- HTTP
+    - `ProxyServer` -- Fixed state of abruptly closed SSL interceptor connections
+        leading to frozen browser operations.
 - Session -- Allow for a submit input to be specified when the login needs to be
     triggered by clicking it, rather than just triggering the submit event on
     the form.

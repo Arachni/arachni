@@ -18,6 +18,7 @@ class Connection < Arachni::Reactor::Connection
         content-encoding te trailers accept-encoding)
 
     attr_reader :parent
+    attr_reader :request
 
     def initialize( options = {} )
         @options = options
@@ -55,18 +56,16 @@ class Connection < Arachni::Reactor::Connection
                 next
             end
 
-            request_url = sanitize_url( @parser.request_url, headers )
-
-            handle_request(
-                Arachni::HTTP::Request.new(
-                    http_opts.merge(
-                        url:     request_url,
-                        method:  method,
-                        body:    @body,
-                        headers: headers
-                    )
+            @request = Arachni::HTTP::Request.new(
+                http_opts.merge(
+                    url:     sanitize_url( @parser.request_url, headers ),
+                    method:  method,
+                    body:    @body,
+                    headers: headers
                 )
             )
+
+            handle_request( @request )
         end
     end
 
@@ -166,12 +165,9 @@ class Connection < Arachni::Reactor::Connection
 
         res << "\r\n"
 
-        print_debug_level_3 'Sending response.'
+        print_debug_level_3 "Sending response for: #{@request.url}"
 
         write (res << response.body)
-    rescue => e
-        ap e
-        ap e.backtrace
     end
 
     def on_close( reason = nil )
@@ -181,7 +177,7 @@ class Connection < Arachni::Reactor::Connection
 
         return if !@ssl_tunnel
 
-        @ssl_interceptor.close_without_callback
+        @ssl_interceptor.close( reason )
         @ssl_tunnel.close_without_callback
 
         @ssl_tunnel      = nil
@@ -189,23 +185,22 @@ class Connection < Arachni::Reactor::Connection
     end
 
     def on_flush
-        @body = ''
-        @parser.reset!
-
         if !@ssl_tunnel || @last_http
 
             if @last_http
                 print_debug_level_3 'Last response sent, switching to tunnel.'
             else
-                print_debug_level_3 'Response sent.'
+                print_debug_level_3 "Response sent for: #{@request.url}"
             end
 
-            @parent.mark_connection_inactive self
             @last_http = false
         end
-    rescue => e
-        ap e
-        ap e.backtrace
+
+        @body    = ''
+        @request = nil
+
+        @parser.reset!
+        @parent.mark_connection_inactive self
     end
 
     def write( data )
@@ -222,12 +217,6 @@ class Connection < Arachni::Reactor::Connection
         # ap data
         @parser << data
     rescue ::HTTP::Parser::Error => e
-        close e
-
-    # TODO: While in dev only of course.
-    rescue => e
-        ap e
-        ap e.backtrace
         close e
     end
 
@@ -262,14 +251,6 @@ class Connection < Arachni::Reactor::Connection
         SKIP_HEADERS.each do |name|
             headers.delete name
         end
-
-        # headers['Connection']       = 'close'
-
-        # Keep alive is on by default for HTTP/1.1 but leave this here as a
-        # reminder.
-        #
-        # headers['Connection']       = 'keep-alive'
-        # headers['Proxy-Connection'] = 'keep-alive'
         headers
     end
 
