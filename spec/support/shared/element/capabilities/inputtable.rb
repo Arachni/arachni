@@ -415,6 +415,32 @@ shared_examples_for 'inputtable' do |options = {}|
         end
     end
 
+    describe '#updated?' do
+        context 'when the inputs have been updated' do
+            it 'returns true' do
+                [
+                    { valid_key => 'val12345' },
+                    { valid_key => 'val2456' }
+                ].each do |updates|
+                    d = subject.dup
+                    d.update( updates )
+                    expect(d).to be_updated
+                end
+            end
+        end
+
+        context 'when the inputs have not been updated' do
+            it 'returns false' do
+                d = subject.dup
+
+                expect(d).to_not be_updated
+
+                d.update( subject.inputs )
+                expect(d).to_not be_updated
+            end
+        end
+    end
+
     describe '#changes' do
         it 'returns the changes the inputs have sustained' do
             [

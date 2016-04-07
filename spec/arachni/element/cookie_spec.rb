@@ -337,7 +337,7 @@ describe Arachni::Element::Cookie do
         end
 
         context 'when there are raw data' do
-            context 'and is not a mutation' do
+            context 'and has not been updated' do
                 it 'returns them' do
                     c = described_class.new(
                         url:    url,
@@ -350,7 +350,7 @@ describe Arachni::Element::Cookie do
                 end
             end
 
-            context 'and is a mutation' do
+            context 'and has been updated' do
                 it 'returns the encoded name/value pair' do
                     c = described_class.new(
                         url:    url,
@@ -359,7 +359,7 @@ describe Arachni::Element::Cookie do
                         raw_name: 'blah',
                         raw_value: 'blah2'
                     )
-                    expect(c).to receive(:mutation?) { true }
+                    expect(c).to receive(:updated?) { true }
                     expect(c.to_s).to eq('blah%3Dha%25=some+stuff+%3B')
                 end
             end
@@ -412,28 +412,32 @@ describe Arachni::Element::Cookie do
             cookie = cookies.shift
             expect(cookie.action).to eq(url)
             expect(cookie.url).to eq(url)
-            expect(cookie.inputs).to eq({ 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' })
-            expect(cookie.simple).to eq({ 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' })
+            expect(cookie.inputs).to eq({ 'coo@ki e2' => 'blah val2@' })
+            expect(cookie.simple).to eq({ 'coo@ki e2' => 'blah val2@' })
             expect(cookie.domain).to eq('.blah-domain')
             expect(cookie.path).to eq('/')
             expect(cookie.secure).to eq(false)
             expect(cookie.session?).to eq(false)
             expect(cookie.expires).to eq(Time.parse( '2020-08-09 16:59:20 +0300' ))
-            expect(cookie.name).to eq('NAME')
-            expect(cookie.value).to eq('OP5jTLV6VhYHADJAbJ1ZR@L8~081210')
+            expect(cookie.name).to eq('coo@ki e2')
+            expect(cookie.raw_name).to eq('coo%40ki+e2')
+            expect(cookie.value).to eq('blah val2@')
+            expect(cookie.raw_value).to eq('blah+val2%40')
 
             cookie = cookies.shift
             expect(cookie.action).to eq(url)
             expect(cookie.url).to eq(url)
-            expect(cookie.inputs).to eq({ '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' })
-            expect(cookie.simple).to eq({ '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' })
+            expect(cookie.inputs).to eq({ '_superapp_session' => 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==' })
+            expect(cookie.simple).to eq({ '_superapp_session' => 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==' })
             expect(cookie.domain).to eq('192.168.1.1')
             expect(cookie.path).to eq('/')
             expect(cookie.secure).to eq(false)
             expect(cookie.session?).to eq(true)
             expect(cookie.expires).to be_nil
             expect(cookie.name).to eq('_superapp_session')
-            expect(cookie.value).to eq('BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg==--810acaa3759101ed79740e25de31e0c5bad76cdc')
+            expect(cookie.raw_name).to eq('_superapp_session')
+            expect(cookie.value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==')
+            expect(cookie.raw_value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D')
         end
     end
 

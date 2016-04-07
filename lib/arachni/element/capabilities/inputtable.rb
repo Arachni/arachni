@@ -134,6 +134,10 @@ module Capabilities::Inputtable
         end
     end
 
+    def updated?
+        @default_inputs != self.inputs
+    end
+
     # Resets the inputs to their original format/values.
     def reset
         super if defined?( super )

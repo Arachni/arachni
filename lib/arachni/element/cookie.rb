@@ -172,10 +172,10 @@ class Cookie < Base
     # @return   [String]
     #   To be used in a `Cookie` HTTP request header.
     def to_s
-        # Only do encoding if we're dealing with a mutation, otherwise pass
+        # Only do encoding if we're dealing with updated inputs, otherwise pass
         # along the raw data as set in order to deal with server-side decoding
         # quirks.
-        if mutation? || !(raw_name || raw_value )
+        if updated? || !(raw_name || raw_value )
             "#{encode( name )}=#{encode( value )}"
         else
             "#{raw_name}=#{raw_value}"
@@ -255,7 +255,7 @@ class Cookie < Base
                 next if (line = line.strip).empty? || line[0] == '#'
 
                 c = {}
-                c['domain'], foo, c['path'], c['secure'], c['expires'], c['name'],
+                c['domain'], _, c['path'], c['secure'], c['expires'], c['name'],
                     c['value'] = *line.split( "\t" )
 
                 # expiry date is optional so if we don't have one push everything back
@@ -266,7 +266,15 @@ class Cookie < Base
                     c['name'] = c['expires'].dup
                     c['expires'] = nil
                 end
+
                 c['secure'] = (c['secure'] == 'TRUE') ? true : false
+
+                c['raw_name'] = c['name']
+                c['name'] = decode( c['name'] )
+
+                c['raw_value'] = c['value']
+                c['value'] = decode( c['value'] )
+
                 new( { url: url }.merge( c.my_symbolize_keys ) )
             end.flatten.compact
         end
