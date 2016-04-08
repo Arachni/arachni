@@ -120,6 +120,68 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                     it 'returns true'
                 end
             end
+
+            context 'when checking for a resource with a name that routes based on dash' do
+                context 'and the handler is pre-dash sensitive' do
+                    context 'and is found' do
+                        it 'returns false' do
+                            res = nil
+                            client.get( url + 'advanced/sensitive-dash/pre/blah-html' ) { |c_res| res = c_res }
+                            client.run
+
+                            bool = nil
+                            subject._404?( res ) { |c_bool| bool = c_bool }
+                            client.run
+
+                            expect(bool).to be_falsey
+                        end
+                    end
+
+                    context 'and is not found' do
+                        it 'returns true' do
+                            res = nil
+                            client.get( url + 'advanced/sensitive-dash/pre/blah2-html' ) { |c_res| res = c_res }
+                            client.run
+
+                            bool = nil
+                            subject._404?( res ) { |c_bool| bool = c_bool }
+                            client.run
+
+                            expect(bool).to be_truthy
+                        end
+                    end
+                end
+
+                context 'and the handler is post-dash sensitive' do
+                    context 'and is found' do
+                        it 'returns false' do
+                            res = nil
+                            client.get( url + 'advanced/sensitive-dash/post/blah-html' ) { |c_res| res = c_res }
+                            client.run
+
+                            bool = nil
+                            subject._404?( res ) { |c_bool| bool = c_bool }
+                            client.run
+
+                            expect(bool).to be_falsey
+                        end
+                    end
+
+                    context 'and is not found' do
+                        it 'returns true' do
+                            res = nil
+                            client.get( url + 'advanced/sensitive-dash/post/blah-html2' ) { |c_res| res = c_res }
+                            client.run
+
+                            bool = nil
+                            subject._404?( res ) { |c_bool| bool = c_bool }
+                            client.run
+
+                            expect(bool).to be_truthy
+                        end
+                    end
+                end
+            end
         end
 
         context 'when checking for an already checked URL' do

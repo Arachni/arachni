@@ -64,3 +64,19 @@ get '/advanced/sensitive-ext/:filename' do |filename|
         handler_response_2
     end
 end
+
+get '/advanced/sensitive-dash/pre/*-*' do |d1, _|
+    if d1 == 'blah'
+        'Found, all good!'
+    else
+        handler_response_1
+    end
+end
+
+get '/advanced/sensitive-dash/post/*-*' do |_, d2|
+    if d2 == 'html'
+        'Found, all good!'
+    else
+        handler_response_1
+    end
+end

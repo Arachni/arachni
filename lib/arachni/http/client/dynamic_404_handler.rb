@@ -329,7 +329,8 @@ class Dynamic404Handler
         !!(
             !resource_name.empty? ||
             uri.resource_extension ||
-            uri.resource_name.to_s.include?( '~' )
+            uri.resource_name.to_s.include?( '~' ) ||
+            uri.resource_name.to_s.include?( '-' )
         )
     end
 
@@ -419,6 +420,19 @@ class Dynamic404Handler
         if resource_extension
             # Get a random filename with an existing extension.
             probes << proc { up_to_path + random_string + '.' + resource_extension }
+        end
+
+        # Some webapps do routing based on name resources with "-" as a separator.
+        if uri.resource_name.include?( '-' )
+            rn = uri.resource_name
+
+            probes << proc {
+                up_to_path.sub( rn, rn.gsub( '-', "#{random_string}-" ) )
+            }
+
+            probes << proc {
+                up_to_path.sub( rn, rn.gsub( '-', "-#{random_string}" ) )
+            }
         end
 
         if uri.resource_name.include?( '~' )
