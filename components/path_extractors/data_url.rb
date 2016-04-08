@@ -6,16 +6,16 @@
     web site for more information on licensing and terms of use.
 =end
 
-# Extracts paths from anchor elements.
+# Extracts paths from `data-url` attributes.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
+# @version 0.2.1
 class Arachni::Parser::Extractors::DataURL < Arachni::Parser::Extractors::Base
 
     def run
         return [] if !includes?( 'data-url' )
 
-        document.search( '//a[@data-url]' ).map { |a| a['data-url'] }
+        document.search( '//*[@data-url]' ).map { |e| e['data-url'] }
     end
 
 end

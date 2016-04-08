@@ -12,7 +12,11 @@ describe name_from_filename do
     end
 
     def text
-        results.map { |u| "<a data-url='#{u}'>Stuff</a>" }.join
+        <<EOHTML
+        <a data-url='http://test.com'>1</a>
+        <span data-url='test.com'>2</span>
+        <div data-url='test'>2</div>
+EOHTML
     end
 
     easy_test

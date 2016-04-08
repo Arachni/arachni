@@ -38,6 +38,8 @@
         - `backup_directories` -- Added issue remark explaining how the original
             resource name was manipulated.
         - `xst` -- Run once for each protocol, not just for the first page.
+- Path extractors
+    - `data_url` -- Extract from all elements, not just links.
 
 ## 1.4 _(February 7, 2016)_
 
