@@ -113,7 +113,7 @@ class JSON < Base
             rescue ::JSON::ParserError
             end
 
-            return if !data || data.empty?
+            return if !data.is_a?( Hash ) || data.empty?
 
             new(
                 url:    url,
