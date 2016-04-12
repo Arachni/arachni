@@ -21,7 +21,7 @@ module Submittable
         with_browser do |browser|
             prepare_browser( browser, options )
 
-            # If we've wondered to an out-of-scope resource don't bother calling.
+            # If we've wandered to an out-of-scope resource don't bother calling.
             # Can be caused by a JS redirect or something akin to that.
             if (transitions = self.trigger.compact).any?
                 page = browser.to_page
