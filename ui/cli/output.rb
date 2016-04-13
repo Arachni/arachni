@@ -204,7 +204,14 @@ module Output
     def print_debug( str = '', level = 1 )
         return if !debug?( level )
 
-        print_color( "[#{Time.now}] [#{'!' * level}] #{caller_location}", 36, str, $stderr )
+        # Let's keep track of how much time went by from the last debug call
+        # of the same level.
+        @level_time ||= {}
+        diff = @level_time[level] ? Time.now - @level_time[level] : 0.0
+        diff = diff.round(1)
+        @level_time[level] = Time.now
+
+        print_color( "[#{@level_time[level]} - #{diff}] [#{'!' * level}] #{caller_location}", 36, str, $stderr )
     end
 
     def caller_location
