@@ -38,7 +38,7 @@ class ProxyServer
         @reactor = Arachni::Reactor.new
         @options = options
 
-        @active_connections = Set.new
+        @active_connections = Concurrent::Map.new
 
         @options[:address] ||= '127.0.0.1'
         @options[:port]    ||= Utilities.available_port
@@ -98,11 +98,11 @@ class ProxyServer
     end
 
     def active_connections
-        @active_connections
+        @active_connections.keys
     end
 
     def mark_connection_active( connection )
-        @active_connections << connection
+        @active_connections.put_if_absent( connection, nil )
     end
 
     def mark_connection_inactive( connection )
