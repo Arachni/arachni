@@ -99,7 +99,7 @@ module Output
     # @param    [String]    str
     def print_error( str = '' )
         print_color( "[-] #{caller_location}", 31, str, $stderr )
-        log_error( "#{caller_location} #{str}" )
+        log_error( "#{caller_location}#{str}" )
     end
 
     # Prints the backtrace of an exception as error messages.
@@ -204,7 +204,7 @@ module Output
     def print_debug( str = '', level = 1 )
         return if !debug?( level )
 
-        print_color( "[#{'!' * level}] #{caller_location}", 36, str, $stderr )
+        print_color( "[#{Time.now}] [#{'!' * level}] #{caller_location}", 36, str, $stderr )
     end
 
     def caller_location
