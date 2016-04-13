@@ -666,9 +666,7 @@ class Browser
         transition = fire_event( element, event )
 
         if !transition
-            print_info "Could not trigger '#{event}' on '#{element}' because" <<
-                ' the page has changed, capturing a new snapshot.'
-            capture_snapshot
+            print_info "Could not trigger '#{event}' on: #{element}"
 
             if restore
                 print_info 'Restoring page.'
