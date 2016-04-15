@@ -109,12 +109,30 @@ class Server < Base
                 if r.code == 200
                     http.dynamic_404_handler._404?( r ) { |bool| block.call( !bool, r ) }
                 else
+
+                    # Make sure redirects gets a fare shake down the line.
+                    # See: https://github.com/Arachni/arachni/issues/673
+                    if r.redirect?
+                        [r.headers.location].flatten.each do |l|
+                            auditor.framework.push_to_url_queue( l )
+                        end
+                    end
+
                     block.call( false, r )
                 end
             end
         else
-            http.request( url, method: :head, performer: self ) do |response|
-                block.call( response.code == 200, response )
+            http.request( url, method: :head, performer: self ) do |r|
+
+                # Make sure redirects gets a fare shake down the line.
+                # See: https://github.com/Arachni/arachni/issues/673
+                if r.redirect?
+                    [r.headers.location].flatten.each do |l|
+                        auditor.framework.push_to_url_queue( l )
+                    end
+                end
+
+                block.call( r.code == 200, r )
             end
         end
 
