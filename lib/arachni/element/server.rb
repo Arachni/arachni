@@ -110,7 +110,7 @@ class Server < Base
                     http.dynamic_404_handler._404?( r ) { |bool| block.call( !bool, r ) }
                 else
 
-                    # Make sure redirects gets a fare shake down the line.
+                    # Make sure redirects get a fare shake down the line.
                     # See: https://github.com/Arachni/arachni/issues/673
                     if r.redirect?
                         [r.headers.location].flatten.each do |l|
@@ -124,7 +124,7 @@ class Server < Base
         else
             http.request( url, method: :head, performer: self ) do |r|
 
-                # Make sure redirects gets a fare shake down the line.
+                # Make sure redirects get a fare shake down the line.
                 # See: https://github.com/Arachni/arachni/issues/673
                 if r.redirect?
                     [r.headers.location].flatten.each do |l|
