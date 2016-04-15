@@ -54,8 +54,8 @@ class Framework
     def run
         print_status 'Initializing...'
 
-        # Won't work properly on MS Windows.
-        get_user_command if !Arachni.windows?
+        # Won't work properly on MS Windows or when running in background.
+        get_user_command if !Arachni.windows? && !@daemon_friendly
 
         begin
             # We may need to kill the audit so put it in a thread.
@@ -389,6 +389,7 @@ class Framework
     def parse_options
         parser = OptionParser.new
 
+        parser.daemon_friendly
         parser.authorized_by
         parser.output
         parser.scope
@@ -409,6 +410,8 @@ class Framework
 
         @timeout         = parser.get_timeout
         @timeout_suspend = parser.timeout_suspend?
+
+        @daemon_friendly = parser.daemon_friendly?
 
         if options.checks.any?
             begin

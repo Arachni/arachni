@@ -35,6 +35,18 @@ class OptionParser < UI::CLI::OptionParser
         end
     end
 
+    def daemon_friendly
+        on( '--daemon-friendly',
+            'Enable this option when running the process in the background.'
+        ) do |b|
+            @daemon_friendly = b
+        end
+    end
+
+    def daemon_friendly?
+        !!@daemon_friendly
+    end
+
     def output
         separator ''
         separator 'Output'

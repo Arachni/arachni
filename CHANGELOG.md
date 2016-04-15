@@ -15,6 +15,7 @@
             - `ntlm`
         - `--scope-dom-event-limit` -- Limits the amount of DOM events to be
             triggered for each DOM depth.
+        - `--daemon-friendly` -- Disables status screen.
 - HTTP
     - `ProxyServer` -- Fixed state of abruptly closed SSL interceptor connections
         leading to frozen browser operations.
