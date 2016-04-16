@@ -102,10 +102,6 @@ class Issue
     #   made the remark, value is an `Array` of remarks.
     attr_accessor :remarks
 
-    # @return   [Issue,nil]
-    #   Parent of variation.
-    attr_accessor :parent
-
     # @param    [Hash]    options
     #   Configuration hash holding instance attributes.
     def initialize( options = {} )
@@ -147,9 +143,11 @@ class Issue
 
             f.options.url = referring_page.url
 
-            f.checks.load( parent ? parent.check[:shortname] : check[:shortname] )
-            f.push_to_page_queue referring_page
+            f.checks.load( check[:shortname] )
+            f.plugins.load( f.options.plugins.keys )
 
+            f.push_to_page_queue referring_page
+            # Needs to happen **AFTER** the push to page queue.
             f.options.scope.do_not_crawl
 
             f.run
@@ -210,6 +208,15 @@ class Issue
     def affected_input_name
         return if !active?
         vector.affected_input_name
+    end
+
+    # @return   [String, nil]
+    #   The name of the affected input, `nil` if the issue is {#passive?}.
+    #
+    # @see #passive?
+    def affected_input_value
+        return if !active?
+        vector.inputs[affected_input_name]
     end
 
     # @return   [Boolean]
@@ -325,8 +332,6 @@ class Issue
 
         h[:response] = response.to_h if response
         h[:request]  = request.to_h  if request
-
-        h.delete :parent
 
         h
     end
