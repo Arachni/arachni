@@ -234,12 +234,6 @@ describe Arachni::Element::Server do
                     @framework.http.run
                     expect(exists).to be_falsey
                 end
-
-                it 'pushes it to the URL audit queue' do
-                    auditable.remote_file_exist?( @base_url + 'redirect' ) { }
-                    expect(@framework).to receive( :push_to_url_queue ).with( @base_url + 'redirected' )
-                    @framework.http.run
-                end
             end
         end
 
@@ -310,22 +304,6 @@ describe Arachni::Element::Server do
                             expect(exist.include?( true )).to be_falsey
                         end
                     end
-
-                    context 'and is a redirect' do
-                        it 'yields false' do
-                            exists = true
-                            auditable.remote_file_exist?( @_404_url + 'redirect/stuff' ) { |bool| exists = bool }
-                            @framework.http.run
-                            expect(exists).to be_falsey
-                        end
-
-                        it 'pushes it to the URL audit queue' do
-                            auditable.remote_file_exist?( @_404_url + 'redirect/stuff' ) { }
-                            expect(@framework).to receive( :push_to_url_queue ).with( @base_url + 'redirected' )
-                            @framework.http.run
-                        end
-                    end
-
                 end
             end
         end
