@@ -670,7 +670,7 @@ module Auditor
 
     def prepare_each_dom_element( elements, &block )
         elements.each do |e|
-            next if skip?( e ) || !e.dom || e.dom.inputs.empty?
+            next if !e.dom || e.dom.inputs.empty? || skip?( e.dom )
 
             d = e.dup.dom
             d.auditor = self
