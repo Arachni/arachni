@@ -1,13 +1,17 @@
 Factory.define :vector do |type = :Form|
     Arachni::Element.const_get( type ).new( url: 'http://test.com', inputs: { stuff: 1 } )
 end
-Factory.alias :passive_vector, :vector
 
-Factory.define :active_vector do
+Factory.define :passive_vector do
     v = Factory[:vector]
     v.affected_input_name  = :stuff
     v.affected_input_value = 2
-    v.seed                 = 2
+    v
+end
+
+Factory.define :active_vector do
+    v = Factory[:passive_vector]
+    v.seed = 2
     v
 end
 

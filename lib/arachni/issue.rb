@@ -198,7 +198,10 @@ class Issue
     #
     # @see #passive?
     def active?
-        !!(vector.respond_to?( :affected_input_name ) && vector.affected_input_name)
+        !!(
+            (vector.respond_to?( :affected_input_name ) && vector.affected_input_name) &&
+                (vector.respond_to?( :seed ) && vector.seed)
+        )
     end
 
     # @return   [String, nil]
@@ -342,11 +345,19 @@ class Issue
     def unique_id
         return @unique_id if @unique_id
 
-        vector_info = active? ?
-            "#{vector.method}:#{vector.affected_input_name}:" :
-            "#{proof}:"
+        vector_info =   if passive?
+                            proof
+                        else
+                            if vector.respond_to?( :method )
+                                vector.method
+                            end
+                        end.to_s.dup
 
-        "#{name}:#{vector_info}#{vector.action.split( '?' ).first}"
+        if vector.respond_to?( :affected_input_name )
+            vector_info << ":#{vector.affected_input_name}"
+        end
+
+        "#{name}:#{vector_info}:#{vector.action.split( '?' ).first}"
     end
 
     # @return   [Integer]

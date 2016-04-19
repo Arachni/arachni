@@ -413,7 +413,7 @@ describe Arachni::Issue do
             )
 
             i = passive_issue
-            expect(i.unique_id).to eq("#{i.name}:#{i.proof}:#{i.vector.url}")
+            expect(i.unique_id).to eq("#{i.name}:#{i.proof}:#{i.vector.affected_input_name}:#{i.vector.url}")
         end
     end
 
