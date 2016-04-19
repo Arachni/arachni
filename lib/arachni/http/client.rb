@@ -85,6 +85,8 @@ class Client
     # Default 1 minute timeout for HTTP requests.
     HTTP_TIMEOUT = 60_000
 
+    SEED_HEADER_NAME = 'X-Arachni-Scan-Seed'
+
     # @return   [String]
     #   Framework target URL, used as reference.
     attr_reader :url
@@ -129,9 +131,10 @@ class Client
 
         headers.clear
         headers.merge!(
-            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'      => Options.http.user_agent,
-            'Accept-Language' => 'en-US,en;q=0.8,he;q=0.6'
+            'Accept'              => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent'          => Options.http.user_agent,
+            'Accept-Language'     => 'en-US,en;q=0.8,he;q=0.6',
+            SEED_HEADER_NAME      => Arachni::Utilities.random_seed
         )
         headers['From'] = Options.authorized_by if Options.authorized_by
         headers.merge!( Options.http.request_headers )
