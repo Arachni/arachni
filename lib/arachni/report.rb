@@ -18,6 +18,10 @@ class Report
     #   {Arachni::VERSION}
     attr_accessor :version
 
+    # @return    [String]
+    #   Scan seed.
+    attr_accessor :seed
+
     # @return    [Hash]
     #   {Options#to_h}
     attr_reader   :options
@@ -42,6 +46,7 @@ class Report
         options.each { |k, v| send( "#{k}=", v ) }
 
         @version     ||= Arachni::VERSION
+        @seed        ||= Arachni::Utilities.random_seed
         @plugins     ||= {}
         @sitemap     ||= {}
         self.options ||= Options
@@ -176,6 +181,7 @@ class Report
     def to_h
         h = {
             version:         @version,
+            seed:            @seed,
             options:         Arachni::Options.hash_to_rpc_data( @options ),
             sitemap:         @sitemap,
             start_datetime:  @start_datetime.to_s,
@@ -210,6 +216,7 @@ class Report
 
         {
             version:         @version,
+            seed:            @seed,
             url:             url,
             checks:          @options[:checks],
             plugins:         @options[:plugins].keys,

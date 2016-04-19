@@ -24,6 +24,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
                 'xsi:noNamespaceSchemaLocation' => REMOTE_SCHEMA
             ) {
                 xml.version report.version
+                xml.seed report.seed
                 xml.options Arachni::Options.hash_to_save_data( report.options )
                 xml.start_datetime report.start_datetime.xmlschema
                 xml.finish_datetime report.finish_datetime.xmlschema
@@ -177,7 +178,7 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             description:  %q{Exports the audit results as an XML (.xml) file.},
             content_type: 'text/xml',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.3.4',
+            version:      '0.3.5',
             options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
         }
     end

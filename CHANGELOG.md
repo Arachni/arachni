@@ -26,6 +26,8 @@
 - Session -- Allow for a submit input to be specified when the login needs to be
     triggered by clicking it, rather than just triggering the submit event on
     the form.
+- Report
+    - Added `#seed` attribute that includes the random scan seed.
 - Plugins
     - New
         - `webhook_notify` -- Sends a webhook payload over HTTP at the end of the scan.

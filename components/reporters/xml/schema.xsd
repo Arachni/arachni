@@ -5,6 +5,7 @@
         <xs:complexType>
             <xs:all>
                 <xs:element name="version" type="xs:string"/>
+                <xs:element name="seed" type="xs:string"/>
                 <xs:element name="start_datetime" type="xs:dateTime" />
                 <xs:element name="finish_datetime" type="xs:dateTime"/>
                 <xs:element name="sitemap" type="sitemap"/>

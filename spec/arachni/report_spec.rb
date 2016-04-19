@@ -30,7 +30,7 @@ describe Arachni::Report do
         let(:subject) { report }
         let(:data) { subject.to_rpc_data }
 
-        %w(sitemap version).each do |attribute|
+        %w(seed sitemap version).each do |attribute|
             it "includes '#{attribute}'" do
                 expect(data[attribute]).to eq(subject.send( attribute ))
             end
@@ -70,7 +70,7 @@ describe Arachni::Report do
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
-        %w(sitemap issues plugins version).each do |attribute|
+        %w(seed sitemap issues plugins version).each do |attribute|
             it "restores '#{attribute}'" do
                 expect(restored.send( attribute )).to eq(subject.send( attribute ))
             end
@@ -94,6 +94,12 @@ describe Arachni::Report do
     describe '#version' do
         it 'returns the version number' do
             expect(report.version).to eq(Arachni::VERSION)
+        end
+    end
+
+    describe '#seed' do
+        it 'returns the scan seed' do
+            expect(report.seed).to eq(Arachni::Utilities.random_seed)
         end
     end
 

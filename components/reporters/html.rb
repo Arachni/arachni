@@ -19,7 +19,6 @@ require 'fileutils'
 # Creates an HTML report with scan results.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.1
 class Arachni::Reporters::HTML < Arachni::Reporter::Base
 
     TEMPLATE_FILE = File.dirname( __FILE__ ) + '/html/default.erb'
@@ -440,7 +439,7 @@ access unauthorized pages.
             description:  %q{Exports the audit results as a compressed HTML report.},
             content_type: 'application/zip',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.4.2',
+            version:      '0.4.3',
             options:      [
                 Options.outfile( '.html.zip' ),
                 Options.skip_responses
