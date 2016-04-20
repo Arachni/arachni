@@ -25,6 +25,7 @@
         - Added `X-Arachni-Scan-Seed` header that includes the random scan seed.
         - `Dynamic404Handler`
             - Added training scenario for when dashes are used as routing separators.
+            - Updated to not dismiss redirects but follow the location.
 - Session -- Allow for a submit input to be specified when the login needs to be
     triggered by clicking it, rather than just triggering the submit event on
     the form.

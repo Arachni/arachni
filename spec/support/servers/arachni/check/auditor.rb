@@ -224,6 +224,10 @@ get '/log_remote_file_if_exists/redirect' do
     redirect '/log_remote_file_if_exists/redirected'
 end
 
+get '/log_remote_file_if_exists/redirect/not_found' do
+    redirect '/log_remote_file_if_exists/false'
+end
+
 get '/log_remote_file_if_exists/redirected' do
     'Sucess!'
 end

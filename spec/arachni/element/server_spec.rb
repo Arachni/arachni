@@ -228,11 +228,22 @@ describe Arachni::Element::Server do
             end
 
             context 'when the response is a redirect' do
-                it 'yields false' do
-                    exists = true
-                    auditable.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
-                    @framework.http.run
-                    expect(exists).to be_falsey
+                context 'and the final page is found' do
+                    it 'yields true' do
+                        exists = true
+                        auditable.remote_file_exist?( @base_url + 'redirect' ) { |bool| exists = bool }
+                        @framework.http.run
+                        expect(exists).to be_truthy
+                    end
+                end
+
+                context 'and the final page is not found' do
+                    it 'yields false' do
+                        exists = true
+                        auditable.remote_file_exist?( @base_url + 'redirect/not_found' ) { |bool| exists = bool }
+                        @framework.http.run
+                        expect(exists).to be_falsey
+                    end
                 end
             end
         end

@@ -375,8 +375,9 @@ class Dynamic404Handler
         trv_back += '/' if trv_back[-1] != '/'
 
         parsed = uri.dup
-        parsed.path  = trv_back
-        trv_back_url = parsed.to_s
+        parsed.path   = trv_back
+        parsed.query  = ''
+        trv_back_url  = parsed.to_s
 
         [
             # Get a random path with an extension.
@@ -450,13 +451,15 @@ class Dynamic404Handler
     def request( url, &block )
         Client.get( url,
             # This is important, helps us reduce waiting callers.
-            high_priority: true,
+            high_priority:   true,
 
             # We're going to be checking for a lot of non-existent resources,
             # don't bother fingerprinting them
-            fingerprint:   false,
+            fingerprint:     false,
 
-            performer:     self,
+            follow_location: true,
+
+            performer:       self,
             &block
         )
     end
