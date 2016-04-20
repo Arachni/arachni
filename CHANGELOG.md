@@ -49,6 +49,8 @@
         - `xst` -- Run once for each protocol, not just for the first page.
 - Path extractors
     - `data_url` -- Extract from all elements, not just links.
+- Reporters
+    - `xml` -- Replace unsupported null-bytes with a placeholder.
 
 ## 1.4 _(February 7, 2016)_
 
