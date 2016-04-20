@@ -259,6 +259,7 @@ describe Arachni::Report do
         it 'returns the object as a hash' do
             expect(report.to_h).to eq({
                 version:         report.version,
+                seed:            report.seed,
                 options:         Arachni::Options.hash_to_rpc_data( report.options ),
                 sitemap:         report.sitemap,
                 start_datetime:  report.start_datetime.to_s,
