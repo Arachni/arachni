@@ -193,6 +193,17 @@ class Cookie < Base
 
         set_cookie << '; Secure'   if secure?
         set_cookie << '; HttpOnly' if http_only?
+
+        # If we want to set a cookie for only the domain that responded to the
+        # request, Set-Cookie should not specify a domain.
+        #
+        # If we want the cookie to apply to all subdomains, we need to either
+        # specify a dot-prefixed domain or a domain, the browser client will
+        # prefix the dot anyways.
+        #
+        # http://stackoverflow.com/questions/1062963/how-do-browser-cookie-domains-work/1063760#1063760
+        set_cookie << "; Domain: #{domain}" if domain.start_with?( '.' )
+
         set_cookie
     end
 

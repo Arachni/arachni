@@ -59,6 +59,39 @@ describe Arachni::Element::Cookie do
                 end
             end
         end
+
+        context 'domain' do
+            context 'specified' do
+                subject do
+                    described_class.new(
+                        url:     "#{url}submit",
+                        name:    inputs.keys.first,
+                        value:   inputs.values.first,
+                        expires: Time.now + 99999999999,
+                        domain:  '.localhost'
+                    )
+                end
+
+                it 'sets it to the given value' do
+                    expect(subject.domain).to eq '.localhost'
+                end
+            end
+
+            context 'missing' do
+                subject do
+                    described_class.new(
+                        url:     "#{url}submit",
+                        name:    inputs.keys.first,
+                        value:   inputs.values.first,
+                        expires: Time.now + 99999999999
+                    )
+                end
+
+                it 'sets it to the URL host' do
+                    expect(subject.domain).to eq '127.0.0.2'
+                end
+            end
+        end
     end
 
     describe '#to_rpc_data' do
@@ -295,32 +328,39 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#to_set_cookie' do
-        it 'returns a string suitable for the Set-Cookie HTTP response header' do
-            c = described_class.new(
-                url:      url,
-                name:     'blah=ha%',
-                value:    'some stuff ;',
-                secure:   true,
-                httponly: true
-            )
+        context 'when the cookie is for all subdomains' do
+            it 'includes a Domain attribute' do
+                c = described_class.new(
+                    url:    url,
+                    name:   'blah=ha%',
+                    value:  'some stuff ;',
+                    path:   '/stuff',
+                    domain: '.localhost'
+                )
 
-            expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/; Secure; HttpOnly'
-            )
-            expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
+                expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
+                expect(c.to_set_cookie).to eq(
+                    'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain: .localhost'
+                )
+            end
+        end
 
-            c = described_class.new(
-                url:    url,
-                name:   'blah=ha%',
-                value:  'some stuff ;',
-                path:   '/stuff',
-                domain: '.localhost'
-            )
+        context 'when the cookie is for a single domain' do
+            it 'does not include a Domain attribute' do
+                c = described_class.new(
+                    url:      url,
+                    name:     'blah=ha%',
+                    value:    'some stuff ;',
+                    secure:   true,
+                    httponly: true,
+                    domain:   'localhost'
+                )
 
-            expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
-            expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/stuff'
-            )
+                expect(c.to_set_cookie).to eq(
+                    'blah%3Dha%25=some+stuff+%3B; Path=/; Secure; HttpOnly'
+                )
+                expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
+            end
         end
     end
 
