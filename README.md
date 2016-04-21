@@ -587,6 +587,7 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Restrict to DOM state (`restrict_to_dom_state`) -- Restricts the audit to a single page's DOM
     state, based on a URL fragment.
 - Webhook notify (`webhook_notify`) -- Sends a webhook payload over HTTP at the end of the scan.
+- Rate limiter (`rate_limiter`) -- Rate limits HTTP requests.
 
 ##### Defaults
 

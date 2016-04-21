@@ -34,6 +34,7 @@
 - Plugins
     - New
         - `webhook_notify` -- Sends a webhook payload over HTTP at the end of the scan.
+        - `rate_limiter` -- Rate limits HTTP requests.
     - `proxy` -- `bind_address` default switched to `127.0.0.1`, `0.0.0.0` breaks
         SSL interception on MS Windows.
     - `metrics` -- Fixed division by 0 error when no requests have been performed.
