@@ -91,7 +91,6 @@ class Parser
             begin
                 parse_xml( string ).children.any?
             rescue => e
-                print_debug_exception e
                 false
             end
         end
