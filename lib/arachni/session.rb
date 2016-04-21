@@ -201,20 +201,20 @@ class Session
         print_info 'Trying to re-login...'
 
         LOGIN_TRIES.times do |i|
-            break if !login.response.timed_out? rescue Error
+            self.login
+
+            if self.logged_in?
+                print_ok 'Logged-in successfully.'
+                return true
+            end
 
             print_bad "Login attempt #{i+1} failed, retrying after " <<
                           "#{LOGIN_RETRY_WAIT} seconds..."
             sleep LOGIN_RETRY_WAIT
         end
 
-        if logged_in?
-            print_ok 'Logged-in successfully.'
-            true
-        else
-            print_bad 'Could not re-login.'
-            false
-        end
+        print_bad 'Could not re-login.'
+        false
     end
 
     # @param    [Block] block
