@@ -492,12 +492,9 @@ class Javascript
         # includes HTML -- it happens.
         #
         # Beware, if there's a doctype in the beginning this will fail.
-        begin
-            return false if Parser.parse_xml( response.body ).children.empty?
-        rescue => e
+        if !Parser.markup?( response.body )
             print_debug "Does not look like HTML: #{response.url}"
             print_debug "\n#{response.body}"
-            print_debug_exception e
             return false
         end
 

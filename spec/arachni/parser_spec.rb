@@ -533,4 +533,35 @@ describe Arachni::Parser do
         end
     end
 
+    describe '.markup?' do
+        context 'when dealing with markup' do
+            it 'returns true' do
+                expect(described_class.markup?( '<stuff></stuff>' )).to be_truthy
+            end
+        end
+
+        context 'when not dealing with markup' do
+            it 'returns false' do
+                expect(described_class.markup?( 'stuff' )).to be_falsey
+            end
+
+            context 'but includes markup' do
+                it 'returns false' do
+                    s = { test: '<stuff></stuff>' }.to_json
+                    expect(described_class.markup?( s )).to be_falsey
+
+                    expect(described_class.markup?( 'blah <stuff></stuff>' )).to be_falsey
+                end
+
+                context 'and begins with a doctype' do
+                    it 'returns true' do
+                        s = { test: '<stuff></stuff>' }.to_json
+                        s = "<!DOCTYPE html>#{s}"
+
+                        expect(described_class.markup?( s )).to be_truthy
+                    end
+                end
+            end
+        end
+    end
 end

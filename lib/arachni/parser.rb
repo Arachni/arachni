@@ -87,6 +87,15 @@ class Parser
             end
         end
 
+        def markup?( string )
+            begin
+                parse_xml( string ).children.any?
+            rescue => e
+                print_debug_exception e
+                false
+            end
+        end
+
     end
 
     alias :skip? :skip_path?
