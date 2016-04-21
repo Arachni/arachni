@@ -202,7 +202,7 @@ class Cookie < Base
         # prefix the dot anyways.
         #
         # http://stackoverflow.com/questions/1062963/how-do-browser-cookie-domains-work/1063760#1063760
-        set_cookie << "; Domain: #{domain}" if domain.start_with?( '.' )
+        set_cookie << "; Domain=#{domain}" if domain.start_with?( '.' )
 
         set_cookie
     end
@@ -388,6 +388,16 @@ class Cookie < Base
                 cookie.instance_variables.each do |var|
                     cookie_hash[var.to_s.gsub( /@/, '' )] = cookie.instance_variable_get( var )
                 end
+
+                # http://stackoverflow.com/questions/1062963/how-do-browser-cookie-domains-work/1063760#1063760
+                if cookie_hash['domain']
+                    # IP addresses must be used verbatim.
+                    if !Arachni::URI( "http://#{cookie_hash['domain']}/" ).ip_address?
+                        cookie_hash['domain'] =
+                            ".#{cookie_hash['domain'].sub( /^\./, '' )}"
+                    end
+                end
+
                 cookie_hash['expires'] = cookie.expires
 
                 cookie_hash['path'] ||= '/'

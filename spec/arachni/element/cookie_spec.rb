@@ -340,7 +340,7 @@ describe Arachni::Element::Cookie do
 
                 expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
                 expect(c.to_set_cookie).to eq(
-                    'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain: .localhost'
+                    'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=.localhost'
                 )
             end
         end
@@ -616,6 +616,40 @@ describe Arachni::Element::Cookie do
                 expect(cookie.raw_name).to eq('coo%40ki+e2')
                 expect(cookie.raw_value).to eq('blah+val2%40')
                 expect(cookie.path).to eq('/')
+            end
+        end
+
+        context 'when there is a domain' do
+            context 'and it starts with a dot' do
+                it 'uses it verbatim' do
+                    sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.test.com; HttpOnly'
+                    cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                    expect(cookie.domain).to eq '.test.com'
+                end
+            end
+
+            context 'and it does not start with a dot' do
+                it 'prefixes it with a dot' do
+                    sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=test.com; HttpOnly'
+                    cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                    expect(cookie.domain).to eq '.test.com'
+                end
+            end
+
+            context 'and it is an IP address' do
+                it 'uses it verbatim' do
+                    sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=127.0.0.2; HttpOnly'
+                    cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                    expect(cookie.domain).to eq '127.0.0.2'
+                end
+            end
+        end
+
+        context 'when there is no domain' do
+            it 'uses it URL host' do
+                sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly'
+                cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                expect(cookie.domain).to eq 'test.com'
             end
         end
 
