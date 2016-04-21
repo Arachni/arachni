@@ -4,7 +4,7 @@
 
 - Executables
     - `arachni_rpcd_monitor` -- Brought up to date with Dispatcher refactoring.
-    - Added
+    - New
         - `arachni_reproduce` -- Reproduces the issues in the given report.
 - Options
     - New
