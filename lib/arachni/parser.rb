@@ -22,9 +22,7 @@ lib = Options.paths.lib
 
 # Load all available element types.
 Dir.glob( lib + 'element/*.rb' ).each { |f| require f }
-
-Dir.glob( lib + 'parser/dom/*.rb' ).each { |f| require f }
-Dir.glob( lib + 'parser/sax/*.rb' ).each { |f| require f }
+Dir.glob( lib + 'parser/**/*.rb' ).each { |f| require f }
 
 require lib + 'page'
 require lib + 'utilities'
@@ -37,40 +35,6 @@ class Parser
     include UI::Output
     include Utilities
 
-    # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-    module Extractors
-
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-        # @abstract
-        class Base
-
-            attr_reader :html
-            attr_reader :parser
-            attr_reader :downcased_html
-
-            def initialize( options = {} )
-                @html           = options[:html]
-                @downcased_html = @html.downcase
-                @parser         = options[:parser]
-            end
-
-            # This method must be implemented by all checks and must return an
-            # array of paths as plain strings
-            #
-            # @return   [Array<String>]  paths
-            # @abstract
-            def run
-            end
-
-            def includes?( string_or_regexp )
-                !!@downcased_html[string_or_regexp]
-            end
-
-            def document
-                parser.document
-            end
-        end
-    end
 
     CACHE_SIZES = {
         parse:          50,
