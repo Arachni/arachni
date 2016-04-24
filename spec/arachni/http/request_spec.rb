@@ -282,6 +282,44 @@ describe Arachni::HTTP::Request do
             expect(called.first.request).to eq(request)
         end
 
+        it 'calls #on_body callbacks' do
+            request  = described_class.new( url: @url )
+
+            s = ''
+            request.on_body do |chunk|
+                s << chunk
+            end
+
+            response = request.run
+
+            expect(s).to eq 'GET'
+        end
+
+        it 'calls #on_headers callbacks' do
+            request  = described_class.new( url: @url )
+
+            called = nil
+            request.on_headers do |r|
+                called = r
+            end
+
+            response = request.run
+            expect(response).to be_kind_of Arachni::HTTP::Response
+            expect(response.request).to eq(request)
+
+            h = response.to_h
+            h[:body] = ''
+            h.delete :time
+            h.delete :total_time
+
+            c = called.to_h
+            c.delete :time
+            c.delete :total_time
+
+            expect(c).to eq(h)
+            expect(called.request).to eq(request)
+        end
+
         it "fills in #{Arachni::HTTP::Request}#headers_string" do
             host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
             expect(described_class.new( url: @url ).run.request.headers_string).to eq(
@@ -379,7 +417,6 @@ describe Arachni::HTTP::Request do
             expect(passed_response).to be_nil
         end
     end
-
 
     describe '#handle_response' do
         it 'assigns self as the #request attribute of the response' do

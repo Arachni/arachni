@@ -139,7 +139,10 @@ class Request < Message
         @update_cookies  = false if @update_cookies.nil?
         @follow_location = false if @follow_location.nil?
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
-        @on_complete     = []
+
+        @on_headers  = []
+        @on_body     = []
+        @on_complete = []
 
         @raw_parameters ||= []
         @timeout        ||= Options.http.request_timeout
@@ -287,6 +290,12 @@ class Request < Message
         s << '>'
     end
 
+    def on_headers( &block )
+        fail 'Block is missing.' if !block_given?
+        @on_headers << block
+        self
+    end
+
     # @note Can be invoked multiple times.
     #
     # @param    [Block] block
@@ -297,9 +306,17 @@ class Request < Message
         self
     end
 
+    def on_body( &block )
+        fail 'Block is missing.' if !block_given?
+        @on_body << block
+        self
+    end
+
     # Clears {#on_complete} callbacks.
     def clear_callbacks
         @on_complete.clear
+        @on_body.clear
+        @on_headers.clear
     end
 
     # @return   [Bool]
@@ -459,6 +476,21 @@ class Request < Message
 
         typhoeus_request = Typhoeus::Request.new( url.split( '?').first, options )
 
+        if @on_headers.any?
+            typhoeus_request.on_headers do |typhoeus_response|
+                @on_headers.each do |on_header|
+                    response = Response.from_typhoeus(
+                        typhoeus_response,
+                        normalize_url: @normalize_url,
+                        request:       self
+                    )
+
+                    fill_in_data_from_typhoeus_response typhoeus_response
+                    on_header.call response
+                end
+            end
+        end
+
         if @on_complete.any?
             response_body_buffer = ''
             set_body_reader( typhoeus_request, response_body_buffer )
@@ -503,6 +535,8 @@ class Request < Message
     def marshal_dump
         raw_cookies = @raw_cookies.dup
         callbacks   = @on_complete.dup
+        on_body     = @on_body.dup
+        on_headers  = @on_headers.dup
         performer   = @performer
 
         @performer   = nil
@@ -517,6 +551,8 @@ class Request < Message
     ensure
         @raw_cookies = raw_cookies
         @on_complete = callbacks
+        @on_body     = on_body
+        @on_headers  = on_headers
         @performer   = performer
     end
 
@@ -655,18 +691,29 @@ class Request < Message
     end
 
     def set_body_reader( typhoeus_request, buffer )
-        return if !typhoeus_request.options[:maxfilesize]
+        return if @on_body.empty? && !typhoeus_request.options[:maxfilesize]
 
         aborted = nil
         typhoeus_request.on_body do |chunk|
             next aborted if aborted
 
-            if buffer.size >= typhoeus_request.options[:maxfilesize]
-                buffer.clear
-                next aborted = :abort
-            end
+            if @on_body.empty?
 
-            buffer << chunk
+                if buffer.size >= typhoeus_request.options[:maxfilesize]
+                    buffer.clear
+                    next aborted = :abort
+                end
+
+                buffer << chunk
+            else
+
+                @on_body.each do |b|
+                    if b.call( chunk ) == :abort
+                        next aborted = :abort
+                    end
+                end
+
+            end
         end
     end
 
