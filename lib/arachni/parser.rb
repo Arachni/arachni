@@ -6,12 +6,25 @@
     web site for more information on licensing and terms of use.
 =end
 
+require 'ox'
+
+Ox.default_options = {
+    indent:          4,
+    mode:            :generic,
+    effort:          :tolerant,
+    smart:           true,
+    invalid_replace: nil
+}
+
 module Arachni
 
 lib = Options.paths.lib
 
 # Load all available element types.
 Dir.glob( lib + 'element/*.rb' ).each { |f| require f }
+
+Dir.glob( lib + 'parser/dom/*.rb' ).each { |f| require f }
+Dir.glob( lib + 'parser/sax/*.rb' ).each { |f| require f }
 
 require lib + 'page'
 require lib + 'utilities'
@@ -32,13 +45,13 @@ class Parser
         class Base
 
             attr_reader :html
-            attr_reader :document
+            attr_reader :parser
             attr_reader :downcased_html
 
             def initialize( options = {} )
                 @html           = options[:html]
                 @downcased_html = @html.downcase
-                @document       = options[:document]
+                @parser         = options[:parser]
             end
 
             # This method must be implemented by all checks and must return an
@@ -53,6 +66,9 @@ class Parser
                 !!@downcased_html[string_or_regexp]
             end
 
+            def document
+                parser.document
+            end
         end
     end
 
@@ -67,31 +83,44 @@ class Parser
         CACHE[name] = Support::Cache::LeastRecentlyPushed.new( size )
     end
 
+    WHITELIST = Set.new(%w(
+        title base a form frame iframe meta input select option script link area
+        textarea input select button comment
+    ))
+
     class <<self
 
-        def parse( html )
-            CACHE[__method__].fetch html do
-                Nokogiri::HTML( html ).freeze
+        def parse( html, options = {} )
+            CACHE[__method__].fetch [html, options] do
+                document = SAX::Document.new( options )
+
+                begin
+                    Ox.sax_parse( document, StringIO.new( html ) )
+                rescue SAX::Document::Stop
+                end
+
+                document
+
+                # Document.new( Ox.parse( "<!DOCTYPE html>#{html}" ) )
             end
         end
 
         def parse_fragment( html )
             CACHE[__method__].fetch html do
-                Nokogiri::HTML.fragment( html ).children.first.freeze
+                parse( html ).children.first
             end
         end
 
         def parse_xml( xml )
             CACHE[__method__].fetch xml do
-                Nokogiri::XML( xml ).freeze
+                Ox.parse( xml )
             end
         end
 
         def markup?( string )
             begin
-                parse_xml( string ).children.any?
+                parse_xml( string ).is_a?( Ox::Element )
             rescue => e
-                print_debug_exception e
                 false
             end
         end
@@ -176,11 +205,8 @@ class Parser
     #   couldn't be parsed.
     def document
         return if !text?
-        return @document.freeze if @document
 
-        @document = self.class.parse( body )
-    rescue
-        nil
+        @document = self.class.parse( body, whitelist: WHITELIST )
     end
 
     # @note It will include common request headers as well headers from the HTTP
@@ -208,20 +234,20 @@ class Parser
         return @forms.freeze if @forms
         return [] if !text? || !Form.in_html?( body )
 
-        f = Form.from_document( @url, document )
+        f = Form.from_parser( self )
         return f if !@secondary_responses
 
         @secondary_responses.each do |response|
             next if response.body.to_s.empty?
 
-            Form.from_document( @url, response.body ).each do |form2|
+            Form.from_parser( Parser.new( response ) ).each do |form2|
                 f.each do |form|
                     next if "#{form.coverage_id}:#{form.name_or_id}" !=
                         "#{form2.coverage_id}:#{form2.name_or_id}"
 
                     form.inputs.each do |k, v|
-                        next if !(v != form2.inputs[k] &&
-                            form.field_type_for( k ) == :hidden)
+                        next if v == form2.inputs[k] ||
+                            form.field_type_for( k ) != :hidden
 
                         form.nonce_name = k
                     end
@@ -259,7 +285,7 @@ class Parser
         return @links.freeze if @links
         return @links = [link].compact if !text? || !Link.in_html?( body )
 
-        @links = [link].compact | Link.from_document( @url, document )
+        @links = [link].compact | Link.from_parser( self )
     end
 
     # @return [Array<Element::LinkTemplate>]
@@ -269,7 +295,7 @@ class Parser
         return @link_templates = [link_template].compact if !text?
 
         @link_templates =
-            [link_template].compact | LinkTemplate.from_document( @url, document )
+            [link_template].compact | LinkTemplate.from_parser( self )
     end
 
     # @return [Array<Element::JSON>]
@@ -308,7 +334,7 @@ class Parser
         @cookies = Cookie.from_headers( @url, @response.headers )
         return @cookies if !text? || !Cookie.in_html?( body )
 
-        @cookies |= Cookie.from_document( @url, document )
+        @cookies |= Cookie.from_parser( self )
     end
 
     # @return   [Array<Element::Cookie>]
@@ -365,7 +391,7 @@ class Parser
     # @return   [String]
     #   Base `href`, if there is one.
     def base
-        @base ||= document.search( '//base[@href]' ).first['href'] rescue nil
+        @base ||= document.nodes_by_name( :base ).map { |b| b['href'] }.first || @url
     end
 
     private
@@ -380,8 +406,8 @@ class Parser
             self.class.extractors.available.each do |name|
                 exception_jail false do
                     unsanitized_paths.merge self.class.extractors[name].new(
-                        document: document,
-                        html:     body
+                        parser: self,
+                        html:   body
                     ).run
                 end
             end

@@ -15,7 +15,7 @@ describe Arachni::Element::Form::DOM do
     it_should_behave_like 'auditable_dom'
 
     def auditable_extract_parameters( page )
-        YAML.load( page.document.css( 'body' ).text )
+        YAML.load( Nokogiri::HTML(page.body).css( 'body' ).text )
     end
 
     def run

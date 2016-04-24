@@ -39,9 +39,9 @@ module Utilities
         Form.from_response( *args )
     end
 
-    # @see Arachni::Element::Form.from_document
-    def forms_from_document( *args )
-        Form.from_document( *args )
+    # @see Arachni::Element::Form.from_parser
+    def forms_from_parser( *args )
+        Form.from_parser(*args )
     end
 
     # @see Arachni::Element::Form.encode
@@ -64,9 +64,9 @@ module Utilities
         Link.from_response( *args )
     end
 
-    # @see Arachni::Element::Link.from_document
-    def links_from_document( *args )
-        Link.from_document( *args )
+    # @see Arachni::Element::Link.from_parser
+    def links_from_parser( *args )
+        Link.from_parser(*args )
     end
 
     # @see Arachni::Element::Cookie.from_response
@@ -74,9 +74,9 @@ module Utilities
         Cookie.from_response( *args )
     end
 
-    # @see Arachni::Element::Cookie.from_document
-    def cookies_from_document( *args )
-        Cookie.from_document( *args )
+    # @see Arachni::Element::Cookie.from_parser
+    def cookies_from_parser( *args )
+        Cookie.from_parser(*args )
     end
 
     # @see Arachni::Element::Cookie.parse_set_cookie

@@ -46,7 +46,7 @@ describe Arachni::Parser do
         end
 
         it 'overrides the body of the HTTP response for the parsing process' do
-            subject.body = '<a href="/?name2=val2">Stuff</a>'
+            subject.body = '<html><div><a href="/?name2=val2">Stuff</a></div></html>'
             expect(subject.links.size).to eq(1)
             expect(subject.links.first.inputs).to eq({ 'name2' => 'val2' })
         end
@@ -395,8 +395,8 @@ describe Arachni::Parser do
 
     context 'without base' do
         describe '#base' do
-            it 'returns nil' do
-                expect(subject.base).to eq(nil)
+            it 'returns the response URL' do
+                expect(subject.base).to eq(subject.response.url)
             end
         end
 
@@ -554,11 +554,11 @@ describe Arachni::Parser do
                 end
 
                 context 'and begins with a doctype' do
-                    it 'returns true' do
+                    it 'returns false' do
                         s = { test: '<stuff></stuff>' }.to_json
                         s = "<!DOCTYPE html>#{s}"
 
-                        expect(described_class.markup?( s )).to be_truthy
+                        expect(described_class.markup?( s )).to be_falsey
                     end
                 end
             end

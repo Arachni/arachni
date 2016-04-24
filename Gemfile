@@ -22,4 +22,6 @@ group :prof do
     gem 'benchmark-ips'
 end
 
+gem 'ox', github: 'ohler55/ox'
+
 gemspec

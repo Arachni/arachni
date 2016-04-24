@@ -7,7 +7,6 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1
 class Arachni::Checks::XssDom < Arachni::Check::Base
     prefer :xss
 
@@ -53,9 +52,14 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
     def find_proof( page )
         return if !page.body.has_html_tag?( self.class.tag_name )
 
-        proof = page.document.css( self.class.tag_name )
-        return if proof.empty?
-        proof.to_s
+        proof = Arachni::Parser.parse(
+            page.body,
+            whitelist:     [self.class.tag_name],
+            stop_on_first: [self.class.tag_name]
+        ).nodes_by_name( self.class.tag_name ).first
+        return if !proof
+
+        proof.to_html
     end
 
     def self.info
@@ -67,7 +71,7 @@ tainted responses to look for proof of vulnerability.
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS)},

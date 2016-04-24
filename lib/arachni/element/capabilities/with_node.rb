@@ -18,7 +18,7 @@ module WithNode
     # @return [Nokogiri::XML::Element]
     def node
         return if !@source
-        Arachni::Parser.parse_fragment( @source.dup )
+        Arachni::Parser.parse_fragment( @source )
     end
 
 end

@@ -76,7 +76,7 @@ class UIForm < Base
         inputs       = {}
 
         if UIInput.with_textarea_in_html?( page.body )
-            page.document.css( 'textarea' ).each do |textarea|
+            page.document.nodes_by_name( :textarea ).each do |textarea|
                 name = node_to_name( textarea )
 
                 inputs[name]       = textarea.text
@@ -86,7 +86,7 @@ class UIForm < Base
         end
 
         if UIInput.with_input_in_html?( page.body )
-            page.document.css( 'input' ).each do |input|
+            page.document.nodes_by_name( :input ).each do |input|
                 next if input['type'] && input['type'] != 'text'
 
                 name = node_to_name( input )

@@ -13,7 +13,6 @@
 # {BrowserCluster} for evaluation and {#trace_taint taint-tracing}.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.4.4
 #
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
@@ -43,7 +42,7 @@ class Arachni::Checks::Xss < Arachni::Check::Base
 
     def self.options
         @options ||= {
-            format: [Format::APPEND],
+            format: [Format::APPEND]
         }
     end
 
@@ -108,13 +107,16 @@ class Arachni::Checks::Xss < Arachni::Check::Base
     def find_proof( resource )
         return if !resource.body.has_html_tag?( self.class.tag_name )
 
-        proof_nodes = Arachni::Parser.parse( resource.body ).css( self.class.tag_name )
+        proof_nodes = Arachni::Parser.parse(
+            resource.body,
+            whitelist:     [self.class.tag_name, 'textarea'],
+            stop_on_first: [self.class.tag_name]
+        ).nodes_by_name( self.class.tag_name )
+
         return if proof_nodes.empty?
 
-        proof = nil
-        proof_nodes.each do |e|
-            next if e.parent.name =='textarea'
-            proof = e.to_s
+        proof = proof_nodes.find do |e|
+            e.parent.name != :textarea
         end
 
         return if !proof
@@ -132,7 +134,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.6',
+            version:     '0.4.7',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},

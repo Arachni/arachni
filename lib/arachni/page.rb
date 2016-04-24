@@ -416,7 +416,7 @@ class Page
             next if !body.has_html_tag?( tag )
 
             return false if !document
-            return true  if document.css( tag ).any?
+            return true  if document.nodes_by_name( tag ).any?
         end
 
         false
@@ -432,7 +432,7 @@ class Page
     # @return   [String]
     #   Title of the page.
     def title
-        document.css( 'title' ).first.text rescue nil
+        document.nodes_by_name( 'title' ).first.text rescue nil
     end
 
     # @return   [Hash]

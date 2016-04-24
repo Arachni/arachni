@@ -9,13 +9,12 @@
 # Extracts paths from "link" HTML elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
 class Arachni::Parser::Extractors::Links < Arachni::Parser::Extractors::Base
 
     def run
         return [] if !includes?( 'link' )
 
-        document.search( '//link[@href]' ).map { |a| a['href'] }
+        document.nodes_by_name( 'link' ).map { |l| l['href'] }
     end
 
 end

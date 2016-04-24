@@ -36,15 +36,20 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
 
         body = response.body.downcase
 
-        # see if we managed to inject a working HTML attribute to any
-        # elements
-        Arachni::Parser.parse( body ).xpath( "//*[@#{ATTRIBUTE_NAME}]" ).each do |node|
-            next if node[ATTRIBUTE_NAME] != random_seed
+        # TODO:
+        # Mini-SAX to check and then stop the parse.
+        # Won't create any elements so less RAM consumption.
 
-            proof = (payload = find_included_payload( body )) ? payload : node.to_s
-            log vector: element, proof: proof.to_s, response: response
-            return
-        end
+        # See if we managed to inject a working HTML attribute to any
+        # elements.
+        Arachni::Parser.parse( body ).nodes_by_attribute_name( ATTRIBUTE_NAME ).
+            each do |node|
+                next if node[ATTRIBUTE_NAME] != random_seed
+
+                proof = (payload = find_included_payload( body )) ? payload : node.to_s
+                log vector: element, proof: proof.to_s, response: response
+                return
+            end
     end
 
     def find_included_payload( body )
@@ -60,7 +65,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
             description: %q{Cross-Site Scripting in HTML tag.},
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.10',
+            version:     '0.1.11',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},

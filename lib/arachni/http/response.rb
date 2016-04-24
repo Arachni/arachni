@@ -176,6 +176,10 @@ class Response < Message
         Page.from_response self
     end
 
+    def parse
+        Parser.new self
+    end
+
     # @return   [Hash]
     def to_h
         hash = {}

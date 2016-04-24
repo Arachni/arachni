@@ -127,6 +127,10 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     def tainted?( response, seed )
         return if seed.to_s.empty? || !response.body.to_s.include?( seed )
 
+        # TODO:
+        # Mini-SAX to check and then stop the parse.
+        # Won't create any elements so less RAM consumption.
+
         # Quick check to see if the payload landed in a <script>.
         in_script = (response.body =~ /<script.*?>.*#{Regexp.escape seed}.*?<\/script>/im)
 
@@ -141,14 +145,15 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         # Nowhere to be seen, bail out early.
         return if in_attributes.empty? && !in_script
 
-        # More comprehensive checks by searching the document.
         doc = Arachni::Parser.parse( response.body )
 
-        return true if in_script && doc.css('script').to_s.include?( seed )
+        return true if in_script &&
+            !!doc.nodes_by_name( 'script' ).
+                find { |n| n.text.to_s.include?( seed ) }
 
         in_attributes.each do |attribute|
-            doc.xpath( "//*[@#{attribute}]" ).each do |elem|
-                value = elem.attributes[attribute].to_s
+            doc.nodes_by_attribute_name( attribute ).each do |node|
+                value = node[attribute].to_s
 
                 if attribute == 'src'
                     return value if seed.start_with?( 'javascript:' ) && value == seed
@@ -156,7 +161,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
                     return value if value == seed
                 end
 
-                return true  if value.include?( seed )
+                return true if value.include?( seed )
             end
         end
 
@@ -172,7 +177,7 @@ Injects JS taint code and check to see if it gets executed as proof of vulnerabi
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.3',
+            version:     '0.2.4',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in script context},

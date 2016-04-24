@@ -6,15 +6,22 @@
     web site for more information on licensing and terms of use.
 =end
 
-# Extracts paths from "form" HTML elements.
-#
-# @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-class Arachni::Parser::Extractors::Forms < Arachni::Parser::Extractors::Base
+module Arachni
+class Parser
+module SAX
+class Element
+class Attributes < Hash
 
-    def run
-        return [] if !includes?( 'action' )
-
-        document.nodes_by_name( 'form' ).map { |f| f['action'] }
+    def []( name )
+        super name.to_s
     end
 
+    def []=( name, value )
+        super name.to_s, value
+    end
+
+end
+end
+end
+end
 end

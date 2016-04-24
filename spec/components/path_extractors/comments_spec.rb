@@ -18,7 +18,9 @@ describe name_from_filename do
 /other/stuff/here.php
 -->
             <!-- <style type="text/css"> stuff: here; </style> -->
-            Blah blah...
+
+            <div>Blah blah...</div>
+
             <!--Pre blah /stuff/here post blah -->
         HTML
     end

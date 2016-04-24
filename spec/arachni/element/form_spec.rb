@@ -56,6 +56,17 @@ describe Arachni::Element::Form do
         }
     end
 
+    let(:parser) do
+        Arachni::Parser.new(
+            Arachni::HTTP::Response.new(
+                url: url,
+                body: form_html,
+                headers: {
+                    'Content-Type' => 'text/html'
+                })
+        )
+    end
+
     it 'assigned to Arachni::Form for easy access' do
         expect(Arachni::Form).to eq(described_class)
     end
@@ -340,8 +351,8 @@ describe Arachni::Element::Form do
 
     describe '#requires_password?' do
         context 'when the form has a password field' do
-            it 'returns true' do
-                html = '
+            let(:form_html) do
+                '
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
@@ -351,14 +362,17 @@ describe Arachni::Element::Form do
 
                         </body>
                     </html>'
+            end
 
-                expect(described_class.from_document( url, html ).
+            it 'returns true' do
+                expect(described_class.from_parser( parser ).
                     first.requires_password?).to be_truthy
             end
         end
+
         context 'when the form does not have a password field' do
-            it 'returns false' do
-                html = '
+            let(:form_html) do
+                '
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
@@ -367,8 +381,10 @@ describe Arachni::Element::Form do
 
                         </body>
                     </html>'
+            end
 
-                expect(described_class.from_document( url, html ).
+            it 'returns false' do
+                expect(described_class.from_parser( parser ).
                     first.requires_password?).to be_falsey
             end
         end
@@ -480,15 +496,17 @@ describe Arachni::Element::Form do
         end
 
         context 'when it contains more than 1 password field' do
-            it 'includes mutations which have the same values for all of them' do
-                form = <<-EOHTML
+            let(:form_html) do
+                <<-EOHTML
                     <form>
                         <input type="password" name="my_pass" />
                         <input type="password" name="my_pass_validation" />
                     </form>
                 EOHTML
+            end
 
-                e = described_class.from_document( 'http://test.com', form ).first
+            it 'includes mutations which have the same values for all of them' do
+                e = described_class.from_parser( parser ).first
 
                 expect(e.mutations( 'seed' ).select do |m|
                     m.inputs['my_pass'] == m.inputs['my_pass_validation']
@@ -497,8 +515,8 @@ describe Arachni::Element::Form do
         end
 
         context 'when it contains select inputs with multiple values' do
-            it 'includes mutations with all of them' do
-                html = '
+            let(:form_html) do
+                '
                         <html>
                             <body>
                                 <form method="get" action="form_action" name="my_form">
@@ -516,8 +534,10 @@ describe Arachni::Element::Form do
 
                             </body>
                         </html>'
+            end
 
-                form = described_class.from_document( url, html ).first
+            it 'includes mutations with all of them' do
+                form = described_class.from_parser( parser ).first
 
                 mutations = form.mutations( '' )
 
@@ -674,10 +694,14 @@ describe Arachni::Element::Form do
         end
     end
 
-    describe '.from_document' do
+    describe '.from_parser' do
         context 'when the response does not contain any forms' do
+            let(:form_html) do
+                ''
+            end
+
             it 'returns an empty array' do
-                expect(described_class.from_document( '', '' )).to be_empty
+                expect(described_class.from_parser( parser )).to be_empty
             end
         end
 
@@ -700,7 +724,7 @@ EOHTML
             it 'ignores them' do
                 Arachni::Options.scope.exclude_path_patterns = [/exclude/]
 
-                forms = described_class.from_document( url, form_html )
+                forms = described_class.from_parser( parser )
                 expect(forms.size).to eq(1)
                 expect(forms.first.action).to eq(utilities.normalize_url( url + '/form_action' ))
             end
@@ -709,7 +733,7 @@ EOHTML
                 it 'includes them' do
                     Arachni::Options.scope.exclude_path_patterns = [/exclude/]
 
-                    forms = described_class.from_document( url, form_html, true )
+                    forms = described_class.from_parser( parser, true )
                     expect(forms.size).to eq(2)
                 end
             end
@@ -717,8 +741,8 @@ EOHTML
 
         context 'when the response contains forms' do
             context 'with text inputs' do
-                it 'returns an array of forms' do
-                    html = '
+                let(:form_html) do
+                    '
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
@@ -728,8 +752,10 @@ EOHTML
 
                         </body>
                     </html>'
+                end
 
-                    form = described_class.from_document( url, html ).first
+                it 'returns an array of forms' do
+                    form = described_class.from_parser( parser ).first
                     expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                     expect(form.name).to eq('my_form')
                     expect(form.url).to eq(url)
@@ -745,8 +771,8 @@ EOHTML
             end
 
             context 'with checkbox inputs' do
-                it 'returns an array of forms' do
-                    html = '
+                let(:form_html) do
+                    '
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
@@ -756,8 +782,10 @@ EOHTML
 
                         </body>
                     </html>'
+                end
 
-                    form = described_class.from_document( url, html ).first
+                it 'returns an array of forms' do
+                    form = described_class.from_parser( parser ).first
                     expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                     expect(form.name).to eq('my_form')
                     expect(form.url).to eq(url)
@@ -773,8 +801,8 @@ EOHTML
             end
 
             context 'with radio inputs' do
-                it 'returns an array of forms' do
-                    html = '
+                let(:form_html) do
+                    '
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
@@ -784,8 +812,10 @@ EOHTML
 
                         </body>
                     </html>'
+                end
 
-                    form = described_class.from_document( url, html ).first
+                it 'returns an array of forms' do
+                    form = described_class.from_parser( parser ).first
                     expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                     expect(form.name).to eq('my_form')
                     expect(form.url).to eq(url)
@@ -801,8 +831,8 @@ EOHTML
             end
 
             context 'with button inputs' do
-                it 'returns an array of forms' do
-                    html = '
+                let(:form_html) do
+                    '
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
@@ -811,8 +841,10 @@ EOHTML
 
                         </body>
                     </html>'
+                end
 
-                    form = described_class.from_document( url, html ).first
+                it 'returns an array of forms' do
+                    form = described_class.from_parser( parser ).first
                     expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                     expect(form.name).to eq('my_form')
                     expect(form.url).to eq(url)
@@ -823,8 +855,8 @@ EOHTML
             end
 
             context 'with multiple submit inputs' do
-                it 'returns forms for each value' do
-                    html = '
+                let(:form_html) do
+                    '
                     <html>
                         <body>
                             <form method="get" action="form_action" name="my_form">
@@ -833,8 +865,10 @@ EOHTML
                             </form>
                         </body>
                     </html>'
+                end
 
-                    forms = described_class.from_document( url, html )
+                it 'returns forms for each value' do
+                    forms = described_class.from_parser( parser )
                     expect(forms.size).to eq(2)
 
                     form = forms.first
@@ -857,8 +891,8 @@ EOHTML
 
             context 'with selects' do
                 context 'with values' do
-                    it 'returns an array of forms' do
-                        html = '
+                    let(:form_html) do
+                        '
                         <html>
                             <body>
                                 <form method="get" action="form_action" name="my_form">
@@ -876,8 +910,10 @@ EOHTML
 
                             </body>
                         </html>'
+                    end
 
-                        form = described_class.from_document( url, html ).first
+                    it 'returns an array of forms' do
+                        form = described_class.from_parser( parser ).first
                         expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                         expect(form.name).to eq('my_form')
                         expect(form.url).to eq(url)
@@ -893,8 +929,8 @@ EOHTML
                 end
 
                 context 'without values' do
-                    it 'uses the element texts' do
-                        html = '
+                    let(:form_html) do
+                        '
                         <html>
                             <body>
                                 <form method="get" action="form_action" name="my_form">
@@ -910,8 +946,10 @@ EOHTML
 
                             </body>
                         </html>'
+                    end
 
-                        form = described_class.from_document( url, html ).first
+                    it 'uses the element texts' do
+                        form = described_class.from_parser( parser ).first
                         expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                         expect(form.name).to eq('my_form')
                         expect(form.url).to eq(url)
@@ -927,8 +965,8 @@ EOHTML
                 end
 
                 context 'with selected options' do
-                    it 'uses their values' do
-                        html = '
+                    let(:form_html) do
+                        '
                         <html>
                             <body>
                                 <form method="get" action="form_action" name="my_form">
@@ -946,8 +984,10 @@ EOHTML
 
                             </body>
                         </html>'
+                    end
 
-                        form = described_class.from_document( url, html ).first
+                    it 'uses their values' do
+                        form = described_class.from_parser( parser ).first
                         expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                         expect(form.name).to eq('my_form')
                         expect(form.url).to eq(url)
@@ -963,8 +1003,8 @@ EOHTML
                 end
 
                 context 'without any options' do
-                    it 'uses an empty value' do
-                        html = '
+                    let(:form_html) do
+                        '
                         <html>
                             <body>
                                 <form method="get" action="form_action" name="my_form">
@@ -973,8 +1013,10 @@ EOHTML
 
                             </body>
                         </html>'
+                    end
 
-                        form = described_class.from_document( url, html ).first
+                    it 'uses an empty value' do
+                        form = described_class.from_parser( parser ).first
                         expect(form.action).to eq(utilities.normalize_url( url + '/form_action' ))
                         expect(form.name).to eq('my_form')
                         expect(form.url).to eq(url)
@@ -988,9 +1030,9 @@ EOHTML
             end
 
             context 'with a base attribute' do
-                it 'respects it and adjust the action accordingly' do
-                    base_url = "/this_is_the_base/"
-                    html = '
+                let(:base_url) { "/this_is_the_base/" }
+                let(:form_html) do
+                    '
                     <html>
                         <head>
                             <base href="' + base_url + '" />
@@ -1005,8 +1047,10 @@ EOHTML
                             </form>
                         </body>
                     </html>'
+                end
 
-                    forms = described_class.from_document( url, html )
+                it 'respects it and adjust the action accordingly' do
+                    forms = described_class.from_parser( parser )
                     expect(forms.size).to eq(2)
 
                     form = forms.shift
@@ -1035,10 +1079,9 @@ EOHTML
             end
 
             context 'which are not properly closed' do
-                it 'sanitizes and return an array of forms' do
-
-                    base_url = "#{url}/this_is_the_base/"
-                    html = '
+                let(:base_url) { "/this_is_the_base/" }
+                let(:form_html) do
+                    '
                     <html>
                         <head>
                             <base href="' + base_url + '" />
@@ -1063,12 +1106,14 @@ EOHTML
                                 </select>
                         </body>
                     </html>'
+                end
 
-                    forms = described_class.from_document( url, html )
+                it 'sanitizes and return an array of forms' do
+                    forms = described_class.from_parser( parser )
                     expect(forms.size).to eq(3)
 
                     form = forms.shift
-                    expect(form.action).to eq(utilities.normalize_url( base_url + 'form_2' ))
+                    expect(form.action).to eq(utilities.to_absolute( base_url + 'form_2', url ))
                     expect(form.name).to eq('my_form_2')
                     expect(form.url).to eq(url)
                     expect(form.method).to eq(:get)
@@ -1097,7 +1142,7 @@ EOHTML
             end
 
             context 'when its value is' do
-                let(:form) { described_class.from_document( url, form_html ).first }
+                let(:form) { described_class.from_parser( parser ).first }
                 let(:value) { 'a' * size }
                 let(:form_html) do
                     '<html>

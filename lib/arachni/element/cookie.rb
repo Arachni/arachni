@@ -317,37 +317,29 @@ class Cookie < Base
         #
         # @return   [Array<Cookie>]
         #
-        # @see .from_document
+        # @see .from_parser
         # @see .from_headers
         def from_response( response )
-            from_document( response.url, response.body ) +
+            from_parser( Arachni::Parser.new( response ) ) +
                 from_headers( response.url, response.headers )
         end
 
         # Extracts cookies from a document based on `Set-Cookie` `http-equiv`
         # meta tags.
         #
-        # @param    [String]    url
-        #   Owner URL.
-        # @param    [String, Nokogiri::HTML::Document]    document
+        # @param    [Arachni::Parser]    parser
         #
         # @return   [Array<Cookie>]
         #
         # @see .parse_set_cookie
-        def from_document( url, document )
-            if !document.is_a?( Nokogiri::HTML::Document )
-                document = document.to_s
-
-                return [] if !in_html?( document )
-
-                document = Arachni::Parser.parse( document )
-            end
+        def from_parser( parser )
+            return [] if !in_html?( parser.body )
 
             Arachni::Utilities.exception_jail {
-                document.search( '//meta[@http-equiv]' ).map do |elem|
+                parser.document.nodes_by_name( :meta ).map do |elem|
                     next if elem['http-equiv'].downcase != 'set-cookie'
 
-                    from_set_cookie( url, elem['content'] )
+                    from_set_cookie( parser.url, elem['content'] )
                 end.flatten.compact
             } rescue []
         end

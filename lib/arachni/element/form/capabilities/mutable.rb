@@ -95,15 +95,20 @@ module Mutable
             # and we don't want to parse it unless we have a select input.
             break if !node
 
-            escape = "'#{input.split( "'" ).join( "', \"'\", '" )}', ''"
-            node.xpath( "select[@name=concat(#{escape})]" ).css('option').each do |option|
-                try_input do
-                    elem = self.dup
-                    elem.mutation_with_original_values
-                    elem.affected_input_name  = input
-                    elem.affected_input_value = option['value'] || option.text
-                    yield elem if !generated.include?( elem )
-                    generated << elem
+            node.nodes_by_name( 'select' ).each do |select_node|
+                next if select_node['name'] != input
+
+                select_node.children.each do |child|
+                    next if child.name.to_s != 'option'
+
+                    try_input do
+                        elem = self.dup
+                        elem.mutation_with_original_values
+                        elem.affected_input_name  = input
+                        elem.affected_input_value = child['value'] || child.text
+                        yield elem if !generated.include?( elem )
+                        generated << elem
+                    end
                 end
             end
         end
@@ -125,4 +130,3 @@ end
 end
 end
 end
-

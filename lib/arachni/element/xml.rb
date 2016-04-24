@@ -60,7 +60,7 @@ class XML < Base
     #
     #   If a {#transform_xml} callback has been set, it will return its value.
     def to_xml
-        doc = Arachni::Parser.parse_xml( source ).dup
+        doc = Nokogiri::XML( source ).dup
 
         inputs.each do |path, content|
             doc.css( path ).each do |node|
@@ -153,7 +153,7 @@ class XML < Base
         end
 
         def parse_inputs( doc )
-            doc = doc.is_a?( Nokogiri::XML ) ? doc : Arachni::Parser.parse_xml( doc )
+            doc = doc.is_a?( Nokogiri::XML ) ? doc : Nokogiri::XML( doc )
 
             inputs = {}
             doc.traverse do |node|

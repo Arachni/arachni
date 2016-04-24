@@ -85,12 +85,18 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
 
         return :checked if included_attributes.empty?
 
-        doc  = Arachni::Parser.parse( body )
-        seed = element.seed
+        # TODO:
+        # Mini-SAX to check and then stop the parse.
+        # Won't create any elements so less RAM consumption.
+        document = Arachni::Parser.parse( body )
+        seed     = element.seed
 
         included_attributes.each do |attribute|
-            doc.xpath( "//*[@#{attribute}]" ).each do |elem|
-                value = elem.attributes[attribute].to_s.downcase
+            document.nodes_by_attribute_name(attribute).each do |elem|
+                value = elem[attribute].to_s.downcase
+
+                next if value.empty?
+
                 seed  = seed.split( ':', 2 ).last
 
                 if attribute == 'src'
@@ -115,7 +121,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.7',
+            version:     '0.1.8',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in event tag of HTML element},

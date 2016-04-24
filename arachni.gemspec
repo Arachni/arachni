@@ -93,8 +93,10 @@ Gem::Specification.new do |s|
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',         '0.5.1'
 
-    # Markup parsing.
+    # Markup parsing, for reports and Element::XML.
     s.add_dependency 'nokogiri',            '1.6.7.2'
+    # Really fast and lightweight markup parsing, for pages.
+    s.add_dependency 'ox',                  '2.4.1a2'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',      '1.4.5'

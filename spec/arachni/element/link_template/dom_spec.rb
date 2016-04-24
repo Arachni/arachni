@@ -15,7 +15,7 @@ describe Arachni::Element::LinkTemplate::DOM do
     it_should_behave_like 'auditable_dom'
 
     def auditable_extract_parameters( page )
-        { 'param' => page.document.css('#container').text }
+        { 'param' => Nokogiri::HTML(page.body).css('#container').text }
     end
 
     def run

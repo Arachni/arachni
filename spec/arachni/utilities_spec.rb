@@ -30,14 +30,14 @@ describe Arachni::Utilities do
 
     {
         forms_from_response:     [Arachni::Element::Form, :from_response],
-        forms_from_document:     [Arachni::Element::Form, :from_document],
+        forms_from_parser:     [Arachni::Element::Form, :from_parser],
         form_encode:             [Arachni::Element::Form, :encode],
         form_decode:             [Arachni::Element::Form, :decode],
         request_parse_body:      [Arachni::HTTP::Request, :parse_body],
         links_from_response:     [Arachni::Element::Link, :from_response],
-        links_from_document:     [Arachni::Element::Link, :from_document],
+        links_from_parser:     [Arachni::Element::Link, :from_parser],
         cookies_from_response:   [Arachni::Element::Cookie, :from_response],
-        cookies_from_document:   [Arachni::Element::Cookie, :from_document],
+        cookies_from_parser:   [Arachni::Element::Cookie, :from_parser],
         cookies_from_file:       [Arachni::Element::Cookie, :from_file],
         cookie_encode:           [Arachni::Element::Cookie, :encode],
         cookie_decode:           [Arachni::Element::Cookie, :decode],

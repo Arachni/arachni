@@ -350,15 +350,30 @@ describe Arachni::Element::LinkTemplate do
         end
     end
 
-    describe '.from_document' do
+    describe '.from_parser' do
+        let(:parser) do
+            Arachni::Parser.new(
+                Arachni::HTTP::Response.new(
+                    url: url,
+                    body: link_html,
+                    headers: {
+                        'Content-Type' => 'text/html'
+                    })
+            )
+        end
+
         context 'when the response does not contain any link templates' do
+            let(:link_html) do
+                ''
+            end
+
             it 'returns an empty array' do
-                expect(described_class.from_document( '', '' )).to be_empty
+                expect(described_class.from_parser( parser )).to be_empty
             end
         end
         context 'when links have actions that are out of scope' do
-            it 'ignores them' do
-                html = '
+            let(:link_html) do
+                '
                     <html>
                         <body>
                             <a href="' + url + '/test2/param/exclude"></a>
@@ -366,24 +381,29 @@ describe Arachni::Element::LinkTemplate do
                             <a href="' + url + '/test2/param/myvalue"></a>
                         </body>
                     </html>'
+            end
 
+            it 'ignores them' do
                 Arachni::Options.scope.exclude_path_patterns = [/exclude/]
 
-                links = described_class.from_document( url, html )
+                links = described_class.from_parser( parser )
                 expect(links.size).to eq(1)
                 expect(links.first.action).to eq(url + 'test2/param/myvalue')
             end
         end
+
         context 'when the response contains link templates' do
-            it 'returns an array of link templates' do
-                html = '
+            let(:link_html) do
+                '
                 <html>
                     <body>
                         <a href="' + url + '/test2/param/myvalue"></a>
                     </body>
                 </html>'
+            end
 
-                link = described_class.from_document( url, html ).first
+            it 'returns an array of link templates' do
+                link = described_class.from_parser( parser ).first
                 expect(link.action).to eq(url + 'test2/param/myvalue')
                 expect(link.url).to eq(url)
                 expect(link.inputs).to eq({
@@ -392,9 +412,8 @@ describe Arachni::Element::LinkTemplate do
             end
 
             context 'and includes a base attribute' do
-                it 'should return an array of link templates with adjusted URIs' do
-                    base_url = "#{url}this_is_the_base/"
-                    html = '
+                let(:link_html) do
+                    '
                     <html>
                         <head>
                             <base href="' + base_url + '" />
@@ -403,8 +422,11 @@ describe Arachni::Element::LinkTemplate do
                             <a href="test/param/myvalue"></a>
                         </body>
                     </html>'
+                end
+                let(:base_url) { "#{url}this_is_the_base/" }
 
-                    link = described_class.from_document( url, html ).first
+                it 'should return an array of link templates with adjusted URIs' do
+                    link = described_class.from_parser( parser ).first
                     expect(link.action).to eq(base_url + 'test/param/myvalue')
                     expect(link.url).to eq(url)
                     expect(link.inputs).to eq({

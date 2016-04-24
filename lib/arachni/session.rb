@@ -347,7 +347,7 @@ class Session
             # We need to reparse the body in order to override the scope
             # and thus extract even out-of-scope forms in case we're dealing
             # with a Single-Sign-On situation.
-            forms:  forms_from_document( page.url, page.body, true ),
+            forms:  forms_from_parser( page.parser, true ),
             inputs: configuration[:inputs].keys
         )
 
