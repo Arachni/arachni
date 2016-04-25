@@ -140,9 +140,10 @@ class Request < Message
         @follow_location = false if @follow_location.nil?
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
 
-        @on_headers  = []
-        @on_body     = []
-        @on_complete = []
+        @on_headers   = []
+        @on_body      = []
+        @on_body_line = []
+        @on_complete  = []
 
         @raw_parameters ||= []
         @timeout        ||= Options.http.request_timeout
@@ -312,11 +313,18 @@ class Request < Message
         self
     end
 
+    def on_body_line( &block )
+        fail 'Block is missing.' if !block_given?
+        @on_body_line << block
+        self
+    end
+
     # Clears {#on_complete} callbacks.
     def clear_callbacks
         @on_complete.clear
         @on_body.clear
         @on_headers.clear
+        @on_body_line.clear
     end
 
     # @return   [Bool]
@@ -477,7 +485,10 @@ class Request < Message
         typhoeus_request = Typhoeus::Request.new( url.split( '?').first, options )
 
         if @on_headers.any?
+            aborted = nil
             typhoeus_request.on_headers do |typhoeus_response|
+                next aborted if aborted
+
                 @on_headers.each do |on_header|
                     response = Response.from_typhoeus(
                         typhoeus_response,
@@ -486,7 +497,12 @@ class Request < Message
                     )
 
                     fill_in_data_from_typhoeus_response typhoeus_response
-                    on_header.call response
+
+                    if on_header.call( response ) == :abort
+                        break aborted = :abort
+                    end
+
+                    next aborted if aborted
                 end
             end
         end
@@ -533,11 +549,12 @@ class Request < Message
     end
 
     def marshal_dump
-        raw_cookies = @raw_cookies.dup
-        callbacks   = @on_complete.dup
-        on_body     = @on_body.dup
-        on_headers  = @on_headers.dup
-        performer   = @performer
+        raw_cookies  = @raw_cookies.dup
+        callbacks    = @on_complete.dup
+        on_body      = @on_body.dup
+        on_headers   = @on_headers.dup
+        on_body_line = @on_body_line.dup
+        performer    = @performer
 
         @performer   = nil
         @raw_cookies = []
@@ -549,11 +566,12 @@ class Request < Message
             h
         end
     ensure
-        @raw_cookies = raw_cookies
-        @on_complete = callbacks
-        @on_body     = on_body
-        @on_headers  = on_headers
-        @performer   = performer
+        @raw_cookies  = raw_cookies
+        @on_complete  = callbacks
+        @on_body      = on_body
+        @on_body_line = on_body_line
+        @on_headers   = on_headers
+        @performer    = performer
     end
 
     def marshal_load( h )
@@ -691,13 +709,15 @@ class Request < Message
     end
 
     def set_body_reader( typhoeus_request, buffer )
-        return if @on_body.empty? && !typhoeus_request.options[:maxfilesize]
+        return if @on_body_line.empty? && @on_body.empty? &&
+            !typhoeus_request.options[:maxfilesize]
 
-        aborted = nil
+        aborted     = nil
+        line_buffer = ''
         typhoeus_request.on_body do |chunk|
             next aborted if aborted
 
-            if @on_body.empty?
+            if @on_body_line.empty? && @on_body.empty?
 
                 if buffer.size >= typhoeus_request.options[:maxfilesize]
                     buffer.clear
@@ -706,14 +726,37 @@ class Request < Message
 
                 buffer << chunk
             else
-
                 @on_body.each do |b|
                     if b.call( chunk ) == :abort
-                        next aborted = :abort
+                        break aborted = :abort
                     end
                 end
+                next aborted if aborted
 
+                line_buffer << chunk
+                lines = line_buffer.split( "\n" )
+
+                lines.each do |line|
+                    @on_body_line.each do |b|
+                        if b.call( line ) == :abort
+                            break aborted = :abort
+                        end
+                    end
+
+                    break aborted if aborted
+                end
+                next aborted if aborted
+
+                # Last line was cut short so push it back to the buffer to get
+                # a clear picture.
+                if !chunk.end_with?( "\n" )
+                    line_buffer = lines.pop.to_s
+                else
+                    line_buffer.clear
+                end
             end
+
+            true
         end
     end
 

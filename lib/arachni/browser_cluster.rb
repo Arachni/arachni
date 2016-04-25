@@ -281,6 +281,10 @@ class BrowserCluster
         self
     end
 
+    def pause
+        @pause = true
+    end
+
     # Shuts the cluster down.
     def shutdown( wait = true )
         @shutdown = true
@@ -308,6 +312,8 @@ class BrowserCluster
     # @see #queue
     # @private
     def pop
+        sleep if @pause
+
         {} while job_done?( job = @jobs.pop )
         notify_on_pop job
         job

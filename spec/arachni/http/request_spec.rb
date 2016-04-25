@@ -403,6 +403,115 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#on_headers' do
+        context 'when passed a block' do
+            it 'adds it as a callback to be passed the response with headers' do
+                request = described_class.new( url: "#{url}/stream" )
+
+                response_h = {}
+                request.on_headers do |response|
+                    response_h = response.to_h
+                end
+                request.run
+
+                expect(response_h[:code]).to eq 200
+                expect(response_h[:body]).to eq ''
+                expect(response_h[:headers]).to be_any
+            end
+
+            context 'when the block returns :abort' do
+                it 'aborts the request' do
+                    request = described_class.new( url: "#{url}/stream" )
+
+                    request.on_headers do |response|
+                        :abort
+                    end
+                    response = request.run
+
+                    expect(response.time).to be < 2
+                end
+            end
+        end
+    end
+
+    describe '#on_body' do
+        context 'when passed a block' do
+            it 'adds it as a callback to be passed the each body chunk' do
+                request = described_class.new( url: "#{url}/lines" )
+
+                s = ''
+                500.times do |i|
+                    s << "#{i}: test\n"
+                end
+
+                lines = ''
+                request.on_body do |line|
+                    lines << line
+                end
+                request.run
+
+                expect(lines).to eq s
+            end
+
+            context 'when the block returns :abort' do
+                it 'aborts the request' do
+                    request = described_class.new( url: "#{url}/lines" )
+
+                    i = 0
+                    request.on_body do
+                        if i == 100
+                            next :abort
+                        end
+
+                        i += 1
+                    end
+                    request.run
+
+                    expect(i).to eq 100
+                end
+            end
+        end
+    end
+
+    describe '#on_body_lines' do
+        context 'when passed a block' do
+            it 'adds it as a callback to be passed the each body line' do
+                request = described_class.new( url: "#{url}/lines" )
+
+                s = ''
+                500.times do |i|
+                    s << "#{i}: test\n"
+                end
+
+                lines = ''
+                request.on_body_line do |line|
+                    lines << "#{line}\n"
+                end
+                request.run
+
+                expect(lines).to eq s
+            end
+
+            context 'when the block returns :abort' do
+                it 'aborts the request' do
+                    request = described_class.new( url: "#{url}/lines" )
+
+                    i = 0
+                    request.on_body_line do
+                        if i == 100
+                            next :abort
+                        end
+
+                        i += 1
+                    end
+                    request.run
+
+                    expect(i).to eq 100
+                end
+            end
+        end
+    end
+
     describe '#clear_callbacks' do
         it 'clears #on_complete callbacks' do
             request = described_class.new( url: url )

@@ -76,6 +76,15 @@ get '/stream' do
     end
 end
 
+get '/lines' do
+    stream do |out|
+        500.times do |i|
+            out.puts "#{i}: test"
+        end
+        out.flush
+    end
+end
+
 get '/fingerprint.php' do
 end
 
