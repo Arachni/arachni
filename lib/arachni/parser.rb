@@ -47,19 +47,25 @@ class Parser
         CACHE[name] = Support::Cache::LeastRecentlyPushed.new( size )
     end
 
-    WHITELIST = Set.new(%w(
+    WHITELIST = %w(
         title base a form frame iframe meta input select option script link area
         textarea input select button comment
-    ))
+    )
 
     class <<self
 
         def parse( html, options = {} )
             CACHE[__method__].fetch [html, options] do
+
                 document = SAX::Document.new( options )
 
+                sax_options = {}
+                if options[:whitelist] && options[:whitelist].any?
+                    sax_options[:active] = options[:whitelist].to_a
+                end
+
                 begin
-                    Ox.sax_parse( document, StringIO.new( html ) )
+                    Ox.sax_html( document, StringIO.new( html ), sax_options )
                 rescue SAX::Document::Stop
                 end
 
