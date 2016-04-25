@@ -630,6 +630,56 @@ describe Arachni::HTTP::Client do
             ).request.effective_body).to eq("1=%202&%203=4")
         end
 
+        describe ':on_headers' do
+            it 'gets called when headers are available' do
+                h = nil
+
+                subject.request(
+                    "#{@url}/fast_stream",
+                    mode: :sync,
+                    on_headers: proc do |response|
+                        h = response.to_h
+                    end
+                )
+
+                expect(h[:code]).to eq 200
+                expect(h[:body]).to eq ''
+                expect(h[:headers]).to be_any
+            end
+        end
+
+        describe ':on_body' do
+            it 'gets called with body chunks' do
+                chunks = []
+
+                subject.request(
+                    "#{@url}/fast_stream",
+                    mode:    :sync,
+                    on_body: proc do |chunk|
+                        chunks << chunk
+                    end
+                )
+
+                expect(chunks.size).to be == 5
+            end
+        end
+
+        describe ':on_body_line' do
+            it 'gets called with body lines' do
+                lines = []
+
+                subject.request(
+                    "#{@url}/fast_stream",
+                    mode:         :sync,
+                    on_body_line: proc do |line|
+                        lines << line
+                    end
+                )
+
+                expect(lines.size).to be == 5
+            end
+        end
+
         describe ':fingerprint' do
             before do
                 Arachni::Platform::Manager.clear

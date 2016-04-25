@@ -82,6 +82,7 @@ class Response < Message
     def partial?
         # Streamed response which was aborted before completing.
         return_code == :partial_file ||
+            return_code == :recv_error ||
             # Normal response with some data written, but without reaching
             # content-length.
             (code != 0 && timed_out?)

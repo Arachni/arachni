@@ -56,8 +56,8 @@ end
 
 get '/partial_stream' do
     stream do |out|
-        5.times do
-            out.puts "Hello!"
+        5.times do |i|
+            out.puts "#{i}: Hello!"
             out.close
         end
 
@@ -67,9 +67,27 @@ end
 
 get '/stream' do
     stream do |out|
-        5.times do
-            out.puts 'Hello!'
+        5.times do |i|
+            out.puts "#{i}: Hello!"
             sleep 1
+        end
+
+        out.flush
+    end
+end
+
+get '/fail_stream' do
+    stream do |out|
+        fail
+
+        out.flush
+    end
+end
+
+get '/fast_stream' do
+    stream do |out|
+        5.times do |i|
+            out.puts "#{i}: Hello!"
         end
 
         out.flush

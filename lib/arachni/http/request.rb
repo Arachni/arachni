@@ -110,6 +110,9 @@ class Request < Message
     #   Parameters which should not be encoded, by name.
     attr_accessor :raw_parameters
 
+    # @private
+    attr_accessor :response_body_buffer
+
     # @param  [Hash]  options
     #   Request options.
     # @option options [String] :url
@@ -507,22 +510,21 @@ class Request < Message
             end
         end
 
-        if @on_complete.any?
-            response_body_buffer = ''
-            set_body_reader( typhoeus_request, response_body_buffer )
+        @response_body_buffer = ''
+        set_body_reader( typhoeus_request, @response_body_buffer )
 
-            typhoeus_request.on_complete do |typhoeus_response|
-                if typhoeus_request.options[:maxfilesize]
-                    typhoeus_response.options[:response_body] =
-                        response_body_buffer
-                end
+        typhoeus_request.on_complete do |typhoeus_response|
 
-                fill_in_data_from_typhoeus_response typhoeus_response
-                handle_response Response.from_typhoeus(
-                    typhoeus_response,
-                    normalize_url: @normalize_url
-                )
+            if typhoeus_request.options[:maxfilesize]
+                typhoeus_response.options[:response_body] =
+                    @response_body_buffer
             end
+
+            fill_in_data_from_typhoeus_response typhoeus_response
+            handle_response Response.from_typhoeus(
+                typhoeus_response,
+                normalize_url: @normalize_url
+            )
         end
 
         typhoeus_request
@@ -684,15 +686,11 @@ class Request < Message
     private
 
     def client_run
-        typhoeus_request = to_typhoeus
-
-        response_body_buffer = ''
-        set_body_reader( typhoeus_request, response_body_buffer )
-
+        typhoeus_request  = to_typhoeus
         typhoeus_response = typhoeus_request.run
 
         if typhoeus_request.options[:maxfilesize]
-            typhoeus_response.options[:response_body] = response_body_buffer
+            typhoeus_response.options[:response_body] = @response_body_buffer
         end
 
         fill_in_data_from_typhoeus_response typhoeus_response
@@ -736,8 +734,8 @@ class Request < Message
                 line_buffer << chunk
                 lines = line_buffer.split( "\n" )
 
-                lines.each do |line|
-                    @on_body_line.each do |b|
+                @on_body_line.each do |b|
+                    lines.each do |line|
                         if b.call( line ) == :abort
                             break aborted = :abort
                         end
