@@ -89,7 +89,8 @@ class Document < Ox::Sax
     def text( value )
         return if @skip
 
-        @current_node << value.strip
+        value.strip!
+        @current_node << value
     end
 
     def comment( value )
@@ -101,7 +102,9 @@ class Document < Ox::Sax
     def to_html( indentation = 2, level = 0 )
         html = "<!DOCTYPE html>\n"
         children.each do |child|
-            html << child.to_html( indentation, level )
+            html << (child.is_a?( String ) ?
+                child :
+                child.to_html( indentation, level ))
         end
         html << "\n"
     end
