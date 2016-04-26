@@ -373,15 +373,15 @@ describe Arachni::HTTP::Request do
     describe '#on_complete' do
         context 'when passed a block' do
             it 'adds it as a callback to be passed the response' do
+                response = nil
+
                 request = described_class.new( url: url )
+                request.on_complete { |r| response = r }
+                request.run
 
-                passed_response = nil
-                request.on_complete { |res| passed_response = res }
-
-                response = Arachni::HTTP::Response.new( url: url )
-                request.handle_response( response )
-
-                expect(passed_response).to eq(response)
+                expect(response.code).to eq 200
+                expect(response.body).to eq 'GET'
+                expect(response.headers).to be_any
             end
 
             it 'can add multiple callbacks' do
@@ -392,13 +392,15 @@ describe Arachni::HTTP::Request do
                 2.times do
                     request.on_complete { |res| passed_responses << res }
                 end
-
-                response = Arachni::HTTP::Response.new( url: url )
-                request.handle_response( response )
+                request.run
 
                 expect(passed_responses.size).to eq(2)
-                expect(passed_responses.uniq.size).to eq(1)
-                expect(passed_responses.uniq.first).to eq(response)
+
+                passed_responses.each do |response|
+                    expect(response.code).to eq 200
+                    expect(response.body).to eq 'GET'
+                    expect(response.headers).to be_any
+                end
             end
         end
     end
@@ -485,7 +487,7 @@ describe Arachni::HTTP::Request do
 
                 lines = ''
                 request.on_body_line do |line|
-                    lines << "#{line}\n"
+                    lines << line
                 end
                 request.run
 
@@ -521,34 +523,9 @@ describe Arachni::HTTP::Request do
 
             response = Arachni::HTTP::Response.new( url: url )
             request.clear_callbacks
-            request.handle_response( response )
+            request.run
 
             expect(passed_response).to be_nil
-        end
-    end
-
-    describe '#handle_response' do
-        it 'assigns self as the #request attribute of the response' do
-            request = described_class.new( url: url )
-
-            passed_response = nil
-            request.on_complete { |res| passed_response = res }
-
-            response = Arachni::HTTP::Response.new( url: url )
-            request.handle_response( response )
-
-            expect(passed_response.request).to eq(request)
-        end
-
-        it 'calls #on_complete callbacks' do
-            response = Arachni::HTTP::Response.new( url: url, code: 200 )
-            request = described_class.new( url: url )
-
-            passed_response = nil
-            request.on_complete { |res| passed_response = res }
-            request.handle_response( response )
-
-            expect(passed_response).to eq(response)
         end
     end
 

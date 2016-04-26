@@ -37,6 +37,12 @@ class Message
     # @option   options [String]    :body
     #   Body.
     def initialize( options = {} )
+        update( options )
+
+        fail ArgumentError, 'Missing :url.' if url.to_s.empty?
+    end
+
+    def update( options )
         options = options.dup
 
         @normalize_url = options.delete( :normalize_url )
@@ -52,8 +58,6 @@ class Message
                 instance_variable_set( "@#{k}".to_sym, v )
             end
         end
-
-        fail ArgumentError, 'Missing :url.' if url.to_s.empty?
     end
 
     def headers=( h )
