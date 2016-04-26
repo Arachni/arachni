@@ -402,6 +402,22 @@ describe Arachni::HTTP::Request do
                     expect(response.headers).to be_any
                 end
             end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response = nil
+
+                    request = described_class.new( url: url )
+                    request.on_complete { |r| fail }
+                    request.on_complete { |r| response = r }
+                    request.on_complete { |r| fail }
+                    request.run
+
+                    expect(response.code).to eq 200
+                    expect(response.body).to eq 'GET'
+                    expect(response.headers).to be_any
+                end
+            end
         end
     end
 
@@ -431,6 +447,22 @@ describe Arachni::HTTP::Request do
                     response = request.run
 
                     expect(response.time).to be < 2
+                end
+            end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response_h = nil
+
+                    request = described_class.new( url: url )
+                    request.on_headers { fail }
+                    request.on_headers { |r| response_h = r.to_h }
+                    request.on_headers { fail }
+                    request.run
+
+                    expect(response_h[:code]).to eq 200
+                    expect(response_h[:body]).to eq ''
+                    expect(response_h[:headers]).to be_any
                 end
             end
         end
@@ -470,6 +502,22 @@ describe Arachni::HTTP::Request do
                     request.run
 
                     expect(i).to eq 100
+                end
+            end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response_h = nil
+
+                    request = described_class.new( url: url )
+                    request.on_body { fail }
+                    request.on_body { |_, r| response_h = r.to_h }
+                    request.on_body { fail }
+                    request.run
+
+                    expect(response_h[:code]).to eq 200
+                    expect(response_h[:body]).to eq ''
+                    expect(response_h[:headers]).to be_any
                 end
             end
         end

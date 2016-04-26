@@ -13,6 +13,9 @@ module HTTP
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Request < Message
+    include Utilities
+    include UI::Output
+
     require_relative 'request/scope'
 
     ENCODE_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
@@ -495,8 +498,10 @@ class Request < Message
             set_response_data typhoeus_response
 
             @on_headers.each do |on_header|
-                if on_header.call( self.response ) == :abort
-                    break aborted = :abort
+                exception_jail false do
+                    if on_header.call( self.response ) == :abort
+                        break aborted = :abort
+                    end
                 end
 
                 next aborted if aborted
@@ -508,8 +513,10 @@ class Request < Message
                 next aborted if aborted
 
                 @on_body.each do |b|
-                    if b.call( chunk, self ) == :abort
-                        break aborted = :abort
+                    exception_jail false do
+                        if b.call( chunk, self.response ) == :abort
+                            break aborted = :abort
+                        end
                     end
                 end
 
@@ -527,8 +534,10 @@ class Request < Message
                 last_line = ''
                 line_buffer.each_line.each do |line|
                     @on_body_line.each do |b|
-                        if b.call( line, self ) == :abort
-                            break aborted = :abort
+                        exception_jail false do
+                            if b.call( line, self.response ) == :abort
+                                break aborted = :abort
+                            end
                         end
                     end
 
@@ -572,7 +581,11 @@ class Request < Message
 
                 set_response_data typhoeus_response
 
-                @on_complete.each { |b| b.call self.response }
+                @on_complete.each do |b|
+                    exception_jail false do
+                        b.call self.response
+                    end
+                end
             end
         end
 
