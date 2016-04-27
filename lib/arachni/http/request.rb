@@ -149,10 +149,11 @@ class Request < Message
         @follow_location = false if @follow_location.nil?
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
 
-        @on_headers   = []
-        @on_body      = []
-        @on_body_line = []
-        @on_complete  = []
+        @on_headers    = []
+        @on_body       = []
+        @on_body_line  = []
+        @on_body_lines = []
+        @on_complete   = []
 
         @raw_parameters ||= []
         @timeout        ||= Options.http.request_timeout
@@ -328,12 +329,19 @@ class Request < Message
         self
     end
 
+    def on_body_lines( &block )
+        fail 'Block is missing.' if !block_given?
+        @on_body_lines << block
+        self
+    end
+
     # Clears {#on_complete} callbacks.
     def clear_callbacks
         @on_complete.clear
         @on_body.clear
         @on_headers.clear
         @on_body_line.clear
+        @on_body_lines.clear
     end
 
     # @return   [Bool]
@@ -531,8 +539,26 @@ class Request < Message
 
                 line_buffer << chunk
 
-                last_line = ''
-                line_buffer.each_line.each do |line|
+                lines = line_buffer.lines
+
+                @response_body_buffer = nil
+
+                # Incomplete last line, we've either read everything of were cut
+                # short, but we can't know which.
+                if !lines.last.index( /[\n\r]/, -1 )
+                    last_line = lines.pop
+
+                    # Set it as the generic body buffer in order to be accessible
+                    # via #on_complete in case this was indeed the end of the
+                    # response.
+                    @response_body_buffer = last_line.dup
+
+                    # Also push it back to out own buffer in case there's more
+                    # to read in order to complete the line.
+                    line_buffer = last_line
+                end
+
+                lines.each do |line|
                     @on_body_line.each do |b|
                         exception_jail false do
                             if b.call( line, self.response ) == :abort
@@ -542,31 +568,57 @@ class Request < Message
                     end
 
                     break aborted if aborted
-
-                    last_line = line
                 end
+
+                line_buffer.clear
+
+                next aborted if aborted
+            end
+        end
+
+        if @on_body_lines.any?
+            lines_buffer = ''
+            typhoeus_request.on_body do |chunk|
                 next aborted if aborted
 
-                # Last line was cut short so push it back to the buffer to get
-                # a clear picture.
-                if !last_line.end_with?( "\n" )
-                    line_buffer = last_line
-                else
-                    line_buffer.clear
+                lines_buffer << chunk
+
+                lines, middle, remnant = lines_buffer.rpartition( /[\r\n]/ )
+                lines << middle
+
+                @response_body_buffer = nil
+
+                # Incomplete last line, we've either read everything of were cut
+                # short, but we can't know which.
+                if !remnant.empty?
+                    # Set it as the generic body buffer in order to be accessible
+                    # via #on_complete in case this was indeed the end of the
+                    # response.
+                    @response_body_buffer = remnant.dup
+
+                    # Also push it back to out own buffer in case there's more
+                    # to read in order to complete the line.
+                    lines_buffer = remnant
                 end
 
+                @on_body_lines.each do |b|
+                    exception_jail false do
+                        if b.call( lines, self.response ) == :abort
+                            break aborted = :abort
+                        end
+                    end
+                end
+
+                next aborted if aborted
             end
         end
 
         if @on_complete.any?
-            buffer_body = false
-
             # No need to set our own reader in order to enforce max response size
             # if the response is already been read bit by bit via other callbacks.
             if typhoeus_request.options[:maxfilesize] && @on_body.empty? &&
-                @on_body_line.empty?
+                @on_body_line.empty? && @on_body_lines.empty?
 
-                buffer_body = true
                 @response_body_buffer = ''
                 set_body_reader( typhoeus_request, @response_body_buffer )
             end
@@ -574,7 +626,9 @@ class Request < Message
             typhoeus_request.on_complete do |typhoeus_response|
                 next aborted if aborted
 
-                if buffer_body
+                # Set either by the default body reader or is a remnant from
+                # a user specified callback like #on_body, #on_body_line, etc.
+                if @response_body_buffer
                     typhoeus_response.options[:response_body] =
                         @response_body_buffer
                 end
@@ -625,21 +679,23 @@ class Request < Message
     end
 
     def marshal_dump
-        raw_cookies  = @raw_cookies.dup
-        callbacks    = @on_complete.dup
-        on_body      = @on_body.dup
-        on_headers   = @on_headers.dup
-        on_body_line = @on_body_line.dup
-        performer    = @performer
-        response     = @response
+        raw_cookies   = @raw_cookies.dup
+        callbacks     = @on_complete.dup
+        on_body       = @on_body.dup
+        on_headers    = @on_headers.dup
+        on_body_line  = @on_body_line.dup
+        on_body_lines = @on_body_lines.dup
+        performer     = @performer
+        response      = @response
 
-        @performer    = nil
-        @response     = nil
-        @raw_cookies  = []
-        @on_complete  = []
-        @on_body      = []
-        @on_body_line = []
-        @on_headers   = []
+        @performer     = nil
+        @response      = nil
+        @raw_cookies   = []
+        @on_complete   = []
+        @on_body       = []
+        @on_body_line  = []
+        @on_body_lines = []
+        @on_headers    = []
 
         instance_variables.inject( {} ) do |h, iv|
             next h if iv == :@scope
@@ -647,13 +703,14 @@ class Request < Message
             h
         end
     ensure
-        @response     = response
-        @raw_cookies  = raw_cookies
-        @on_complete  = callbacks
-        @on_body      = on_body
-        @on_body_line = on_body_line
-        @on_headers   = on_headers
-        @performer    = performer
+        @response      = response
+        @raw_cookies   = raw_cookies
+        @on_complete   = callbacks
+        @on_body       = on_body
+        @on_body_line  = on_body_line
+        @on_body_lines = on_body_lines
+        @on_headers    = on_headers
+        @performer     = performer
     end
 
     def marshal_load( h )

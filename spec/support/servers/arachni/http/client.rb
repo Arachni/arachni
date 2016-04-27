@@ -103,6 +103,18 @@ get '/lines' do
     end
 end
 
+get '/lines/non-stream' do
+    s = ''
+    2_000.times do |i|
+        s << "#{i}: test\n"
+    end
+    s
+end
+
+get '/lines/incomplete' do
+    [ 200, { 'Content-Length' => '1000' }, "Blah\nHello!" ]
+end
+
 get '/fingerprint.php' do
 end
 
