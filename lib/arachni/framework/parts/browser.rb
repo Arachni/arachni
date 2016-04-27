@@ -86,7 +86,9 @@ module Browser
         browser_cluster.update_skip_states browser_job.id, states
     end
 
-    def handle_browser_page( page )
+    def handle_browser_page( result )
+        page = result.page
+
         synchronize do
             return if !push_to_page_queue page
 
@@ -114,9 +116,10 @@ module Browser
         # needs to have a clean state.
         schedule_dom_metadata_application( page )
 
-        browser_cluster.queue( browser_job.forward( resource: page.dom.state ) ) do |result|
-            handle_browser_page result.page
-        end
+        browser_cluster.queue(
+            browser_job.forward( resource: page.dom.state ),
+            &method(:handle_browser_page)
+        )
 
         true
     end
