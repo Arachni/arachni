@@ -57,7 +57,7 @@ class Parser
         def parse( html, options = {} )
             CACHE[__method__].fetch [html, options] do
 
-                document = SAX::Document.new( options )
+                document = options[:handler] || SAX::Document.new( options )
 
                 sax_options = {}
                 if options[:whitelist] && options[:whitelist].any?
