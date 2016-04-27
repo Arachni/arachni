@@ -22,6 +22,8 @@ class JSON < Base
 
     # Generic element capabilities.
     include Arachni::Element::Capabilities::Auditable
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
     include Arachni::Element::Capabilities::Submittable
     include Arachni::Element::Capabilities::Analyzable
     include Arachni::Element::Capabilities::WithSource

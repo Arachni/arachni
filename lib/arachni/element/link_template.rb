@@ -32,6 +32,9 @@ class LinkTemplate < Base
     include Capabilities::Inputtable
     include Capabilities::Auditable
 
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
+
     # @return   [Regexp]
     #   Regular expressions with named captures, serving as templates used to
     #   identify and manipulate inputs in {#action}.

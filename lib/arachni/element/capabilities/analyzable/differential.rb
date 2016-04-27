@@ -190,24 +190,28 @@ module Differential
     def populate_control_signatures( opts, signatures )
         gathered = {}
         opts[:precision].times do
-            audit( opts[:false], opts ) do |res, elem|
+            line_buffered_audit( opts[:false], opts ) do |res, elem, completed|
                 altered_hash = elem.affected_input_name.hash
 
-                if signatures[:corrupted][altered_hash]
+                if completed
+                    if signatures[:corrupted][altered_hash]
+                        increase_received_responses( opts, signatures )
+                        next
+                    end
+
+                    gathered[altered_hash] ||= 0
+                    gathered[altered_hash]  += 1
+
+                    response_check( res, signatures, elem )
+
+                    if gathered[altered_hash] == @data_gathering[:mutations_size]
+                        print_status "Got default/control response for #{elem.type} " +
+                            "variable '#{elem.affected_input_name}' with action '#{elem.action}'."
+
+                        @data_gathering[:controls][altered_hash] = true
+                    end
+
                     increase_received_responses( opts, signatures )
-                    next
-                end
-
-                gathered[altered_hash] ||= 0
-                gathered[altered_hash]  += 1
-
-                response_check( res, signatures, elem )
-
-                if gathered[altered_hash] == @data_gathering[:mutations_size]
-                    print_status "Got default/control response for #{elem.type} " +
-                        "variable '#{elem.affected_input_name}' with action '#{elem.action}'."
-
-                    @data_gathering[:controls][altered_hash] = true
                 end
 
                 body = res.body.gsub( elem.seed, '' )
@@ -220,7 +224,6 @@ module Differential
                         signatures[:controls][altered_hash].refine!(body) :
                         Support::Signature.new(body)
 
-                increase_received_responses( opts, signatures )
             end
         end
     end
@@ -241,35 +244,37 @@ module Differential
                              "action '#{self.action}' using seed: #{expr}"
 
             opts[:precision].times do
-                audit( expr, opts ) do |res, elem|
+                line_buffered_audit( expr, opts ) do |res, elem, completed|
                     altered_hash = elem.affected_input_name.hash
 
-                    gathered[pair_hash][altered_hash] ||= 0
-                    gathered[pair_hash][altered_hash] += 1
-
+                    gathered[pair_hash][altered_hash]        ||= 0
                     signatures[pair_hash][altered_hash]      ||= {}
                     @data_gathering[pair_hash][altered_hash] ||= {}
 
-                    response_check( res, signatures, elem )
+                    if completed
+                        gathered[pair_hash][altered_hash] += 1
 
-                    if signatures[pair_hash][altered_hash][:corrupted] ||
-                        signatures[:corrupted][altered_hash]
+                        response_check( res, signatures, elem )
 
-                        increase_received_responses( opts, signatures )
-                        next
-                    end
+                        if signatures[pair_hash][altered_hash][:corrupted] ||
+                            signatures[:corrupted][altered_hash]
 
-                    if signature_sieve( altered_hash, signatures, pair_hash )
-                        increase_received_responses( opts, signatures )
-                        next
-                    end
+                            increase_received_responses( opts, signatures )
+                            next
+                        end
 
-                    if gathered[pair_hash][altered_hash] == opts[:precision]
-                        elem.print_status "Got '#{bool}' response for #{elem.type}" <<
-                            " variable '#{elem.affected_input_name}' with action" <<
-                            " '#{elem.action}' using seed: #{expr}"
+                        if signature_sieve( altered_hash, signatures, pair_hash )
+                            increase_received_responses( opts, signatures )
+                            next
+                        end
 
-                        @data_gathering[pair_hash][altered_hash]["#{bool}_probes".to_sym] = true
+                        if gathered[pair_hash][altered_hash] == opts[:precision]
+                            elem.print_status "Got '#{bool}' response for #{elem.type}" <<
+                                " variable '#{elem.affected_input_name}' with action" <<
+                                " '#{elem.action}' using seed: #{expr}"
+
+                            @data_gathering[pair_hash][altered_hash]["#{bool}_probes".to_sym] = true
+                        end
                     end
 
                     # Store the mutation for the {Arachni::Issue}.
@@ -290,6 +295,7 @@ module Differential
                             signatures[pair_hash][altered_hash][bool].refine!(body) :
                             Support::Signature.new(body)
 
+                    next if !completed
                     signature_sieve( altered_hash, signatures, pair_hash )
 
                     increase_received_responses( opts, signatures )
@@ -325,23 +331,25 @@ module Differential
         gathered           = {}
 
         opts[:precision].times do
-            audit( opts[:false], opts ) do |res, elem|
+            line_buffered_audit( opts[:false], opts ) do |res, elem, completed|
                 altered_hash = elem.affected_input_name.hash
 
-                gathered[altered_hash] ||= 0
-                gathered[altered_hash]  += 1
+                if completed
+                    gathered[altered_hash] ||= 0
+                    gathered[altered_hash]  += 1
 
-                response_check( res, signatures, elem )
+                    response_check( res, signatures, elem )
 
-                if signatures[:corrupted][altered_hash]
-                    @data_gathering[:received_responses] += 1
-                    next
-                end
+                    if signatures[:corrupted][altered_hash]
+                        @data_gathering[:received_responses] += 1
+                        next
+                    end
 
-                if gathered[altered_hash] == opts[:precision]
-                    print_status 'Got control verification response ' <<
-                        "for #{elem.type} variable '#{elem.affected_input_name}' with" <<
-                        " action '#{elem.action}'."
+                    if gathered[altered_hash] == opts[:precision]
+                        print_status 'Got control verification response ' <<
+                            "for #{elem.type} variable '#{elem.affected_input_name}' with" <<
+                            " action '#{elem.action}'."
+                    end
                 end
 
                 body = res.body.gsub( elem.seed, '' )
@@ -353,6 +361,8 @@ module Differential
                     signatures[:controls_verification][altered_hash] ?
                         signatures[:controls_verification][altered_hash].refine!(body) :
                         Support::Signature.new(body)
+
+                next if !completed
 
                 received_responses += 1
                 next if received_responses != @data_gathering[:mutations_size]
@@ -408,7 +418,7 @@ module Differential
 
                     if pair
                         issue_data[:remarks] = {
-                            :differential_analysis => [
+                            differential_analysis: [
                                 "True expression: #{pair.keys.first}",
                                 "False expression: #{pair.values.first}",
                                 "Control false expression: #{options[:false]}"

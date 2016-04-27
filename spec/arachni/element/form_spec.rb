@@ -17,6 +17,8 @@ describe Arachni::Element::Form do
     it_should_behave_like 'inputtable'
     it_should_behave_like 'mutable'
     it_should_behave_like 'auditable'
+    it_should_behave_like 'buffered_auditable'
+    it_should_behave_like 'line_buffered_auditable'
 
     before :each do
         @framework ||= Arachni::Framework.new
