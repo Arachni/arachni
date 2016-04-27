@@ -15,7 +15,7 @@
 # @see http://secunia.com/advisories/9716/
 class Arachni::Checks::XssEvent < Arachni::Check::Base
 
-    EVENT_ATTRS = [
+    ATTRIBUTES = [
         'onload',
         'onunload',
         'onblur',
@@ -40,6 +40,35 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
         # for a "script:" prefix.
         'src'
     ]
+
+    class SAX
+        attr_reader :proof
+
+        def initialize( seed )
+            @seed       = seed
+            @attributes = Set.new( ATTRIBUTES )
+        end
+
+        def attr( name, value )
+            name  = name.to_s.downcase
+            value = value.downcase
+
+            return if !@attributes.include?( name )
+
+            if name == 'src'
+                # Javascript cases can be handled more reliably by the
+                # xss_script_context check; VBScript doesn't have full support
+                # so we settle.
+                if value =~ /^(vb|)script:/ && value.include?( @seed )
+                    @proof = value
+                    fail Arachni::Parser::SAX::Document::Stop
+                end
+            elsif value.include?( @seed )
+                @proof = value
+                fail Arachni::Parser::SAX::Document::Stop
+            end
+        end
+    end
 
     def self.attribute_name
         'arachni_xss_in_element_event'
@@ -79,40 +108,12 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
         return :checked if !(body =~ /#{self.class.attribute_name}/i)
         return if element.seed.to_s.empty? || !(body =~ /#{element.seed}/i)
 
-        included_attributes = EVENT_ATTRS.select do |attribute|
-            body =~ /#{attribute}/i
-        end
+        handler = SAX.new( element.seed.split( ':', 2 ).last )
+        Arachni::Parser.parse( body, handler: handler )
 
-        return :checked if included_attributes.empty?
+        return :checked if !handler.proof
 
-        # TODO:
-        # Mini-SAX to check and then stop the parse.
-        # Won't create any elements so less RAM consumption.
-        document = Arachni::Parser.parse( body )
-        seed     = element.seed
-
-        included_attributes.each do |attribute|
-            document.nodes_by_attribute_name(attribute).each do |elem|
-                value = elem[attribute].to_s.downcase
-
-                next if value.empty?
-
-                seed  = seed.split( ':', 2 ).last
-
-                if attribute == 'src'
-                    # Javascript cases can be handled more reliably by the
-                    # xss_script_context check. However VBScript doesn't have
-                    # full support so we settle.
-                    if value =~ /^(vb|)script:/ && value.include?( seed )
-                        log vector: element, response: response, proof: value
-                        return
-                    end
-                elsif value.include?( seed )
-                    log vector: element, response: response, proof: value
-                    return
-                end
-            end
-        end
+        log vector: element, response: response, proof: handler.proof
     end
 
     def self.info

@@ -36,8 +36,63 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
         'onmouseout',
         'onmouseover',
         'onmouseup',
+
+        # Not an event attribute so it gets special treatment by being checked
+        # for a "script:" prefix.
         'src'
     ]
+
+    class SAX
+        attr_reader :tainted
+
+        def initialize( seed )
+            @seed       = seed
+            @attributes = Set.new( ATTRIBUTES )
+        end
+
+        def tainted?
+            !!@tainted
+        end
+
+        def start_element( name )
+            @in_script = (name.to_s.downcase == 'script')
+        end
+
+        def end_element( name )
+            @in_script = false
+        end
+
+        def attr( name, value )
+            name  = name.to_s.downcase
+            value = value.downcase
+
+            return if !@attributes.include?( name )
+
+            if name == 'src'
+                if @seed.start_with?( 'javascript:' ) && value == @seed
+                    @tainted = true
+                    fail Arachni::Parser::SAX::Document::Stop
+                end
+            else
+                if value == @seed
+                    @tainted = true
+                    fail Arachni::Parser::SAX::Document::Stop
+                end
+            end
+
+            if value.include?( @seed )
+                @tainted = true
+                fail Arachni::Parser::SAX::Document::Stop
+            end
+        end
+
+        def text( value )
+            return if !@in_script || value !~ /#{Regexp.escape( @seed )}/i
+
+            @tainted = true
+            fail Arachni::Parser::SAX::Document::Stop
+        end
+    end
 
     def self.seed
         'window.top._%s_taint_tracer.log_execution_flow_sink()'
@@ -127,45 +182,10 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     def tainted?( response, seed )
         return if seed.to_s.empty? || !response.body.to_s.include?( seed )
 
-        # TODO:
-        # Mini-SAX to check and then stop the parse.
-        # Won't create any elements so less RAM consumption.
+        handler = SAX.new( self.class.seed % browser_cluster.javascript_token )
+        Arachni::Parser.parse( response.body, handler: handler )
 
-        # Quick check to see if the payload landed in a <script>.
-        in_script = (response.body =~ /<script.*?>.*#{Regexp.escape seed}.*?<\/script>/im)
-
-        # Quick check to see if the payload landed in any attributes.
-        pure_seed     = self.class.seed % browser_cluster.javascript_token
-        in_attributes = ATTRIBUTES.select do |attribute|
-            !!response.body.scan( /#{attribute}=(.*?)>/im ).flatten.find do |match|
-                match.include? pure_seed
-            end
-        end
-
-        # Nowhere to be seen, bail out early.
-        return if in_attributes.empty? && !in_script
-
-        doc = Arachni::Parser.parse( response.body )
-
-        return true if in_script &&
-            !!doc.nodes_by_name( 'script' ).
-                find { |n| n.text.to_s.include?( seed ) }
-
-        in_attributes.each do |attribute|
-            doc.nodes_by_attribute_name( attribute ).each do |node|
-                value = node[attribute].to_s
-
-                if attribute == 'src'
-                    return value if seed.start_with?( 'javascript:' ) && value == seed
-                else
-                    return value if value == seed
-                end
-
-                return true if value.include?( seed )
-            end
-        end
-
-        false
+        handler.tainted?
     end
 
     def self.info

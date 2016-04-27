@@ -18,6 +18,28 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
 
     ATTRIBUTE_NAME = 'arachni_xss_in_tag'
 
+    class SAX
+        attr_reader :landed
+
+        def initialize( seed )
+            @seed = seed
+        end
+
+        def landed?
+            !!@landed
+        end
+
+        def attr( name, value )
+            name  = name.to_s.downcase
+            value = value.downcase
+
+            return if ATTRIBUTE_NAME != name || value != @seed
+
+            @landed = true
+            fail Arachni::Parser::SAX::Document::Stop
+        end
+    end
+
     def self.strings
         @strings ||= ['', '\'', '"'].
             map { |q| "#{q} #{ATTRIBUTE_NAME}=#{q}#{random_seed}#{q} blah=#{q}" }
@@ -30,26 +52,19 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
-        # if we have no body or it doesn't contain the ATTRIBUTE_NAME under any
-        # context there's no point in parsing the HTML to verify the vulnerability
+        # If we have no body or it doesn't contain the ATTRIBUTE_NAME under any
+        # context there's no point in parsing the HTML to verify the vulnerability.
         return if !(response.body =~ /#{ATTRIBUTE_NAME}/i)
 
-        body = response.body.downcase
+        handler = SAX.new( random_seed )
+        Arachni::Parser.parse( response.body, handler: handler )
+        return if !handler.landed?
 
-        # TODO:
-        # Mini-SAX to check and then stop the parse.
-        # Won't create any elements so less RAM consumption.
-
-        # See if we managed to inject a working HTML attribute to any
-        # elements.
-        Arachni::Parser.parse( body ).nodes_by_attribute_name( ATTRIBUTE_NAME ).
-            each do |node|
-                next if node[ATTRIBUTE_NAME] != random_seed
-
-                proof = (payload = find_included_payload( body )) ? payload : node.to_s
-                log vector: element, proof: proof.to_s, response: response
-                return
-            end
+        log(
+            vector: element,
+            proof: find_included_payload( response.body.downcase ).to_s,
+            response: response
+        )
     end
 
     def find_included_payload( body )

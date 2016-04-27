@@ -42,6 +42,9 @@
         - Retry on error.
         - Default to `afr` as a report format.
 - Checks
+    - Active
+        - `xss_event`, `xss_script_context`, `xss_tag` -- Replaced full parsing
+            of responses with SAX.
     - Passive
         - `backup_files`
             - Ignore media files to avoid FPs when dealing with galleries and the like.
