@@ -32,6 +32,9 @@ class Form < Base
     include Capabilities::Submittable
     include Capabilities::Mutable
 
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
+
     # {Form} error namespace.
     #
     # All {Form} errors inherit from and live under it.

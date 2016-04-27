@@ -13,6 +13,9 @@ module HTTP
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Request < Message
+    include Utilities
+    include UI::Output
+
     require_relative 'request/scope'
 
     ENCODE_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
@@ -110,6 +113,9 @@ class Request < Message
     #   Parameters which should not be encoded, by name.
     attr_accessor :raw_parameters
 
+    # @return   [Response]
+    attr_accessor :response
+
     # @private
     attr_accessor :response_body_buffer
 
@@ -143,10 +149,11 @@ class Request < Message
         @follow_location = false if @follow_location.nil?
         @max_redirects   = (Options.http.request_redirect_limit || REDIRECT_LIMIT)
 
-        @on_headers   = []
-        @on_body      = []
-        @on_body_line = []
-        @on_complete  = []
+        @on_headers    = []
+        @on_body       = []
+        @on_body_line  = []
+        @on_body_lines = []
+        @on_complete   = []
 
         @raw_parameters ||= []
         @timeout        ||= Options.http.request_timeout
@@ -322,12 +329,19 @@ class Request < Message
         self
     end
 
+    def on_body_lines( &block )
+        fail 'Block is missing.' if !block_given?
+        @on_body_lines << block
+        self
+    end
+
     # Clears {#on_complete} callbacks.
     def clear_callbacks
         @on_complete.clear
         @on_body.clear
         @on_headers.clear
         @on_body_line.clear
+        @on_body_lines.clear
     end
 
     # @return   [Bool]
@@ -374,13 +388,7 @@ class Request < Message
     #
     # @return   [Response]
     def run
-        client_run.tap { |r| r.request = self }
-    end
-
-    def handle_response( response )
-        response.request = self
-        @on_complete.each { |b| b.call response }
-        response
+        client_run
     end
 
     # @return   [Typhoeus::Response]
@@ -487,47 +495,167 @@ class Request < Message
 
         typhoeus_request = Typhoeus::Request.new( url.split( '?').first, options )
 
-        if @on_headers.any?
-            aborted = nil
-            typhoeus_request.on_headers do |typhoeus_response|
-                next aborted if aborted
+        aborted = nil
 
-                @on_headers.each do |on_header|
-                    response = Response.from_typhoeus(
-                        typhoeus_response,
-                        normalize_url: @normalize_url,
-                        request:       self
-                    )
+        # Always set this because we'll be streaming most of the time, so we
+        # should set @response so that there'll be a response available for the
+        # #on_body and #on_body_line callbacks.
+        typhoeus_request.on_headers do |typhoeus_response|
+            next aborted if aborted
 
-                    fill_in_data_from_typhoeus_response typhoeus_response
+            set_response_data typhoeus_response
 
-                    if on_header.call( response ) == :abort
+            @on_headers.each do |on_header|
+                exception_jail false do
+                    if on_header.call( self.response ) == :abort
                         break aborted = :abort
                     end
+                end
 
-                    next aborted if aborted
+                next aborted if aborted
+            end
+        end
+
+        if @on_body.any?
+            typhoeus_request.on_body do |chunk|
+                next aborted if aborted
+
+                @on_body.each do |b|
+                    exception_jail false do
+                        if b.call( chunk, self.response ) == :abort
+                            break aborted = :abort
+                        end
+                    end
+                end
+
+                next aborted if aborted
+            end
+        end
+
+        if @on_body_line.any?
+            line_buffer = ''
+            typhoeus_request.on_body do |chunk|
+                next aborted if aborted
+
+                line_buffer << chunk
+
+                lines = line_buffer.lines
+
+                @response_body_buffer = nil
+
+                # Incomplete last line, we've either read everything of were cut
+                # short, but we can't know which.
+                if !lines.last.index( /[\n\r]/, -1 )
+                    last_line = lines.pop
+
+                    # Set it as the generic body buffer in order to be accessible
+                    # via #on_complete in case this was indeed the end of the
+                    # response.
+                    @response_body_buffer = last_line.dup
+
+                    # Also push it back to out own buffer in case there's more
+                    # to read in order to complete the line.
+                    line_buffer = last_line
+                end
+
+                lines.each do |line|
+                    @on_body_line.each do |b|
+                        exception_jail false do
+                            if b.call( line, self.response ) == :abort
+                                break aborted = :abort
+                            end
+                        end
+                    end
+
+                    break aborted if aborted
+                end
+
+                line_buffer.clear
+
+                next aborted if aborted
+            end
+        end
+
+        if @on_body_lines.any?
+            lines_buffer = ''
+            typhoeus_request.on_body do |chunk|
+                next aborted if aborted
+
+                lines_buffer << chunk
+
+                lines, middle, remnant = lines_buffer.rpartition( /[\r\n]/ )
+                lines << middle
+
+                @response_body_buffer = nil
+
+                # Incomplete last line, we've either read everything of were cut
+                # short, but we can't know which.
+                if !remnant.empty?
+                    # Set it as the generic body buffer in order to be accessible
+                    # via #on_complete in case this was indeed the end of the
+                    # response.
+                    @response_body_buffer = remnant.dup
+
+                    # Also push it back to out own buffer in case there's more
+                    # to read in order to complete the line.
+                    lines_buffer = remnant
+                end
+
+                @on_body_lines.each do |b|
+                    exception_jail false do
+                        if b.call( lines, self.response ) == :abort
+                            break aborted = :abort
+                        end
+                    end
+                end
+
+                next aborted if aborted
+            end
+        end
+
+        if @on_complete.any?
+            # No need to set our own reader in order to enforce max response size
+            # if the response is already been read bit by bit via other callbacks.
+            if typhoeus_request.options[:maxfilesize] && @on_body.empty? &&
+                @on_body_line.empty? && @on_body_lines.empty?
+
+                @response_body_buffer = ''
+                set_body_reader( typhoeus_request, @response_body_buffer )
+            end
+
+            typhoeus_request.on_complete do |typhoeus_response|
+                next aborted if aborted
+
+                # Set either by the default body reader or is a remnant from
+                # a user specified callback like #on_body, #on_body_line, etc.
+                if @response_body_buffer
+                    typhoeus_response.options[:response_body] =
+                        @response_body_buffer
+                end
+
+                set_response_data typhoeus_response
+
+                @on_complete.each do |b|
+                    exception_jail false do
+                        b.call self.response
+                    end
                 end
             end
         end
 
-        @response_body_buffer = ''
-        set_body_reader( typhoeus_request, @response_body_buffer )
-
-        typhoeus_request.on_complete do |typhoeus_response|
-
-            if typhoeus_request.options[:maxfilesize]
-                typhoeus_response.options[:response_body] =
-                    @response_body_buffer
-            end
-
-            fill_in_data_from_typhoeus_response typhoeus_response
-            handle_response Response.from_typhoeus(
-                typhoeus_response,
-                normalize_url: @normalize_url
-            )
-        end
-
         typhoeus_request
+    end
+
+    def set_response_data( typhoeus_response )
+        fill_in_data_from_typhoeus_response typhoeus_response
+
+        self.response = Response.from_typhoeus(
+            typhoeus_response,
+            normalize_url: @normalize_url,
+            request:       self
+        )
+
+        self.response.update_from_typhoeus typhoeus_response
     end
 
     def to_h
@@ -551,16 +679,23 @@ class Request < Message
     end
 
     def marshal_dump
-        raw_cookies  = @raw_cookies.dup
-        callbacks    = @on_complete.dup
-        on_body      = @on_body.dup
-        on_headers   = @on_headers.dup
-        on_body_line = @on_body_line.dup
-        performer    = @performer
+        raw_cookies   = @raw_cookies.dup
+        callbacks     = @on_complete.dup
+        on_body       = @on_body.dup
+        on_headers    = @on_headers.dup
+        on_body_line  = @on_body_line.dup
+        on_body_lines = @on_body_lines.dup
+        performer     = @performer
+        response      = @response
 
-        @performer   = nil
-        @raw_cookies = []
-        @on_complete = []
+        @performer     = nil
+        @response      = nil
+        @raw_cookies   = []
+        @on_complete   = []
+        @on_body       = []
+        @on_body_line  = []
+        @on_body_lines = []
+        @on_headers    = []
 
         instance_variables.inject( {} ) do |h, iv|
             next h if iv == :@scope
@@ -568,12 +703,14 @@ class Request < Message
             h
         end
     ensure
-        @raw_cookies  = raw_cookies
-        @on_complete  = callbacks
-        @on_body      = on_body
-        @on_body_line = on_body_line
-        @on_headers   = on_headers
-        @performer    = performer
+        @response      = response
+        @raw_cookies   = raw_cookies
+        @on_complete   = callbacks
+        @on_body       = on_body
+        @on_body_line  = on_body_line
+        @on_body_lines = on_body_lines
+        @on_headers    = on_headers
+        @performer     = performer
     end
 
     def marshal_load( h )
@@ -686,16 +823,10 @@ class Request < Message
     private
 
     def client_run
-        typhoeus_request  = to_typhoeus
-        typhoeus_response = typhoeus_request.run
-
-        if typhoeus_request.options[:maxfilesize]
-            typhoeus_response.options[:response_body] = @response_body_buffer
-        end
-
-        fill_in_data_from_typhoeus_response typhoeus_response
-
-        Response.from_typhoeus( typhoeus_response )
+        # Set #on_complete so that the #response will be set.
+        on_complete {}
+        to_typhoeus.run
+        self.response
     end
 
     def fill_in_data_from_typhoeus_response( response )
@@ -707,52 +838,18 @@ class Request < Message
     end
 
     def set_body_reader( typhoeus_request, buffer )
-        return if @on_body_line.empty? && @on_body.empty? &&
-            !typhoeus_request.options[:maxfilesize]
+        return if !typhoeus_request.options[:maxfilesize]
 
-        aborted     = nil
-        line_buffer = ''
+        aborted = nil
         typhoeus_request.on_body do |chunk|
             next aborted if aborted
 
-            if @on_body_line.empty? && @on_body.empty?
-
-                if buffer.size >= typhoeus_request.options[:maxfilesize]
-                    buffer.clear
-                    next aborted = :abort
-                end
-
-                buffer << chunk
-            else
-                @on_body.each do |b|
-                    if b.call( chunk ) == :abort
-                        break aborted = :abort
-                    end
-                end
-                next aborted if aborted
-
-                line_buffer << chunk
-                lines = line_buffer.split( "\n" )
-
-                @on_body_line.each do |b|
-                    lines.each do |line|
-                        if b.call( line ) == :abort
-                            break aborted = :abort
-                        end
-                    end
-
-                    break aborted if aborted
-                end
-                next aborted if aborted
-
-                # Last line was cut short so push it back to the buffer to get
-                # a clear picture.
-                if !chunk.end_with?( "\n" )
-                    line_buffer = lines.pop.to_s
-                else
-                    line_buffer.clear
-                end
+            if buffer.size >= typhoeus_request.options[:maxfilesize]
+                buffer.clear
+                next aborted = :abort
             end
+
+            buffer << chunk
 
             true
         end

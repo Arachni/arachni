@@ -13,7 +13,9 @@ describe Arachni::Element::XML do
     it_should_behave_like 'mutable',
                           supports_nulls: false,
                           inputs: described_class.parse_inputs( inputtable_source )
-    it_should_behave_like 'auditable'
+    it_should_behave_like 'auditable', supports_nulls: false
+    it_should_behave_like 'buffered_auditable'
+    it_should_behave_like 'line_buffered_auditable'
 
     before :each do
         @framework ||= Arachni::Framework.new

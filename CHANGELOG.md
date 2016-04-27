@@ -26,6 +26,14 @@
         - `Dynamic404Handler`
             - Added training scenario for when dashes are used as routing separators.
             - Updated to not dismiss redirects but follow the location.
+- `Element::Capabilities`
+    - `Auditable`
+        - New
+            - `Buffered` -- Reads audit responses in chunks.
+            - `LineBuffered` -- Reads audit responses in chunks of lines.
+    - `Analyzable`
+        - `Differential`, `Signature` -- Updated to use `#line_buffered_audit`
+            to keep RAM consumption low when analyzing large responses.
 - Session -- Allow for a submit input to be specified when the login needs to be
     triggered by clicking it, rather than just triggering the submit event on
     the form.

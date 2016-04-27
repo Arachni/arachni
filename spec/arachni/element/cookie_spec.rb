@@ -11,6 +11,8 @@ describe Arachni::Element::Cookie do
     it_should_behave_like 'inputtable', single_input: true
     it_should_behave_like 'mutable',    single_input: true
     it_should_behave_like 'auditable'
+    it_should_behave_like 'buffered_auditable'
+    it_should_behave_like 'line_buffered_auditable'
 
     before :each do
         @framework ||= Arachni::Framework.new

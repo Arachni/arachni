@@ -32,6 +32,9 @@ class Link < Base
     include Capabilities::Submittable
     include Capabilities::Auditable
 
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
+
     DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     # @param    [Hash]    options

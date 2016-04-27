@@ -20,8 +20,11 @@ module Signature
     }
 
     SIGNATURE_OPTIONS = {
-        # The signatures to look for the response body, if `Regexp` it will be
-        # matched against it, if `String` it'll be used as a needle.
+        # The signatures to look for in each line of the response body,
+        # if `Regexp` it will be matched against it, if `String` it'll be used
+        # as a needle.
+        #
+        # Multi-line Regexp is not supported.
         signatures: [],
 
         # Array of signatures to ignore.
@@ -34,20 +37,14 @@ module Signature
     FILE_SIGNATURES = {
         'environ'  => proc do |response|
             next if !response.body.include?( 'DOCUMENT_ROOT=' )
-            /DOCUMENT_ROOT=.*HTTP_USER_AGENT=/m
+            /DOCUMENT_ROOT=.*HTTP_USER_AGENT=/
         end,
         'passwd'   => proc do |response|
             next if !response.body.include?( 'bin/' )
             /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/
         end,
-        'boot.ini' => proc do |response|
-            next if !response.body.include?( '[boot loader]' )
-            /\[boot loader\].*\[operating systems\]/m
-        end,
-        'win.ini'  => proc do |response|
-            next if !response.body.include?( '[fonts]' )
-            /\[fonts\].*\[extensions\]/m
-        end,
+        'boot.ini' => '[boot loader]',
+        'win.ini'  => '[extensions]',
         'web.xml'  => '<web-app'
     }
 
@@ -77,14 +74,16 @@ module Signature
         java: [
             /<%|<%=|<%@\s+page|<%@\s+include|<%--|import\s+javax.servlet|
                 import\s+java.io|import=['"]java.io|request\.getParameterValues\(|
-                response\.setHeader|response\.setIntHeader\(/m
+                response\.setHeader|response\.setIntHeader\(/
         ],
         asp:  [
             /<%|Response\.Write|Request\.Form|Request\.QueryString|
                 Response\.Flush|Session\.SessionID|Session\.Timeout|
-                Server\.CreateObject|Server\.MapPath/m
+                Server\.CreateObject|Server\.MapPath/
         ]
     }
+
+    LINE_BUFFER_SIZE = 1_000
 
     # Performs signatures analysis and logs an issue, should there be one.
     #
@@ -126,7 +125,10 @@ module Signature
 
         # Perform the analysis.
         opts = self.class::OPTIONS.merge( SIGNATURE_OPTIONS.merge( opts ) )
-        audit( payloads, opts ) { |response| get_matches( response ) }
+
+        fail_if_signatures_invalid( opts[:signatures] )
+
+        line_buffered_audit( payloads, opts ) { |response| get_matches( response ) }
     end
 
     private
@@ -149,6 +151,22 @@ module Signature
         find_signatures( opts[:signatures], response, opts.dup )
     end
     public :get_matches
+
+    def fail_if_signatures_invalid( signatures )
+        case signatures
+            when Regexp
+                if (signatures.options & Regexp::MULTILINE) == Regexp::MULTILINE
+                    fail ArgumentError,
+                         'Multi-line regular expressions are not supported.'
+                end
+
+            when Array
+                signatures.each { |s| fail_if_signatures_invalid s }
+
+            when Hash
+                fail_if_signatures_invalid signatures.values
+        end
+    end
 
     def find_signatures( signatures, response, opts )
         k = [signatures, response.body]
@@ -303,6 +321,9 @@ module Signature
             # We can't have procs in there, we only log stuff that
             # can be serialized.
             issue[:vector].audit_options.delete :signatures
+            issue[:vector].audit_options[:submit].delete :on_body_line
+            issue[:vector].audit_options[:submit].delete :on_headers
+            issue[:vector].audit_options[:submit].delete :on_body
 
             @auditor.log( issue )
         end

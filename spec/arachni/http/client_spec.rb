@@ -680,6 +680,23 @@ describe Arachni::HTTP::Client do
             end
         end
 
+        describe ':on_body_lines' do
+            it 'gets called with chunks of body lines' do
+                lines = []
+
+                subject.request(
+                    "#{@url}/lines/non-stream",
+                    mode:         :sync,
+                    on_body_lines: proc do |line|
+                        lines << line
+                    end
+                )
+
+                expect(lines.size).to be > 1
+                expect(lines.size).to be < 500
+            end
+        end
+
         describe ':fingerprint' do
             before do
                 Arachni::Platform::Manager.clear
