@@ -87,7 +87,7 @@ module Browser
     end
 
     def handle_browser_page( result )
-        page = result.page
+        page = result.is_a?( Page ) ? result : result.page
 
         synchronize do
             return if !push_to_page_queue page
@@ -135,6 +135,7 @@ module Browser
             find { |c| c.check? page, [Element::Form::DOM, Element::Cookie::DOM], true }
 
         dom = page.dom.state
+        dom.page = nil # Help out the GC.
         browser_cluster.with_browser do |browser|
             apply_dom_metadata( browser, dom )
         end
@@ -144,7 +145,7 @@ module Browser
         bp = nil
 
         begin
-            bp = browser.load( dom ).to_page
+            bp = browser.load( dom, take_snapshot: false ).to_page
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
             print_debug "Could not apply metadata to '#{dom.url}'" <<
