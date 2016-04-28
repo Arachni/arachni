@@ -61,7 +61,16 @@ class Parser
 
                 sax_options = {}
                 if options[:whitelist] && options[:whitelist].any?
-                    sax_options[:active] = options[:whitelist].to_a
+                    overlay = Ox.sax_html_overlay.dup
+                    overlay.each do |k, v|
+                        overlay[k] = :off
+                    end
+
+                    options[:whitelist].each do |e|
+                        overlay[e] = :active
+                    end
+
+                    sax_options[:overlay] = overlay
                 end
 
                 begin

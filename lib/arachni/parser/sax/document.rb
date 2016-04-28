@@ -47,12 +47,6 @@ class Document < Ox::Sax
         # but came across this one before it closed.
         fail Stop if @stop
 
-        if !whitelisted?( name )
-            @skip = true
-            return
-        end
-        @skip = false
-
         if stop?( name )
             @stop = true
         end
@@ -70,32 +64,22 @@ class Document < Ox::Sax
         # Finished parsing the desired element, abort.
         fail Stop if stop?( name )
 
-        if !whitelisted?( name )
-            return @skip = false
-        end
-
         close_node @current_node
 
         @current_node = @current_node.parent
     end
 
     def attr( name, value )
-        return if @skip
-
         name = name.downcase
         @current_node[name] = value if @current_node != self
     end
 
     def text( value )
-        return if @skip
-
         value.strip!
         @current_node << value
     end
 
     def comment( value )
-        return if @skip
-
         @current_node << Element.new( :comment ).tap { |e| e.value = value }
     end
 
