@@ -49,7 +49,7 @@ class DOM
 
     # @return   [Page]
     #   Page to which this DOM state is attached.
-    attr_reader   :page
+    attr_accessor :page
 
     # @param    [Hash]  options
     # @option   options [Page]  :page
@@ -144,10 +144,10 @@ class DOM
     #
     # @return   [Browser, nil]
     #   Live page in the `browser` if successful, `nil` otherwise.
-    def restore( browser, take_snapshot = true )
+    def restore( browser )
         # First, try to load the page via its DOM#url in case it can restore
         # itself via its URL fragments and whatnot.
-        browser.goto url, take_snapshot: take_snapshot
+        browser.goto url
 
         playables = self.playable_transitions
 
@@ -234,6 +234,18 @@ class DOM
             'data_flow_sinks'      => data_flow_sinks.map(&:to_rpc_data),
             'execution_flow_sinks' => execution_flow_sinks.map(&:to_rpc_data)
         }
+    end
+
+    def marshal_dump
+        instance_variables.inject({}) do |h, iv|
+            next h if iv == :@page
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
     end
 
     # @param    [Hash]  data

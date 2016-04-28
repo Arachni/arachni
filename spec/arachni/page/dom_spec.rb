@@ -39,6 +39,12 @@ describe Arachni::Page::DOM do
         expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
+    it 'Marshaling ignores the page' do
+        expect(subject.page).to be_kind_of Arachni::Page
+        dom = Marshal.load( Marshal.dump( subject ) )
+        expect(dom.page).to be_nil
+    end
+
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
