@@ -123,7 +123,6 @@ module Signature
         # we've evaluated our control response.
         @candidate_issues = []
 
-        # Perform the analysis.
         opts = self.class::OPTIONS.merge( SIGNATURE_OPTIONS.merge( opts ) )
 
         fail_if_signatures_invalid( opts[:signatures] )
@@ -321,9 +320,6 @@ module Signature
             # We can't have procs in there, we only log stuff that
             # can be serialized.
             issue[:vector].audit_options.delete :signatures
-            issue[:vector].audit_options[:submit].delete :on_body_line
-            issue[:vector].audit_options[:submit].delete :on_headers
-            issue[:vector].audit_options[:submit].delete :on_body
 
             @auditor.log( issue )
         end
