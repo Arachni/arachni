@@ -364,6 +364,10 @@ class Request < Message
         @train
     end
 
+    def buffered?
+        @on_body.any? || @on_body_line.any? || @on_body_lines.any?
+    end
+
     # Flags that the response should be analyzed by the {Trainer} for new
     # elements.
     def train

@@ -370,6 +370,40 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#buffered?' do
+        context 'when there are no callbacks' do
+            subject do
+                described_class.new( url: url )
+            end
+
+            expect_it { to_not be_buffered }
+        end
+
+        context 'when there are #on_body callbacks' do
+            subject do
+                described_class.new( url: url ).on_body {}
+            end
+
+            expect_it { to be_buffered }
+        end
+
+        context 'when there are #on_body_line callbacks' do
+            subject do
+                described_class.new( url: url ).on_body_line {}
+            end
+
+            expect_it { to be_buffered }
+        end
+
+        context 'when there are #on_body_lines callbacks' do
+            subject do
+                described_class.new( url: url ).on_body_lines {}
+            end
+
+            expect_it { to be_buffered }
+        end
+    end
+
     describe '#on_complete' do
         context 'when passed a block' do
             it 'adds it as a callback to be passed the response' do
