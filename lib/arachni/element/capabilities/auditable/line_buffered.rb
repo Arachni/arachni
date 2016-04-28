@@ -76,7 +76,7 @@ module LineBuffered
             request = response.request
             buffer  = buffers[request.id]
 
-            if buffer
+            if buffer && !buffer[:data].empty?
                 print_debug_level_3 "There's more data in the buffer, setting response body."
                 print_debug_level_3 buffer[:data]
 

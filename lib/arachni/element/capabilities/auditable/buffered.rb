@@ -68,7 +68,7 @@ module Buffered
             request = response.request
             buffer  = buffers[request.id]
 
-            if buffer
+            if !buffer.to_s.empty?
                 print_debug_level_3 "There's more data in the buffer, setting response body."
                 print_debug_level_3 buffer
 
