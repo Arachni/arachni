@@ -76,14 +76,11 @@ module LineBuffered
             request = response.request
             buffer  = buffers[request.id]
 
+            # The response body can include remnants from the HTTP line buffer
+            # and our own buffer could have lines that didn't exceed the flush
+            # threshold, hence we combine them
             if buffer && !buffer[:data].empty?
-                print_debug_level_3 "There's more data in the buffer, setting response body."
-                print_debug_level_3 buffer[:data]
-
-                response.body = buffer[:data]
-            else
-                print_debug_level_3 "There's no buffer, leaving response body as is."
-                print_debug_level_3 response.body
+                response.body = "#{buffer[:data]}#{response.body}"
             end
 
             print_debug_level_3 "Calling: #{block}"
