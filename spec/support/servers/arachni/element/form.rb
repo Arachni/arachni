@@ -18,7 +18,7 @@ end
 
 get '/submit/buffered' do
     stream do |out|
-        5_000.times do |i|
+        2_000.times do |i|
             out.print "Blah"
         end
 
@@ -26,7 +26,7 @@ get '/submit/buffered' do
         out.print params.to_hash.to_yaml
         out.print 'END_PARAMS'
 
-        5_000.times do |i|
+        2_000.times do |i|
             out.print "Blah"
         end
     end
@@ -34,7 +34,7 @@ end
 
 get '/submit/line_buffered' do
     stream do |out|
-        5_000.times do |i|
+        2_000.times do |i|
             out.puts "Blah"
         end
 
@@ -42,7 +42,7 @@ get '/submit/line_buffered' do
         out.puts params.to_hash.to_yaml
         out.puts 'END_PARAMS'
 
-        5_000.times do |i|
+        2_000.times do |i|
             out.puts "Blah"
         end
     end

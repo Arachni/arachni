@@ -7,7 +7,7 @@ end
 
 post '/submit/buffered' do
     stream do |out|
-        5_000.times do |i|
+        2_000.times do |i|
             out.print "Blah"
         end
 
@@ -15,7 +15,7 @@ post '/submit/buffered' do
         out.print request.body.read
         out.print 'END_PARAMS'
 
-        5_000.times do |i|
+        2_000.times do |i|
             out.print "Blah"
         end
     end
@@ -23,7 +23,7 @@ end
 
 post '/submit/line_buffered' do
     stream do |out|
-        5_000.times do |i|
+        2_000.times do |i|
             out.puts "Blah"
         end
 
@@ -31,7 +31,7 @@ post '/submit/line_buffered' do
         out.puts request.body.read
         out.puts 'END_PARAMS'
 
-        5_000.times do |i|
+        2_000.times do |i|
             out.puts "Blah"
         end
     end

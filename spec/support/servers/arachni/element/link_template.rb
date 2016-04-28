@@ -12,7 +12,7 @@ end
 
 get '/param/:value/buffered' do |value|
     stream do |out|
-        5_000.times do |i|
+        2_000.times do |i|
             out.print "Blah"
         end
 
@@ -20,7 +20,7 @@ get '/param/:value/buffered' do |value|
         out.print ({ 'param' => value }.to_yaml)
         out.print 'END_PARAMS'
 
-        5_000.times do |i|
+        2_000.times do |i|
             out.print "Blah"
         end
     end
@@ -28,7 +28,7 @@ end
 
 get '/param/:value/line_buffered' do |value|
     stream do |out|
-        5_000.times do |i|
+        2_000.times do |i|
             out.puts "Blah"
         end
 
@@ -36,7 +36,7 @@ get '/param/:value/line_buffered' do |value|
         out.puts ({ 'param' => value }.to_yaml)
         out.puts 'END_PARAMS'
 
-        5_000.times do |i|
+        2_000.times do |i|
             out.puts "Blah"
         end
     end
