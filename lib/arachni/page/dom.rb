@@ -286,8 +286,7 @@ class DOM
     end
 
     def hash
-        # TODO: Maybe raise error if #digest is not set?
-        digest.persistent_hash
+        digest ? digest.persistent_hash : super
     end
 
     def ==( other )

@@ -36,6 +36,18 @@ class DOMExploration < Job
         browser.trigger_events
     end
 
+    def resource=( r )
+        # Pages are heavy objects, better just keep the DOM since the browsers
+        # will only load them by it anyways.
+        if r.is_a? Page
+            @resource = r.dom
+            @resource.page = nil
+            return r
+        end
+
+        @resource = r
+    end
+
     def dup
         super.tap { |j| j.resource = resource }
     end
