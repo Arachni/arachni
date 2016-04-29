@@ -67,7 +67,7 @@ class Browser
     ELEMENT_APPEARANCE_TIMEOUT = 5
 
     # Let the browser take as long as it needs to complete an operation.
-    WATIR_COM_TIMEOUT = 3600 # 1 hour.
+    SELENIUM_TIMEOUT = 3600 # 1 hour.
 
     ASSET_EXTENSIONS = Set.new(%w( css js jpg jpeg png gif json ))
 
@@ -1179,7 +1179,7 @@ class Browser
         return @selenium if @selenium
 
         client = Selenium::WebDriver::Remote::Http::Default.new
-        client.timeout = WATIR_COM_TIMEOUT
+        client.timeout = SELENIUM_TIMEOUT
 
         @selenium = Selenium::WebDriver.for(
             :remote,
