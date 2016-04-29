@@ -1111,7 +1111,7 @@ describe Arachni::Browser do
 
         it "assigns the proper #{Arachni::Page::DOM}#digest" do
             @browser.load( @url )
-            expect(@browser.to_page.dom.digest).to eq(-2077537769)
+            expect(@browser.to_page.dom.digest).to eq(32000153)
 
             # expect(@browser.to_page.dom.instance_variable_get(:@digest)).to eq(
             #     '<HTML><HEAD><SCRIPT src=http://' <<
