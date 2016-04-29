@@ -46,6 +46,8 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'rack',                '1.6.4'
 
+    # Don't specify version, messes with the packages since they always grab the
+    # latest one.
     s.add_dependency 'bundler'
 
     s.add_dependency 'concurrent-ruby',     '1.0.0'
