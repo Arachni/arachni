@@ -132,7 +132,6 @@ module Differential
 
         mutations_size = 0
         each_mutation( opts[:false], opts ) { mutations_size += 1 }
-        mutations_size *= opts[:precision]
 
         @data_gathering = {
             mutations_size:     mutations_size,
@@ -188,118 +187,75 @@ module Differential
     # Performs requests using the 'false' control seed and generates/stores
     # signatures based on the response bodies.
     def populate_control_signatures( opts, signatures )
-        gathered = {}
-        opts[:precision].times do
-            line_buffered_audit( opts[:false], opts ) do |res, elem, completed|
-                altered_hash = elem.affected_input_name.hash
+        gather_signatures( opts[:false], opts ) do |signature, res, elem|
+            altered_hash = elem.affected_input_name.hash
 
-                if completed
-                    if signatures[:corrupted][altered_hash]
-                        increase_received_responses( opts, signatures )
-                        next
-                    end
-
-                    gathered[altered_hash] ||= 0
-                    gathered[altered_hash]  += 1
-
-                    response_check( res, signatures, elem )
-
-                    if gathered[altered_hash] == @data_gathering[:mutations_size]
-                        print_status "Got default/control response for #{elem.type} " +
-                            "variable '#{elem.affected_input_name}' with action '#{elem.action}'."
-
-                        @data_gathering[:controls][altered_hash] = true
-                    end
-
-                    increase_received_responses( opts, signatures )
-                end
-
-                body = res.body.gsub( elem.seed, '' )
-
-                # Create a signature from the response body and refine it with
-                # subsequent ones to remove noise (like context-irrelevant dynamic
-                # content such as banners etc.).
-                signatures[:controls][altered_hash] =
-                    signatures[:controls][altered_hash] ?
-                        signatures[:controls][altered_hash].refine!(body) :
-                        Support::Signature.new(body)
-
+            if signatures[:corrupted][altered_hash]
+                increase_received_responses( opts, signatures )
+                next
             end
+
+            signatures[:controls][altered_hash] = signature
+
+            response_check( res, signatures, elem, signature )
+            increase_received_responses( opts, signatures )
+
+            print_status "Got default/control response for #{elem.type} " <<
+                "variable '#{elem.affected_input_name}' with action '#{elem.action}'."
+
+            @data_gathering[:controls][altered_hash] = true
         end
     end
 
     def populate_signatures( bool, opts, signatures )
-        gathered = {}
-
         opts[:pairs].each do |pair|
             pair_hash = pair.hash
 
             signatures[pair_hash]      ||= {}
             @data_gathering[pair_hash] ||= {}
-            gathered[pair_hash]        ||= {}
 
             expr = pair.to_a.first[bool == :true ? 0 : 1]
 
             print_status "Gathering '#{bool}' data for #{self.type} with " <<
                              "action '#{self.action}' using seed: #{expr}"
 
-            opts[:precision].times do
-                line_buffered_audit( expr, opts ) do |res, elem, completed|
-                    altered_hash = elem.affected_input_name.hash
+            gather_signatures( expr, opts ) do |signature, res, elem|
+                altered_hash = elem.affected_input_name.hash
 
-                    gathered[pair_hash][altered_hash]        ||= 0
-                    signatures[pair_hash][altered_hash]      ||= {}
-                    @data_gathering[pair_hash][altered_hash] ||= {}
+                signatures[pair_hash][altered_hash]      ||= {}
+                @data_gathering[pair_hash][altered_hash] ||= {}
 
-                    if completed
-                        gathered[pair_hash][altered_hash] += 1
+                response_check( res, signatures, elem, signature )
 
-                        response_check( res, signatures, elem )
-
-                        if signatures[pair_hash][altered_hash][:corrupted] ||
-                            signatures[:corrupted][altered_hash]
-
-                            increase_received_responses( opts, signatures )
-                            next
-                        end
-
-                        if signature_sieve( altered_hash, signatures, pair_hash )
-                            increase_received_responses( opts, signatures )
-                            next
-                        end
-
-                        if gathered[pair_hash][altered_hash] == opts[:precision]
-                            elem.print_status "Got '#{bool}' response for #{elem.type}" <<
-                                " variable '#{elem.affected_input_name}' with action" <<
-                                " '#{elem.action}' using seed: #{expr}"
-
-                            @data_gathering[pair_hash][altered_hash]["#{bool}_probes".to_sym] = true
-                        end
-                    end
-
-                    # Store the mutation for the {Arachni::Issue}.
-                    signatures[pair_hash][altered_hash][:mutation] ||= elem
-
-                    # Keep the latest response for the {Arachni::Issue}.
-                    signatures[pair_hash][altered_hash][:response] ||= res
-
-                    signatures[pair_hash][altered_hash][:injected_string] ||= expr
-
-                    body = res.body.gsub( elem.seed, '' )
-
-                    # Create a signature from the response body and refine it with
-                    # subsequent ones to remove noise (like context-irrelevant dynamic
-                    # content such as banners etc.).
-                    signatures[pair_hash][altered_hash][bool] =
-                        signatures[pair_hash][altered_hash][bool] ?
-                            signatures[pair_hash][altered_hash][bool].refine!(body) :
-                            Support::Signature.new(body)
-
-                    next if !completed
-                    signature_sieve( altered_hash, signatures, pair_hash )
-
+                if signatures[:corrupted][altered_hash]
                     increase_received_responses( opts, signatures )
+                    next
                 end
+
+                if signature_sieve( altered_hash, signatures, pair_hash )
+                    increase_received_responses( opts, signatures )
+                    next
+                end
+
+                elem.print_status "Got '#{bool}' response for #{elem.type}" <<
+                    " variable '#{elem.affected_input_name}' with action" <<
+                    " '#{elem.action}' using seed: #{expr}"
+
+                @data_gathering[pair_hash][altered_hash]["#{bool}_probes".to_sym] = true
+
+                # Store the mutation for the {Arachni::Issue}.
+                signatures[pair_hash][altered_hash][:mutation] ||= elem
+
+                # Keep the latest response for the {Arachni::Issue}.
+                signatures[pair_hash][altered_hash][:response] ||= res
+
+                signatures[pair_hash][altered_hash][:injected_string] ||= expr
+
+                signatures[pair_hash][altered_hash][bool] = signature
+
+                signature_sieve( altered_hash, signatures, pair_hash )
+
+                increase_received_responses( opts, signatures )
             end
         end
     end
@@ -328,49 +284,64 @@ module Differential
     # be trustworthy.
     def populate_control_verification_signatures( opts, signatures )
         received_responses = 0
-        gathered           = {}
 
-        opts[:precision].times do
-            line_buffered_audit( opts[:false], opts ) do |res, elem, completed|
-                altered_hash = elem.affected_input_name.hash
+        gather_signatures( opts[:false], opts ) do |signature, res, elem|
+            altered_hash = elem.affected_input_name.hash
 
-                if completed
-                    gathered[altered_hash] ||= 0
-                    gathered[altered_hash]  += 1
+            response_check( res, signatures, elem, signature )
 
-                    response_check( res, signatures, elem )
+            if signatures[:corrupted][altered_hash]
+                @data_gathering[:received_responses] += 1
+                next
+            end
 
-                    if signatures[:corrupted][altered_hash]
-                        @data_gathering[:received_responses] += 1
-                        next
-                    end
+            print_status 'Got control verification response ' <<
+                "for #{elem.type} variable '#{elem.affected_input_name}' with" <<
+                " action '#{elem.action}'."
 
-                    if gathered[altered_hash] == opts[:precision]
-                        print_status 'Got control verification response ' <<
-                            "for #{elem.type} variable '#{elem.affected_input_name}' with" <<
-                            " action '#{elem.action}'."
-                    end
+            signatures[:controls_verification][altered_hash] = signature
+
+            received_responses += 1
+            next if received_responses != @data_gathering[:mutations_size]
+
+            # Once the new baseline has been established and we've got all the
+            # data we need, crunch them and see if server behavior indicates
+            # a vulnerability.
+            match_signatures( signatures )
+        end
+    end
+
+    def gather_signatures( seed, opts, &block )
+        buffer             = {}
+        received_responses = 0
+
+        opts[:precision].times do |i|
+            line_buffered_audit( seed, opts ) do |r, e, completed|
+                altered_hash = e.affected_input_name.hash
+
+                body = r.body.gsub( e.seed, '' )
+
+                buffer[altered_hash] ||= []
+
+                if buffer[altered_hash][i]
+                    buffer[altered_hash][i] << body
+                else
+                    buffer[altered_hash][i] = Support::Signature.new( body )
                 end
-
-                body = res.body.gsub( elem.seed, '' )
-
-                # Create a signature from the response body and refine it with
-                # subsequent ones to remove noise (like context-irrelevant dynamic
-                # content such as banners etc.).
-                signatures[:controls_verification][altered_hash] =
-                    signatures[:controls_verification][altered_hash] ?
-                        signatures[:controls_verification][altered_hash].refine!(body) :
-                        Support::Signature.new(body)
 
                 next if !completed
 
                 received_responses += 1
-                next if received_responses != @data_gathering[:mutations_size]
 
-                # Once the new baseline has been established and we've got all the
-                # data we need, crunch them and see if server behavior indicates
-                # a vulnerability.
-                match_signatures( signatures )
+                next if received_responses !=
+                    @data_gathering[:mutations_size] * opts[:precision]
+
+                refined = buffer[altered_hash].pop
+                buffer[altered_hash].each do |signature|
+                    refined = refined.refine!( signature )
+                end
+
+                block.call refined, r, e
             end
         end
     end
@@ -432,25 +403,25 @@ module Differential
         end
     end
 
-    def response_check( response, signatures, elem, pair = nil )
+    def response_check( response, signatures, elem, signature )
         corrupted = false
 
         if !DIFFERENTIAL_ALLOWED_STATUS.include?( response.code )
-            print_status "Server returned status (#{response.code})," <<
+            print_bad "Server returned status (#{response.code})," <<
                 " aborting analysis for #{elem.type} variable " <<
                 "'#{elem.affected_input_name}' with action '#{elem.action}'."
             corrupted = true
         end
 
         if !corrupted && response.partial?
-            print_status "Server returned partial response, aborting analysis " <<
+            print_bad 'Server returned partial response, aborting analysis ' <<
                 "for #{elem.type} variable '#{elem.affected_input_name}' with " <<
                 "action '#{elem.action}'."
             corrupted = true
         end
 
-        if !corrupted && response.body.empty?
-            print_status 'Server returned empty response body,' <<
+        if !corrupted && signature.empty?
+            print_bad 'Server returned empty response body,' <<
                 " aborting analysis for #{elem.type} variable " <<
                 "'#{elem.affected_input_name}' with action '#{self.action}'."
             corrupted = true
@@ -458,11 +429,7 @@ module Differential
 
         return if !corrupted
 
-        if pair
-            signatures[pair][elem.affected_input_name.hash][:corrupted] = true
-        else
-            signatures[:corrupted][elem.affected_input_name.hash] = true
-        end
+        signatures[:corrupted][elem.affected_input_name.hash] = true
     end
 
     def signature_sieve( input, signatures, pair )
