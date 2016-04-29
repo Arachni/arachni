@@ -107,6 +107,20 @@ describe Arachni::Support::Signature do
         end
     end
 
+    describe '#empty?' do
+        context 'when the signature is empty' do
+            subject { described_class.new( '' ) }
+
+            expect_it { to be_empty }
+        end
+
+        context 'when the signature is not empty' do
+            subject { described_class.new( string_with_noise ) }
+
+            expect_it { to_not be_empty }
+        end
+    end
+
     describe '#==' do
         context 'when the signature are identical' do
             it 'returns true' do
