@@ -56,22 +56,7 @@ class Parser
 
         def parse( html, options = {} )
             CACHE[__method__].fetch [html, options] do
-
-                document = options[:handler] || SAX::Document.new( options )
-
-                sax_options = {}
-                if options[:whitelist] && options[:whitelist].any?
-                    overlay = Ox.sax_html_overlay.dup
-                    overlay.each do |k, v|
-                        overlay[k] = :off
-                    end
-
-                    options[:whitelist].each do |e|
-                        overlay[e] = :active
-                    end
-
-                    sax_options[:overlay] = overlay
-                end
+                document, sax_options  = prepare_ox_options( options )
 
                 begin
                     Ox.sax_html( document, StringIO.new( html ), sax_options )
@@ -82,6 +67,21 @@ class Parser
 
                 # Document.new( Ox.parse( "<!DOCTYPE html>#{html}" ) )
             end
+        end
+
+        def push_parse( options = {} )
+            buffer, buffer_in = IO.pipe
+
+            document, sax_options = prepare_ox_options( options )
+
+            push_parse_pool.post do
+                begin
+                    Ox.sax_html( document, buffer, sax_options )
+                rescue SAX::Document::Stop
+                end
+            end
+
+            [buffer_in, document]
         end
 
         def parse_fragment( html )
@@ -104,7 +104,34 @@ class Parser
             end
         end
 
+        private
+
+        def push_parse_pool
+            @push_parse_pool ||= Concurrent::CachedThreadPool.new
+        end
+
+        def prepare_ox_options( options )
+            document = options[:handler] || SAX::Document.new( options )
+
+            sax_options = {}
+            if options[:whitelist] && options[:whitelist].any?
+                overlay = Ox.sax_html_overlay.dup
+                overlay.each do |k, v|
+                    overlay[k] = :off
+                end
+
+                options[:whitelist].each do |e|
+                    overlay[e] = :active
+                end
+
+                sax_options[:overlay] = overlay
+            end
+
+            [document, sax_options]
+        end
+
     end
+    push_parse_pool
 
     alias :skip? :skip_path?
 
@@ -112,25 +139,35 @@ class Parser
     attr_reader :url
 
     # @return   [HTTP::Response]
-    attr_reader :response
+    attr_accessor :response
 
-    # @param  [HTTP::Response, Array<HTTP::Response>] response
+    # @param  [SAX::Document, HTTP::Response, Array<HTTP::Response>] resource
     #   Response(s) to analyze and parse. By providing multiple responses the
     #   parser will be able to perform some preliminary differential analysis
     #   and identify nonce tokens in inputs.
-    #
-    # @param  [Options] options
-    def initialize( response, options = Options )
-        @options = options
+    def initialize( resource )
+        case resource
 
-        if response.is_a? Array
-            @secondary_responses = response[1..-1]
-            @secondary_responses.compact! if @secondary_responses
-            response = response.shift
+            when SAX::Document
+                @resource = :document
+                @document = resource
+
+            when HTTP::Response
+                @resource = :response
+
+                @response = resource
+                self.url = @response.url
+
+            when Array
+                @secondary_responses = resource[1..-1]
+                @secondary_responses.compact! if @secondary_responses
+                response = resource.shift
+
+                @resource = :response
+
+                @response = response
+                self.url = response.url
         end
-
-        @response = response
-        self.url  = response.url
     end
 
     def url=( str )
@@ -164,7 +201,15 @@ class Parser
     # @return   [Boolean]
     #   `true` if the given HTTP response data are text based, `false` otherwise.
     def text?
-        !@body.to_s.empty? || @response.text?
+        from_response? ? @response.text? : true
+    end
+
+    def from_response?
+        @resource == :response
+    end
+
+    def from_document?
+        @resource == :document
     end
 
     # @return    [String]
@@ -175,7 +220,7 @@ class Parser
     end
 
     def body
-        @body || @response.body
+        @body || (@response.body if from_response?)
     end
 
     # @return   [Nokogiri::HTML, nil]
@@ -185,7 +230,11 @@ class Parser
     def document
         return if !text?
 
-        @document = self.class.parse( body, whitelist: WHITELIST )
+        if from_document?
+            @document
+        else
+            @document = self.class.parse( body, whitelist: WHITELIST )
+        end
     end
 
     # @note It will include common request headers as well headers from the HTTP
@@ -199,8 +248,8 @@ class Parser
                 '/xml;q=0.9,*/*;q=0.8',
             'Accept-Charset'  => 'ISO-8859-1,utf-8;q=0.7,*;q=0.7',
             'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
-            'From'            => @options.authorized_by  || '',
-            'User-Agent'      => @options.http.user_agent || '',
+            'From'            => Options.authorized_by  || '',
+            'User-Agent'      => Options.http.user_agent || '',
             'Referer'         => @url,
             'Pragma'          => 'no-cache'
         }.merge( response.request.headers ).
@@ -211,7 +260,7 @@ class Parser
     #   Forms from {#document}.
     def forms
         return @forms.freeze if @forms
-        return [] if !text? || !Form.in_html?( body )
+        return [] if !text? || (body && !Form.in_html?( body ))
 
         f = Form.from_parser( self )
         return f if !@secondary_responses
@@ -240,7 +289,7 @@ class Parser
     # @return [Element::Link]
     #   Link to the page.
     def link
-        return if link_vars.empty? && !@response.redirection?
+        return if link_vars.empty? && (@response && !@response.redirection?)
         Link.new( url: @url, inputs: link_vars )
     end
 
@@ -262,7 +311,7 @@ class Parser
     #   Links in {#document}.
     def links
         return @links.freeze if @links
-        return @links = [link].compact if !text? || !Link.in_html?( body )
+        return @links = [link].compact if !text? || (body && !Link.in_html?( body ))
 
         @links = [link].compact | Link.from_parser( self )
     end

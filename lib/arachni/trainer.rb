@@ -41,6 +41,37 @@ class Trainer
         # get us setup using the page that is being audited as a seed page
         framework.on_page_audit { |page| self.page = page }
 
+        # Handle buffered responses.
+        framework.http.on_queue do |request|
+            next if !request.train? || !request.buffered?
+
+            writer, document = Parser.push_parse(
+                whitelist: Parser::WHITELIST
+            )
+
+            request.on_body do |chunk, response|
+                next writer.close if response.redirect?
+
+                writer << chunk
+            end
+
+            request.on_complete do |response|
+                writer.close
+                next if response.redirect? || !within_scope?( response )
+
+                # Usually page parsing just includes the response, in this case
+                # thought (this being a buffered response with partial body) the
+                # parse is focused on the HTML document which we just finished
+                # push-parsing.
+                page        = response.to_page
+                page.parser = Parser.new( document )
+                page.parser.url      = page.url
+                page.parser.response = response
+
+                analyze page
+            end
+        end
+
         framework.http.on_complete do |response|
             next if !response.request.train?
 
@@ -51,6 +82,8 @@ class Trainer
                 framework.http.get( redirect_url ) { |res| push res }
                 next
             end
+
+            next if response.request.buffered?
 
             push response
         end
@@ -70,38 +103,7 @@ class Trainer
             return
         end
 
-        if !@framework.accepts_more_pages?
-            print_info 'No more pages accepted, skipping analysis.'
-            return
-        end
-
-        skip_message = nil
-        if @trainings_per_url[response.url] >= MAX_TRAININGS_PER_URL
-            skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
-        elsif response.scope.redundant?
-            skip_message = 'Matched redundancy filters'
-        elsif response.scope.out?
-            skip_message = 'Matched exclusion criteria'
-        end
-
-        if skip_message
-            print_verbose "#{skip_message}, skipping: #{response.url}"
-            return false
-        end
-
-        param_names = response.parsed_url.query_parameters.keys
-        cookies     = Cookie.from_headers( response.url, response.headers ).map(&:name)
-
-        k = "#{param_names.hash}:#{cookies.hash}:#{response.body}"
-
-        # Naive optimization but it works a lot of the time. :)
-        if @seen_pages.include? k
-            print_debug "Already seen response for request ID: ##{response.request.id}"
-            return
-        end
-        @seen_pages << k
-
-        return false if !response.text?
+        return if !analyze_response?( response )
 
         analyze response
         true
@@ -123,17 +125,19 @@ class Trainer
 
     # Analyzes a response looking for new links, forms and cookies.
     #
-    # @param   [Arachni::HTTP::Response]  response
-    def analyze( response )
-        print_debug "Started for response with request ID: ##{response.request.id}"
+    # @param   [HTTP::Response, Page]  resource
+    def analyze( resource )
+        incoming_page = resource.is_a?( Page ) ? resource: resource.to_page
 
-        incoming_page    = response.to_page
+        print_debug "Started for response with request ID: ##{resource.request.id}"
+
         has_new_elements = has_new?( incoming_page, :cookies )
 
         # if the response body is the same as the page body and
         # no new cookies have appeared there's no reason to analyze the page
-        if incoming_page.body == @page.body && !has_new_elements &&
+        if @page && incoming_page.body == @page.body && !has_new_elements &&
             @page.url == incoming_page.url
+
             incoming_page.clear_cache
             print_debug 'Page hasn\'t changed.'
             return
@@ -166,6 +170,49 @@ class Trainer
         return if count == 0
 
         print_info "Found #{count} new #{element_type}."
+        true
+    end
+
+    def within_scope?( response )
+        skip_message = nil
+        if @trainings_per_url[response.url] >= MAX_TRAININGS_PER_URL
+            skip_message = "Reached maximum trainings (#{MAX_TRAININGS_PER_URL})"
+        elsif response.scope.redundant?
+            skip_message = 'Matched redundancy filters'
+        elsif response.scope.out?
+            skip_message = 'Matched exclusion criteria'
+        end
+
+        if skip_message
+            print_verbose "#{skip_message}, skipping: #{response.url}"
+            return false
+        end
+
+        true
+    end
+
+    def analyze_response?( response )
+        if !@framework.accepts_more_pages?
+            print_info 'No more pages accepted, skipping analysis.'
+            return
+        end
+
+        return false if !within_scope?( response )
+
+        param_names = response.parsed_url.query_parameters.keys
+        cookies     = Cookie.from_headers( response.url, response.headers ).map(&:name)
+
+        k = "#{param_names.hash}:#{cookies.hash}:#{response.body}"
+
+        # Naive optimization but it works a lot of the time. :)
+        if @seen_pages.include? k
+            print_debug "Already seen response for request ID: ##{response.request.id}"
+            return
+        end
+        @seen_pages << k
+
+        return false if !response.text?
+
         true
     end
 

@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::Anchors < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'href' )
+        return [] if !check_for?( 'href' )
 
         document.nodes_by_name( 'a' ).map { |a| a['href'] }
     end

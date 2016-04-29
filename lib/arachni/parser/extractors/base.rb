@@ -20,7 +20,7 @@ class Base
 
     def initialize( options = {} )
         @html           = options[:html]
-        @downcased_html = @html.downcase
+        @downcased_html = @html.downcase if @html
         @parser         = options[:parser]
     end
 
@@ -32,7 +32,8 @@ class Base
     def run
     end
 
-    def includes?( string_or_regexp )
+    def check_for?( string_or_regexp )
+        return true if !@html
         !!@downcased_html[string_or_regexp]
     end
 

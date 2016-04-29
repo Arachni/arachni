@@ -13,7 +13,7 @@
 class Arachni::Parser::Extractors::Scripts < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'script' )
+        return [] if !check_for?( 'script' )
 
         document.nodes_by_name( 'script' ).map do |s|
             [s['src']].flatten.compact | from_text( s.text )

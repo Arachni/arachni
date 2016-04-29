@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::DataURL < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'data-url' )
+        return [] if !html || !check_for?( 'data-url' )
 
         html.scan( /data-url=\s*['"]?(.*?)?['"]?\s*>/ )
     end

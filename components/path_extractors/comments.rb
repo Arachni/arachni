@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::Comments < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( '<!--' )
+        return [] if !check_for?( '<!--' )
 
         document.nodes_by_name('comment').map do |comment|
             comment.value.scan( /(^|\s)(\/[\/a-zA-Z0-9%._-]+)/ )

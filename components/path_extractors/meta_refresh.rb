@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'http-equiv' )
+        return [] if !check_for?( 'http-equiv' )
 
         document.nodes_by_attribute_name_and_value( 'http-equiv', 'refresh' ).
             map do |url|

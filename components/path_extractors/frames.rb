@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::Frames < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'frame' )
+        return [] if !check_for?( 'frame' )
 
         document.nodes_by_names( ['frame', 'iframe'] ).map { |n| n['src'] }
     end

@@ -110,7 +110,7 @@ class Link < Base
         #
         # @return   [Array<Link>]
         def from_parser( parser )
-            return [] if !in_html?( parser.body )
+            return [] if parser.body && !in_html?( parser.body )
 
             parser.document.nodes_by_name( :a ).map do |link|
                 next if too_big?( link['href'] )

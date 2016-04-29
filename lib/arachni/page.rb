@@ -201,6 +201,10 @@ class Page
         @cache[:parser]
     end
 
+    def parser=( p )
+        @cache[:parser] = p
+    end
+
     # @param    [Array<Element::Capabilities::Auditable, Integer>]    list
     #   Audit whitelist based on {Element::Capabilities::Auditable elements} or
     #   {Element::Capabilities::Auditable#coverage_hash}s.

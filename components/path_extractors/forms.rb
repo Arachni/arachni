@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::Forms < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'action' )
+        return [] if !check_for?( 'action' )
 
         document.nodes_by_name( 'form' ).map { |f| f['action'] }
     end

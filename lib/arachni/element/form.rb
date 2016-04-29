@@ -264,7 +264,7 @@ class Form < Base
         #
         # @return   [Array<Form>]
         def from_parser( parser, ignore_scope = false )
-            return [] if !in_html?( parser.body )
+            return [] if parser.body && !in_html?( parser.body )
 
             base_url = to_absolute( parser.base, parser.url )
 

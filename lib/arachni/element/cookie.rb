@@ -335,7 +335,7 @@ class Cookie < Base
         #
         # @see .parse_set_cookie
         def from_parser( parser )
-            return [] if !in_html?( parser.body )
+            return [] if parser.body && !in_html?( parser.body )
 
             Arachni::Utilities.exception_jail {
                 parser.document.nodes_by_name( :meta ).map do |elem|

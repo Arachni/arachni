@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::Areas < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'area' ) || !includes?( 'href' )
+        return [] if !check_for?( 'area' ) || !check_for?( 'href' )
 
         document.nodes_by_name( 'area' ).map { |a| a['href'] }
     end

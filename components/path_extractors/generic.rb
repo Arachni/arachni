@@ -20,6 +20,8 @@ require 'uri'
 class Arachni::Parser::Extractors::Generic < Arachni::Parser::Extractors::Base
 
     def run
+        return [] if !html
+
         URI.extract( html, %w(http https) ).map do |u|
             #
             # This extractor needs to be a tiny bit intelligent because

@@ -573,6 +573,21 @@ module Auditor
         end
     end
 
+    # Calls {Arachni::Element::Capabilities::Auditable#buffered_audit}
+    # for every element.
+    #
+    # Uses {#each_candidate_element} to decide which elements to audit.
+    #
+    # @see OPTIONS
+    # @see Arachni::Element::Capabilities::Auditable#buffered_audit
+    def buffered_audit( payloads, opts = {}, &block )
+        opts = OPTIONS.merge( opts )
+        each_candidate_element( opts[:elements] ) do |e|
+            e.buffered_audit( payloads, opts, &block )
+            audited( e.coverage_id )
+        end
+    end
+
     # Provides easy access to element auditing using simple signature analysis
     # and automatically logs results.
     #

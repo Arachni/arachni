@@ -12,7 +12,7 @@
 class Arachni::Parser::Extractors::Links < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'link' )
+        return [] if !check_for?( 'link' )
 
         document.nodes_by_name( 'link' ).map { |l| l['href'] }
     end
