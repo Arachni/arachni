@@ -79,10 +79,8 @@ class Browser
     ])
 
     ASSET_EXTRACTORS = [
-        /<\s*link.*?href=['"](.*?)['"].*?>/im,
-        /<\s*script.*?src=['"](.*?)['"].*?>/im,
-        /<\s*img.*?src=['"](.*?)['"].*?>/im,
-        /<\s*input.*?src=['"](.*?)['"].*?>/im,
+        /<\s*link.*?href=\s*['"]?(.*?)?['"]?[\s>]/im,
+        /src\s*=\s*['"]?(.*?)?['"]?[\s>]/i,
     ]
 
     # @return   [Array<Page::DOM::Transition>]
