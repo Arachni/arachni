@@ -46,7 +46,7 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'rack',                '1.6.4'
 
-    s.add_dependency 'bundler',             '1.11.2'
+    s.add_dependency 'bundler'
 
     s.add_dependency 'concurrent-ruby',     '1.0.0'
     s.add_dependency 'concurrent-ruby-ext', '1.0.0'
