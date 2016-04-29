@@ -60,7 +60,7 @@ class Browser
     end
 
     # How much time to wait for the PhantomJS process to spawn before respawning.
-    PHANTOMJS_SPAWN_TIMEOUT = 4
+    BROWSER_SPAWN_TIMEOUT = 20
 
     # How much time to wait for a targeted HTML element to appear on the page
     # after the page is loaded.
@@ -1315,7 +1315,7 @@ class Browser
             print_debug "Attempt ##{i}, chose port number #{port}"
 
             begin
-                with_timeout 10 do
+                with_timeout BROWSER_SPAWN_TIMEOUT do
                     print_debug "Spawning process: #{self.class.executable}"
 
                     r, w  = IO.pipe
