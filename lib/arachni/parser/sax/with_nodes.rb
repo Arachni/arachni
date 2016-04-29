@@ -42,7 +42,7 @@ module WithNodes
     end
 
     def text
-        children.find { |n| n.is_a? String }
+        children.find { |n| n.is_a? String }.to_s
     end
 
     def to_html( indentation = 2, level = 0 )
