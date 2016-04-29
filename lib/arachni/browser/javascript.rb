@@ -40,7 +40,9 @@ class Javascript
         h.merge!( path => IO.read(path) )
     end
 
-    HTML_IDENTIFIERS = ['<!doctype html', '<html', '<head', '<body', '<title', '<script']
+    HTML_IDENTIFIERS = [
+        '<!doctype html', '<html', '<head', '<body', '<title', '<script'
+    ].map { |s| Regexp.new s, Regexp::IGNORECASE }
 
     NO_EVENTS_FOR_ELEMENTS = Set.new([
         :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
@@ -472,11 +474,10 @@ class Javascript
 
         # Let's check that the response at least looks like it contains HTML
         # code of interest.
-        body = response.body.downcase.strip
-        return false if !HTML_IDENTIFIERS.find { |tag| body.include? tag.downcase }
+        return false if !HTML_IDENTIFIERS.find { |tag| response.body =~ tag }
 
         # If there's a doctype then we're good to go.
-        return true if body.start_with?( '<!doctype html' )
+        return true if response.body.start_with?( '<!DOCTYPE html' )
 
         # The last check isn't fool-proof, so don't do it when loading the page
         # for the first time, but only when the page loads stuff via AJAX and whatnot.
