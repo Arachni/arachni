@@ -60,14 +60,14 @@ class Browser
     end
 
     # How much time to wait for the PhantomJS process to spawn before respawning.
-    PHANTOMJS_SPAWN_TIMEOUT = 4
+    BROWSER_SPAWN_TIMEOUT = 20
 
     # How much time to wait for a targeted HTML element to appear on the page
     # after the page is loaded.
     ELEMENT_APPEARANCE_TIMEOUT = 5
 
     # Let the browser take as long as it needs to complete an operation.
-    WATIR_COM_TIMEOUT = 3600 # 1 hour.
+    SELENIUM_TIMEOUT = 3600 # 1 hour.
 
     ASSET_EXTENSIONS = Set.new(%w( css js jpg jpeg png gif json ))
 
@@ -1179,7 +1179,7 @@ class Browser
         return @selenium if @selenium
 
         client = Selenium::WebDriver::Remote::Http::Default.new
-        client.timeout = WATIR_COM_TIMEOUT
+        client.timeout = SELENIUM_TIMEOUT
 
         @selenium = Selenium::WebDriver.for(
             :remote,
@@ -1315,7 +1315,7 @@ class Browser
             print_debug "Attempt ##{i}, chose port number #{port}"
 
             begin
-                with_timeout 10 do
+                with_timeout BROWSER_SPAWN_TIMEOUT do
                     print_debug "Spawning process: #{self.class.executable}"
 
                     r, w  = IO.pipe
