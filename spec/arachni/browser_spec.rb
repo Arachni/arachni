@@ -1111,14 +1111,16 @@ describe Arachni::Browser do
 
         it "assigns the proper #{Arachni::Page::DOM}#digest" do
             @browser.load( @url )
-            expect(@browser.to_page.dom.instance_variable_get(:@digest)).to eq(
-                '<HTML><HEAD><SCRIPT src=http://' <<
-                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://' <<
-                'javascript.browser.arachni/' <<
-                'taint_tracer.js><SCRIPT src=http://javascript.' <<
-                'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
-                'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
-            )
+            expect(@browser.to_page.dom.digest).to eq(-2077537769)
+
+            # expect(@browser.to_page.dom.instance_variable_get(:@digest)).to eq(
+            #     '<HTML><HEAD><SCRIPT src=http://' <<
+            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=http://' <<
+            #     'javascript.browser.arachni/' <<
+            #     'taint_tracer.js><SCRIPT src=http://javascript.' <<
+            #     'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
+            #     'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
+            # )
         end
 
         it "assigns the proper #{Arachni::Page::DOM}#transitions" do
