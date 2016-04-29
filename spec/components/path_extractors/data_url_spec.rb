@@ -14,8 +14,8 @@ describe name_from_filename do
 
     def text
         <<EOHTML
-        <a data-url='http://test.com'>1</a> <span data-url='test.com'>2</span>
-        <div data-url='test'>2</div> <p data-url=test.gr>3</p>
+        <a class="test" data-url= 'http://test.com'>1</a> <span data-url= 'test.com'>2</span>
+        <div data-url = 'test' id=blah>2</div> <p data-url=test.gr >3</p>
 EOHTML
     end
 
