@@ -59,7 +59,8 @@ module Buffered
             print_debug_level_3 "Block returned: #{r}"
             print_debug_level_3 'Emptying buffer.'
 
-            buffer.clear
+            # Create a new object, we don't want to mess with reference issues.
+            buffers[request.id] = ''
 
             r
         end

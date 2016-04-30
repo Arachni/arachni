@@ -64,7 +64,8 @@ module LineBuffered
             print_debug_level_3 "Block returned: #{r}"
             print_debug_level_3 'Emptying buffer.'
 
-            buffer[:data].clear
+            # Create a new object, we don't want to mess with reference issues.
+            buffer[:data]    = ''
             buffer[:counter] = 0
 
             r
