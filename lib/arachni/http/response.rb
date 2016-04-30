@@ -166,12 +166,10 @@ class Response < Message
     end
 
     def body=( body )
-        @body = body.to_s.dup
+        @body = body.to_s
 
         text_check = text?
         @body.recode! if text_check.nil? || text_check
-
-        @body.freeze
 
         @body
     end

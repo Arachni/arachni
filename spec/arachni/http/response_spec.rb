@@ -339,12 +339,6 @@ describe Arachni::HTTP::Response do
             expect(r.body).to eq(body)
         end
 
-        it 'freezes it' do
-            r = described_class.new( url: url )
-            r.body = 'Stuff...'
-            expect(r.body).to be_frozen
-        end
-
         it 'forces it to a string' do
             r = described_class.new( url: url )
             r.body = nil
