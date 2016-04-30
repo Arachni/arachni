@@ -158,12 +158,12 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             expect(subject.elements_with_events).to eq([
                 {
                     'tag_name' => 'button',
-                    'events' => [
-                        [
-                            'click',
-                            'function (my_button_click) {}'
+                    'events' => {
+                        'click' =>  [
+                            'function (my_button_click) {}',
+                            'handler_1()'
                         ]
-                    ],
+                    },
                     'attributes' => {
                         'onclick' => 'handler_1()',
                         'id' => 'my-button'
@@ -179,17 +179,11 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                 expect(subject.elements_with_events).to eq([
                     {
                         "tag_name"   => "button",
-                        "events"     =>
-                            [
-                                [
-                                    "click",
-                                    "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
-                                ],
-                                [
-                                    "load",
-                                    "function () {\n\t\tdocument.removeEventListener( \"DOMContentLoaded\", completed, false );\n\t\twindow.removeEventListener( \"load\", completed, false );\n\t\tjQuery.ready();\n\t}"
-                                ]
-                            ],
+                        "events"     => {
+                            "click"=> [
+                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                            ]
+                        },
                         "attributes" => {
                             "id" => "my-button"
                         }
@@ -206,17 +200,23 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     expect(subject.elements_with_events).to eq([
                         {
                             'tag_name'   => 'button',
-                            'events'     => [],
+                            'events'     => {
+                                'click' => ['handler_1()']
+                            },
                             'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
                         },
                         {
                             'tag_name'   => 'button',
-                            'events'     => [],
+                            'events'     => {
+                                'click' => ['handler_2()']
+                            },
                             'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
                          },
                          {
                              'tag_name' => 'button',
-                             'events' => [],
+                             'events'     => {
+                                 'click' => ['handler_3()']
+                             },
                              'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
                          }
                     ])
@@ -230,18 +230,20 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     expect(subject.elements_with_events).to eq([
                         {
                             'tag_name'   => 'button',
-                            'events'     => [
-                                ['click', 'function (my_button_click) {}'],
-                                ['click', 'function (my_button_click2) {}'],
-                                ['onmouseover', 'function (my_button_onmouseover) {}']
-                            ],
+                            'events'     => {
+                                'click' => [
+                                    'function (my_button_click) {}',
+                                    'function (my_button_click2) {}'
+                                ],
+                                'mouseover' => ['function (my_button_onmouseover) {}']
+                            },
                             'attributes' => { 'id' => 'my-button' }
                         },
                         {
                             'tag_name'   => 'button',
-                            'events'     => [
-                                ['click', 'function (my_button2_click) {}']
-                            ],
+                            'events'     => {
+                                'click' => ['function (my_button2_click) {}']
+                            },
                             'attributes' => { 'id' => 'my-button2' }
                         }
                     ])
@@ -253,26 +255,45 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     load 'elements_with_events/inherited'
 
                     expect(subject.elements_with_events).to eq([
-                       { "tag_name"   => "div",
-                         "events"     => [["click", "function (parent_click) {}"]],
-                         "attributes" => { "id" => "parent" } },
-                       { "tag_name"   => "button",
-                         "events"     => [["click", "function (parent_click) {}"],
-                                          ["click", "function (window_click) {}"],
-                                          ["click", "function (document_click) {}"]],
-                         "attributes" => { "id" => "parent-button" } },
-                       { "tag_name"   => "div",
-                         "events"     =>
-                             [["click", "function (child_click) {}"]],
-                         "attributes" => { "id" => "child" } },
-                       { "tag_name"   => "button",
-                         "events"     =>
-                             [["click", "function (parent_click) {}"],
-                              ["click", "function (child_click) {}"],
-                              ["click", "function (window_click) {}"],
-                              ["click", "function (document_click) {}"]],
-                         "attributes" => { "id" => "child-button" } }]
-                )
+                        {
+                           "tag_name"   => "div",
+                           "events"     => {
+                               "click" => [
+                                   "function (parent_click) {}"
+                               ]
+                           },
+                           "attributes" => { "id" => "parent" } },
+                        {
+                           "tag_name"   => "button",
+                           "events"     => {
+                               "click" => [
+                                   "function (parent_click) {}",
+                                   "function (window_click) {}",
+                                   "function (document_click) {}"
+                               ]
+                           },
+                           "attributes" => { "id" => "parent-button" }
+                        },
+                        {
+                           "tag_name"   => "div",
+                           "events"     => {
+                               "click" => ["function (child_click) {}"]
+                           },
+                           "attributes" => { "id" => "child" }
+                        },
+                        {
+                           "tag_name"   => "button",
+                           "events"     => {
+                               "click" => [
+                                   "function (parent_click) {}",
+                                   "function (child_click) {}",
+                                   "function (window_click) {}",
+                                   "function (document_click) {}"
+                               ]
+                           },
+                           "attributes" => { "id" => "child-button" }
+                        }
+                    ])
                 end
             end
         end

@@ -472,7 +472,7 @@ class Browser
     def each_element_with_events
         current_url = self.url
 
-        javascript.dom_elements_with_events.each do |element|
+        javascript.each_dom_element_with_events do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
             events     = element['events']
@@ -549,10 +549,12 @@ class Browser
     #   browser analysis can be performed and when new element audit workload
     #   (but possibly without any DOM relevance) is available.
     def snapshot_id
+        # return rand(999999999999999).to_s
+
         current_url = self.url
 
         id = Set.new
-        javascript.dom_elements_with_events.each do |element|
+        javascript.each_dom_element_with_events do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
             events     = element['events']

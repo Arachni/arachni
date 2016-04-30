@@ -474,7 +474,16 @@ get '/test.png' do
     200
 end
 
-Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
+[
+    :onselect,
+    :onchange,
+    :onfocus,
+    :onblur,
+    :onkeydown,
+    :onkeypress,
+    :onkeyup,
+    :oninput
+].each do |event|
     get "/fire_event/input/#{event}" do
         <<-EOHTML
 <html>

@@ -120,6 +120,16 @@ get '/elements_with_events/attributes' do
 HTML
 end
 
+get '/elements_with_events/attributes/inappropriate' do
+    <<HTML
+    <body>
+        <button onselect="handler_1()" id="my-button">Click me</button>
+        <button onkeydown="handler_2()" id="my-button2">Click me too</button>
+        <button onsubmit="handler_3()" id="my-button3">Don't bother clicking me</button>
+    </body>
+HTML
+end
+
 get '/elements_with_events/listeners' do
     <<HTML
     <button id="my-button">Click me</button>
@@ -132,6 +142,21 @@ get '/elements_with_events/listeners' do
         document.getElementById( "my-button" ).addEventListener( "onmouseover", function( my_button_onmouseover ){}, false );
 
         document.getElementById( "my-button2" ).addEventListener( "click", function( my_button2_click ){}, false );
+    </script>
+HTML
+end
+
+get '/elements_with_events/listeners/inappropriate' do
+    <<HTML
+    <button id="my-button">Click me</button>
+    <button id="my-button2">Click me too</button>
+    <button id="my-button3">Don't bother clicking me</button>
+
+    <script>
+        document.getElementById( "my-button" ).addEventListener( "select", function( my_button_click ){}, false );
+        document.getElementById( "my-button" ).addEventListener( "submit", function( my_button_click2 ){}, false );
+
+        document.getElementById( "my-button2" ).addEventListener( "select", function( my_button2_click ){}, false );
     </script>
 HTML
 end

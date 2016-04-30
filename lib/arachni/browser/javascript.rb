@@ -21,11 +21,6 @@ class Javascript
     require_relative 'javascript/taint_tracer'
     require_relative 'javascript/dom_monitor'
 
-    CACHE = {
-        events_for:    Support::Cache::LeastRecentlyPushed.new( 1_000 ),
-        select_events: Support::Cache::LeastRecentlyPushed.new( 1_000 )
-    }
-
     TOKEN = 'arachni_js_namespace'
 
     # @return   [String]
@@ -49,68 +44,42 @@ class Javascript
         :title, :link, :hr
     ])
 
-    # Events that apply to all elements.
-    GLOBAL_EVENTS = [
+    EACH_DOM_ELEMENT_WITH_EVENTS_BATCH_SIZE = 100
+
+    EVENTS = Set.new([
         :onclick,
         :ondblclick,
         :onmousedown,
         :onmousemove,
         :onmouseout,
         :onmouseover,
-        :onmouseup
-    ]
-
-    # Special events for each element.
-    EVENTS_PER_ELEMENT = {
-        body: [
-                  :onload
-              ],
-
-        form: [
-                  :onsubmit,
-                  :onreset
-              ],
-
-        # These need to be covered via Selenium's API, #send_keys etc.
-        input: [
-                  :onselect,
-                  :onchange,
-                  :onfocus,
-                  :onblur,
-                  :onkeydown,
-                  :onkeypress,
-                  :onkeyup,
-                  :oninput
-              ],
-
-        # These need to be covered via Selenium's API, #send_keys etc.
-        textarea: [
-                  :onselect,
-                  :onchange,
-                  :onfocus,
-                  :onblur,
-                  :onkeydown,
-                  :onkeypress,
-                  :onkeyup,
-                  :oninput
-              ],
-
-        select: [
-                  :onchange,
-                  :onfocus,
-                  :onblur
-              ],
-
-        button: [
-                  :onfocus,
-                  :onblur
-              ],
-
-        label: [
-                  :onfocus,
-                  :onblur
-              ]
-    }
+        :onmouseup,
+        :onload,
+        :onsubmit,
+        :onselect,
+        :onchange,
+        :onfocus,
+        :onblur,
+        :onkeydown,
+        :onkeypress,
+        :onkeyup,
+        :oninput,
+        :onselect,
+        :onchange,
+        :onfocus,
+        :onblur,
+        :onkeydown,
+        :onkeypress,
+        :onkeyup,
+        :oninput,
+        :onchange,
+        :onfocus,
+        :onblur,
+        :onfocus,
+        :onblur,
+        :onfocus,
+        :onblur
+    ])
 
     # @return   [String]
     #   Token used to namespace the injected JS code and avoid clashes.
@@ -134,53 +103,7 @@ class Javascript
     attr_reader :taint_tracer
 
     def self.events
-        GLOBAL_EVENTS | EVENTS_PER_ELEMENT.values.flatten.uniq
-    end
-
-    def self.event_whitelist
-        @event_whitelist ||= Set.new( events.flatten.map(&:to_s) )
-    end
-
-    # @param    [Symbol]    tag_name
-    #
-    # @return   [Set<Symbol>]
-    #   Events for `element`.
-    def self.events_for( tag_name )
-        CACHE[:events_for].fetch tag_name.to_sym do
-            Set.new(
-                GLOBAL_EVENTS + (EVENTS_PER_ELEMENT[tag_name.to_sym] || [])
-            ).freeze
-        end
-    end
-
-    # @param    [Symbol]    tag_name
-    # @param    [Hash]    events
-    #   Event data with the event name as the key.
-    #
-    # @return   [Hash]
-    #   `events` filtered to only include valid events for the given element type.
-    def self.select_events( tag_name, events )
-        CACHE[:select_events].fetch [tag_name, events] do
-            supported = events_for( tag_name )
-            events.reject do |name, _|
-                !supported.include?( ('on' + name.to_s.gsub( /^on/, '' )).to_sym )
-            end.freeze
-        end
-    end
-
-    # @param    [Hash]  attributes
-    #   Element attributes.
-    #
-    # @return   [Hash]
-    #   `attributes` that include {.events}.
-    def self.select_event_attributes( attributes = {} )
-        # NOTICE: Don't cache this, attributes can include all kinds of weird
-        # random crap (framework-specific data nonce attributes etc.) which will
-        # keep filling the cache due to constant misses.
-        attributes.inject({}) do |h, (event, handler)|
-            next h if !event_whitelist.include?( event.to_s )
-            h.merge!( event.to_sym => handler )
-        end.freeze
+        EVENTS
     end
 
     # @param    [Browser]   browser
@@ -323,31 +246,33 @@ class Javascript
     #
     # @return   [Array<Hash>]
     #   Information about all DOM elements, including any registered event listeners.
-    def dom_elements_with_events
-        return [] if !supported?
+    def each_dom_element_with_events
+        return if !supported?
 
-        dom_monitor.elements_with_events.map do |element|
-            next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name'].to_sym
+        start      = 0
+        batch_size = EACH_DOM_ELEMENT_WITH_EVENTS_BATCH_SIZE
 
-            element['events'] = (element['events'].map do |event, fn|
-                next if !(self.class.event_whitelist.include?( event ) ||
-                    self.class.event_whitelist.include?( "on#{event}" ))
+        i = 0
+        loop do
+            elements = dom_monitor.elements_with_events( start, batch_size )
+            return if elements.empty?
 
-                [event.to_sym, fn]
-            end.compact)
+            elements.each do |element|
+                next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name'].to_sym
 
-            element['events'] |= self.class.select_event_attributes( element['attributes'] ).to_a
-            element['events']  = self.class.select_events( element['tag_name'], element['events'] ).dup
+                events = {}
+                element['events'].each do |event, handlers|
+                    events[event.to_sym] = handlers
+                end
+                element['events'] = events
 
-            categorized = {}
-            element['events'].each do |event, callback|
-                categorized[event] ||= []
-                categorized[event] << callback
+                yield element
             end
-            element['events'] = categorized
 
-            element
-        end.compact
+            return if elements.size < batch_size
+
+            start += elements.size
+        end
     end
 
     # @return   [Array<Array>]
@@ -403,30 +328,24 @@ class Javascript
         # This is necessary because new files can be required dynamically.
         if javascript?( response )
 
-            response.body = <<-EOCODE
+            response.body.insert 0, <<-EOCODE
                 #{js_comment}
                 #{taint_tracer.stub.function( :update_tracers )};
                 #{dom_monitor.stub.function( :update_trackers )};
-
-                #{response.body};
             EOCODE
+            response.body << ";\n"
 
         # Already has the JS initializer, so it's an HTML response; just update
         # taints and custom code.
         elsif has_js_initializer?( response )
 
-            body = response.body.dup
-
-            update_taints( body, response )
-            update_custom_code( body )
-
-            response.body = body
+            update_taints( response.body, response )
+            update_custom_code( response.body )
 
         elsif html?( response )
-            body = response.body.dup
 
             # Perform an update before each script.
-            body.gsub!(
+            response.body.gsub!(
                 /<script.*?>/i,
                 "\\0\n
                 #{js_comment}
@@ -435,7 +354,7 @@ class Javascript
             )
 
             # Perform an update after each script.
-            body.gsub!(
+            response.body.gsub!(
                 /<\/script>/i,
                 "\\0\n<script type=\"text/javascript\">" <<
                     "#{@taint_tracer.stub.function( :update_tracers )};" <<
@@ -444,7 +363,7 @@ class Javascript
             )
 
             # Include and initialize our JS interfaces.
-            response.body = <<-EOHTML
+            response.body.insert 0, <<-EOHTML
 <script src="#{script_url_for( :polyfills )}"></script> #{html_comment}
 <script src="#{script_url_for( :taint_tracer )}"></script> #{html_comment}
 <script src="#{script_url_for( :dom_monitor )}"></script> #{html_comment}
@@ -454,9 +373,8 @@ class Javascript
 
 #{wrapped_custom_code}
 </script> #{html_comment}
-
-#{body}
             EOHTML
+
         end
 
         true

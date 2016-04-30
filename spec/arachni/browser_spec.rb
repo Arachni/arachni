@@ -1254,7 +1254,7 @@ describe Arachni::Browser do
 
                                     expect(input.action).to eq @browser.url
                                     expect(input.source).to eq '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1">'
-                                    expect(input.method).to eq :oninput
+                                    expect(input.method).to eq :input
                                 end
                             end
 
@@ -1275,7 +1275,7 @@ describe Arachni::Browser do
 
                                     expect(input.action).to eq @browser.url
                                     expect(input.source).to eq '<textarea oninput="handleOnInput();" id="my-input" name="my-input">'
-                                    expect(input.method).to eq :oninput
+                                    expect(input.method).to eq :input
                                 end
                             end
 
@@ -1481,7 +1481,7 @@ describe Arachni::Browser do
         it 'accepts events without the "on" prefix' do
             pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :onclick
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
             @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
@@ -1873,7 +1873,16 @@ describe Arachni::Browser do
         end
 
         context 'input' do
-            described_class::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
+            [
+                :onselect,
+                :onchange,
+                :onfocus,
+                :onblur,
+                :onkeydown,
+                :onkeypress,
+                :onkeyup,
+                :oninput
+            ].each do |event|
                 calculate_expectation = proc do |string|
                     [:onkeypress, :onkeydown].include?( event ) ?
                         string[0...-1] : string
@@ -2025,14 +2034,14 @@ describe Arachni::Browser do
                         tag_name:   'body',
                         attributes: { 'onmouseover' => 'makePOST();' }
                     ),
-                    { onmouseover: ['makePOST();'] }
+                    { mouseover: ['makePOST();'] }
                 ],
                 [
                     described_class::ElementLocator.new(
                         tag_name:   'div',
                         attributes: { 'id' => 'my-div', 'onclick' => 'addForm();' }
                     ),
-                    { onclick: ['addForm();']}
+                    { click: ['addForm();']}
                 ]
             ])
         end
@@ -2147,7 +2156,7 @@ describe Arachni::Browser do
             end
 
             locators.each do |element|
-                @browser.javascript.class.events.each do |e|
+                described_class::Javascript::EVENTS.each do |e|
                     begin
                         @browser.trigger_event @browser.to_page, element, e
                     rescue
