@@ -339,7 +339,7 @@ class Page
         response.request.method
     end
 
-    # @return   [Nokogiri::HTML]
+    # @return   [Arachni::Parser::SAX::Document]
     #   Parsed {#body HTML} document.
     def document
         @cache[:document] ||= (parser.nil? ?

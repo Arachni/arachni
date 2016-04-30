@@ -15,7 +15,7 @@ module Element::Capabilities
 module WithNode
     include WithSource
 
-    # @return [Nokogiri::XML::Element]
+    # @return [Ox::Element]
     def node
         return if !@source
         Arachni::Parser.parse_fragment( @source )

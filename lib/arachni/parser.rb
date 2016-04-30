@@ -92,13 +92,13 @@ class Parser
 
         def parse_xml( xml )
             CACHE[__method__].fetch xml do
-                Ox.parse( xml )
+                Nokogiri::XML( xml )
             end
         end
 
         def markup?( string )
             begin
-                parse_xml( string ).is_a?( Ox::Element )
+                Ox.parse( string ).is_a?( Ox::Element )
             rescue => e
                 false
             end
@@ -223,7 +223,7 @@ class Parser
         @body || (@response.body if from_response?)
     end
 
-    # @return   [Nokogiri::HTML, nil]
+    # @return   [Arachni::Parser::SAX::Document, nil]
     #   Returns a parsed HTML document from the body of the HTTP response or
     #   `nil` if the response data wasn't {#text? text-based} or the response
     #   couldn't be parsed.
