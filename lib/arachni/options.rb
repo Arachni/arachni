@@ -96,6 +96,9 @@ class Options
     #   The URL to audit.
     attr_reader   :url
 
+    # @return    [Arachni::URI]
+    attr_reader   :parsed_url
+
     # @return    [Array<String, Symbol>]
     #   Checks to load, by name.
     #
@@ -225,7 +228,8 @@ class Options
             end
         end
 
-        @url = parsed.to_s
+        @parsed_url = parsed
+        @url        = parsed.to_s
     end
 
     # Configures options via a Hash object.
@@ -333,6 +337,7 @@ class Options
         hash = hash.deep_clone
 
         hash.delete( 'url' ) if !hash['url']
+        hash.delete( 'parsed_url' )
 
         hash
     end
@@ -349,6 +354,7 @@ class Options
         end
 
         hash.delete( :url ) if !hash[:url]
+        hash.delete( :parsed_url )
         hash.delete(:paths)
 
         hash.deep_clone
