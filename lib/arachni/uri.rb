@@ -47,12 +47,13 @@ class URI
     end
 
     CACHE_SIZES = {
-        parse:       1_000,
-        fast_parse:  1_000,
+        parse:       5_000,
+        fast_parse:  5_000,
+        normalize:   5_000,
+        to_absolute: 5_000,
         encode:      1_000,
         decode:      1_000,
-        normalize:   1_000,
-        to_absolute: 1_000
+        scope:       1_000
     }
 
     CACHE = {
@@ -63,6 +64,10 @@ class URI
     end
 
     QUERY_CHARACTER_CLASS = Addressable::URI::CharacterClasses::QUERY.sub( '\\&', '' )
+
+    VALID_SCHEMES     = Set.new(%w(http https))
+    PARTS             = %w(scheme userinfo host port path query)
+    TO_ABSOLUTE_PARTS = %w(scheme userinfo host port)
 
     class <<self
 
@@ -139,8 +144,8 @@ class URI
         #     * `:query`
         def fast_parse( url )
             return if !url || url.empty?
-            return if url.downcase.start_with?( 'javascript:' ) ||
-                url.start_with?( '#' )
+            return if url.start_with?( '#' ) ||
+                url.downcase.start_with?( 'javascript:' )
 
             cache = CACHE[__method__]
 
@@ -162,8 +167,6 @@ class URI
                 query:    nil
             }
 
-            valid_schemes = %w(http https)
-
             begin
                 if (v = cache[url]) && v == :err
                     return
@@ -175,7 +178,7 @@ class URI
                 # fake it, pass a valid scheme to get through the parsing and
                 # then remove it at the other end.
                 if (schemeless = url.start_with?( '//' ))
-                    url = "http:#{url}"
+                    url.insert 0, 'http:'
                 end
 
                 # url.recode!
@@ -185,14 +188,16 @@ class URI
                 has_path = true
 
                 splits = url.split( ':' )
-                if !splits.empty? && valid_schemes.include?( splits.first.downcase )
+                if !splits.empty? && VALID_SCHEMES.include?( splits.first.downcase )
 
                     splits = url.split( '://', 2 )
                     components[:scheme] = splits.shift
                     components[:scheme].downcase! if components[:scheme]
 
                     if (url = splits.shift)
-                        userinfo_host, url = url.to_s.split( '?' ).first.to_s.split( '/', 2 )
+                        userinfo_host, url =
+                            url.to_s.split( '?' ).first.to_s.split( '/', 2 )
+
                         url    = url.to_s
                         splits = userinfo_host.to_s.split( '@', 2 )
 
@@ -269,11 +274,6 @@ class URI
 
                 cache[c_url] = components.freeze
             rescue => e
-                ap e
-                ap e.backtrace
-                ap c_url
-                ap url
-
                 print_debug "Failed to parse '#{c_url}'."
                 print_debug "Error: #{e}"
                 print_debug_backtrace( e )
@@ -417,7 +417,7 @@ class URI
 
         fail Error, 'Failed to parse URL.' if !@data
 
-        %w(scheme userinfo host port path query).each do |part|
+        PARTS.each do |part|
             instance_variable_set( "@#{part}", @data[part.to_sym] )
         end
 
@@ -426,7 +426,9 @@ class URI
 
     # @return   [Scope]
     def scope
-        @scope ||= Scope.new( self )
+        # We could have several identical URLs in play at any given time and
+        # they will all have the same scope.
+        CACHE[:scope].fetch( self ){ Scope.new( self ) }
     end
 
     def ==( other )
@@ -454,7 +456,7 @@ class URI
             reference = self.class.new( reference.to_s )
         end
 
-        %w(scheme userinfo host port).each do |part|
+        TO_ABSOLUTE_PARTS.each do |part|
             next if send( part )
 
             ref_part = reference.send( "#{part}" )
@@ -538,13 +540,13 @@ class URI
     # @return   [String]
     #   The URL up to its resource component (query, fragment, etc).
     def without_query
-        to_s.split( '?', 2 ).first.to_s
+        @without_query ||= to_s.split( '?', 2 ).first.to_s
     end
 
     # @return   [String]
     #   Name of the resource.
     def resource_name
-        path.split( '/' ).last
+        @resource_name ||= path.split( '/' ).last
     end
 
     # @return   [String, nil]
@@ -553,45 +555,53 @@ class URI
         name = resource_name.to_s
         return if !name.include?( '.' )
 
-        name.split( '.' ).last
+        @resource_extension ||= name.split( '.' ).last
     end
 
     # @return   [String]
     #   The URL up to its path component (no resource name, query, fragment, etc).
     def up_to_path
         return if !path
-        uri_path = path.dup
 
-        uri_path = File.dirname( uri_path ) if !File.extname( path ).empty?
+        @up_to_path ||= begin
+            uri_path = path.dup
+            uri_path = File.dirname( uri_path ) if !File.extname( path ).empty?
 
-        uri_path << '/' if uri_path[-1] != '/'
+            uri_path << '/' if uri_path[-1] != '/'
 
-        up_to_port << uri_path
+            up_to_port + uri_path
+        end
     end
 
     # @return   [String]
     #   Scheme, host & port only.
     def up_to_port
-        uri_str = "#{scheme}://#{host}"
+        @up_to_port ||= begin
+            uri_str = "#{scheme}://#{host}"
 
-        if port && ((scheme == 'http' && port != 80) || (scheme == 'https' && port != 443))
-            uri_str << ':' + port.to_s
+            if port && (
+                (scheme == 'http' && port != 80) ||
+                    (scheme == 'https' && port != 443)
+            )
+                uri_str << ':' + port.to_s
+            end
+
+            uri_str
         end
-
-        uri_str
     end
 
     # @return [String]
     #   `domain_name.tld`
     def domain
         return if !host
-        return host if ip_address?
+        return @domain if @domain
+        return @domain = host if ip_address?
 
         s = host.split( '.' )
-        return s.first if s.size == 1
-        return host if s.size == 2
+        return @domain = s.first if s.size == 1
+        return @domain = host    if s.size == 2
 
-        s[1..-1].join( '.' )
+        @domain = s[1..-1].join( '.' )
     end
 
     # @param    [Hash<Regexp => String>]    rules
@@ -622,6 +632,10 @@ class URI
     end
 
     def query=( q )
+        @to_s             = nil
+        @without_query    = nil
+        @query_parameters = nil
+
         q = q.to_s
         q = nil if q.empty?
 
@@ -634,14 +648,19 @@ class URI
         q = self.query
         return {} if q.to_s.empty?
 
-        q.split( '&' ).inject( {} ) do |h, pair|
-            name, value = pair.split( '=', 2 )
-            h[::URI.decode( name.to_s )] = ::URI.decode( value.to_s )
-            h
+        @query_parameters ||= begin
+            q.split( '&' ).inject( {} ) do |h, pair|
+                name, value = pair.split( '=', 2 )
+                h[::URI.decode( name.to_s )] = ::URI.decode( value.to_s )
+                h
+            end
         end
     end
 
     def userinfo=( ui )
+        @without_query = nil
+        @to_s          = nil
+
         @userinfo = ui
     ensure
         reset_userpass
@@ -664,6 +683,9 @@ class URI
     end
 
     def port=( p )
+        @without_query = nil
+        @to_s          = nil
+
         if p
             @port = p.to_i
         else
@@ -676,6 +698,11 @@ class URI
     end
 
     def host=( h )
+        @to_s          = nil
+        @up_to_port    = nil
+        @without_query = nil
+        @domain        = nil
+
         @host = h
     end
 
@@ -684,6 +711,12 @@ class URI
     end
 
     def path=( p )
+        @up_to_path         = nil
+        @resource_name      = nil
+        @resource_extension = nil
+        @without_query      = nil
+        @to_s               = nil
+
         @path = p
     end
 
@@ -692,44 +725,50 @@ class URI
     end
 
     def scheme=( s )
+        @up_to_port    = nil
+        @without_query = nil
+        @to_s          = nil
+
         @scheme = s
     end
 
     # @return   [String]
     def to_s
-        s = ''
+        @to_s ||= begin
+            s = ''
 
-        if @scheme
-            s << @scheme
-            s << '://'
-        end
+            if @scheme
+                s << @scheme
+                s << '://'
+            end
 
-        if @userinfo
-            s << @userinfo
-            s << '@'
-        end
+            if @userinfo
+                s << @userinfo
+                s << '@'
+            end
 
-        if @host
-            s << @host
+            if @host
+                s << @host
 
-            if @port
-                if (@scheme == 'http' && @port != 80) ||
-                    (@scheme == 'https' && @port != 443)
+                if @port
+                    if (@scheme == 'http' && @port != 80) ||
+                        (@scheme == 'https' && @port != 443)
 
-                    s << ':'
-                    s << @port.to_s
+                        s << ':'
+                        s << @port.to_s
+                    end
                 end
             end
+
+            s << @path.to_s
+
+            if @query
+                s << '?'
+                s << @query
+            end
+
+            s
         end
-
-        s << @path.to_s
-
-        if @query
-            s << '?'
-            s << @query
-        end
-
-        s
     end
 
     def dup
@@ -761,20 +800,6 @@ class URI
             @user = @password = nil
         end
     end
-
-    # Delegates unimplemented methods to Ruby's `URI::Generic` class for
-    # compatibility.
-    # def method_missing( sym, *args, &block )
-    #     if @data.respond_to?( sym )
-    #         @parsed_url.send( sym, *args, &block )
-    #     else
-    #         super
-    #     end
-    # end
-    #
-    # def respond_to?( *args )
-    #     super || @parsed_url.respond_to?( *args )
-    # end
 
 end
 end
