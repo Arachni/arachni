@@ -53,7 +53,8 @@ class Scope < Arachni::Scope
     #
     # @see OptionGroups::Scope#@exclude_file_extensions
     def exclude_file_extension?
-        options.exclude_file_extensions.include? @url.resource_extension.to_s.downcase
+        options.exclude_file_extensions.any? &&
+            options.exclude_file_extensions.include?( @url.resource_extension.to_s.downcase )
     end
 
     # @return   [Bool]
