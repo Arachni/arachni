@@ -44,7 +44,11 @@ class Scope < Arachni::Scope
     # @see #exclude_file_extension?
     def exclude?
         exclude_file_extension? ||
-            !!options.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
+            (
+                options.exclude_path_patterns.any? &&
+                    !!options.exclude_path_patterns.
+                        find { |pattern| @url.to_s =~ pattern }
+            )
     end
 
     # @return   [Bool]
