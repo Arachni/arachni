@@ -245,7 +245,7 @@ get '/load_delay' do
 HTML
 end
 
-get '/snapshot_id/default' do
+get '/event_digest/default' do
     <<-EOHTML
     <html>
         <body>
@@ -347,7 +347,7 @@ get '/each_element_with_events/form/action/regular' do
     EOHTML
 end
 
-get '/snapshot_id/form/default' do
+get '/event_digest/form/default' do
     <<-EOHTML
     <html>
         <body>

@@ -299,4 +299,106 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         end
     end
 
+    describe '#event_digest' do
+        before(:each) do
+            @url = Arachni::Utilities.normalize_url( web_server_url_for( :browser ) )
+
+            @empty_event_digest ||= begin
+                @browser.load( empty_event_digest_url )
+                subject.event_digest
+            end
+
+            @browser.load( url )
+            @event_digest = subject.event_digest
+        end
+
+        let(:empty_event_digest_url) { @url + '/event_digest/default' }
+        let(:empty_event_digest) do
+            @empty_event_digest
+        end
+        let(:event_digest) do
+            @event_digest
+        end
+
+        let(:url) { @url + '/trigger_events' }
+
+        it 'returns a DOM digest' do
+            expect(event_digest).to eq(subject.event_digest)
+        end
+
+        context 'when there are new cookies' do
+            let(:url) { @url + '/each_element_with_events/set-cookie' }
+
+            it 'takes them into account' do
+                @browser.fire_event Arachni::Browser::ElementLocator.new(
+                    tag_name: :button,
+                    attributes: {
+                        onclick: 'setCookie()'
+                    }
+                ), :click
+
+                expect(subject.event_digest).not_to eq(event_digest)
+            end
+        end
+
+        context ':a' do
+            context 'and the href is not empty' do
+                context 'and it starts with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/a/href/javascript' }
+
+                    it 'takes it into account' do
+                        expect(event_digest).not_to eq(empty_event_digest)
+                    end
+                end
+
+                context 'and it does not start with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/a/href/regular' }
+
+                    it 'takes it into account' do
+                        expect(event_digest).not_to eq(empty_event_digest)
+                    end
+                end
+            end
+
+            context 'and the href is empty' do
+                let(:url) { @url + '/each_element_with_events/a/href/empty' }
+
+                it 'takes it into account' do
+                    expect(event_digest).not_to eq(empty_event_digest)
+                end
+            end
+        end
+
+        context ':form' do
+            let(:empty_event_digest_url) { @url + '/event_digest/form/default' }
+
+            context ':input' do
+                context 'of type "image"' do
+                    let(:url) { @url + '/each_element_with_events/form/input/image' }
+
+                    it 'takes it into account' do
+                        expect(event_digest).not_to eq(empty_event_digest)
+                    end
+                end
+            end
+
+            context 'and the action is not empty' do
+                context 'and it starts with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/form/action/javascript' }
+
+                    it 'takes it into account' do
+                        expect(event_digest).not_to eq(empty_event_digest)
+                    end
+                end
+
+                context 'and it does not start with javascript:' do
+                    let(:url) { @url + '/each_element_with_events/form/action/regular' }
+
+                    it 'takes it into account' do
+                        expect(event_digest).not_to eq(empty_event_digest)
+                    end
+                end
+            end
+        end
+    end
 end

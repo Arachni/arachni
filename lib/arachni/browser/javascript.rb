@@ -241,6 +241,13 @@ class Javascript
         dom_monitor.digest
     end
 
+    # @return   [String]
+    #   Digest of the available DOM events.
+    def dom_event_digest
+        return '' if !supported?
+        dom_monitor.event_digest
+    end
+
     # @note Will not include custom events.
     #
     # @return   [Array<Hash>]

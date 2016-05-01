@@ -540,74 +540,6 @@ class Browser
         @elements_with_events[current_url]
     end
 
-    # @return   [String]
-    #   Snapshot ID used to determine whether or not a page snapshot has already
-    #   been seen.
-    #
-    #   Uses both elements and their DOM events and possible audit workload to
-    #   determine the ID, as page snapshots should be retained both when further
-    #   browser analysis can be performed and when new element audit workload
-    #   (but possibly without any DOM relevance) is available.
-    def snapshot_id
-        current_url = self.url
-
-        id = Set.new
-        javascript.each_dom_element_with_events do |element|
-            tag_name   = element['tag_name']
-            attributes = element['attributes']
-            events     = element['events']
-            element_id = attributes['id'].to_s
-
-            case tag_name
-                when 'a'
-                    href        = attributes['href'].to_s
-                    element_id << href
-
-                    if !href.empty?
-                        if href.downcase.start_with?( 'javascript:' )
-                            (events[:click] ||= []) << href
-                        else
-                            absolute = to_absolute( href, current_url )
-                            next if skip_path?( absolute )
-
-                            (events[:click] ||= []) << href
-                        end
-                    else
-                        (events[:click] ||= []) << current_url
-                    end
-
-                when 'input', 'textarea', 'select'
-                    (events[:input] ||= []) << tag_name.to_sym
-                    element_id << attributes['name'].to_s
-
-                when 'form'
-                    action      = attributes['action'].to_s
-                    element_id << "#{action}#{attributes['name']}"
-
-                    if !action.empty?
-                        if action.downcase.start_with?( 'javascript:' )
-                            (events[:submit] ||= []) << action
-                        else
-                            absolute = to_absolute( action, current_url )
-                            if !skip_path?( absolute )
-                                (events[:submit] ||= []) << absolute
-                            end
-                        end
-                    else
-                        (events[:submit] ||= []) << current_url
-                    end
-            end
-
-            next if events.empty?
-
-            id << "#{tag_name}:#{element_id}:#{events.keys.sort}".persistent_hash
-        end
-
-        id << [:cookies, cookies.map(&:name).sort].to_s.persistent_hash
-
-        id.to_a.sort.map(&:to_s).join(':')
-    end
-
     # Triggers all events on all elements (**once**) and captures
     # {#page_snapshots page snapshots}.
     #
@@ -660,7 +592,6 @@ class Browser
     # @param    [Symbol]  event
     #   Event to trigger.
     def trigger_event( resource, element, event, restore = true )
-        event = event.to_sym
         transition = fire_event( element, event )
 
         if !transition
@@ -1009,7 +940,7 @@ class Browser
                 # bother trying anything else.
                 next if !response
 
-                unique_id = self.snapshot_id
+                unique_id = javascript.dom_event_digest
                 already_seen = skip_state?( unique_id )
                 skip_state unique_id
 
@@ -1047,6 +978,9 @@ class Browser
 
             print_debug
             print_debug_exception e
+
+            ap e
+            ap e.backtrace
         ensure
             @selenium.switch_to.default_content
         end

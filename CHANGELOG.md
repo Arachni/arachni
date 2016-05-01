@@ -26,12 +26,14 @@
         - `Dynamic404Handler`
             - Added training scenario for when dashes are used as routing separators.
             - Updated to not dismiss redirects but follow the location.
-- `Browser::Javascript`
-    - `#dom_elements_with_events`
-        - Moved code to browser-side `DOMMonitor`.
-        - Updated it to return results in batches, in order to keep RAM usage
-            under control when processing large pages with thousands of elements
-            with events.
+- `Browser`
+    - `#snapshot_id` -- Moved to browser-side `DOMMonitor` for better performance.
+    - `Javascript`
+        - `#dom_elements_with_events`
+            - Moved code to browser-side `DOMMonitor`.
+            - Updated it to return results in batches, in order to keep RAM
+                usage under control when processing large pages with thousands
+                of elements with events.
 - `Element::Capabilities`
     - `Auditable`
         - New
