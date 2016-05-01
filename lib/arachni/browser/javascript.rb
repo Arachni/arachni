@@ -39,10 +39,9 @@ class Javascript
         '<!doctype html', '<html', '<head', '<body', '<title', '<script'
     ].map { |s| Regexp.new s, Regexp::IGNORECASE }
 
-    NO_EVENTS_FOR_ELEMENTS = Set.new([
-        :base, :bdo, :br, :head, :html, :iframe, :meta, :param, :script, :style,
-        :title, :link, :hr
-    ])
+    NO_EVENTS_FOR_ELEMENTS = Set.new(%w(
+        base bdo br head html iframe meta param script style title link hr
+    ))
 
     EACH_DOM_ELEMENT_WITH_EVENTS_BATCH_SIZE = 100
 
@@ -252,13 +251,12 @@ class Javascript
         start      = 0
         batch_size = EACH_DOM_ELEMENT_WITH_EVENTS_BATCH_SIZE
 
-        i = 0
         loop do
             elements = dom_monitor.elements_with_events( start, batch_size )
             return if elements.empty?
 
             elements.each do |element|
-                next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name'].to_sym
+                next if NO_EVENTS_FOR_ELEMENTS.include? element['tag_name']
 
                 events = {}
                 element['events'].each do |event, handlers|
