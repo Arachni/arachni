@@ -175,7 +175,7 @@ class Manager
         cherrypy: 'CherryPy'
     }
 
-    PLATFORM_CACHE_SIZE = 1000
+    PLATFORM_CACHE_SIZE = 500
 
     def self.synchronize( &block )
         @mutex.synchronize( &block )

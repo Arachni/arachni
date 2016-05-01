@@ -18,7 +18,7 @@ module HTTP
 # @author Tasos Laskos <tasos.laskos@arachni-scanner.com>
 class Headers < Hash
 
-    FORMATTED_NAMES_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
+    FORMATTED_NAMES_CACHE = Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     CONTENT_TYPE = 'content-type'
     SET_COOKIE   = 'set-cookie'

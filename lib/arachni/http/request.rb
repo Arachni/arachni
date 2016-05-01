@@ -18,7 +18,7 @@ class Request < Message
 
     require_relative 'request/scope'
 
-    ENCODE_CACHE = Support::Cache::LeastRecentlyPushed.new( 10_000 )
+    ENCODE_CACHE = Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     # Default redirect limit, RFC says 5 max.
     REDIRECT_LIMIT = 5
