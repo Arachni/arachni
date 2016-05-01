@@ -978,9 +978,6 @@ class Browser
 
             print_debug
             print_debug_exception e
-
-            ap e
-            ap e.backtrace
         ensure
             @selenium.switch_to.default_content
         end
