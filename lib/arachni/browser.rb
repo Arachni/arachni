@@ -549,8 +549,6 @@ class Browser
     #   browser analysis can be performed and when new element audit workload
     #   (but possibly without any DOM relevance) is available.
     def snapshot_id
-        # return rand(999999999999999).to_s
-
         current_url = self.url
 
         id = Set.new
