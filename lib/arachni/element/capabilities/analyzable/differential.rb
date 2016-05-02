@@ -142,7 +142,7 @@ module Differential
         }
 
         # Holds all the data from the probes.
-        signatures = {
+        @signatures = {
             # Control baseline per input.
             controls:              {},
 
@@ -157,14 +157,14 @@ module Differential
         }
 
         # Populate the baseline/control forced-false signatures.
-        populate_control_signatures( opts, signatures )
+        populate_control_signatures( opts )
 
         http.after_run do
             # Populate the 'true' signatures.
-            populate_signatures( :true, opts, signatures )
+            populate_signatures( :true, opts )
 
             # Populate the 'false' signatures.
-            populate_signatures( :false, opts, signatures )
+            populate_signatures( :false, opts )
         end
 
         true
@@ -186,19 +186,18 @@ module Differential
 
     # Performs requests using the 'false' control seed and generates/stores
     # signatures based on the response bodies.
-    def populate_control_signatures( opts, signatures )
-        gather_signatures( opts[:false], opts ) do |signature, res, elem|
+    def populate_control_signatures( opts )
+        gather_signatures( opts[:false], opts ) do |signature, _, elem|
             altered_hash = elem.affected_input_name.hash
 
-            if signatures[:corrupted][altered_hash]
-                increase_received_responses( opts, signatures )
+            if @signatures[:corrupted][altered_hash]
+                increase_received_responses( opts )
                 next
             end
 
-            signatures[:controls][altered_hash] = signature
+            @signatures[:controls][altered_hash] = signature
 
-            response_check( res, signatures, elem, signature )
-            increase_received_responses( opts, signatures )
+            increase_received_responses( opts )
 
             print_status "Got default/control response for #{elem.type} " <<
                 "variable '#{elem.affected_input_name}' with action '#{elem.action}'."
@@ -207,11 +206,11 @@ module Differential
         end
     end
 
-    def populate_signatures( bool, opts, signatures )
+    def populate_signatures( bool, opts )
         opts[:pairs].each do |pair|
             pair_hash = pair.hash
 
-            signatures[pair_hash]      ||= {}
+            @signatures[pair_hash]      ||= {}
             @data_gathering[pair_hash] ||= {}
 
             expr = pair.to_a.first[bool == :true ? 0 : 1]
@@ -222,18 +221,16 @@ module Differential
             gather_signatures( expr, opts ) do |signature, res, elem|
                 altered_hash = elem.affected_input_name.hash
 
-                signatures[pair_hash][altered_hash]      ||= {}
+                @signatures[pair_hash][altered_hash]      ||= {}
                 @data_gathering[pair_hash][altered_hash] ||= {}
 
-                response_check( res, signatures, elem, signature )
-
-                if signatures[:corrupted][altered_hash]
-                    increase_received_responses( opts, signatures )
+                if @signatures[:corrupted][altered_hash]
+                    increase_received_responses( opts  )
                     next
                 end
 
-                if signature_sieve( altered_hash, signatures, pair_hash )
-                    increase_received_responses( opts, signatures )
+                if signature_sieve( altered_hash, pair_hash )
+                    increase_received_responses( opts )
                     next
                 end
 
@@ -244,31 +241,31 @@ module Differential
                 @data_gathering[pair_hash][altered_hash]["#{bool}_probes".to_sym] = true
 
                 # Store the mutation for the {Arachni::Issue}.
-                signatures[pair_hash][altered_hash][:mutation] ||= elem
+                @signatures[pair_hash][altered_hash][:mutation] ||= elem
 
                 # Keep the latest response for the {Arachni::Issue}.
-                signatures[pair_hash][altered_hash][:response] ||= res
+                @signatures[pair_hash][altered_hash][:response] ||= res
 
-                signatures[pair_hash][altered_hash][:injected_string] ||= expr
+                @signatures[pair_hash][altered_hash][:injected_string] ||= expr
 
-                signatures[pair_hash][altered_hash][bool] = signature
+                @signatures[pair_hash][altered_hash][bool] = signature
 
-                signature_sieve( altered_hash, signatures, pair_hash )
+                signature_sieve( altered_hash, pair_hash )
 
-                increase_received_responses( opts, signatures )
+                increase_received_responses( opts )
             end
         end
     end
 
-    def increase_received_responses( opts, signatures )
+    def increase_received_responses( opts )
         @data_gathering[:received_responses] += 1
-        finalize_if_done( opts, signatures )
+        finalize_if_done( opts )
     end
 
     # Check if we're done with data gathering and proceed to establishing a
     # {#populate_control_verification_signatures verification control baseline}
     # and {#match_signatures final analysis}.
-    def finalize_if_done( opts, signatures )
+    def finalize_if_done( opts )
         return if @data_gathering[:done] ||
             @data_gathering[:expected_responses] != @data_gathering[:received_responses]
         @data_gathering[:done] = true
@@ -276,21 +273,19 @@ module Differential
         # Lastly, we need to re-establish a new baseline in order to compare
         # it with the initial one so as to be sure that server behavior
         # hasn't suddenly changed in a way that would corrupt our analysis.
-        populate_control_verification_signatures( opts, signatures )
+        populate_control_verification_signatures( opts )
     end
 
     # Re-establishes a control baseline at the end of the audit, to make sure
     # that website behavior has remained stable, otherwise its behavior won't
     # be trustworthy.
-    def populate_control_verification_signatures( opts, signatures )
+    def populate_control_verification_signatures( opts )
         received_responses = 0
 
-        gather_signatures( opts[:false], opts ) do |signature, res, elem|
+        gather_signatures( opts[:false], opts ) do |signature, _, elem|
             altered_hash = elem.affected_input_name.hash
 
-            response_check( res, signatures, elem, signature )
-
-            if signatures[:corrupted][altered_hash]
+            if @signatures[:corrupted][altered_hash]
                 @data_gathering[:received_responses] += 1
                 next
             end
@@ -299,7 +294,7 @@ module Differential
                 "for #{elem.type} variable '#{elem.affected_input_name}' with" <<
                 " action '#{elem.action}'."
 
-            signatures[:controls_verification][altered_hash] = signature
+            @signatures[:controls_verification][altered_hash] = signature
 
             received_responses += 1
             next if received_responses != @data_gathering[:mutations_size]
@@ -307,7 +302,7 @@ module Differential
             # Once the new baseline has been established and we've got all the
             # data we need, crunch them and see if server behavior indicates
             # a vulnerability.
-            match_signatures( signatures )
+            match_signatures
         end
     end
 
@@ -331,6 +326,8 @@ module Differential
 
                 next if !completed
 
+                response_check( r, e )
+
                 received_responses += 1
 
                 next if received_responses !=
@@ -341,17 +338,19 @@ module Differential
                     refined = refined.refine!( signature )
                 end
 
+                signature_check( refined, e )
+
                 block.call refined, r, e
             end
         end
     end
 
-    def match_signatures( signatures )
-        controls              = signatures.delete( :controls )
-        controls_verification = signatures.delete( :controls_verification )
-        corrupted             = signatures.delete( :corrupted )
+    def match_signatures
+        controls              = @signatures.delete( :controls )
+        controls_verification = @signatures.delete( :controls_verification )
+        corrupted             = @signatures.delete( :corrupted )
 
-        signatures.each do |pair_hash, data|
+        @signatures.each do |pair_hash, data|
             data.each do |input, result|
                 next if !result[:response] || result[:corrupted] || corrupted[input]
 
@@ -403,7 +402,7 @@ module Differential
         end
     end
 
-    def response_check( response, signatures, elem, signature )
+    def response_check( response, elem )
         corrupted = false
 
         if !DIFFERENTIAL_ALLOWED_STATUS.include?( response.code )
@@ -420,25 +419,28 @@ module Differential
             corrupted = true
         end
 
-        if !corrupted && signature.empty?
-            print_bad 'Server returned empty response body,' <<
-                " aborting analysis for #{elem.type} variable " <<
-                "'#{elem.affected_input_name}' with action '#{self.action}'."
-            corrupted = true
-        end
-
         return if !corrupted
 
-        signatures[:corrupted][elem.affected_input_name.hash] = true
+        @signatures[:corrupted][elem.affected_input_name.hash] = true
     end
 
-    def signature_sieve( input, signatures, pair )
+    def signature_check( signature, elem )
+        return if !signature.empty?
+
+        print_bad 'Server returned empty response body,' <<
+            " aborting analysis for #{elem.type} variable " <<
+            "'#{elem.affected_input_name}' with action '#{self.action}'."
+
+        @signatures[:corrupted][elem.affected_input_name.hash] = true
+    end
+
+    def signature_sieve( input, pair )
         gathered  = @data_gathering[pair][input]
-        signature = signatures[pair][input]
+        signature = @signatures[pair][input]
 
         # If data has been corrupted for the given input, remove it.
         if signature[:corrupted]
-            signatures[pair].delete( input )
+            @signatures[pair].delete( input )
             return true
         end
 
@@ -448,9 +450,9 @@ module Differential
         #   * Remove the data if forced-false and boolean-false signatures
         #       don't match.
         if (@data_gathering[:controls][input] && gathered[:false_probes]) &&
-            (signatures[:controls][input] != signature[:false])
+            (@signatures[:controls][input] != signature[:false])
 
-            signatures[pair].delete( input )
+            @signatures[pair].delete( input )
             return true
         end
 
@@ -462,7 +464,7 @@ module Differential
         if (gathered[:false_probes] && gathered[:true_probes]) &&
             signature[:false].similar?( signature[:true], 0.1 )
 
-            signatures[pair].delete( input )
+            @signatures[pair].delete( input )
             return true
         end
 
