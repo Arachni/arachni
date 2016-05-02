@@ -47,12 +47,14 @@ class URI
     end
 
     CACHE_SIZES = {
-        parse:       5_000,
-        fast_parse:  5_000,
-        normalize:   5_000,
-        to_absolute: 5_000,
+        parse:       2_500,
+
+        normalize:   2_500,
+        to_absolute: 2_500,
+
         encode:      1_000,
         decode:      1_000,
+
         scope:       1_000
     }
 
@@ -123,10 +125,6 @@ class URI
             end
         end
 
-        # @note This method's results are cached for performance reasons.
-        #   If you plan on doing something destructive with its return value
-        #   duplicate it first because there may be references to it elsewhere.
-        #
         # Performs a parse that is less resource intensive than Ruby's URI lib's
         # method while normalizing the URL (will also discard the fragment and
         # path parameters).
@@ -147,8 +145,6 @@ class URI
             return if url.start_with?( '#' ) ||
                 url.downcase.start_with?( 'javascript:' )
 
-            cache = CACHE[__method__]
-
             # One to rip apart.
             url = url.dup
 
@@ -168,12 +164,6 @@ class URI
             }
 
             begin
-                if (v = cache[url]) && v == :err
-                    return
-                elsif v
-                    return v
-                end
-
                 # Parsing the URL in its schemeless form is trickier, so we
                 # fake it, pass a valid scheme to get through the parsing and
                 # then remove it at the other end.
@@ -270,15 +260,12 @@ class URI
 
                 components[:path] ||= components[:scheme] ? '/' : nil
 
-                components.values.each(&:freeze)
-
-                cache[c_url] = components.freeze
+                components
             rescue => e
                 print_debug "Failed to parse '#{c_url}'."
                 print_debug "Error: #{e}"
                 print_debug_backtrace( e )
 
-                cache[c_url] = :err
                 nil
             end
         end
@@ -335,8 +322,8 @@ class URI
         #   If you plan on doing something destructive with its return value
         #   duplicate it first because there may be references to it elsewhere.
         #
-        # Uses {.fast_parse} to parse and normalize the URL and then converts
-        # it to a common {String} format.
+        # Uses {.parse} to parse and normalize the URL and then converts it to
+        # a common {String} format.
         #
         # @param    [String]    url
         #
@@ -407,11 +394,7 @@ class URI
 
     # @note Will discard the fragment component, if there is one.
     #
-    # {.normalize Normalizes} and parses the provided URL.
-    #
     # @param    [String]    url
-    #   {String} URL to parse, `URI` to convert, or a `Hash` holding URL components
-    #   (for `URI::Generic.build`). Also accepts {Arachni::URI} for convenience.
     def initialize( url )
         @data = self.class.fast_parse( url )
 
