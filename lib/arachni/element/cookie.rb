@@ -187,11 +187,13 @@ class Cookie < Base
     # @return   [String]
     #   Converts self to a `Set-Cookie` string.
     def to_set_cookie
-        set_cookie = "#{self.to_s}; "
-        set_cookie << @data.map do |k, v|
+        set_cookie = "#{self.to_s}"
+
+        @data.each do |k, v|
             next if !v || !self.class.keep_for_set_cookie.include?( k )
-            "#{k.capitalize}=#{v}"
-        end.compact.join( '; ' )
+
+            set_cookie << "; #{k.capitalize}=#{v}"
+        end
 
         set_cookie << '; Secure'   if secure?
         set_cookie << '; HttpOnly' if http_only?
