@@ -513,9 +513,14 @@ class Javascript
     end
 
     def filesystem_path_for_script( filename )
-        name = "#{SCRIPT_LIBRARY}#{filename}"
-        name << '.js' if !name.end_with?( '.js')
-        File.expand_path( name )
+        @filesystem_path_for_script ||= {}
+
+        @filesystem_path_for_script[filename] ||= begin
+            name = "#{SCRIPT_LIBRARY}#{filename}"
+            name << '.js' if !name.end_with?( '.js')
+
+            File.expand_path( name )
+        end
     end
 
     def script_url_for( filename )
