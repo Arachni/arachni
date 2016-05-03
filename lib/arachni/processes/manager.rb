@@ -44,7 +44,7 @@ class Manager
             while sleep 0.1 do
                 begin
                     Process.kill( Arachni.windows? ? 'KILL' : 'TERM', pid )
-                # Either kill was succesful or we don't have enough perms or
+                # Either kill was successful or we don't have enough perms or
                 # we hit a reused PID for someone else's process, either way,
                 # consider the process gone.
                 rescue Errno::ESRCH, Errno::EPERM
@@ -127,7 +127,7 @@ class Manager
     #   PID of the process.
     def spawn( executable, options = {} )
         fork = options.delete(:fork)
-        fork = true if fork.nil?
+        fork = false if fork.nil?
 
         stdin      = options.delete(:stdin)
         stdout     = options.delete(:stdout)
