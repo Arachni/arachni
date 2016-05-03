@@ -9,6 +9,7 @@
 require 'childprocess'
 require 'watir-webdriver'
 require_relative 'selenium/webdriver/element'
+require_relative 'selenium/webdriver/remote/typhoeus'
 require_relative 'processes/manager'
 require_relative 'browser/element_locator'
 require_relative 'browser/javascript'
@@ -1107,7 +1108,20 @@ class Browser
     def selenium
         return @selenium if @selenium
 
-        client = Selenium::WebDriver::Remote::Http::Default.new
+        # Using Typhoeus for Selenium results in memory violation errors on
+        # Windows, so use the default Net::HTTP-based client.
+        if Arachni.windows?
+            client = Selenium::WebDriver::Remote::Http::Default.new
+
+        # However, using the default client results in Threads being used because
+        # Net::HTTP uses them for timeouts, and Threads are resource intensive
+        # (around 1MB per Thread).
+        #
+        # So, if we're not on Windows, use Typhoeus.
+        else
+            client = Selenium::WebDriver::Remote::Http::Typhoeus.new
+        end
+
         client.timeout = SELENIUM_TIMEOUT
 
         @selenium = Selenium::WebDriver.for(
