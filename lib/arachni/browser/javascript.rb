@@ -162,8 +162,16 @@ class Javascript
 
     # Blocks until the browser page is {#ready? ready}.
     def wait_till_ready
-        return if !supported?
+        print_debug_level_2 'Waiting for custom JS...'
+
+        if !supported?
+            print_debug_level_2 '...failed.'
+            return
+        end
+
         sleep 0.1 while !ready?
+
+        print_debug_level_2 '...done.'
     end
 
     # @return   [Bool]

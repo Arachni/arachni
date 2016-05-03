@@ -405,12 +405,8 @@ class Browser
     end
 
     def wait_till_ready
-        print_debug_level_2 'Waiting for custom JS...'
         @javascript.wait_till_ready
-        print_debug_level_2 '...done.'
-
         wait_for_timers
-
         wait_for_pending_requests
     end
 
@@ -706,6 +702,10 @@ class Browser
                 print_debug_level_2 "[waiting for requests]: #{event} (#{options}) #{locator}"
                 wait_for_pending_requests
                 print_debug_level_2 "[done waiting for requests]: #{event} (#{options}) #{locator}"
+
+                # Maybe we switched to a different page, wait until the custom
+                # JS env has been put in place.
+                javascript.wait_till_ready
 
                 update_cookies
             end
