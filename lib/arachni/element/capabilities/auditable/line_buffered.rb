@@ -81,7 +81,9 @@ module LineBuffered
             # and our own buffer could have lines that didn't exceed the flush
             # threshold, hence we combine them
             if buffer && !buffer[:data].empty?
-                response.body = "#{buffer[:data]}#{response.body}"
+                b = response.body
+                response.body = buffer[:data]
+                response.body << b
             end
 
             print_debug_level_3 "Calling: #{block}"
