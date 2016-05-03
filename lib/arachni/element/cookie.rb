@@ -349,7 +349,7 @@ class Cookie < Base
         end
 
         def in_html?( html )
-            html =~ /http-equiv/i && html =~ /set-cookie/i
+            html =~ /set-cookie/i
         end
 
         # Extracts cookies from the `Set-Cookie` HTTP response header field.
