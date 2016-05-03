@@ -19,8 +19,11 @@
             triggered for each DOM depth.
         - `--daemon-friendly` -- Disables status screen.
 - HTTP
-    - `ProxyServer` -- Fixed state of abruptly closed SSL interceptor connections
-        leading to frozen browser operations.
+    - `ProxyServer`
+        - Fixed state of abruptly closed SSL interceptor connections leading to
+            frozen browser operations.
+        - Added support for configurable concurrency of origin requests to keep
+            the amount of `Thread`s low.
     - `Client`
         - Added `X-Arachni-Scan-Seed` header that includes the random scan seed.
         - `Dynamic404Handler`
