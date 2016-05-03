@@ -46,26 +46,28 @@ class Connection < Arachni::Reactor::Connection
         end
 
         @parser.on_message_complete = proc do
-            method  = @parser.http_method.downcase.to_sym
-            headers = cleanup_request_headers( @parser.headers )
+            @parent.thread_pool.post do
+                method  = @parser.http_method.downcase.to_sym
+                headers = cleanup_request_headers( @parser.headers )
 
-            print_debug_level_3 "Request received: #{@parser.http_method} #{@parser.request_url}"
+                print_debug_level_3 "Request received: #{@parser.http_method} #{@parser.request_url}"
 
-            if method == :connect
-                handle_connect( headers )
-                next
-            end
+                if method == :connect
+                    handle_connect( headers )
+                    next
+                end
 
-            @request = Arachni::HTTP::Request.new(
-                http_opts.merge(
-                    url:     sanitize_url( @parser.request_url, headers ),
-                    method:  method,
-                    body:    @body,
-                    headers: headers
+                @request = Arachni::HTTP::Request.new(
+                    http_opts.merge(
+                        url:     sanitize_url( @parser.request_url, headers ),
+                        method:  method,
+                        body:    @body,
+                        headers: headers
+                    )
                 )
-            )
 
-            handle_request( @request )
+                handle_request( @request )
+            end
         end
     end
 
@@ -84,42 +86,40 @@ class Connection < Arachni::Reactor::Connection
     def handle_request( request )
         print_debug_level_3 'Processing request.'
 
-        Thread.new do
-            if @options[:request_handler]
-                print_debug_level_3 "-- Has special handler: #{@options[:request_handler]}"
+        if @options[:request_handler]
+            print_debug_level_3 "-- Has special handler: #{@options[:request_handler]}"
 
-                # Provisional empty, response in case the request_handler wants us to
-                # skip performing the request.
-                response = Response.new( url: request.url )
-                response.request = request
+            # Provisional empty, response in case the request_handler wants us to
+            # skip performing the request.
+            response = Response.new( url: request.url )
+            response.request = request
 
-                # If the handler returns false then don't perform the HTTP request.
-                if @options[:request_handler].call( request, response )
-                    print_debug_level_3 '-- Handler approves, running...'
+            # If the handler returns false then don't perform the HTTP request.
+            if @options[:request_handler].call( request, response )
+                print_debug_level_3 '-- Handler approves, running...'
 
-                    # Even though it's a blocking request, force it to go through
-                    # the HTTP::Client in order to handle cookie update and
-                    # fingerprinting handlers.
-                    HTTP::Client.queue( request )
-                    response = request.run
-
-                    print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
-                else
-                    print_debug_level_3 '-- Handler did not approve, will not run.'
-                end
-            else
-                print_debug_level_3 '-- Running...'
-
+                # Even though it's a blocking request, force it to go through
+                # the HTTP::Client in order to handle cookie update and
+                # fingerprinting handlers.
                 HTTP::Client.queue( request )
                 response = request.run
 
                 print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
+            else
+                print_debug_level_3 '-- Handler did not approve, will not run.'
             end
+        else
+            print_debug_level_3 '-- Running...'
 
-            print_debug_level_3 'Processed request.'
+            HTTP::Client.queue( request )
+            response = request.run
 
-            handle_response( response )
+            print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
         end
+
+        print_debug_level_3 'Processed request.'
+
+        handle_response( response )
     end
 
     def http_version

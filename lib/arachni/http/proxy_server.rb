@@ -21,6 +21,8 @@ class ProxyServer
     include Arachni::UI::Output
     personalize_output
 
+    DEFAULT_CONCURRENCY = 4
+
     # @param   [Hash]  options
     # @option options   [String]    :address    ('0.0.0.0')
     #   Address to bind to.
@@ -28,6 +30,8 @@ class ProxyServer
     #   Port number to listen on -- defaults to a random port.
     # @option options   [Integer]    :timeout
     #   HTTP time-out for each request in milliseconds.
+    # @option options   [Integer]    :concurrency   (DEFAULT_CONCURRENCY)
+    #   Amount of origin requests to be active at any given time.
     # @option options   [Block]    :response_handler
     #   Block to be called to handle each response as it arrives -- will be
     #   passed the request and response.
@@ -40,8 +44,17 @@ class ProxyServer
 
         @active_connections = Concurrent::Map.new
 
-        @options[:address] ||= '127.0.0.1'
-        @options[:port]    ||= Utilities.available_port
+        @options[:concurrency] ||= DEFAULT_CONCURRENCY
+        @options[:address]     ||= '127.0.0.1'
+        @options[:port]        ||= Utilities.available_port
+    end
+
+    def thread_pool
+        @thread_pool ||= Concurrent::ThreadPoolExecutor.new(
+            # Only spawn threads when necessary, not from the get go.
+            min_threads: 0,
+            max_threads: @options[:concurrency]
+        )
     end
 
     # Starts the server without blocking, it'll only block until the server is
