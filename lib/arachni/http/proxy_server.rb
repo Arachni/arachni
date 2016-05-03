@@ -39,7 +39,11 @@ class ProxyServer
     #   Block to be called to handle each request as it arrives -- will be
     #   passed the request and response.
     def initialize( options = {} )
-        @reactor = Arachni::Reactor.new
+        @reactor = Arachni::Reactor.new(
+            # Higher than the defaults to keep object allocations down.
+            select_timeout:    0.1,
+            max_tick_interval: 0.1
+        )
         @options = options
 
         @active_connections = Concurrent::Map.new
