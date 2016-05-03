@@ -1682,6 +1682,10 @@ EOJS
 
     def whitelist_asset_domains( response )
         synchronize do
+            @whitelist_asset_domains ||= Support::LookUp::HashSet.new
+            return if @whitelist_asset_domains.include? response.body
+            @whitelist_asset_domains << response.body
+
             ASSET_EXTRACTORS.each do |regexp|
                 response.body.scan( regexp ).flatten.compact.each do |url|
                     next if !(domain = self.class.add_asset_domain( url ))
