@@ -755,7 +755,12 @@ class URI
     end
 
     def dup
-        self.class.new( to_s )
+        i = self.class.allocate
+        instance_variables.each do |iv|
+            next if !(v = instance_variable_get( iv ))
+            i.instance_variable_set iv, v.dup
+        end
+        i
     end
 
     def _dump( _ )

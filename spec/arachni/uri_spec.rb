@@ -239,13 +239,6 @@ describe Arachni::URI do
             expect(parsed_uri[:query]).to eq(query)
         end
 
-        it 'returns a frozen hash (with frozen values)' do
-            h = described_class.fast_parse( 'http://test.com/stuff/' )
-
-            expect { h[:stuff] = 0 }.to raise_error
-            expect { h[:path] << '/' }.to raise_error
-        end
-
         it 'ignores javascript: URLs' do
             expect(described_class.fast_parse( 'javascript:stuff()' )).to be_nil
         end
