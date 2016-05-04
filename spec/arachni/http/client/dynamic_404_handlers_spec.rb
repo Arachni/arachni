@@ -121,6 +121,38 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
                 end
             end
 
+            context 'which ignores anything past the resource name' do
+                context 'with a non existent resource' do
+                    it 'returns true' do
+                        res = nil
+                        client.get( url + '/ignore-after-filename/123dd/' ) { |c_res| res = c_res }
+                        client.run
+
+                        bool = nil
+                        subject._404?( res ) { |c_bool| bool = c_bool }
+                        client.run
+
+                        expect(bool).to be_truthy
+                    end
+                end
+            end
+
+            context 'which ignores anything ahead of the resource name' do
+                context 'with a non existent resource' do
+                    it 'returns true' do
+                        res = nil
+                        client.get( url + '/ignore-before-filename/fff123/' ) { |c_res| res = c_res }
+                        client.run
+
+                        bool = nil
+                        subject._404?( res ) { |c_bool| bool = c_bool }
+                        client.run
+
+                        expect(bool).to be_truthy
+                    end
+                end
+            end
+
             context 'when checking for a resource with a name that routes based on dash' do
                 context 'and the handler is pre-dash sensitive' do
                     context 'and is found' do

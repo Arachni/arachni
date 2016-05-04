@@ -27,7 +27,9 @@
     - `Client`
         - Added `X-Arachni-Scan-Seed` header that includes the random scan seed.
         - `Dynamic404Handler`
-            - Added training scenario for when dashes are used as routing separators.
+            - Added more training scenarios for when:
+                - Dashes are used as routing separators.
+                - Directory name prepending and appending is ignored.
             - Updated to not dismiss redirects but follow the location.
 - `Browser`
     - `#snapshot_id` -- Moved to browser-side `DOMMonitor` for better performance.

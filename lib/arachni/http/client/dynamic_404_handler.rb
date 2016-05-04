@@ -372,16 +372,22 @@ class Dynamic404Handler
         up_to_path = uri.up_to_path
 
         trv_back = File.dirname( Arachni::URI( up_to_path ).path )
-        trv_back += '/' if trv_back[-1] != '/'
+        trv_back << '/' if trv_back[-1] != '/'
 
         parsed = uri.dup
         parsed.path   = trv_back
         parsed.query  = ''
         trv_back_url  = parsed.to_s
 
-        [
+        g = [
             # Get a random path with an extension.
-            proc { up_to_path + random_string + '.' + random_string[0..precision] },
+            proc {
+                s = up_to_path.dup
+                s << random_string
+                s << '.'
+                s << random_string[0..precision]
+                s
+            },
 
             # Get a random path without an extension.
             proc { up_to_path + random_string },
@@ -397,11 +403,32 @@ class Dynamic404Handler
             proc { trv_back_url + random_string_alpha_capital },
 
             # Move up a dir and get a random file with an extension.
-            proc { trv_back_url + random_string + '.' + random_string[0..precision] },
+            proc {
+                s = trv_back_url.dup
+                s << random_string
+                s << '.'
+                s << random_string[0..precision]
+                s
+            },
 
             # Get a random directory.
-            proc { up_to_path + random_string + '/' }
+            proc {
+                s = up_to_path.dup
+                s << random_string
+                s << '/'
+                s
+            }
         ]
+
+        if !(rn = uri.resource_name.to_s).empty?
+            # Append a random string to the resource name.
+            g << proc { url.gsub( rn, "#{rn}#{random_string[0..precision]}" ) }
+
+            # Prepend a random string to the resource name.
+            g << proc { url.gsub( rn, "#{random_string[0..precision]}#{rn}" ) }
+        end
+
+        g
     end
 
     # @return   [Array<Proc>]
@@ -415,12 +442,24 @@ class Dynamic404Handler
 
         if !resource_name.empty?
             # Get an existing resource with a random extension.
-            probes << proc { up_to_path + resource_name + '.' + random_string[0..precision] }
+            probes << proc {
+                s = up_to_path.dup
+                s << resource_name
+                s << '.'
+                s << random_string[0..precision]
+                s
+            }
         end
 
         if resource_extension
             # Get a random filename with an existing extension.
-            probes << proc { up_to_path + random_string + '.' + resource_extension }
+            probes << proc {
+                s = up_to_path.dup
+                s << random_string
+                s << '.'
+                s << resource_extension
+                s
+            }
         end
 
         # Some webapps do routing based on name resources with "-" as a separator.
