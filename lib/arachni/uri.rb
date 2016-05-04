@@ -758,7 +758,7 @@ class URI
         i = self.class.allocate
         instance_variables.each do |iv|
             next if !(v = instance_variable_get( iv ))
-            i.instance_variable_set iv, v.dup
+            i.instance_variable_set iv, (v.dup rescue v)
         end
         i
     end
