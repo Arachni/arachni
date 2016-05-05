@@ -57,6 +57,11 @@ class Connection < Arachni::Reactor::Connection
             end
 
             @parent.thread_pool.post do
+                if closed?
+                    print_debug_level_3 'Connection closed while waiting on the thread-pool.'
+                    next
+                end
+
                 @request = Arachni::HTTP::Request.new(
                     http_opts.merge(
                         url:     sanitize_url( @parser.request_url, headers ),
