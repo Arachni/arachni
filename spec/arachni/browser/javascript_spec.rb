@@ -131,6 +131,33 @@ describe Arachni::Browser::Javascript do
     end
 
     describe '#each_dom_element_with_events' do
+        context 'when given a whitelist of tag names' do
+            it 'only returns those types of elements' do
+                @browser.load @dom_monitor_url + 'elements_with_events/whitelist'
+
+                e = []
+                subject.each_dom_element_with_events ['span'] do |element|
+                    e << element
+                end
+
+                expect(e).to eq([
+                    {
+                     'tag_name'   => 'span',
+                     'events'     =>
+                         {
+                             click: [
+                                 'function (parent_click) {}',
+                                 'function (child_click) {}',
+                                 'function (window_click) {}',
+                                 'function (document_click) {}'
+                             ]
+                         },
+                     'attributes' => { 'id' => 'child-span' }
+                    }
+                ])
+            end
+        end
+
         context 'when using event attributes' do
             it 'returns information about all DOM elements along with their events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/attributes'

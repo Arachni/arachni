@@ -16,7 +16,7 @@ class UIInput < Base
 
     include Arachni::Element::Capabilities::DOMOnly
 
-    SUPPORTED_TYPES = Set.new([:input, :textarea])
+    SUPPORTED_TYPES = %w(input textarea)
 
     def self.type
         :ui_input
@@ -27,10 +27,8 @@ class UIInput < Base
 
         return inputs if !browser.javascript.supported? || !in_html?( page.body )
 
-        browser.elements_with_events.each do |locator, events|
-            next if !SUPPORTED_TYPES.include?( locator.tag_name )
-            next if locator.attributes['type'] &&
-                locator.attributes['type'] != 'text'
+        browser.each_element_with_events SUPPORTED_TYPES do |locator, events|
+            next if locator.attributes['type'] && locator.attributes['type'] != 'text'
 
             events.each do |event, _|
                 name = locator.attributes['name'] || locator.attributes['id'] ||

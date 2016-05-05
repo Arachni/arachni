@@ -16,7 +16,7 @@ class UIForm < Base
 
     include Arachni::Element::Capabilities::DOMOnly
 
-    SUPPORTED_TYPES = Set.new([:input, :button])
+    SUPPORTED_TYPES = %w(input button)
 
     attr_accessor :opening_tags
 
@@ -46,8 +46,7 @@ class UIForm < Base
         return ui_forms if inputs.empty?
 
         # Looks like we have input groups, get buttons with events.
-        browser.elements_with_events.each do |locator, events|
-            next if !SUPPORTED_TYPES.include?( locator.tag_name )
+        browser.each_element_with_events SUPPORTED_TYPES do |locator, events|
             next if locator.tag_name == :input &&
                 locator.attributes['type'] != 'button' &&
                 locator.attributes['type'] != 'submit'

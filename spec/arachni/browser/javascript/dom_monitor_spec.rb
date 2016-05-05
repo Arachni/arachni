@@ -172,6 +172,28 @@ describe Arachni::Browser::Javascript::DOMMonitor do
             ])
         end
 
+        context 'when given a whitelist of tag names' do
+            it 'only returns those types of elements' do
+                load '/elements_with_events/whitelist'
+
+                expect(subject.elements_with_events( 0, 100, ['span'] )).to eq([
+                    {
+                        'tag_name'   => 'span',
+                        'events'     =>
+                            {
+                                'click' => [
+                                    'function (parent_click) {}',
+                                    'function (child_click) {}',
+                                    'function (window_click) {}',
+                                    'function (document_click) {}'
+                                ]
+                            },
+                        'attributes' => { 'id' => 'child-span' }
+                    }
+                ])
+            end
+        end
+
         context 'when it has a dot delimited custom event' do
             it 'retains the first part' do
                 load '/elements_with_events/custom-dot-delimited'

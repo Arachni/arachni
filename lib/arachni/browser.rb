@@ -215,7 +215,6 @@ class Browser
         # Captures HTTP::Response objects per URL for open windows.
         @window_responses = {}
 
-        @elements_with_events = {}
 
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
@@ -233,7 +232,6 @@ class Browser
 
     def clear_buffers
         synchronize do
-            @elements_with_events.clear
             @preloads.clear
             @cache.clear
             @captured_pages.clear
@@ -466,10 +464,10 @@ class Browser
     # @yield    [ElementLocator,Array<Symbol>]
     #   Element locator along with the element's applicable events along with
     #   their handlers and attributes.
-    def each_element_with_events
+    def each_element_with_events( whitelist = [])
         current_url = self.url
 
-        javascript.each_dom_element_with_events do |element|
+        javascript.each_dom_element_with_events whitelist do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
             events     = element['events']
@@ -512,31 +510,6 @@ class Browser
         self
     end
 
-    # @note The results will be cached, if direct access in necessary
-    #   use {#each_element_with_events}.
-    #
-    # @return    [Hash<ElementLocator,Array<Symbol>>]
-    #   Element locator along with the element's applicable events along with
-    #   their handlers and attributes.
-    def elements_with_events( clear_cache = false )
-        current_url = self.url
-
-        @elements_with_events.clear if clear_cache
-
-        if @elements_with_events.include?( current_url )
-            return @elements_with_events[current_url]
-        end
-
-        @elements_with_events.clear
-        @elements_with_events[current_url] ||= {}
-
-        each_element_with_events do |locator, events|
-            @elements_with_events[current_url][locator] = events
-        end
-
-        @elements_with_events[current_url]
-    end
-
     # Triggers all events on all elements (**once**) and captures
     # {#page_snapshots page snapshots}.
     #
@@ -546,7 +519,7 @@ class Browser
         dom = self.state
 
         count = 1
-        elements_with_events( true ).each do |locator, events|
+        each_element_with_events do |locator, events|
             state = "#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
             next if skip_state?( state )
             skip_state state

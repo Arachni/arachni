@@ -43,7 +43,7 @@ class Javascript
         base bdo br head html iframe meta param script style title link hr
     ))
 
-    EACH_DOM_ELEMENT_WITH_EVENTS_BATCH_SIZE = 100
+    EACH_DOM_ELEMENT_WITH_EVENTS_BATCH_SIZE = 300
 
     EVENTS = Set.new([
         :onclick,
@@ -260,14 +260,14 @@ class Javascript
     #
     # @return   [Array<Hash>]
     #   Information about all DOM elements, including any registered event listeners.
-    def each_dom_element_with_events
+    def each_dom_element_with_events( whitelist = [] )
         return if !supported?
 
         start      = 0
         batch_size = EACH_DOM_ELEMENT_WITH_EVENTS_BATCH_SIZE
 
         loop do
-            elements = dom_monitor.elements_with_events( start, batch_size )
+            elements = dom_monitor.elements_with_events( start, batch_size, whitelist )
             return if elements.empty?
 
             elements.each do |element|
