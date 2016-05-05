@@ -19,7 +19,7 @@ module Buffered
         fail ArgumentError, 'Missing block.' if !block_given?
 
         options     = options.dup
-        buffer_size = options[:line_buffer_size] || DEFAULT_BUFFER_SIZE
+        buffer_size = options[:buffer_size] || DEFAULT_BUFFER_SIZE
 
         print_debug_level_2 "About to audit at least #{buffer_size} bytes at a time: #{audit_id}"
 
