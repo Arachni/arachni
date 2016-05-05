@@ -46,17 +46,17 @@ class Connection < Arachni::Reactor::Connection
         end
 
         @parser.on_message_complete = proc do
+            method  = @parser.http_method.downcase.to_sym
+            headers = cleanup_request_headers( @parser.headers )
+
+            print_debug_level_3 "Request received: #{@parser.http_method} #{@parser.request_url}"
+
+            if method == :connect
+                handle_connect( headers )
+                next
+            end
+
             @parent.thread_pool.post do
-                method  = @parser.http_method.downcase.to_sym
-                headers = cleanup_request_headers( @parser.headers )
-
-                print_debug_level_3 "Request received: #{@parser.http_method} #{@parser.request_url}"
-
-                if method == :connect
-                    handle_connect( headers )
-                    next
-                end
-
                 @request = Arachni::HTTP::Request.new(
                     http_opts.merge(
                         url:     sanitize_url( @parser.request_url, headers ),
@@ -119,7 +119,7 @@ class Connection < Arachni::Reactor::Connection
 
         print_debug_level_3 'Processed request.'
 
-        handle_response( response )
+        reactor.schedule { handle_response( response ) }
     end
 
     def http_version
