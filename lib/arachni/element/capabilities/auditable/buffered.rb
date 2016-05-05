@@ -13,7 +13,7 @@ module Auditable
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 module Buffered
 
-    DEFAULT_BUFFER_SIZE = 5_000
+    DEFAULT_BUFFER_SIZE = 15_000
 
     def buffered_audit( payloads, options = {}, &block )
         fail ArgumentError, 'Missing block.' if !block_given?
