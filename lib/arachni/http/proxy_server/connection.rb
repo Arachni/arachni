@@ -56,22 +56,38 @@ class Connection < Arachni::Reactor::Connection
                 next
             end
 
-            @parent.thread_pool.post do
+            if !@parent.has_available_request_tokens?
+                print_debug_level_3 'Waiting for a request token.'
+            end
+
+            @parent.get_request_token do |token|
+                print_debug_level_3 "Got request token ##{token}."
+
                 if closed?
-                    print_debug_level_3 'Connection closed while waiting on the thread-pool.'
+                    print_debug_level_3 'Connection closed while waiting for a request token.'
+                    @parent.return_request_token( token )
+                    print_debug_level_3 "Returned request token ##{token}."
+
                     next
                 end
 
-                @request = Arachni::HTTP::Request.new(
-                    http_opts.merge(
-                        url:     sanitize_url( @parser.request_url, headers ),
-                        method:  method,
-                        body:    @body,
-                        headers: headers
-                    )
-                )
+                Thread.new do
+                    begin
+                        @request = Arachni::HTTP::Request.new(
+                            http_opts.merge(
+                                url:     sanitize_url( @parser.request_url, headers ),
+                                method:  method,
+                                body:    @body,
+                                headers: headers
+                            )
+                        )
 
-                handle_request( @request )
+                        handle_request( @request )
+                    ensure
+                        @parent.return_request_token( token )
+                        print_debug_level_3 "Returned request token ##{token}."
+                    end
+                end
             end
         end
     end

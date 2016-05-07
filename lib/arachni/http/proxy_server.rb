@@ -51,14 +51,8 @@ class ProxyServer
         @options[:concurrency] ||= DEFAULT_CONCURRENCY
         @options[:address]     ||= '127.0.0.1'
         @options[:port]        ||= Utilities.available_port
-    end
 
-    def thread_pool
-        @thread_pool ||= Concurrent::ThreadPoolExecutor.new(
-            # Only spawn threads when necessary, not from the get go.
-            min_threads: 0,
-            max_threads: @options[:concurrency]
-        )
+        @concurrency_control_tokens = @reactor.create_queue
     end
 
     # Starts the server without blocking, it'll only block until the server is
@@ -68,11 +62,15 @@ class ProxyServer
 
         @reactor.run_in_thread
 
+        @options[:concurrency].times do |i|
+            @concurrency_control_tokens << i
+        end
+
         @reactor.on_error do |_, e|
             print_exception e
         end
 
-        listener = @reactor.listen(
+        @reactor.listen(
             @options[:address], @options[:port], Connection,
             @options.merge( parent: self )
         )
@@ -81,8 +79,22 @@ class ProxyServer
         nil
     end
 
+    def get_request_token( &block )
+        @concurrency_control_tokens.pop( &block )
+    end
+
+    def return_request_token( token )
+        @concurrency_control_tokens << token
+    end
+
+    def has_available_request_tokens?
+        @concurrency_control_tokens.empty?
+    end
+
     def shutdown
         print_debug_level_2 'Shutting down..'
+
+        @thread_pool.kill if @thread_pool
 
         @reactor.stop
         @reactor.wait
