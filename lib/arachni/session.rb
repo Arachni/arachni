@@ -256,8 +256,8 @@ class Session
 
     # @param    [Block] block
     #   Block to be passed the {#browser}.
-    def with_browser( &block )
-        block.call browser
+    def with_browser( *args, &block )
+        block.call browser, *args
     end
 
     # @param    [Hash]   http_options
