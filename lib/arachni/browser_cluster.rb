@@ -107,6 +107,7 @@ class BrowserCluster
 
         # Jobs are off-loaded to disk.
         @jobs = Support::Database::Queue.new
+        @jobs.max_buffer_size = 10
 
         # Worker pool holding BrowserCluster::Worker instances.
         @workers     = []
