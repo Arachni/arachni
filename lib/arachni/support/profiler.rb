@@ -19,7 +19,7 @@ class Profiler
 
     def self.write_samples_to_disk( file, options = {} )
         profiler = Support::Profiler.new
-        # profiler.trace_allocations
+        profiler.trace_allocations
 
         Thread.new do
             begin
@@ -40,14 +40,14 @@ class Profiler
     end
 
     def print_object_allocations( o )
+        ap 'Reachable:   ' + ObjectSpace.reachable_objects_from(o).to_s  #=> [referenced, objects, ...]
         ap 'Object ID:   ' + o.object_id.to_s
-        ap 'Source file: ' + ObjectSpace.allocation_sourcefile(o)
+        ap 'Source file: ' + ObjectSpace.allocation_sourcefile(o).to_s
         ap 'Source line: ' + ObjectSpace.allocation_sourceline(o).to_s
-        # ap 'Generation:  ' + ObjectSpace.allocation_generation(o).to_s
-        # ap 'Class path:  ' + ObjectSpace.allocation_class_path(o).to_s
+        ap 'Generation:  ' + ObjectSpace.allocation_generation(o).to_s
+        ap 'Class path:  ' + ObjectSpace.allocation_class_path(o).to_s
         ap 'Method:      ' + ObjectSpace.allocation_method_id(o).to_s
         ap 'Memsize:     ' + ObjectSpace.memsize_of(o).to_s
-        ap 'Reachable:   ' + ObjectSpace.reachable_objects_from(o).to_s  #=> [referenced, objects, ...]
         ap '-' * 200
     end
 
@@ -80,8 +80,8 @@ class Profiler
     end
 
     def object_space( options = {} )
-        klass       = options[:class]
-        namespaces  = options[:namespaces] || [
+        klass      = options[:class]
+        namespaces = options[:namespaces] || [
             Arachni,
             Ethon,
             Typhoeus,
@@ -96,6 +96,8 @@ class Profiler
             Thread
         ]
 
+        namespaces = Set.new( namespaces )
+
         max_entries = options[:max_entries] || 50
 
         object_space    = {}
@@ -105,11 +107,27 @@ class Profiler
             next if o.class != klass && !object_within_namespace?( o, namespaces )
 
             # if o.class == Page
-            #     print_object_allocations( o )
+            #     # print_object_allocations( o )
             #
             #     # ap ObjectSpace.allocation_class_path( o ).to_s
             #     # ap "#{ObjectSpace.allocation_sourcefile( o )}:#{ObjectSpace.allocation_sourceline( o )}"
-            #     # ap '-' * 120
+            #     ap find_references( o )
+            # end
+
+            # if o.class == String && o.size > 1_000_000
+            #     print_object_allocations( o )
+            #     # print_references( o )
+            #     # print_dependencies( o )
+            #
+            #     Process.kill 'KILL', Process.pid
+            # end
+
+            # if o.class == Thread
+            #     print_object_allocations( o )
+            #     # print_references( o )
+            #     # print_dependencies( o )
+            #
+            #     # Process.kill 'KILL', Process.pid
             # end
 
             object_space[o.class] ||= {
@@ -117,9 +135,21 @@ class Profiler
                 count:   0
             }
 
-            object_space[o.class][:memsize] += ObjectSpace.memsize_of(o)
-            object_space[o.class][:count]   += 1
+            if o.class == String
+                object_space[o.class][:memsize] += o.bytesize
+            else
+                object_space[o.class][:memsize] += ObjectSpace.memsize_of(o)
+            end
+
+            object_space[o.class][:count] += 1
         end
+
+        ap '-' * 120
+
+        object_space['All'] = {
+            memsize: ObjectSpace.memsize_of_all,
+            count:   ObjectSpace.count_objects_size[:TOTAL]
+        }
 
         object_space = Hash[object_space.sort_by { |_, v| v[:count] }.reverse[0..max_entries]]
 
@@ -151,9 +181,18 @@ class Profiler
     def write_object_space( file, options = {} )
         consumption = resource_consumption
 
-        str = "RAM: #{consumption[:memory_usage].round(3)}MB"
+        mem = consumption[:memory_usage].round(3)
+
+        delta_mem = 0
+        if @consumption
+            delta_mem = (mem - @consumption[:memory_usage]).round(3)
+        end
+
+        str = "RAM: #{mem}MB (#{delta_mem}MB)"
         str << " (#{consumption[:memory_utilization]}%)"
         str << " - CPU: #{consumption[:cpu_utilization]}%\n\n"
+
+        @consumption = consumption
 
         os      = object_space( options )
         maxsize = os.keys.map(&:to_s).map(&:size).sort.reverse.first

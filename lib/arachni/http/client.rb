@@ -555,7 +555,8 @@ class Client
         end
 
         if add_callbacks
-            request.on_complete( &method(:global_on_complete) )
+            @global_on_complete ||= method(:global_on_complete)
+            request.on_complete( &@global_on_complete )
         end
 
         synchronize { @request_count += 1 }

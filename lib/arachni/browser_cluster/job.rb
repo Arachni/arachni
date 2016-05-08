@@ -48,10 +48,14 @@ class Job
     #   Duration of the job, in seconds.
     attr_accessor :time
 
+    attr_accessor :args
+
     # @param    [Hash]  options
     def initialize( options = {} )
         @options      = options.dup
         @options[:id] = @id = options.delete(:id) || increment_id
+
+        @args = @options[:args] || []
 
         options.each { |k, v| options[k] = send( "#{k}=", v ) }
     end
@@ -190,6 +194,7 @@ class Job
 
     def forward_options( options )
         add_id( options ).merge(
+            args:         args,
             never_ending: never_ending?,
             forwarder:    self.clean_copy
         )

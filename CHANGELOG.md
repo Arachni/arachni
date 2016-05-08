@@ -39,14 +39,19 @@
             - Updated it to return results in batches, in order to keep RAM
                 usage under control when processing large pages with thousands
                 of elements with events.
-- `Element::Capabilities`
-    - `Auditable`
-        - New
-            - `Buffered` -- Reads audit responses in chunks.
-            - `LineBuffered` -- Reads audit responses in chunks of lines.
-    - `Analyzable`
-        - `Differential`, `Signature` -- Updated to use `#line_buffered_audit`
-            to keep RAM consumption low when analyzing large responses.
+- `Element`
+    - `Capabilities`
+        - `Auditable`
+            - New
+                - `Buffered` -- Reads audit responses in chunks.
+                - `LineBuffered` -- Reads audit responses in chunks of lines.
+        - `Analyzable`
+            - `Differential`, `Signature` -- Updated to use `#line_buffered_audit`
+                to keep RAM consumption low when analyzing large responses.
+    - `DOM`
+        - `Capabilities`
+            - `Submittable`, `Auditable` -- Switched from `Proc` to class methods
+                for callbacks, in order to avoid keeping contexts in memory.
 - Session -- Allow for a submit input to be specified when the login needs to be
     triggered by clicking it, rather than just triggering the submit event on
     the form.
@@ -66,6 +71,9 @@
     - Active
         - `xss_event`, `xss_script_context`, `xss_tag` -- Replaced full parsing
             of responses with SAX.
+        - `unvalidated_redirect`, `unvalidated_redirect_dom`, `xss`, `xss_dom`,
+            `xss_dom_script_context`, `xss_script_context` -- Replaced `Proc`s
+                with class methods for `BrowserCluster` job callbacks.
     - Passive
         - `backup_files`
             - Ignore media files to avoid FPs when dealing with galleries and the like.

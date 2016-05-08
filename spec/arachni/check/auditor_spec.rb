@@ -632,20 +632,19 @@ describe Arachni::Check::Auditor do
         end
     end
 
-    describe '#log_issue' do
+    describe '.log_issue' do
         it 'logs an issue' do
-            auditor.log_issue( issue_data )
+            auditor.class.log_issue( issue_data )
 
             logged_issue = Arachni::Data.issues.first
 
             expect(logged_issue.to_h.tap do |h|
                 h[:page][:dom][:transitions].each { |t| t.delete :time }
-            end).to eq issue.to_h.merge( referring_page: {
-                body: auditor.page.body,
-                dom:  auditor.page.dom.to_h.tap do |h|
-                    h.delete :skip_states
-                end
-            }).tap { |h| h[:page][:dom][:transitions].each { |t| t.delete :time } }
+                h[:referring_page][:dom][:transitions].each { |t| t.delete :time }
+            end).to eq (issue.to_h.tap do |h|
+                h[:page][:dom][:transitions].each { |t| t.delete :time }
+                h[:referring_page][:dom][:transitions].each { |t| t.delete :time }
+            end)
         end
 
         it 'assigns a #referring_page' do
@@ -661,15 +660,31 @@ describe Arachni::Check::Auditor do
 
         context 'when #issue_limit_reached?' do
             it 'does not log the issue' do
-                allow(subject).to receive(:issue_limit_reached?) { true }
+                allow(auditor.class).to receive(:issue_limit_reached?) { true }
 
-                expect(auditor.log_issue( issue_data )).to be_falsey
+                expect(auditor.class.log_issue( issue_data )).to be_falsey
                 expect(Arachni::Data.issues).to be_empty
             end
         end
     end
 
-    describe '#log' do
+    describe '#log_issue' do
+        it 'forwards options to .log_issue' do
+            expect(auditor.class).to receive(:log_issue).with(
+                issue_data.merge( referring_page: auditor.page )
+            )
+            auditor.log_issue( issue_data )
+        end
+
+        it 'assigns a #referring_page' do
+            auditor.log_issue( issue_data )
+
+            logged_issue = Arachni::Data.issues.first
+            expect(logged_issue.referring_page).to eq(auditor.page)
+        end
+    end
+
+    describe '.log' do
         let(:issue_data) do
             d = super()
 
@@ -680,28 +695,28 @@ describe Arachni::Check::Auditor do
         end
 
         it 'preserves the given remarks' do
-            auditor.log( issue_data )
+            auditor.class.log( issue_data )
 
             logged_issue = Arachni::Data.issues.first
             expect(logged_issue.remarks.first).to be_any
         end
 
         it 'returns the issue' do
-            expect(auditor.log( issue_data )).to be_kind_of Arachni::Issue
+            expect(auditor.class.log( issue_data )).to be_kind_of Arachni::Issue
         end
 
         context 'when given a page' do
             after { @framework.http.run }
 
             it 'includes response data' do
-                auditor.log( issue_data )
+                auditor.class.log( issue_data )
                 expect(Arachni::Data.issues.first.response).to eq(
                     issue_data[:page].response
                 )
             end
 
             it 'includes request data' do
-                auditor.log( issue_data )
+                auditor.class.log( issue_data )
                 expect(Arachni::Data.issues.first.request).to eq(
                     issue_data[:page].request
                 )
@@ -709,14 +724,53 @@ describe Arachni::Check::Auditor do
         end
 
         context 'when not given a page' do
-            it 'uses the current page' do
-                issue_data.delete(:page)
-                auditor.log( issue_data )
+            it 'uses the referring page' do
+                issue_data[:referring_page].response.url = @opts.url
+                auditor.class.log( issue_data )
 
                 issue = Arachni::Data.issues.first
-                expect(issue.page.body).to eq(auditor.page.body)
-                expect(issue.response).to eq(auditor.page.response)
-                expect(issue.request).to eq(auditor.page.request)
+
+                expect(issue.page.body).to eq(issue_data[:referring_page].body)
+                expect(issue.response).to eq(issue_data[:referring_page].response)
+                expect(issue.request).to eq(issue_data[:referring_page].request)
+            end
+        end
+
+        context 'when :referring page has been set' do
+            it 'uses it to set the Issue#referring_page' do
+                i = auditor.class.log( issue_data )
+                expect(i.referring_page).to eq issue_data[:referring_page]
+            end
+        end
+
+        context 'when no :referring page has been set' do
+            it 'uses Element#page' do
+                issue_data[:vector].page = issue_data.delete( :referring_page )
+
+                i = auditor.class.log( issue_data )
+                expect(i.referring_page).to eq issue_data[:vector].page
+            end
+        end
+
+        context 'when no referring page data are available' do
+            it 'raises ArgumentError' do
+                expect do
+                    issue_data[:vector].page    = nil
+                    issue_data[:referring_page] = nil
+
+                    auditor.class.log( issue_data )
+                end.to raise_error ArgumentError
+            end
+        end
+
+        context 'when no referring page data are available' do
+            it 'raises ArgumentError' do
+                expect do
+                    issue_data[:vector].page    = nil
+                    issue_data[:referring_page] = nil
+
+                    auditor.class.log( issue_data )
+                end.to raise_error ArgumentError
             end
         end
 
@@ -754,6 +808,24 @@ describe Arachni::Check::Auditor do
                     expect(issues).to be_any
                 end
             end
+        end
+    end
+
+    describe '#log' do
+        let(:issue_data) do
+            d = super()
+
+            d[:page].response.url = @opts.url
+            d.merge( page: d[:page] )
+
+            d
+        end
+
+        it 'forwards options to .log_issue' do
+            expect(auditor.class).to receive(:log).with(
+                issue_data.merge( referring_page: auditor.page )
+            )
+            auditor.log( issue_data )
         end
     end
 

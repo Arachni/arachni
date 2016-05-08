@@ -25,7 +25,13 @@ module Output
     end
 
     def intercept_print_message( message )
-        depersonalize_output? ? message : "#{self.class.fullname}: #{message}"
+        if self.class == Class
+            fullname = self.fullname
+        else
+            fullname = self.class.fullname
+        end
+
+        depersonalize_output? ? message : "#{fullname}: #{message}"
     end
 
 end

@@ -32,6 +32,8 @@ class Base
     end
 
     class <<self
+        include Arachni::Component::Output
+
         def fullname
             @fullname ||= info[:name]
         end

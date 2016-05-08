@@ -164,19 +164,43 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             return
         end
 
-        print_info 'Response is tainted, scheduling a taint-trace.'
+        with_browser_cluster do |cluster|
+            print_info 'Response is tainted, scheduling a taint-trace.'
 
-        # Pass the response to the BrowserCluster for evaluation and see if the
-        # JS payload we injected got executed by inspecting the page's
-        # execution-flow sink.
-        trace_taint( response, taint: self.class.seed ) do |page|
-            print_info 'Checking results of deferred taint analysis for' <<
-                           ' execution-flow sink data.'
-
-            next if page.dom.execution_flow_sinks.empty?
-
-            log vector: element, proof: element.seed, page: page
+            # Pass the response to the BrowserCluster for evaluation and see if the
+            # JS payload we injected got executed by inspecting the page's
+            # execution-flow sink.
+            cluster.trace_taint(
+                response,
+                {
+                    taint: self.class.seed,
+                    args:  [element, page]
+                },
+                self.class.check_browser_result_cb
+            )
         end
+    end
+
+    def self.check_browser_result( result, element, referring_page, cluster )
+        page = result.page
+
+        print_info 'Checking results of deferred taint analysis for' <<
+                       ' execution-flow sink data.'
+
+        return if page.dom.execution_flow_sinks.empty?
+
+        log(
+            vector:         element,
+            proof:          element.seed,
+            page:           page,
+            referring_page: referring_page
+        )
+
+        cluster.job_done( result.job )
+    end
+
+    def self.check_browser_result_cb
+        @check_browser_result_cb ||= method(:check_browser_result)
     end
 
     def tainted?( response, seed )

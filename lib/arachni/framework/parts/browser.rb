@@ -86,7 +86,7 @@ module Browser
         browser_cluster.update_skip_states browser_job.id, states
     end
 
-    def handle_browser_page( result )
+    def handle_browser_page( result, * )
         page = result.is_a?( Page ) ? result : result.page
 
         synchronize do
@@ -116,9 +116,10 @@ module Browser
         # needs to have a clean state.
         schedule_dom_metadata_application( page )
 
+        @perform_browser_analysis_cb ||= method(:handle_browser_page)
         browser_cluster.queue(
             browser_job.forward( resource: page.dom.state ),
-            &method(:handle_browser_page)
+            @perform_browser_analysis_cb
         )
 
         true
@@ -136,9 +137,9 @@ module Browser
 
         dom = page.dom.state
         dom.page = nil # Help out the GC.
-        browser_cluster.with_browser do |browser|
-            apply_dom_metadata( browser, dom )
-        end
+
+        @dom_metadata_application_cb ||= method(:apply_dom_metadata)
+        browser_cluster.with_browser dom, @dom_metadata_application_cb
     end
 
     def apply_dom_metadata( browser, dom )

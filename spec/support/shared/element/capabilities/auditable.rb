@@ -218,12 +218,6 @@ shared_examples_for 'auditable' do
     end
 
     describe '#audit' do
-        context 'when no block is given' do
-            it 'raises ArgumentError' do
-                expect { auditable.audit( 'stuff' ) }.to raise_error ArgumentError
-            end
-        end
-
         context 'when the response is out of scope' do
             it 'ignores it' do
                 called = nil

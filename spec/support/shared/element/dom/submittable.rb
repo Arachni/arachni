@@ -12,7 +12,7 @@ shared_examples_for 'submittable_dom' do
                 called = true
             end
 
-            subject.auditor.browser_cluster.wait
+            auditor.browser_cluster.wait
             expect(called).to be_truthy
         end
 
@@ -23,7 +23,7 @@ shared_examples_for 'submittable_dom' do
                 called = true
             end
 
-            subject.auditor.browser_cluster.wait
+            auditor.browser_cluster.wait
             expect(called).to be_truthy
         end
 
@@ -34,7 +34,7 @@ shared_examples_for 'submittable_dom' do
                 called = true
             end
 
-            subject.auditor.browser_cluster.wait
+            auditor.browser_cluster.wait
             expect(called).to be_truthy
         end
 
@@ -45,13 +45,13 @@ shared_examples_for 'submittable_dom' do
                 browser.load subject.page
                 transitions = subject.trigger
             end
-            subject.auditor.browser_cluster.wait
+            auditor.browser_cluster.wait
 
             submitted_page = nil
             subject.dup.submit do |page|
                 submitted_page = page
             end
-            subject.auditor.browser_cluster.wait
+            auditor.browser_cluster.wait
 
             transitions.each do |transition|
                 expect(subject.page.dom.transitions).not_to include transition
@@ -61,13 +61,13 @@ shared_examples_for 'submittable_dom' do
 
         context 'when the element could not be submitted' do
             it 'does not call the block' do
-                allow(subject).to receive( :trigger ) { [nil] }
+                allow_any_instance_of(subject.class).to receive( :trigger ) { [nil] }
 
                 called = false
                 subject.submit do
                     called = true
                 end
-                subject.auditor.browser_cluster.wait
+                auditor.browser_cluster.wait
                 expect(called).to be_falsey
             end
         end
@@ -83,7 +83,7 @@ shared_examples_for 'submittable_dom' do
                         called = true
                     end
 
-                    subject.auditor.browser_cluster.wait
+                    auditor.browser_cluster.wait
                     expect(called).to be_truthy
                 end
             end
@@ -97,7 +97,7 @@ shared_examples_for 'submittable_dom' do
                         set_taint = page.performer.browser.javascript.taint
                     end
 
-                    subject.auditor.browser_cluster.wait
+                    auditor.browser_cluster.wait
                     expect(set_taint).to eq(taint)
                 end
             end

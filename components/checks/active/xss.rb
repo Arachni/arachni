@@ -76,7 +76,7 @@ class Arachni::Checks::Xss < Arachni::Check::Base
         end
 
         # See if we managed to successfully inject our element in the doc tree.
-        if find_proof( response )
+        if self.class.find_proof( response )
             log vector: element, proof: self.class.tag, response: response
             return :checked
         end
@@ -84,34 +84,56 @@ class Arachni::Checks::Xss < Arachni::Check::Base
         # No idea what was returned, but we can't work with it.
         return :checked if !response.to_page.has_script?
 
-        with_browser_cluster do
+        with_browser_cluster do |cluster|
             print_info 'Progressing to deferred browser evaluation of response.'
 
             # Pass the response to the BrowserCluster for evaluation and see if the
             # element appears in the doc tree now.
-            trace_taint( response, taint: self.class.tag ) do |page|
-                # At this point further checks will be body based, identical
-                # bodies will yield identical results.
-                next if optimization_cache["traced-#{page.body.hash}".hash] == :traced
-                optimization_cache["traced-#{page.body.hash}".hash] = :traced
-
-                print_info 'Checking results of deferred taint analysis.'
-
-                next if !(proof = find_proof( page ))
-
-                log vector: element, proof: proof, page: page
-            end
+            cluster.trace_taint(
+                response,
+                {
+                    taint: self.class.tag,
+                    args:  [element, page]
+                },
+                self.class.check_browser_result_cb
+            )
         end
     end
 
-    def find_proof( resource )
-        return if !resource.body.has_html_tag?( self.class.tag_name )
+    def self.check_browser_result( result, element, referring_page, cluster )
+        page = result.page
+
+        # At this point further checks will be body based, identical
+        # bodies will yield identical results.
+        key = "traced-#{page.body.hash}".hash
+        return if optimization_cache[key] == :traced
+        optimization_cache[key] = :traced
+
+        print_info 'Checking results of deferred taint analysis.'
+
+        return if !(proof = find_proof( page ))
+
+        log(
+            vector:         element,
+            proof:          proof,
+            page:           page,
+            referring_page: referring_page
+        )
+        cluster.job_done( result.job )
+    end
+
+    def self.check_browser_result_cb
+        @check_browser_result_cb ||= method(:check_browser_result)
+    end
+
+    def self.find_proof( resource )
+        return if !resource.body.has_html_tag?( self.tag_name )
 
         proof_nodes = Arachni::Parser.parse(
             resource.body,
-            whitelist:     [self.class.tag_name, 'textarea'],
-            stop_on_first: [self.class.tag_name]
-        ).nodes_by_name( self.class.tag_name )
+            whitelist:     [self.tag_name, 'textarea'],
+            stop_on_first: [self.tag_name]
+        ).nodes_by_name( self.tag_name )
 
         return if proof_nodes.empty?
 
