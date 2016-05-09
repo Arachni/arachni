@@ -235,7 +235,7 @@ describe Arachni::Framework::Parts::Audit do
 
                     f.run
 
-                    expect(f.url_queue_total_size).to eq(3)
+                    expect(f.url_queue_total_size).to eq(4)
                 end
             end
 
@@ -247,24 +247,12 @@ describe Arachni::Framework::Parts::Audit do
                         f.options.audit.elements :links, :forms, :cookies
                         f.checks.load :signature
                         f.options.scope.dom_depth_limit = 1
-                        expect(f.url_queue_total_size).to eq(0)
-                        expect(f.audit_page( Arachni::Page.from_url( @url + '/with_javascript' ) )).to be_truthy
-                        f.run
-                        expect(f.url_queue_total_size).to eq(3)
-
-                        f.reset
-
-                        f.options.audit.elements :links, :forms, :cookies
-                        f.checks.load :signature
-                        f.options.scope.dom_depth_limit = 1
-                        expect(f.url_queue_total_size).to eq(0)
 
                         page = Arachni::Page.from_url( @url + '/with_javascript' )
                         page.dom.push_transition Arachni::Page::DOM::Transition.new( :page, :load )
+                        page.dom.push_transition Arachni::Page::DOM::Transition.new( :page, :load )
 
-                        expect(f.audit_page( page )).to be_truthy
-                        f.run
-                        expect(f.url_queue_total_size).to eq(1)
+                        expect(f.audit_page( page )).to be_falsey
                     end
                 end
 
