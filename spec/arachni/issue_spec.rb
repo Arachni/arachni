@@ -26,6 +26,25 @@ describe Arachni::Issue do
         expect(issue.name).to eq("Check name \u2713")
     end
 
+    it 'is comparable' do
+        informational = issue.dup.tap { |i| i.severity = Arachni::Issue::Severity::INFORMATIONAL }
+        low           = issue.dup.tap { |i| i.severity = Arachni::Issue::Severity::LOW }
+        medium        = issue.dup.tap { |i| i.severity = Arachni::Issue::Severity::MEDIUM }
+        high          = issue.dup.tap { |i| i.severity = Arachni::Issue::Severity::HIGH }
+
+        expect(informational).to be < low
+        expect(low).to be < medium
+        expect(medium).to be < high
+
+        expect(high).to be > medium
+        expect(medium).to be > low
+        expect(low).to be > informational
+
+        expect([low, informational, high, medium].sort).to eq(
+            [informational, low, medium, high]
+        )
+    end
+
     describe '#recheck' do
         it 'rechecks the issue' do
             Arachni::Options.paths.checks = fixtures_path + '/signature_check/'

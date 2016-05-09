@@ -380,6 +380,18 @@ class Issue
         hash == other.hash
     end
 
+    def <=>( other )
+        severity <=> other.severity
+    end
+
+    def <( other )
+        severity < other.severity
+    end
+
+    def >( other )
+        severity > other.severity
+    end
+
     # @return   [Hash]
     #   Data representing this instance that are suitable the RPC transmission.
     def to_rpc_data
