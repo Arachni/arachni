@@ -13,8 +13,8 @@ require 'zlib'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class String
 
-    HAS_HTML_TAG_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
-    BINARY_CACHE       = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
+    HAS_HTML_TAG_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+    BINARY_CACHE       = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     # @param    [Regexp]    regexp
     #   Regular expression with named captures.

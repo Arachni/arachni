@@ -1111,14 +1111,16 @@ describe Arachni::Browser do
 
         it "assigns the proper #{Arachni::Page::DOM}#digest" do
             @browser.load( @url )
-            expect(@browser.to_page.dom.instance_variable_get(:@digest)).to eq(
-                '<HTML><HEAD><SCRIPT src=http://' <<
-                'javascript.browser.arachni/polyfills.js><SCRIPT src=http://' <<
-                'javascript.browser.arachni/' <<
-                'taint_tracer.js><SCRIPT src=http://javascript.' <<
-                'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
-                'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
-            )
+            expect(@browser.to_page.dom.digest).to eq(32000153)
+
+            # expect(@browser.to_page.dom.instance_variable_get(:@digest)).to eq(
+            #     '<HTML><HEAD><SCRIPT src=http://' <<
+            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=http://' <<
+            #     'javascript.browser.arachni/' <<
+            #     'taint_tracer.js><SCRIPT src=http://javascript.' <<
+            #     'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
+            #     'DIV><SCRIPT type=text/javascript><SCRIPT type=text/javascript>'
+            # )
         end
 
         it "assigns the proper #{Arachni::Page::DOM}#transitions" do
@@ -1252,7 +1254,7 @@ describe Arachni::Browser do
 
                                     expect(input.action).to eq @browser.url
                                     expect(input.source).to eq '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1">'
-                                    expect(input.method).to eq :oninput
+                                    expect(input.method).to eq :input
                                 end
                             end
 
@@ -1273,7 +1275,7 @@ describe Arachni::Browser do
 
                                     expect(input.action).to eq @browser.url
                                     expect(input.source).to eq '<textarea oninput="handleOnInput();" id="my-input" name="my-input">'
-                                    expect(input.method).to eq :oninput
+                                    expect(input.method).to eq :input
                                 end
                             end
 
@@ -1479,7 +1481,7 @@ describe Arachni::Browser do
         it 'accepts events without the "on" prefix' do
             pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
 
-            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :onclick
+            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
 
             @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
@@ -1871,7 +1873,16 @@ describe Arachni::Browser do
         end
 
         context 'input' do
-            described_class::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
+            [
+                :onselect,
+                :onchange,
+                :onfocus,
+                :onblur,
+                :onkeydown,
+                :onkeypress,
+                :onkeyup,
+                :oninput
+            ].each do |event|
                 calculate_expectation = proc do |string|
                     [:onkeypress, :onkeydown].include?( event ) ?
                         string[0...-1] : string
@@ -1965,44 +1976,6 @@ describe Arachni::Browser do
         end
     end
 
-    describe '#elements_with_events' do
-        before :each do
-            @browser.load url
-        end
-
-        let(:elements_with_events) do
-            elements_with_events = {}
-            @browser.each_element_with_events do |locator, events|
-                elements_with_events[locator] = events
-            end
-            elements_with_events
-        end
-
-        let(:url) { @url + '/trigger_events' }
-
-        it 'returns all elements with associated events' do
-            expect(subject.elements_with_events.to_s).to eq elements_with_events.to_s
-        end
-
-        it 'caches results' do
-            expect(subject).to receive(:each_element_with_events)
-            subject.elements_with_events
-
-            expect(subject).to_not receive(:each_element_with_events)
-            subject.elements_with_events
-        end
-
-        context 'when passed true' do
-            it 'clears the cache' do
-                expect(subject).to receive(:each_element_with_events)
-                subject.elements_with_events
-
-                expect(subject).to receive(:each_element_with_events)
-                subject.elements_with_events( true )
-            end
-        end
-    end
-
     describe '#each_element_with_events' do
         before :each do
             @browser.load url
@@ -2023,14 +1996,14 @@ describe Arachni::Browser do
                         tag_name:   'body',
                         attributes: { 'onmouseover' => 'makePOST();' }
                     ),
-                    { onmouseover: ['makePOST();'] }
+                    { mouseover: ['makePOST();'] }
                 ],
                 [
                     described_class::ElementLocator.new(
                         tag_name:   'div',
                         attributes: { 'id' => 'my-div', 'onclick' => 'addForm();' }
                     ),
-                    { onclick: ['addForm();']}
+                    { click: ['addForm();']}
                 ]
             ])
         end
@@ -2145,7 +2118,7 @@ describe Arachni::Browser do
             end
 
             locators.each do |element|
-                @browser.javascript.class.events.each do |e|
+                described_class::Javascript::EVENTS.each do |e|
                     begin
                         @browser.trigger_event @browser.to_page, element, e
                     rescue
@@ -3219,121 +3192,6 @@ describe Arachni::Browser do
         context 'when no page is available' do
             it 'returns an empty Array' do
                 expect(@browser.cookies).to be_empty
-            end
-        end
-    end
-
-    describe '#snapshot_id' do
-        before(:each) do
-            Arachni::Options.url = @url
-
-            @empty_snapshot_id ||= @browser.load( empty_snapshot_id_url ).snapshot_id
-
-            @snapshot_id = @browser.load( url ).snapshot_id
-        end
-
-        let(:empty_snapshot_id_url) { @url + '/snapshot_id/default' }
-        let(:empty_snapshot_id) do
-            @empty_snapshot_id
-        end
-        let(:snapshot_id) do
-            @snapshot_id
-        end
-
-        let(:url) { @url + '/trigger_events' }
-
-        it 'returns a DOM digest' do
-            expect(snapshot_id).to eq(@browser.load( url ).snapshot_id)
-        end
-
-        context 'when there are new cookies' do
-            let(:url) { @url + '/each_element_with_events/set-cookie' }
-
-            it 'takes them into account' do
-                @browser.fire_event described_class::ElementLocator.new(
-                    tag_name: :button,
-                    attributes: {
-                        onclick: 'setCookie()'
-                    }
-                ), :click
-
-                expect(@browser.snapshot_id).not_to eq(snapshot_id)
-            end
-        end
-
-        context ':a' do
-            context 'and the href is not empty' do
-                context 'and it starts with javascript:' do
-                    let(:url) { @url + '/each_element_with_events/a/href/javascript' }
-
-                    it 'takes it into account' do
-                        expect(snapshot_id).not_to eq(empty_snapshot_id)
-                    end
-                end
-
-                context 'and it does not start with javascript:' do
-                    let(:url) { @url + '/each_element_with_events/a/href/regular' }
-
-                    it 'takes it into account' do
-                        expect(snapshot_id).not_to eq(empty_snapshot_id)
-                    end
-                end
-
-                context 'and is out of scope' do
-                    let(:url) { @url + '/each_element_with_events/a/href/out-of-scope' }
-
-                    it 'is ignored' do
-                        expect(snapshot_id).to eq(empty_snapshot_id)
-                    end
-                end
-            end
-
-            context 'and the href is empty' do
-                let(:url) { @url + '/each_element_with_events/a/href/empty' }
-
-                it 'takes it into account' do
-                    expect(snapshot_id).not_to eq(empty_snapshot_id)
-                end
-            end
-        end
-
-        context ':form' do
-            let(:empty_snapshot_id_url) { @url + '/snapshot_id/form/default' }
-
-            context ':input' do
-                context 'of type "image"' do
-                    let(:url) { @url + '/each_element_with_events/form/input/image' }
-
-                    it 'takes it into account' do
-                        expect(snapshot_id).not_to eq(empty_snapshot_id)
-                    end
-                end
-            end
-
-            context 'and the action is not empty' do
-                context 'and it starts with javascript:' do
-                    let(:url) { @url + '/each_element_with_events/form/action/javascript' }
-
-                    it 'takes it into account' do
-                        expect(snapshot_id).not_to eq(empty_snapshot_id)
-                    end
-                end
-
-                context 'and it does not start with javascript:' do
-                    let(:url) { @url + '/each_element_with_events/form/action/regular' }
-
-                    it 'takes it into account' do
-                        expect(snapshot_id).not_to eq(empty_snapshot_id)
-                    end
-                end
-
-                context 'and is out of scope' do
-                    let(:url) { @url + '/each_element_with_events/form/action/out-of-scope' }
-
-                    it 'is ignored' do
-                        expect(snapshot_id).to eq(empty_snapshot_id)
-                    end
-                end
             end
         end
     end

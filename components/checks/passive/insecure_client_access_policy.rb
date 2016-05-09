@@ -27,7 +27,7 @@ class Arachni::Checks::InsecureClientAccessPolicy < Arachni::Check::Base
     def check_and_log( response )
         return if response.code != 200
 
-        policy = Arachni::Parser.parse_xml( response.body )
+        policy = Nokogiri::XML( response.body )
         return if !policy
 
         INSECURE_WILDCARDS.each do |wildcard|

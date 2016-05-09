@@ -56,16 +56,39 @@ class Connection < Arachni::Reactor::Connection
                 next
             end
 
-            @request = Arachni::HTTP::Request.new(
-                http_opts.merge(
-                    url:     sanitize_url( @parser.request_url, headers ),
-                    method:  method,
-                    body:    @body,
-                    headers: headers
-                )
-            )
+            if !@parent.has_available_request_tokens?
+                print_debug_level_3 'Waiting for a request token.'
+            end
 
-            handle_request( @request )
+            @parent.get_request_token do |token|
+                print_debug_level_3 "Got request token ##{token}."
+
+                if closed?
+                    print_debug_level_3 'Connection closed while waiting for a request token.'
+                    @parent.return_request_token( token )
+                    print_debug_level_3 "Returned request token ##{token}."
+
+                    next
+                end
+
+                Thread.new do
+                    begin
+                        @request = Arachni::HTTP::Request.new(
+                            http_opts.merge(
+                                url:     sanitize_url( @parser.request_url, headers ),
+                                method:  method,
+                                body:    @body,
+                                headers: headers
+                            )
+                        )
+
+                        handle_request( @request )
+                    ensure
+                        @parent.return_request_token( token )
+                        print_debug_level_3 "Returned request token ##{token}."
+                    end
+                end
+            end
         end
     end
 
@@ -84,42 +107,40 @@ class Connection < Arachni::Reactor::Connection
     def handle_request( request )
         print_debug_level_3 'Processing request.'
 
-        Thread.new do
-            if @options[:request_handler]
-                print_debug_level_3 "-- Has special handler: #{@options[:request_handler]}"
+        if @options[:request_handler]
+            print_debug_level_3 "-- Has special handler: #{@options[:request_handler]}"
 
-                # Provisional empty, response in case the request_handler wants us to
-                # skip performing the request.
-                response = Response.new( url: request.url )
-                response.request = request
+            # Provisional empty, response in case the request_handler wants us to
+            # skip performing the request.
+            response = Response.new( url: request.url )
+            response.request = request
 
-                # If the handler returns false then don't perform the HTTP request.
-                if @options[:request_handler].call( request, response )
-                    print_debug_level_3 '-- Handler approves, running...'
+            # If the handler returns false then don't perform the HTTP request.
+            if @options[:request_handler].call( request, response )
+                print_debug_level_3 '-- Handler approves, running...'
 
-                    # Even though it's a blocking request, force it to go through
-                    # the HTTP::Client in order to handle cookie update and
-                    # fingerprinting handlers.
-                    HTTP::Client.queue( request )
-                    response = request.run
-
-                    print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
-                else
-                    print_debug_level_3 '-- Handler did not approve, will not run.'
-                end
-            else
-                print_debug_level_3 '-- Running...'
-
+                # Even though it's a blocking request, force it to go through
+                # the HTTP::Client in order to handle cookie update and
+                # fingerprinting handlers.
                 HTTP::Client.queue( request )
                 response = request.run
 
                 print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
+            else
+                print_debug_level_3 '-- Handler did not approve, will not run.'
             end
+        else
+            print_debug_level_3 '-- Running...'
 
-            print_debug_level_3 'Processed request.'
+            HTTP::Client.queue( request )
+            response = request.run
 
-            handle_response( response )
+            print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
         end
+
+        print_debug_level_3 'Processed request.'
+
+        reactor.schedule { handle_response( response ) }
     end
 
     def http_version

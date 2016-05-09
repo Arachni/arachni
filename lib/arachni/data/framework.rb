@@ -49,6 +49,7 @@ class Framework
         @sitemap = {}
 
         @page_queue            = Support::Database::Queue.new
+        @page_queue.max_buffer_size = 10
         @page_queue_total_size = 0
 
         @url_queue                 = Support::Database::Queue.new

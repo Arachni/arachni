@@ -49,6 +49,11 @@ class Signature
         self
     end
 
+    def <<( data )
+        @tokens.merge tokenize( data )
+        self
+    end
+
     # @note The string will be tokenized based on whitespace.
     #
     # @param    [String, Signature]    data
@@ -80,6 +85,10 @@ class Signature
     def similar?( other, threshold = @options[:threshold] )
         fail 'No threshold given.' if !threshold
         self == other || differences( other ) < threshold
+    end
+
+    def empty?
+        @tokens.empty?
     end
 
     # @return [Signature]

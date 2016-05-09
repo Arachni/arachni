@@ -107,6 +107,7 @@ class BrowserCluster
 
         # Jobs are off-loaded to disk.
         @jobs = Support::Database::Queue.new
+        @jobs.max_buffer_size = 10
 
         # Worker pool holding BrowserCluster::Worker instances.
         @workers     = []
@@ -129,8 +130,13 @@ class BrowserCluster
     #
     # @param    [Block] block
     #   Block to which to pass a {Worker} as soon as one is available.
-    def with_browser( &block )
-        queue( Jobs::BrowserProvider.new, &block )
+    def with_browser( *args, &block )
+        method_handler = nil
+        if args.last.is_a? Method
+            method_handler = args.pop
+        end
+
+        queue( Jobs::BrowserProvider.new( args ), method_handler, &block )
     end
 
     # @param    [Job]  job
@@ -139,7 +145,7 @@ class BrowserCluster
     #
     # @raise    [AlreadyShutdown]
     # @raise    [Job::Error::AlreadyDone]
-    def queue( job, &block )
+    def queue( job, cb = nil, &block )
         fail_if_shutdown
         fail_if_job_done job
 
@@ -154,7 +160,12 @@ class BrowserCluster
 
             @pending_job_counter  += 1
             @pending_jobs[job.id] += 1
-            @job_callbacks[job.id] = block if block
+
+            if cb
+                @job_callbacks[job.id] = cb
+            elsif block
+                @job_callbacks[job.id] = block
+            end
 
             if !@job_callbacks[job.id]
                 fail ArgumentError, "No callback set for job ID #{job.id}."
@@ -184,9 +195,10 @@ class BrowserCluster
     #
     # @see Jobs::DOMExploration
     # @see #queue
-    def explore( resource, options = {}, &block )
+    def explore( resource, options = {}, cb = nil, &block )
         queue(
             Jobs::DOMExploration.new( options.merge( resource: resource ) ),
+            cb,
             &block
         )
     end
@@ -201,8 +213,12 @@ class BrowserCluster
     #
     # @see Jobs::TaintTrace
     # @see #queue
-    def trace_taint( resource, options = {}, &block )
-        queue( Jobs::TaintTrace.new( options.merge( resource: resource ) ), &block )
+    def trace_taint( resource, options = {}, cb = nil, &block )
+        queue(
+            Jobs::TaintTrace.new( options.merge( resource: resource ) ),
+            cb,
+            &block
+        )
     end
 
     # @param    [Job]  job
@@ -260,7 +276,11 @@ class BrowserCluster
             print_debug "Got job result: #{result}"
 
             exception_jail( false ) do
-                @job_callbacks[result.job.id].call result
+                @job_callbacks[result.job.id].call( *[
+                    result,
+                    result.job.args,
+                    self
+                ].flatten.compact)
             end
         end
 
@@ -279,6 +299,10 @@ class BrowserCluster
         fail_if_shutdown
         @done_signal.pop if !done?
         self
+    end
+
+    def pause
+        @pause = true
     end
 
     # Shuts the cluster down.
@@ -308,6 +332,8 @@ class BrowserCluster
     # @see #queue
     # @private
     def pop
+        sleep if @pause
+
         {} while job_done?( job = @jobs.pop )
         notify_on_pop job
         job

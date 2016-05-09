@@ -20,6 +20,7 @@ group :prof do
     gem 'sys-proctable'
     gem 'ruby-mass'
     gem 'benchmark-ips'
+    gem 'memory_profiler'
 end
 
 gemspec

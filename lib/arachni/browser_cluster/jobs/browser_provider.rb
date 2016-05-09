@@ -16,8 +16,14 @@ module Jobs
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class BrowserProvider < Job
 
+    def initialize( *args )
+        super()
+
+        @args = args
+    end
+
     def run
-        browser.master.callback_for( self ).call browser
+        browser.master.callback_for( self ).call *[browser, @args].flatten.compact
     end
 
     def to_s

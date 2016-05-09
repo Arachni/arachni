@@ -245,7 +245,7 @@ get '/load_delay' do
 HTML
 end
 
-get '/snapshot_id/default' do
+get '/event_digest/default' do
     <<-EOHTML
     <html>
         <body>
@@ -347,7 +347,7 @@ get '/each_element_with_events/form/action/regular' do
     EOHTML
 end
 
-get '/snapshot_id/form/default' do
+get '/event_digest/form/default' do
     <<-EOHTML
     <html>
         <body>
@@ -474,7 +474,16 @@ get '/test.png' do
     200
 end
 
-Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
+[
+    :onselect,
+    :onchange,
+    :onfocus,
+    :onblur,
+    :onkeydown,
+    :onkeypress,
+    :onkeyup,
+    :oninput
+].each do |event|
     get "/fire_event/input/#{event}" do
         <<-EOHTML
 <html>

@@ -218,36 +218,6 @@ shared_examples_for 'auditable' do
     end
 
     describe '#audit' do
-        context 'when no block is given' do
-            it 'raises ArgumentError' do
-                expect { auditable.audit( 'stuff' ) }.to raise_error ArgumentError
-            end
-        end
-
-        context ':submit' do
-            it 'forwards :raw_parameters',
-               if: !described_class.ancestors.include?( Arachni::Element::DOM ) do
-
-                param           = auditable.inputs.keys.first
-                raw_parameters  = nil
-
-                auditable.audit(
-                    'stuff',
-                    format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                    submit: {
-                        raw_parameters: [ param ]
-                    },
-                    skip_original: true
-                ) do |response, _|
-                    raw_parameters = response.request.raw_parameters
-                end
-
-                run
-
-                expect(raw_parameters).to eq [param]
-            end
-        end
-
         context 'when the response is out of scope' do
             it 'ignores it' do
                 called = nil
@@ -267,7 +237,7 @@ shared_examples_for 'auditable' do
             end
 
             context 'but the host includes the seed' do
-                it 'does not log the issue' do
+                it 'is considered in scope' do
                     called = nil
 
                     allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:out?).and_return(true)
@@ -472,6 +442,28 @@ shared_examples_for 'auditable' do
 
                     expect(called).to be_truthy
                 end
+
+                it 'forwards :raw_parameters',
+                   if: !described_class.ancestors.include?( Arachni::Element::DOM ) do
+
+                    param           = auditable.inputs.keys.first
+                    raw_parameters  = nil
+
+                    auditable.audit(
+                        'stuff',
+                        format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
+                        submit: {
+                            raw_parameters: [ param ]
+                        },
+                        skip_original: true
+                    ) do |response, _|
+                        raw_parameters = response.request.raw_parameters
+                    end
+
+                    run
+
+                    expect(raw_parameters).to eq [param]
+                end
             end
 
             describe ':each_mutation' do
@@ -626,7 +618,9 @@ shared_examples_for 'auditable' do
                 describe 'Arachni::Check::Auditor::Format::NULL' do
                     it 'terminates the seed with a null character',
                        if: described_class != Arachni::Element::Header &&
-                               described_class.is_a?( Arachni::Element::DOM ) do
+                            described_class != Arachni::Element::XML &&
+                               !described_class.ancestors.include?( Arachni::Element::DOM ) do
+
                         skip if !has_parameter_extractor?
 
                         injected = nil

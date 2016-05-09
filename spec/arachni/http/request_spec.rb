@@ -282,6 +282,44 @@ describe Arachni::HTTP::Request do
             expect(called.first.request).to eq(request)
         end
 
+        it 'calls #on_body callbacks' do
+            request  = described_class.new( url: @url )
+
+            s = ''
+            request.on_body do |chunk|
+                s << chunk
+            end
+
+            response = request.run
+
+            expect(s).to eq 'GET'
+        end
+
+        it 'calls #on_headers callbacks' do
+            request  = described_class.new( url: @url )
+
+            called = nil
+            request.on_headers do |r|
+                called = r
+            end
+
+            response = request.run
+            expect(response).to be_kind_of Arachni::HTTP::Response
+            expect(response.request).to eq(request)
+
+            h = response.to_h
+            h[:body] = ''
+            h.delete :time
+            h.delete :total_time
+
+            c = called.to_h
+            c.delete :time
+            c.delete :total_time
+
+            expect(c).to eq(h)
+            expect(called.request).to eq(request)
+        end
+
         it "fills in #{Arachni::HTTP::Request}#headers_string" do
             host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
             expect(described_class.new( url: @url ).run.request.headers_string).to eq(
@@ -332,18 +370,52 @@ describe Arachni::HTTP::Request do
         end
     end
 
+    describe '#buffered?' do
+        context 'when there are no callbacks' do
+            subject do
+                described_class.new( url: url )
+            end
+
+            expect_it { to_not be_buffered }
+        end
+
+        context 'when there are #on_body callbacks' do
+            subject do
+                described_class.new( url: url ).on_body {}
+            end
+
+            expect_it { to be_buffered }
+        end
+
+        context 'when there are #on_body_line callbacks' do
+            subject do
+                described_class.new( url: url ).on_body_line {}
+            end
+
+            expect_it { to be_buffered }
+        end
+
+        context 'when there are #on_body_lines callbacks' do
+            subject do
+                described_class.new( url: url ).on_body_lines {}
+            end
+
+            expect_it { to be_buffered }
+        end
+    end
+
     describe '#on_complete' do
         context 'when passed a block' do
             it 'adds it as a callback to be passed the response' do
+                response = nil
+
                 request = described_class.new( url: url )
+                request.on_complete { |r| response = r }
+                request.run
 
-                passed_response = nil
-                request.on_complete { |res| passed_response = res }
-
-                response = Arachni::HTTP::Response.new( url: url )
-                request.handle_response( response )
-
-                expect(passed_response).to eq(response)
+                expect(response.code).to eq 200
+                expect(response.body).to eq 'GET'
+                expect(response.headers).to be_any
             end
 
             it 'can add multiple callbacks' do
@@ -354,13 +426,291 @@ describe Arachni::HTTP::Request do
                 2.times do
                     request.on_complete { |res| passed_responses << res }
                 end
-
-                response = Arachni::HTTP::Response.new( url: url )
-                request.handle_response( response )
+                request.run
 
                 expect(passed_responses.size).to eq(2)
-                expect(passed_responses.uniq.size).to eq(1)
-                expect(passed_responses.uniq.first).to eq(response)
+
+                passed_responses.each do |response|
+                    expect(response.code).to eq 200
+                    expect(response.body).to eq 'GET'
+                    expect(response.headers).to be_any
+                end
+            end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response = nil
+
+                    request = described_class.new( url: url )
+                    request.on_complete { |r| fail }
+                    request.on_complete { |r| response = r }
+                    request.on_complete { |r| fail }
+                    request.run
+
+                    expect(response.code).to eq 200
+                    expect(response.body).to eq 'GET'
+                    expect(response.headers).to be_any
+                end
+            end
+        end
+    end
+
+    describe '#on_headers' do
+        context 'when passed a block' do
+            it 'adds it as a callback to be passed the response with headers' do
+                request = described_class.new( url: "#{url}/stream" )
+
+                response_h = {}
+                request.on_headers do |response|
+                    response_h = response.to_h
+                end
+                request.run
+
+                expect(response_h[:code]).to eq 200
+                expect(response_h[:body]).to eq ''
+                expect(response_h[:headers]).to be_any
+            end
+
+            context 'when the block returns :abort' do
+                it 'aborts the request' do
+                    request = described_class.new( url: "#{url}/stream" )
+
+                    request.on_headers do |response|
+                        :abort
+                    end
+                    response = request.run
+
+                    expect(response.time).to be < 2
+                end
+            end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response_h = nil
+
+                    request = described_class.new( url: url )
+                    request.on_headers { fail }
+                    request.on_headers { |r| response_h = r.to_h }
+                    request.on_headers { fail }
+                    request.run
+
+                    expect(response_h[:code]).to eq 200
+                    expect(response_h[:body]).to eq ''
+                    expect(response_h[:headers]).to be_any
+                end
+            end
+        end
+    end
+
+    describe '#on_body' do
+        context 'when passed a block' do
+            it 'adds it as a callback to be passed the each body chunk' do
+                request = described_class.new( url: "#{url}/lines" )
+
+                s = ''
+                500.times do |i|
+                    s << "#{i}: test\n"
+                end
+
+                lines = ''
+                request.on_body do |line|
+                    lines << line
+                end
+                request.run
+
+                expect(lines).to eq s
+            end
+
+            context 'when the block returns :abort' do
+                it 'aborts the request' do
+                    request = described_class.new( url: "#{url}/lines" )
+
+                    i = 0
+                    request.on_body do
+                        if i == 100
+                            next :abort
+                        end
+
+                        i += 1
+                    end
+                    request.run
+
+                    expect(i).to eq 100
+                end
+            end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response_h = nil
+
+                    request = described_class.new( url: url )
+                    request.on_body { fail }
+                    request.on_body { |_, r| response_h = r.to_h }
+                    request.on_body { fail }
+                    request.run
+
+                    expect(response_h[:code]).to eq 200
+                    expect(response_h[:body]).to eq ''
+                    expect(response_h[:headers]).to be_any
+                end
+            end
+        end
+    end
+
+    describe '#on_body_line' do
+        context 'when passed a block' do
+            it 'adds it as a callback to be passed the each body line' do
+                request = described_class.new( url: "#{url}/lines" )
+
+                s = ''
+                500.times do |i|
+                    s << "#{i}: test\n"
+                end
+
+                lines = ''
+                request.on_body_line do |line|
+                    lines << line
+                end
+                request.run
+
+                expect(lines).to eq s
+            end
+
+            context 'when the body does not end in EOL' do
+                it 'provides the last line via #on_complete' do
+                    request = described_class.new( url: "#{url}/lines/incomplete" )
+
+                    lines = ''
+                    request.on_body_line do |line|
+                        lines << line
+                    end
+
+                    last_line = ''
+                    request.on_complete do |response|
+                        last_line = response.body
+                    end
+                    request.run
+
+                    expect(lines).to eq "Blah\n"
+                    expect(last_line).to eq 'Hello!'
+                end
+            end
+
+            context 'when the block returns :abort' do
+                it 'aborts the request' do
+                    request = described_class.new( url: "#{url}/lines" )
+
+                    i = 0
+                    request.on_body_line do
+                        if i == 100
+                            next :abort
+                        end
+
+                        i += 1
+                    end
+                    request.run
+
+                    expect(i).to eq 100
+                end
+            end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response_h = nil
+
+                    request = described_class.new( url: "#{url}/fast_stream" )
+                    request.on_body_line { fail }
+                    request.on_body_line { |_, r| response_h = r.to_h }
+                    request.on_body_line { fail }
+                    request.run
+
+                    expect(response_h[:code]).to eq 200
+                    expect(response_h[:body]).to eq ''
+                    expect(response_h[:headers]).to be_any
+                end
+            end
+        end
+    end
+
+    describe '#on_body_lines' do
+        context 'when passed a block' do
+            it 'adds it as a callback to be passed chunks of body lines' do
+                request = described_class.new( url: "#{url}/lines/non-stream" )
+
+                s = ''
+                # 1_575 is the magic number where packets are split but set it
+                # to 2_000 for good measure.
+                2_000.times do |i|
+                    s << "#{i}: test\n"
+                end
+
+                lines = []
+                request.on_body_lines do |line|
+                    lines << line
+                end
+                request.run
+
+                expect(lines.join).to eq s
+                expect(lines.size).to be > 1
+                expect(lines.size).to be < 500
+
+                lines.each do |line|
+                    expect(line).to end_with"\n"
+                end
+            end
+
+            context 'when the body does not end in EOL' do
+                it 'provides the last line via #on_complete' do
+                    request = described_class.new( url: "#{url}/lines/incomplete" )
+
+                    lines = ''
+                    request.on_body_lines do |line|
+                        lines << line
+                    end
+
+                    last_line = ''
+                    request.on_complete do |response|
+                        last_line = response.body
+                    end
+                    request.run
+
+                    expect(lines).to eq "Blah\n"
+                    expect(last_line).to eq 'Hello!'
+                end
+            end
+
+            context 'when the block returns :abort' do
+                it 'aborts the request' do
+                    request = described_class.new( url: "#{url}/lines" )
+
+                    i = 0
+                    request.on_body_lines do
+                        if i == 100
+                            next :abort
+                        end
+
+                        i += 1
+                    end
+                    request.run
+
+                    expect(i).to eq 100
+                end
+            end
+
+            context 'when an exception is raised' do
+                it 'does not affect other callbacks' do
+                    response_h = nil
+
+                    request = described_class.new( url: "#{url}/fast_stream" )
+                    request.on_body_lines { fail }
+                    request.on_body_lines { |_, r| response_h = r.to_h }
+                    request.on_body_lines { fail }
+                    request.run
+
+                    expect(response_h[:code]).to eq 200
+                    expect(response_h[:body]).to eq ''
+                    expect(response_h[:headers]).to be_any
+                end
             end
         end
     end
@@ -374,35 +724,9 @@ describe Arachni::HTTP::Request do
 
             response = Arachni::HTTP::Response.new( url: url )
             request.clear_callbacks
-            request.handle_response( response )
+            request.run
 
             expect(passed_response).to be_nil
-        end
-    end
-
-
-    describe '#handle_response' do
-        it 'assigns self as the #request attribute of the response' do
-            request = described_class.new( url: url )
-
-            passed_response = nil
-            request.on_complete { |res| passed_response = res }
-
-            response = Arachni::HTTP::Response.new( url: url )
-            request.handle_response( response )
-
-            expect(passed_response.request).to eq(request)
-        end
-
-        it 'calls #on_complete callbacks' do
-            response = Arachni::HTTP::Response.new( url: url, code: 200 )
-            request = described_class.new( url: url )
-
-            passed_response = nil
-            request.on_complete { |res| passed_response = res }
-            request.handle_response( response )
-
-            expect(passed_response).to eq(response)
         end
     end
 

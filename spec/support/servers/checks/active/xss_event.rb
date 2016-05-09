@@ -3,7 +3,7 @@ require 'sinatra/contrib'
 require_relative '../check_server'
 
 def attributes
-    current_check::EVENT_ATTRS
+    current_check::ATTRIBUTES
 end
 
 def get_variations( str )

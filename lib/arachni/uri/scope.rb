@@ -43,8 +43,11 @@ class Scope < Arachni::Scope
     # @see OptionGroups::Scope#exclude_path_patterns
     # @see #exclude_file_extension?
     def exclude?
-        exclude_file_extension? ||
-            !!options.exclude_path_patterns.find { |pattern| @url.to_s =~ pattern }
+        return true  if exclude_file_extension?
+        return false if options.exclude_path_patterns.empty?
+
+        s = @url.to_s
+        !!options.exclude_path_patterns.find { |pattern| s =~ pattern }
     end
 
     # @return   [Bool]
@@ -53,7 +56,10 @@ class Scope < Arachni::Scope
     #
     # @see OptionGroups::Scope#@exclude_file_extensions
     def exclude_file_extension?
-        options.exclude_file_extensions.include? @url.resource_extension.to_s.downcase
+        options.exclude_file_extensions.any? &&
+            options.exclude_file_extensions.include?(
+                @url.resource_extension.to_s.downcase
+            )
     end
 
     # @return   [Bool]
@@ -75,10 +81,9 @@ class Scope < Arachni::Scope
     def in_domain?
         return true if !Options.url
 
-        reference = Arachni::URI( Options.url )
-
         options.include_subdomains ?
-            reference.domain == @url.domain : reference.host == @url.host
+            Options.parsed_url.domain == @url.domain :
+            Options.parsed_url.host == @url.host
     end
 
     # @return   [Bool]
@@ -89,14 +94,11 @@ class Scope < Arachni::Scope
     def follow_protocol?
         return true if !Options.url
 
-        check_scheme = @url.scheme.to_s
+        check_scheme = @url.scheme
 
-        return false if check_scheme != 'http' && check_scheme != 'https'
+        return false if !check_scheme
 
-        parsed_ref = Arachni::URI( Options.url )
-        return false if !parsed_ref
-
-        ref_scheme = parsed_ref.scheme
+        ref_scheme = Options.parsed_url.scheme
 
         return true if ref_scheme != 'https'
         return true if ref_scheme == check_scheme

@@ -10,8 +10,6 @@
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 #
-# @version 0.1.10
-#
 # @see http://cwe.mitre.org/data/definitions/79.html
 # @see http://ha.ckers.org/xss.html
 # @see http://secunia.com/advisories/9716/
@@ -59,8 +57,11 @@ class Arachni::Checks::XssPath < Arachni::Check::Base
         # parsing to verify, no reason to waste resources...
         return if !body.include?( self.class.string )
 
-        # see if we managed to successfully inject our element
-        return if Arachni::Parser.parse( body ).css( self.class.tag ).empty?
+        return if Arachni::Parser.parse(
+            response.body,
+            whitelist:     [self.class.tag],
+            stop_on_first: [self.class.tag]
+        ).nodes_by_name( self.class.tag ).empty?
 
         log vector: Element::Path.new( response.url ),
             proof: self.class.string, response: response
@@ -73,7 +74,7 @@ class Arachni::Checks::XssPath < Arachni::Check::Base
             description: %q{Cross-Site Scripting check for path injection},
             elements:    [ Element::Path ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.10',
+            version:     '0.1.11',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in path},

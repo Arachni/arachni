@@ -32,6 +32,9 @@ class Link < Base
     include Capabilities::Submittable
     include Capabilities::Auditable
 
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
+
     DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     # @param    [Hash]    options
@@ -100,43 +103,30 @@ class Link < Base
         # @return   [Array<Link>]
         def from_response( response )
             url = response.url
-            [new( url: url )] | from_document( url, response.body )
+            [new( url: url )] | from_parser( Arachni::Parser.new( response ) )
         end
 
-        # Extracts links from a document.
-        #
-        # @param    [String]    url
-        #   URL of the document -- used for path normalization purposes.
-        # @param    [String, Nokogiri::HTML::Document]    document
+        # @param    [Parser]    parser
         #
         # @return   [Array<Link>]
-        def from_document( url, document )
-            if !document.is_a?( Nokogiri::HTML::Document )
-                document = document.to_s
+        def from_parser( parser )
+            return [] if parser.body && !in_html?( parser.body )
 
-                return [] if !in_html?( document )
-
-                document = Arachni::Parser.parse( document )
-            end
-
-            base_url =  begin
-                document.search( '//base[@href]' )[0]['href']
-            rescue
-                url
-            end
-
-            document.search( '//a' ).map do |link|
+            parser.document.nodes_by_name( :a ).map do |link|
                 next if too_big?( link['href'] )
 
-                href = to_absolute( link['href'], base_url )
+                href = to_absolute( link['href'], parser.base )
                 next if !href
 
                 next if !(parsed_url = Arachni::URI( href )) ||
                     parsed_url.scope.out?
 
+                # puts link.to_html
+
                 new(
-                    url:    url.freeze,
+                    url:    parser.url,
                     action: href.freeze,
+                    # source: Ox.dump( link ).freeze
                     source: link.to_html.freeze
                 )
             end.compact

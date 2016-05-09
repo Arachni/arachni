@@ -58,14 +58,20 @@ class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
             # a JS redirect.
             next if !response.body.include?( element.seed )
 
-            with_browser do |browser|
-                browser.load( response )
-
-                if payload? browser.url
-                    log vector: element, response: response
-                end
-            end
+            with_browser( element, response, page, self.class.check_browser_result_cb )
         end
+    end
+
+    def self.check_browser_result( browser, element, response, referring_page )
+        browser.load( response )
+
+        return if !payload? browser.url
+
+        log vector: element, response: response, referring_page: referring_page
+    end
+
+    def self.check_browser_result_cb
+        @check_browser_result_cb ||= method(:check_browser_result)
     end
 
     def self.info
@@ -77,7 +83,7 @@ URL to determine whether the attack was successful.
 },
             elements:    ELEMENTS_WITH_INPUTS - [Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.4',
+            version:     '0.2.5',
 
             issue:       {
                 name:            %q{Unvalidated redirect},

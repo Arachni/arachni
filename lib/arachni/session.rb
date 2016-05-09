@@ -256,8 +256,8 @@ class Session
 
     # @param    [Block] block
     #   Block to be passed the {#browser}.
-    def with_browser( &block )
-        block.call browser
+    def with_browser( *args, &block )
+        block.call browser, *args
     end
 
     # @param    [Hash]   http_options
@@ -347,7 +347,7 @@ class Session
             # We need to reparse the body in order to override the scope
             # and thus extract even out-of-scope forms in case we're dealing
             # with a Single-Sign-On situation.
-            forms:  forms_from_document( page.url, page.body, true ),
+            forms:  forms_from_parser( page.parser, true ),
             inputs: configuration[:inputs].keys
         )
 

@@ -27,7 +27,7 @@ module WithSource
     end
 
     def source=( s )
-        @source = (s ? s : s.freeze )
+        @source = (s ? s.strip : s.freeze )
     end
 
     def to_h

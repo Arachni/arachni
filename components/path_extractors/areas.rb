@@ -9,13 +9,12 @@
 # Extracts paths from anchor elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
 class Arachni::Parser::Extractors::Areas < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'area' ) || !includes?( 'href' )
+        return [] if !check_for?( 'area' ) || !check_for?( 'href' )
 
-        document.search( '//area[@href]' ).map { |a| a['href'] }
+        document.nodes_by_name( 'area' ).map { |a| a['href'] }
     end
 
 end

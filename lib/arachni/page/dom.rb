@@ -39,8 +39,8 @@ class DOM
     #   {Browser::Javascript::TaintTracer#execution_flow_sinks} data.
     attr_accessor :execution_flow_sinks
 
-    # @return   [String]
-    #   String digest of the DOM tree.
+    # @return   [Integer]
+    #   Digest of the DOM tree.
     attr_accessor :digest
 
     # @return   [String]
@@ -49,7 +49,7 @@ class DOM
 
     # @return   [Page]
     #   Page to which this DOM state is attached.
-    attr_reader   :page
+    attr_accessor :page
 
     # @param    [Hash]  options
     # @option   options [Page]  :page
@@ -67,20 +67,6 @@ class DOM
 
     def url=( url )
         @url = url.freeze
-    end
-
-    def digest=( d )
-        return @digest = nil if !d
-
-        normalized_url = Utilities.normalize_url( url )
-
-        if d.include?( url ) || d.include?( normalized_url )
-            d = d.dup
-            d.gsub!( url, '' )
-            d.gsub!( normalized_url, '' )
-        end
-
-        @digest = d.freeze
     end
 
     # @param    [Transition]    transition
@@ -144,14 +130,22 @@ class DOM
     #
     # @return   [Browser, nil]
     #   Live page in the `browser` if successful, `nil` otherwise.
-    def restore( browser, take_snapshot = true )
-        # First, try to load the page via its DOM#url in case it can restore
-        # itself via its URL fragments and whatnot.
-        browser.goto url, take_snapshot: take_snapshot
-
+    def restore( browser )
         playables = self.playable_transitions
 
-        # If we've got no playable transitions then we're done.
+        # First transition will always be the page load and if that's all there
+        # is then we're done.
+        if playables.size == 1
+            browser.goto playables.first.options[:url]
+            return browser
+
+        # Alternatively, try to load the page via its DOM#url in case it can
+        # restore itself via its URL fragments and whatnot.
+        else
+            browser.goto url
+        end
+
+        # No transitions, nothing more to be done.
         return browser if playables.empty?
 
         browser_dom = browser.state
@@ -165,8 +159,8 @@ class DOM
         # page can restore itself via its URL (using fragment data most probably),
         # the document may still be different from when our snapshot was captured.
         #
-        # However, this check doesn't cost us much so it's worth a shot.
-        if browser_dom === self
+        # However, it doesn't cost us anything so it's worth a shot.
+        if browser_dom == self
             browser.print_debug "Loaded snapshot by URL: #{url}"
             return browser
         end
@@ -236,6 +230,18 @@ class DOM
         }
     end
 
+    def marshal_dump
+        instance_variables.inject({}) do |h, iv|
+            next h if iv == :@page
+            h[iv] = instance_variable_get( iv )
+            h
+        end
+    end
+
+    def marshal_load( h )
+        h.each { |k, v| instance_variable_set( k, v ) }
+    end
+
     # @param    [Hash]  data
     #   {#to_rpc_data}
     # @return   [DOM]
@@ -274,38 +280,11 @@ class DOM
     end
 
     def hash
-        # TODO: Maybe raise error if #digest is not set?
-        digest.persistent_hash
+        digest || super
     end
 
     def ==( other )
         hash == other.hash
-    end
-
-    # @note Removes the URL strings of both DOMs from each other's document
-    #        before comparing.
-    #
-    # @param    [DOM]   other
-    # @return   [Bool]
-    #   `true` if the compared DOM trees are effectively the same, `false` otherwise.
-    def ===( other )
-        digest_without_urls( other ) == other.digest_without_urls( self )
-    end
-
-    protected
-
-    def digest_without_urls( dom )
-        normalized_other_url = Utilities.normalize_url( dom.url )
-
-        if !digest.include?( dom.url ) &&
-            !digest.include?( normalized_other_url )
-            return digest
-        end
-
-        d = digest.dup
-        d.gsub!( dom.url, '' )
-        d.gsub!( normalized_other_url, '' )
-        d
     end
 
 end

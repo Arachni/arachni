@@ -14,35 +14,64 @@ module Capabilities
 module Submittable
     include Arachni::Element::Capabilities::Submittable
 
-    # @param  [Hash]  options
-    # @param  [Block]  block
-    #   Callback to be passed the evaluated {Page}.
-    def submit( options = {}, &block )
-        with_browser do |browser|
-            prepare_browser( browser, options )
+    def submit( options = {}, method = nil, &block )
+        # Remove references to the Auditor instance (the check instance) to
+        # remove references to the associated pages and HTTP responses etc.
+        #
+        # We don't know how long we'll be waiting in the queue so keeping these
+        # objects in memory can result in big leaks -- which is why we're also
+        # moving to class-level callbacks, to avoid closures capturing context.
 
-            # If we've wandered to an out-of-scope resource don't bother calling.
-            # Can be caused by a JS redirect or something akin to that.
-            if (transitions = self.trigger.compact).any?
-                page = browser.to_page
-                page.dom.transitions += transitions
-                block.call page.tap { |p| p.request.performer = self }
-            end
+        auditor  = @auditor
+        @auditor = nil
 
-            @element = nil
-            @browser = nil
+        options = options.merge(
+            element: self,
+            auditor: auditor.class,
+            page:    page
+        )
+
+        if method
+            auditor.with_browser( options, method )
+        else
+            auditor.with_browser( options, &Submittable.prepare_callback( &block ) )
         end
+
         nil
     end
 
-    private
+    def self.prepare_callback( &block )
+        lambda do |browser, options|
+            Submittable.prepare_browser( browser, options )
+            Submittable.submit_with_browser( browser, options, &block )
+        end
+    end
 
-    def prepare_browser( browser, options )
-        @browser = browser
+    def self.prepare_browser( browser, options )
         browser.javascript.custom_code = options[:custom_code]
         browser.javascript.taint       = options[:taint]
+        browser.load options[:page]
+    end
 
-        browser.load page
+    def self.submit_with_browser( browser, options, &cb )
+        element = options[:element]
+        element.browser = browser
+        element.auditor = options[:auditor]
+        element.page    = options[:page]
+
+        # If we've wandered to an out-of-scope resource don't bother calling.
+        # Can be caused by a JS redirect or something akin to that.
+        if (transitions = element.trigger.compact).any?
+            page = browser.to_page
+            page.dom.transitions  += transitions
+            page.request.performer = element
+
+            # Auditable.handle_submission_result page
+            cb.call( page ) if block_given?
+            return page
+        end
+
+        nil
     end
 
 end

@@ -9,6 +9,7 @@
 require 'childprocess'
 require 'watir-webdriver'
 require_relative 'selenium/webdriver/element'
+require_relative 'selenium/webdriver/remote/typhoeus'
 require_relative 'processes/manager'
 require_relative 'browser/element_locator'
 require_relative 'browser/javascript'
@@ -79,10 +80,8 @@ class Browser
     ])
 
     ASSET_EXTRACTORS = [
-        /<\s*link.*?href=['"](.*?)['"].*?>/im,
-        /<\s*script.*?src=['"](.*?)['"].*?>/im,
-        /<\s*img.*?src=['"](.*?)['"].*?>/im,
-        /<\s*input.*?src=['"](.*?)['"].*?>/im,
+        /<\s*link.*?href=\s*['"]?(.*?)?['"]?[\s>]/im,
+        /src\s*=\s*['"]?(.*?)?['"]?[\s>]/i,
     ]
 
     # @return   [Array<Page::DOM::Transition>]
@@ -216,7 +215,6 @@ class Browser
         # Captures HTTP::Response objects per URL for open windows.
         @window_responses = {}
 
-        @elements_with_events = {}
 
         # Keeps track of resources which should be skipped -- like already fired
         # events and clicked links etc.
@@ -234,7 +232,6 @@ class Browser
 
     def clear_buffers
         synchronize do
-            @elements_with_events.clear
             @preloads.clear
             @cache.clear
             @captured_pages.clear
@@ -406,12 +403,8 @@ class Browser
     end
 
     def wait_till_ready
-        print_debug_level_2 'Waiting for custom JS...'
         @javascript.wait_till_ready
-        print_debug_level_2 '...done.'
-
         wait_for_timers
-
         wait_for_pending_requests
     end
 
@@ -471,10 +464,10 @@ class Browser
     # @yield    [ElementLocator,Array<Symbol>]
     #   Element locator along with the element's applicable events along with
     #   their handlers and attributes.
-    def each_element_with_events
+    def each_element_with_events( whitelist = [])
         current_url = self.url
 
-        javascript.dom_elements_with_events.each do |element|
+        javascript.each_dom_element_with_events whitelist do |element|
             tag_name   = element['tag_name']
             attributes = element['attributes']
             events     = element['events']
@@ -517,99 +510,6 @@ class Browser
         self
     end
 
-    # @note The results will be cached, if direct access in necessary
-    #   use {#each_element_with_events}.
-    #
-    # @return    [Hash<ElementLocator,Array<Symbol>>]
-    #   Element locator along with the element's applicable events along with
-    #   their handlers and attributes.
-    def elements_with_events( clear_cache = false )
-        current_url = self.url
-
-        @elements_with_events.clear if clear_cache
-
-        if @elements_with_events.include?( current_url )
-            return @elements_with_events[current_url]
-        end
-
-        @elements_with_events.clear
-        @elements_with_events[current_url] ||= {}
-
-        each_element_with_events do |locator, events|
-            @elements_with_events[current_url][locator] = events
-        end
-
-        @elements_with_events[current_url]
-    end
-
-    # @return   [String]
-    #   Snapshot ID used to determine whether or not a page snapshot has already
-    #   been seen.
-    #
-    #   Uses both elements and their DOM events and possible audit workload to
-    #   determine the ID, as page snapshots should be retained both when further
-    #   browser analysis can be performed and when new element audit workload
-    #   (but possibly without any DOM relevance) is available.
-    def snapshot_id
-        current_url = self.url
-
-        id = Set.new
-        javascript.dom_elements_with_events.each do |element|
-            tag_name   = element['tag_name']
-            attributes = element['attributes']
-            events     = element['events']
-            element_id = attributes['id'].to_s
-
-            case tag_name
-                when 'a'
-                    href        = attributes['href'].to_s
-                    element_id << href
-
-                    if !href.empty?
-                        if href.downcase.start_with?( 'javascript:' )
-                            (events[:click] ||= []) << href
-                        else
-                            absolute = to_absolute( href, current_url )
-                            next if skip_path?( absolute )
-
-                            (events[:click] ||= []) << href
-                        end
-                    else
-                        (events[:click] ||= []) << current_url
-                    end
-
-                when 'input', 'textarea', 'select'
-                    (events[:input] ||= []) << tag_name.to_sym
-                    element_id << attributes['name'].to_s
-
-                when 'form'
-                    action      = attributes['action'].to_s
-                    element_id << "#{action}#{attributes['name']}"
-
-                    if !action.empty?
-                        if action.downcase.start_with?( 'javascript:' )
-                            (events[:submit] ||= []) << action
-                        else
-                            absolute = to_absolute( action, current_url )
-                            if !skip_path?( absolute )
-                                (events[:submit] ||= []) << absolute
-                            end
-                        end
-                    else
-                        (events[:submit] ||= []) << current_url
-                    end
-            end
-
-            next if events.empty?
-
-            id << "#{tag_name}:#{element_id}:#{events.keys.sort}".persistent_hash
-        end
-
-        id << [:cookies, cookies.map(&:name).sort].to_s.persistent_hash
-
-        id.to_a.sort.map(&:to_s).join(':')
-    end
-
     # Triggers all events on all elements (**once**) and captures
     # {#page_snapshots page snapshots}.
     #
@@ -619,7 +519,7 @@ class Browser
         dom = self.state
 
         count = 1
-        elements_with_events( true ).each do |locator, events|
+        each_element_with_events do |locator, events|
             state = "#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
             next if skip_state?( state )
             skip_state state
@@ -662,7 +562,6 @@ class Browser
     # @param    [Symbol]  event
     #   Event to trigger.
     def trigger_event( resource, element, event, restore = true )
-        event = event.to_sym
         transition = fire_event( element, event )
 
         if !transition
@@ -776,6 +675,10 @@ class Browser
                 print_debug_level_2 "[waiting for requests]: #{event} (#{options}) #{locator}"
                 wait_for_pending_requests
                 print_debug_level_2 "[done waiting for requests]: #{event} (#{options}) #{locator}"
+
+                # Maybe we switched to a different page, wait until the custom
+                # JS env has been put in place.
+                javascript.wait_till_ready
 
                 update_cookies
             end
@@ -1011,7 +914,7 @@ class Browser
                 # bother trying anything else.
                 next if !response
 
-                unique_id = self.snapshot_id
+                unique_id = javascript.dom_event_digest
                 already_seen = skip_state?( unique_id )
                 skip_state unique_id
 
@@ -1178,7 +1081,20 @@ class Browser
     def selenium
         return @selenium if @selenium
 
-        client = Selenium::WebDriver::Remote::Http::Default.new
+        # Using Typhoeus for Selenium results in memory violation errors on
+        # Windows, so use the default Net::HTTP-based client.
+        if Arachni.windows?
+            client = Selenium::WebDriver::Remote::Http::Default.new
+
+        # However, using the default client results in Threads being used because
+        # Net::HTTP uses them for timeouts, and Threads are resource intensive
+        # (around 1MB per Thread).
+        #
+        # So, if we're not on Windows, use Typhoeus.
+        else
+            client = Selenium::WebDriver::Remote::Http::Typhoeus.new
+        end
+
         client.timeout = SELENIUM_TIMEOUT
 
         @selenium = Selenium::WebDriver.for(
@@ -1739,6 +1655,10 @@ EOJS
 
     def whitelist_asset_domains( response )
         synchronize do
+            @whitelist_asset_domains ||= Support::LookUp::HashSet.new
+            return if @whitelist_asset_domains.include? response.body
+            @whitelist_asset_domains << response.body
+
             ASSET_EXTRACTORS.each do |regexp|
                 response.body.scan( regexp ).flatten.compact.each do |url|
                     next if !(domain = self.class.add_asset_domain( url ))

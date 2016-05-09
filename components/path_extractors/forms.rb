@@ -9,13 +9,12 @@
 # Extracts paths from "form" HTML elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
 class Arachni::Parser::Extractors::Forms < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'action' )
+        return [] if !check_for?( 'action' )
 
-        document.search( '//form[@action]' ).map { |a| a['action'] }
+        document.nodes_by_name( 'form' ).map { |f| f['action'] }
     end
 
 end

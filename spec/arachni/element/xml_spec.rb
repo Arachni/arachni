@@ -13,7 +13,9 @@ describe Arachni::Element::XML do
     it_should_behave_like 'mutable',
                           supports_nulls: false,
                           inputs: described_class.parse_inputs( inputtable_source )
-    it_should_behave_like 'auditable'
+    it_should_behave_like 'auditable', supports_nulls: false
+    it_should_behave_like 'buffered_auditable'
+    it_should_behave_like 'line_buffered_auditable'
 
     before :each do
         @framework ||= Arachni::Framework.new
@@ -143,7 +145,7 @@ EOXML
 
     describe '#to_rpc_data' do
         it "includes 'source'" do
-            expect(subject.to_rpc_data['source']).to eq(source)
+            expect(subject.to_rpc_data['source']).to eq(source.strip)
         end
     end
 
@@ -162,7 +164,7 @@ EOXML
             it 'parses a request into an element' do
                 expect(subject.url).to    eq(url)
                 expect(subject.action).to eq(request.url)
-                expect(subject.source).to eq(request.body)
+                expect(subject.source).to eq(request.body.strip)
                 expect(subject.method).to eq(request.method)
             end
         end

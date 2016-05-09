@@ -82,6 +82,7 @@ class Response < Message
     def partial?
         # Streamed response which was aborted before completing.
         return_code == :partial_file ||
+            return_code == :recv_error ||
             # Normal response with some data written, but without reaching
             # content-length.
             (code != 0 && timed_out?)
@@ -138,21 +139,23 @@ class Response < Message
     #   `true` if the response body is textual in nature, `false` if binary,
     #   `nil` if could not be determined.
     def text?
-        return if !@body
+        return nil      if !@body
+        return nil      if @is_text == :inconclusive
+        return @is_text if !@is_text.nil?
 
         if (type = headers.content_type)
-            return true if type.start_with?( 'text/' )
+            return @is_text = true if type.start_with?( 'text/' )
 
             # Non "text/" nor "application/" content types will surely not be
             # text-based so bail out early.
-            return false if !type.start_with?( 'application/' )
+            return @is_text = false if !type.start_with?( 'application/' )
         end
 
         # Last resort, more resource intensive binary detection.
-        begin
+        @is_text = begin
             !@body.binary?
         rescue ArgumentError
-            nil
+            :inconclusive
         end
     end
 
@@ -163,17 +166,21 @@ class Response < Message
     end
 
     def body=( body )
-        @body = body.to_s.dup
+        @body = body.to_s
 
         text_check = text?
         @body.recode! if text_check.nil? || text_check
 
-        @body.freeze
+        @body
     end
 
     # @return [Arachni::Page]
     def to_page
         Page.from_response self
+    end
+
+    def parse
+        Parser.new self
     end
 
     # @return   [Hash]
@@ -186,6 +193,7 @@ class Response < Message
         hash[:headers] = {}.merge( hash[:headers] )
 
         hash.delete( :normalize_url )
+        hash.delete( :is_text )
         hash.delete( :scope )
         hash.delete( :parsed_url )
         hash.delete( :redirections )
@@ -217,6 +225,36 @@ class Response < Message
 
     def hash
         to_h.hash
+    end
+
+    def update_from_typhoeus( response, options = {} )
+        return_code    = response.return_code
+        return_message = response.return_message
+
+        # A write error in this case will be because body reading was aborted
+        # during our own callback in Request#set_body_reader.
+        #
+        # So, this is here just for consistency.
+        if response.return_code == :write_error
+            return_code    = :filesize_exceeded
+            return_message = 'Maximum file size exceeded'
+        end
+
+        update( options.merge(
+            url:            response.effective_url,
+            code:           response.code,
+            ip_address:     response.primary_ip,
+            headers:        response.headers,
+            headers_string: response.response_headers,
+            body:           response.body,
+            redirections:   redirections,
+            time:           response.time,
+            app_time:       (response.timed_out? ? response.time :
+                response.start_transfer_time - response.pretransfer_time).to_f,
+            total_time:     response.total_time.to_f,
+            return_code:    return_code,
+            return_message: return_message
+        ))
     end
 
     def self.from_typhoeus( response, options = {} )

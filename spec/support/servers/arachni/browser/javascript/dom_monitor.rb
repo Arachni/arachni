@@ -87,6 +87,29 @@ get '/intervals' do
 HTML
 end
 
+get '/elements_with_events/whitelist' do
+    <<HTML
+    <div id="parent">
+        <p id="parent-p">
+            <button id="parent-button">Click me</button>
+        </p>
+
+        <div id="child">
+            <p id="child-p">
+                <span id="child-span">Click me too</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener( "click", function( window_click ){}, false );
+        document.addEventListener( "click", function( document_click ){}, false );
+        document.getElementById( "parent" ).addEventListener( "click", function( parent_click ){}, false );
+        document.getElementById( "child" ).addEventListener( "click", function( child_click ){}, false );
+    </script>
+HTML
+end
+
 get '/elements_with_events/inherited' do
     <<HTML
     <div id="parent">
@@ -120,6 +143,16 @@ get '/elements_with_events/attributes' do
 HTML
 end
 
+get '/elements_with_events/attributes/inappropriate' do
+    <<HTML
+    <body>
+        <button onselect="handler_1()" id="my-button">Click me</button>
+        <button onkeydown="handler_2()" id="my-button2">Click me too</button>
+        <button onsubmit="handler_3()" id="my-button3">Don't bother clicking me</button>
+    </body>
+HTML
+end
+
 get '/elements_with_events/listeners' do
     <<HTML
     <button id="my-button">Click me</button>
@@ -132,6 +165,21 @@ get '/elements_with_events/listeners' do
         document.getElementById( "my-button" ).addEventListener( "onmouseover", function( my_button_onmouseover ){}, false );
 
         document.getElementById( "my-button2" ).addEventListener( "click", function( my_button2_click ){}, false );
+    </script>
+HTML
+end
+
+get '/elements_with_events/listeners/inappropriate' do
+    <<HTML
+    <button id="my-button">Click me</button>
+    <button id="my-button2">Click me too</button>
+    <button id="my-button3">Don't bother clicking me</button>
+
+    <script>
+        document.getElementById( "my-button" ).addEventListener( "select", function( my_button_click ){}, false );
+        document.getElementById( "my-button" ).addEventListener( "submit", function( my_button_click2 ){}, false );
+
+        document.getElementById( "my-button2" ).addEventListener( "select", function( my_button2_click ){}, false );
     </script>
 HTML
 end

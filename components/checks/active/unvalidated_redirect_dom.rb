@@ -39,11 +39,11 @@ class Arachni::Checks::UnvalidatedRedirectDOM < Arachni::Check::Base
 
     def run
         each_candidate_dom_element do |element|
-            element.audit( self.class.payloads, self.class.options, &method(:check_and_log) )
+            element.audit( self.class.payloads, self.class.options )
         end
     end
 
-    def check_and_log( page, element )
+    def self.check_and_log( page, element )
         return if !payload? page.url
         log vector: element, page: page
     end
@@ -59,7 +59,7 @@ Injects URLs and checks the browser URL to determine whether the attack was succ
                 Element::UIInput::DOM
             ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
 
             issue:       {
                 name:            %q{Unvalidated DOM redirect},

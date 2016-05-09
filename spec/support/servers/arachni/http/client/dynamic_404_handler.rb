@@ -53,6 +53,26 @@ get '/combo/*' do
     handler_response_1
 end
 
+get '/ignore-after-filename/*' do
+    entry, other = params[:splat].first.split( '/', 2 )
+
+    if entry.start_with?( '123' ) && other.empty?
+        'Found!'
+    else
+        'Not found'
+    end
+end
+
+get '/ignore-before-filename/*' do
+    entry, other = params[:splat].first.split( '/', 2 )
+
+    if entry.end_with?( '123' ) && other.empty?
+        'Found!'
+    else
+        'Not found'
+    end
+end
+
 get '/advanced/sensitive-ext/:filename' do |filename|
     name, ext = filename.split( '.', 2 )
 

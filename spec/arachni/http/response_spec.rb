@@ -148,7 +148,7 @@ describe Arachni::HTTP::Response do
             end
         end
 
-        context 'when the response body matches the content-lenth' do
+        context 'when the response body matches the content-length' do
             it 'returns false' do
                 response = @http.get( @url, mode: :sync )
                 expect(response).to_not be_partial
@@ -159,6 +159,15 @@ describe Arachni::HTTP::Response do
             context 'that does not complete' do
                 it 'returns true' do
                     response = @http.get( "#{@url}/partial_stream", mode: :sync )
+                    expect(response.return_code).to eq :partial_file
+                    expect(response).to be_partial
+                end
+            end
+
+            context 'that closes abruptly' do
+                it 'returns true' do
+                    response = @http.get( "#{@url}/fail_stream", mode: :sync )
+                    expect(response.return_code).to eq :recv_error
                     expect(response).to be_partial
                 end
             end
@@ -328,12 +337,6 @@ describe Arachni::HTTP::Response do
             r = described_class.new( url: url )
             r.body = body
             expect(r.body).to eq(body)
-        end
-
-        it 'freezes it' do
-            r = described_class.new( url: url )
-            r.body = 'Stuff...'
-            expect(r.body).to be_frozen
         end
 
         it 'forces it to a string' do

@@ -27,6 +27,8 @@ class Cookie < Base
     # Generic element capabilities.
     include Arachni::Element::Capabilities::Submittable
     include Arachni::Element::Capabilities::Auditable
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
     include Arachni::Element::Capabilities::Analyzable
     include Arachni::Element::Capabilities::WithSource
 
@@ -185,11 +187,13 @@ class Cookie < Base
     # @return   [String]
     #   Converts self to a `Set-Cookie` string.
     def to_set_cookie
-        set_cookie = "#{self.to_s}; "
-        set_cookie << @data.map do |k, v|
+        set_cookie = "#{self.to_s}"
+
+        @data.each do |k, v|
             next if !v || !self.class.keep_for_set_cookie.include?( k )
-            "#{k.capitalize}=#{v}"
-        end.compact.join( '; ' )
+
+            set_cookie << "; #{k.capitalize}=#{v}"
+        end
 
         set_cookie << '; Secure'   if secure?
         set_cookie << '; HttpOnly' if http_only?
@@ -317,43 +321,35 @@ class Cookie < Base
         #
         # @return   [Array<Cookie>]
         #
-        # @see .from_document
+        # @see .from_parser
         # @see .from_headers
         def from_response( response )
-            from_document( response.url, response.body ) +
+            from_parser( Arachni::Parser.new( response ) ) +
                 from_headers( response.url, response.headers )
         end
 
         # Extracts cookies from a document based on `Set-Cookie` `http-equiv`
         # meta tags.
         #
-        # @param    [String]    url
-        #   Owner URL.
-        # @param    [String, Nokogiri::HTML::Document]    document
+        # @param    [Arachni::Parser]    parser
         #
         # @return   [Array<Cookie>]
         #
         # @see .parse_set_cookie
-        def from_document( url, document )
-            if !document.is_a?( Nokogiri::HTML::Document )
-                document = document.to_s
-
-                return [] if !in_html?( document )
-
-                document = Arachni::Parser.parse( document )
-            end
+        def from_parser( parser )
+            return [] if parser.body && !in_html?( parser.body )
 
             Arachni::Utilities.exception_jail {
-                document.search( '//meta[@http-equiv]' ).map do |elem|
+                parser.document.nodes_by_name( :meta ).map do |elem|
                     next if elem['http-equiv'].downcase != 'set-cookie'
 
-                    from_set_cookie( url, elem['content'] )
+                    from_set_cookie( parser.url, elem['content'] )
                 end.flatten.compact
             } rescue []
         end
 
         def in_html?( html )
-            html =~ /http-equiv/i && html =~ /set-cookie/i
+            html =~ /set-cookie/i
         end
 
         # Extracts cookies from the `Set-Cookie` HTTP response header field.

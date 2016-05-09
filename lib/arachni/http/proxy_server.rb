@@ -21,6 +21,8 @@ class ProxyServer
     include Arachni::UI::Output
     personalize_output
 
+    DEFAULT_CONCURRENCY = 4
+
     # @param   [Hash]  options
     # @option options   [String]    :address    ('0.0.0.0')
     #   Address to bind to.
@@ -28,6 +30,8 @@ class ProxyServer
     #   Port number to listen on -- defaults to a random port.
     # @option options   [Integer]    :timeout
     #   HTTP time-out for each request in milliseconds.
+    # @option options   [Integer]    :concurrency   (DEFAULT_CONCURRENCY)
+    #   Amount of origin requests to be active at any given time.
     # @option options   [Block]    :response_handler
     #   Block to be called to handle each response as it arrives -- will be
     #   passed the request and response.
@@ -35,13 +39,20 @@ class ProxyServer
     #   Block to be called to handle each request as it arrives -- will be
     #   passed the request and response.
     def initialize( options = {} )
-        @reactor = Arachni::Reactor.new
+        @reactor = Arachni::Reactor.new(
+            # Higher than the defaults to keep object allocations down.
+            select_timeout:    0.1,
+            max_tick_interval: 0.1
+        )
         @options = options
 
         @active_connections = Concurrent::Map.new
 
-        @options[:address] ||= '127.0.0.1'
-        @options[:port]    ||= Utilities.available_port
+        @options[:concurrency] ||= DEFAULT_CONCURRENCY
+        @options[:address]     ||= '127.0.0.1'
+        @options[:port]        ||= Utilities.available_port
+
+        @concurrency_control_tokens = @reactor.create_queue
     end
 
     # Starts the server without blocking, it'll only block until the server is
@@ -51,11 +62,15 @@ class ProxyServer
 
         @reactor.run_in_thread
 
+        @options[:concurrency].times do |i|
+            @concurrency_control_tokens << i
+        end
+
         @reactor.on_error do |_, e|
             print_exception e
         end
 
-        listener = @reactor.listen(
+        @reactor.listen(
             @options[:address], @options[:port], Connection,
             @options.merge( parent: self )
         )
@@ -64,8 +79,22 @@ class ProxyServer
         nil
     end
 
+    def get_request_token( &block )
+        @concurrency_control_tokens.pop( &block )
+    end
+
+    def return_request_token( token )
+        @concurrency_control_tokens << token
+    end
+
+    def has_available_request_tokens?
+        @concurrency_control_tokens.empty?
+    end
+
     def shutdown
         print_debug_level_2 'Shutting down..'
+
+        @thread_pool.kill if @thread_pool
 
         @reactor.stop
         @reactor.wait

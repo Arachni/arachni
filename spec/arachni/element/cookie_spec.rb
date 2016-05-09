@@ -11,6 +11,8 @@ describe Arachni::Element::Cookie do
     it_should_behave_like 'inputtable', single_input: true
     it_should_behave_like 'mutable',    single_input: true
     it_should_behave_like 'auditable'
+    it_should_behave_like 'buffered_auditable'
+    it_should_behave_like 'line_buffered_auditable'
 
     before :each do
         @framework ||= Arachni::Framework.new
@@ -494,46 +496,61 @@ describe Arachni::Element::Cookie do
         end
     end
 
+    describe '.from_parser' do
+        let(:parser) do
+            Arachni::Parser.new(
+                Arachni::HTTP::Response.new(
+                    url:  url,
+                    body: html,
+                    headers: {
+                        'Content-Type' => 'text/html'
+                    })
+            )
+        end
 
-    describe '.from_document' do
         context 'when there are any set-cookie attributes in http-equiv' do
-            context 'with a String document' do
-                it 'returns an array of cookies' do
-                    html = <<-EOHTML
+            let(:html) do
+                <<-EOHTML
                     <html>
                     <head>
                         <meta http-equiv="Set-Cookie" content="cookie=val+1; httponly">
                         <meta http-equiv="Set-Cookie" content="cookie2+1=val2; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly; secure">
                     </head>
                     </html>
-                    EOHTML
-
-                    cookies = described_class.from_document( 'http://test.com', html )
-                    expect(cookies.size).to eq(2)
-
-                    cookie = cookies.shift
-                    expect(cookie.name).to eq('cookie')
-                    expect(cookie.value).to eq('val 1')
-                    expect(cookie.raw_name).to eq('cookie')
-                    expect(cookie.raw_value).to eq('val+1')
-                    expect(cookie.expired?).to eq(false)
-                    expect(cookie.session?).to eq(true)
-                    expect(cookie.secure?).to eq(false)
-
-                    cookie = cookies.shift
-                    expect(cookie.name).to eq('cookie2 1')
-                    expect(cookie.value).to eq('val2')
-                    expect(cookie.raw_name).to eq('cookie2+1')
-                    expect(cookie.raw_value).to eq('val2')
-                    expect(cookie.path).to eq('/')
-                    expect(cookie.domain).to eq('.foo.com')
-                    expect(cookie.secure?).to eq(true)
-                    expect(cookie.expired?).to eq(true)
-                end
+                EOHTML
             end
+
+            it 'returns an array of cookies' do
+                cookies = described_class.from_parser( parser )
+                expect(cookies.size).to eq(2)
+
+                cookie = cookies.shift
+                expect(cookie.name).to eq('cookie')
+                expect(cookie.value).to eq('val 1')
+                expect(cookie.raw_name).to eq('cookie')
+                expect(cookie.raw_value).to eq('val+1')
+                expect(cookie.expired?).to eq(false)
+                expect(cookie.session?).to eq(true)
+                expect(cookie.secure?).to eq(false)
+
+                cookie = cookies.shift
+                expect(cookie.name).to eq('cookie2 1')
+                expect(cookie.value).to eq('val2')
+                expect(cookie.raw_name).to eq('cookie2+1')
+                expect(cookie.raw_value).to eq('val2')
+                expect(cookie.path).to eq('/')
+                expect(cookie.domain).to eq('.foo.com')
+                expect(cookie.secure?).to eq(true)
+                expect(cookie.expired?).to eq(true)
+            end
+
             context 'with an empty string' do
+                let(:html) do
+                    ''
+                end
+
                 it 'returns an empty array' do
-                     expect(described_class.from_document( '', '' )).to be_empty
+                     expect(described_class.from_parser( parser )).to be_empty
                 end
             end
         end

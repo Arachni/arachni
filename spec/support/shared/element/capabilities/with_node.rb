@@ -8,8 +8,8 @@ shared_examples_for 'with_node' do |html|
     describe '#node' do
         it 'returns the set node' do
             node = with_node.node
-            expect(node.is_a?( Nokogiri::XML::Element )).to be_truthy
-            expect(node.to_s).to eq(Nokogiri::HTML.fragment( with_node.source.dup ).to_s)
+            expect(node.is_a?( Arachni::Parser::SAX::Element )).to be_truthy
+            expect(node.to_s).to eq(Arachni::Parser.parse_fragment( with_node.source ).to_s)
         end
     end
 

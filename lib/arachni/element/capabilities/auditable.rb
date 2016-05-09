@@ -105,12 +105,10 @@ module Auditable
     #       * There are no `payloads` applicable to the element's platforms.
     #
     # @raise    ArgumentError
-    #   On missing `block` or unsupported `payloads` type.
+    #   On unsupported `payloads` type.
     #
     # @see #submit
     def audit( payloads, opts = {}, &block )
-        fail ArgumentError, 'Missing block.' if !block_given?
-
         return false if self.inputs.empty?
 
         if scope.out?
@@ -282,12 +280,8 @@ module Auditable
     #       is `false` -- the default.
     #    * The element matches a {.skip_like} block.
     #
-    # @raise    [ArgumentError]
-    #   On missing `block`.
-    #
     # @see #submit
     def audit_single( payload, opts = { }, &block )
-        fail ArgumentError, 'Missing block.' if !block_given?
 
         if !valid_input_data?( payload )
             print_debug_level_2 "Payload not supported by #{self}: #{payload.inspect}"

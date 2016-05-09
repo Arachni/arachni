@@ -96,6 +96,13 @@ describe Arachni::Options do
         end
     end
 
+    describe '#parsed_url' do
+        it 'returns a parsed version of #url' do
+            subject.url = 'http://test.com/'
+            expect(subject.parsed_url).to eq Arachni::URI( subject.url )
+        end
+    end
+
     describe '#url=' do
         it 'normalizes its argument' do
             subject.url = 'http://test.com/my path'

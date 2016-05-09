@@ -7,7 +7,6 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.1
 class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
 
     prefer :xss_script_context
@@ -45,13 +44,12 @@ class Arachni::Checks::XssDomScriptContext < Arachni::Check::Base
         each_candidate_dom_element do |element|
             element.audit(
                 taints,
-                self.class.options.merge( submit: { taint: seed } ),
-                &method(:check_and_log)
+                self.class.options.merge( submit: { taint: seed } )
             )
         end
     end
 
-    def check_and_log( page, element )
+    def self.check_and_log( page, element )
         return if page.dom.execution_flow_sinks.empty?
         log vector: element, page: page
     end
@@ -64,7 +62,7 @@ Injects JS taint code and checks to see if it gets executed as proof of vulnerab
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1',
+            version:     '0.1.2',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS) in script context},

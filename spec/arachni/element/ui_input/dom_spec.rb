@@ -18,7 +18,7 @@ describe Arachni::Element::UIInput::DOM do
     end
 
     def auditable_extract_parameters( page )
-        { 'my-input' => page.document.css('#container').text.strip }
+        { 'my-input' => Nokogiri::HTML(page.body).css('#container').text.strip }
     end
 
     def element

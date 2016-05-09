@@ -1,6 +1,8 @@
 require 'yaml'
 require 'sinatra'
+require 'sinatra/streaming'
 require 'sinatra/contrib'
+
 set :logging, false
 
 get '/' do
@@ -9,6 +11,38 @@ end
 
 get '/submit' do
     cookies.to_hash.to_yaml
+end
+
+get '/submit/buffered' do
+    stream do |out|
+        2_000.times do |i|
+            out.print "Blah"
+        end
+
+        out.print 'START_PARAMS'
+        out.print cookies.to_hash.to_yaml
+        out.print 'END_PARAMS'
+
+        2_000.times do |i|
+            out.print "Blah"
+        end
+    end
+end
+
+get '/submit/line_buffered' do
+    stream do |out|
+        2_000.times do |i|
+            out.puts "Blah"
+        end
+
+        out.puts 'START_PARAMS'
+        out.puts cookies.to_hash.to_yaml
+        out.puts 'END_PARAMS'
+
+        2_000.times do |i|
+            out.puts "Blah"
+        end
+    end
 end
 
 get '/sleep' do

@@ -194,7 +194,10 @@ class Transition
         fail Error::NotPlayable, "Transition is not playable: #{self}" if !playable?
 
         if element == :page && event == :load
-            return browser.goto options[:url], cookies: options[:cookies]
+            return browser.goto( options[:url],
+                cookies:         options[:cookies],
+                take_snapshot:   false
+            )
         end
 
         browser.fire_event element, event, options

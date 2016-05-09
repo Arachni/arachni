@@ -134,10 +134,10 @@ class Worker < Arachni::Browser
     #
     # @see Jobs::EventTrigger
     # @see BrowserCluster#queue
-    def distribute_event( page, element, event )
+    def distribute_event( resource, element, event )
         master.queue @job.forward_as(
             @job.class::EventTrigger,
-            resource: page,
+            resource: resource,
             element:  element,
             event:    event
         )

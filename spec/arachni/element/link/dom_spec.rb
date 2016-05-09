@@ -4,7 +4,7 @@ describe Arachni::Element::Link::DOM do
     inputs = { 'param' => '1' }
 
     it_should_behave_like 'element_dom'
-
+    #
     it_should_behave_like 'with_node'
     it_should_behave_like 'with_auditor'
 
@@ -15,7 +15,7 @@ describe Arachni::Element::Link::DOM do
     it_should_behave_like 'auditable_dom'
 
     def auditable_extract_parameters( page )
-        { 'param' => page.document.css('#container').text }
+        { 'param' => Nokogiri::HTML(page.body).css('#container').text }
     end
 
     def run
