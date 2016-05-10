@@ -99,7 +99,11 @@ class URI
         #
         # @return   [String]
         def decode( string )
-            CACHE[__method__].fetch( string ) { Addressable::URI.unencode( string ) }
+            CACHE[__method__].fetch( string ) do
+                s = Addressable::URI.unencode( string )
+                s.gsub!( '+', ' ' ) if s
+                s
+            end
         end
 
         # @note This method's results are cached for performance reasons.
