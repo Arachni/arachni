@@ -50,8 +50,8 @@ Gem::Specification.new do |s|
     # latest one.
     s.add_dependency 'bundler'
 
-    s.add_dependency 'concurrent-ruby',     '1.0.0'
-    s.add_dependency 'concurrent-ruby-ext', '1.0.0'
+    s.add_dependency 'concurrent-ruby',     '1.0.2'
+    s.add_dependency 'concurrent-ruby-ext', '1.0.2'
 
     # For compressing/decompressing system state archives.
     s.add_dependency 'rubyzip',             '1.1.6'
