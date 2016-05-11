@@ -121,7 +121,7 @@ class Framework
         browser_cluster = statistics[:browser_cluster]
 
         refresh_line nil, unmute
-        refresh_info( "Audited #{statistics[:audited_pages]} pages.", unmute )
+        refresh_info( "Audited #{statistics[:audited_pages]} page snapshots.", unmute )
 
         if @framework.options.scope.page_limit
             refresh_info( 'Audit limited to a max of ' <<
