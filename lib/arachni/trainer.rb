@@ -48,16 +48,26 @@ class Trainer
             writer, document = Parser.push_parse(
                 whitelist: Parser::WHITELIST
             )
-
+            abort = false
             request.on_body do |chunk, response|
-                next writer.close if response.redirect?
+                next if abort
 
-                writer << chunk
+                if response.redirect?
+                    writer.close
+                    abort = true
+                    next
+                end
+
+                begin
+                    writer << chunk
+                rescue Errno::EPIPE
+                    abort = true
+                end
             end
 
             request.on_complete do |response|
                 writer.close
-                next if response.redirect? || !within_scope?( response )
+                next if abort || response.redirect? || !within_scope?( response )
 
                 # Usually page parsing just includes the response, in this case
                 # thought (this being a buffered response with partial body) the
