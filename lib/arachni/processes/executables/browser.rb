@@ -73,8 +73,6 @@ puts_stderr "#{Process.pid}: Started"
 $stdout.puts "PID: #{process.pid}"
 
 while !exit?
-    puts_stderr "#{Process.pid}: Working"
-
     begin
         break if !process.alive?
 
