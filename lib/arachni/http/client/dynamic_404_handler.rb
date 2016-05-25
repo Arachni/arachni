@@ -253,7 +253,7 @@ class Dynamic404Handler
                         # Both attempts yielded in the same result, the webapp
                         # was stable during the process and the signature can be
                         # considered accurate.
-                        if control_data[:rdiff] == signature_data[:rdiff]
+                        if control_data[:rdiff].similar? signature_data[:rdiff]
                             block.call response, :done
 
                         # Coo-coo for cocoa puffs, can't work with it.
