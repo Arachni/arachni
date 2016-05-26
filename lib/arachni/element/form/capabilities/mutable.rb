@@ -99,7 +99,8 @@ module Mutable
                 next if select_node['name'] != input
 
                 select_node.children.each do |child|
-                    next if child.name.to_s != 'option'
+                    next if !child.is_a?( Arachni::Parser::SAX::Element ) ||
+                        child.name.to_s != 'option'
 
                     try_input do
                         elem = self.dup
