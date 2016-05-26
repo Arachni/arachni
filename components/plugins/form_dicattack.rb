@@ -22,12 +22,11 @@ class Arachni::Plugins::FormDicattack < Arachni::Plugin::Base
         @verifier = Regexp.new( options[:login_verifier] )
 
         @found = false
+
+        framework_pause
     end
 
     def run
-        framework_pause
-        print_info 'System paused.'
-
         form = session.find_login_form(
             url:    @url,
             inputs: [ @user_field, @passwd_field ]

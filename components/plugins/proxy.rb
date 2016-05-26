@@ -47,12 +47,11 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         @pages = Set.new
         @login_sequence = []
+
+        framework_pause
     end
 
     def run
-        framework_pause
-        print_info 'System paused.'
-
         print_status "Listening on: #{@server.url}"
 
         print_info "Control panel URL: #{url_for( :panel )}"

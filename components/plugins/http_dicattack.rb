@@ -17,17 +17,16 @@ class Arachni::Plugins::HTTPDicattack < Arachni::Plugin::Base
         @passwds = File.read( options[:password_list] ).split( "\n" )
 
         @found = false
+
+        framework_pause
     end
 
     def run
         if !protected?( @url )
             print_info "The URL you provided doesn't seem to be protected."
             print_info 'Aborting...'
-            return
+            return framework_resume
         end
-
-        framework_pause
-        print_info 'System paused.'
 
         url = uri_parse( @url )
 
