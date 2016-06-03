@@ -436,12 +436,13 @@ class Parser
                     unsanitized_paths.merge self.class.extractors[name].new(
                         parser: self,
                         html:   body
-                    ).run
+                    ).run.flatten
                 end
             end
 
             sanitized_paths = Set.new
             unsanitized_paths.map do |path|
+                next if !path
                 abs = to_absolute( path )
                 next if !abs || skip?( abs )
 
