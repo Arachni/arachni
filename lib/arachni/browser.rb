@@ -61,7 +61,7 @@ class Browser
     end
 
     # How much time to wait for the PhantomJS process to spawn before respawning.
-    BROWSER_SPAWN_TIMEOUT = 20
+    BROWSER_SPAWN_TIMEOUT = 60
 
     # How much time to wait for a targeted HTML element to appear on the page
     # after the page is loaded.
