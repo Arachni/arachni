@@ -465,6 +465,25 @@ describe Arachni::Parser do
     end
 
     describe '#paths' do
+        context 'when it includes mailto: links' do
+            let(:response) do
+                Arachni::HTTP::Response.new(
+                    url: @opts.url,
+                    body: '
+                <html>
+                    <body>
+                        <a href="' + @opts.url + '/test2/param/myvalue"></a>
+                        <a href="mailto:name@address.com"></a>
+                    </body>
+                </html>'
+                )
+            end
+
+            it 'ignores them' do
+                expect(subject.paths).to eq([@opts.url + 'test2/param/myvalue'])
+            end
+        end
+
         context 'when an error occurs' do
             it 'returns an empty array' do
                 allow(described_class).to receive(:extractors){ raise }

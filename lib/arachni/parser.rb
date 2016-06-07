@@ -442,7 +442,8 @@ class Parser
 
             sanitized_paths = Set.new
             unsanitized_paths.map do |path|
-                next if !path
+                next if !path || path =~ /^mailto:/i
+
                 abs = to_absolute( path )
                 next if !abs || skip?( abs )
 
