@@ -26,14 +26,8 @@ describe Arachni::Framework::Parts::Data do
         let(:page) { Arachni::Page.from_url( @url + '/train/true' ) }
 
         it 'pushes it to the page audit queue and returns true' do
-            subject.options.audit.elements :links, :forms, :cookies
-            subject.checks.load :signature
-
             expect(subject.page_queue_total_size).to eq(0)
             expect(subject.push_to_page_queue( page )).to be_truthy
-            subject.run
-
-            expect(subject.report.issues.size).to eq(1)
             expect(subject.page_queue_total_size).to be > 0
         end
 

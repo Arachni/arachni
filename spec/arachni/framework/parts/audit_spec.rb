@@ -235,7 +235,7 @@ describe Arachni::Framework::Parts::Audit do
 
                     f.run
 
-                    expect(f.url_queue_total_size).to eq(4)
+                    expect(f.url_queue_total_size).to eq(3)
                 end
             end
 

@@ -41,49 +41,8 @@ class Trainer
         # get us setup using the page that is being audited as a seed page
         framework.on_page_audit { |page| self.page = page }
 
-        # Handle buffered responses.
-        framework.http.on_queue do |request|
-            next if !request.train? || !request.buffered?
-
-            writer, document = Parser.push_parse(
-                whitelist: Parser::WHITELIST
-            )
-            abort = false
-            request.on_body do |chunk, response|
-                next if abort
-
-                if response.redirect?
-                    writer.close
-                    abort = true
-                    next
-                end
-
-                begin
-                    writer << chunk
-                rescue Errno::EPIPE
-                    abort = true
-                end
-            end
-
-            request.on_complete do |response|
-                writer.close
-                next if abort || response.redirect? || !within_scope?( response )
-
-                # Usually page parsing just includes the response, in this case
-                # thought (this being a buffered response with partial body) the
-                # parse is focused on the HTML document which we just finished
-                # push-parsing.
-                page        = response.to_page
-                page.parser = Parser.new( document )
-                page.parser.url      = page.url
-                page.parser.response = response
-
-                analyze page
-            end
-        end
-
         framework.http.on_complete do |response|
-            next if !response.request.train?
+            next if response.request.buffered? || !response.request.train?
 
             if response.redirect?
                 reference_url = @page ? @page.url : @framework.options.url

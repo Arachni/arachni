@@ -978,17 +978,19 @@ describe Arachni::Check::Auditor do
                         # feed the new pages/elements back to the queue
                         @framework.trainer.on_new_page { |p| pages << p }
 
+                        vector = nil
                         # audit until no more new elements appear
                         while (page = pages.pop)
                             auditor = Auditor.new( page, @framework )
-                            auditor.audit( @seed )
+                            auditor.audit( @seed ) do |response, mutation|
+                                next if !response.body.include? @seed
+                                vector = mutation.affected_input_name
+                            end
                             # run audit requests
                             @framework.http.run
                         end
 
-                        expect(Arachni::Data.issues.all.find do |i|
-                            i.vector.affected_input_name == 'you_made_it'
-                        end).to be_truthy
+                        expect(vector).to eq 'you_made_it'
                     end
                 end
 
@@ -1003,18 +1005,21 @@ describe Arachni::Check::Auditor do
                         # feed the new pages/elements back to the queue
                         @framework.trainer.on_new_page { |p| pages << p }
 
+                        vector = nil
                         # audit until no more new elements appear
-                        while page = pages.pop
+                        while (page = pages.pop)
                             auditor = Arachni::Check::Base.new( page, @framework )
-                            auditor.audit( @seed, submit: { train: true })
+                            auditor.audit( @seed, submit: { train: true } ) do |response, mutation|
+                                next if !response.body.include?( @seed ) ||
+                                    mutation.affected_input_name != 'you_made_it'
+
+                                vector = mutation.affected_input_name
+                            end
                             # run audit requests
                             @framework.http.run
                         end
 
-                        issue = issues.first
-                        expect(issue).to be_truthy
-                        expect(issue.vector.class).to eq(Arachni::Element::Form)
-                        expect(issue.vector.affected_input_name).to eq('you_made_it')
+                        expect(vector).to eq 'you_made_it'
                     end
                 end
 

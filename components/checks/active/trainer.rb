@@ -20,7 +20,7 @@ class Arachni::Checks::Trainer < Arachni::Check::Base
         # wasting bandwidth.
         return if framework.page_limit_reached?
 
-        buffered_audit( "_arachni_trainer_#{random_seed}",
+        audit( "_arachni_trainer_#{random_seed}",
                submit: { train: true, with_raw_parameters: false }
         ){}
     end
@@ -34,7 +34,7 @@ It also forces Arachni to train itself by analyzing the server responses.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
-            version:     '0.1.6'
+            version:     '0.1.5'
         }
     end
 
