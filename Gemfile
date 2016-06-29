@@ -23,4 +23,6 @@ group :prof do
     gem 'memory_profiler'
 end
 
+gem 'typhoeus', github: 'typhoeus/typhoeus'
+
 gemspec
