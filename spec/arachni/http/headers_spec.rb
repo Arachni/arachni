@@ -106,7 +106,7 @@ describe Arachni::HTTP::Headers do
     end
 
     describe '#location' do
-        it 'returns the content-type' do
+        it 'returns the Location' do
             ct = 'http://test.com'
             h = { 'location' => ct }
             expect(described_class.new( h ).location).to eq(ct)
@@ -124,6 +124,13 @@ describe Arachni::HTTP::Headers do
 
             h = { 'Content-Type' => ct }
             expect(described_class.new( h ).content_type).to eq(ct)
+        end
+
+        context 'when there are multiple content-types' do
+            it 'returns the first one' do
+                h = { 'Content-Type' =>  ["application/x-javascript", "text/javascript"] }
+                expect(described_class.new( h ).content_type).to eq("application/x-javascript")
+            end
         end
     end
 end

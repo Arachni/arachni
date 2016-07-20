@@ -92,7 +92,7 @@ class Headers < Hash
     # @return   [String, nil]
     #   Value of the `Content-Type` field.
     def content_type
-        self[CONTENT_TYPE]
+        (ct = self[CONTENT_TYPE]).is_a?( Array ) ? ct.first : ct
     end
 
     # @return   [String, nil]
