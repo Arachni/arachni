@@ -10,4 +10,9 @@
 require_relative '../lib/arachni'
 require_relative '../ui/cli/rpc/client/local'
 
+if Arachni.windows?
+    Arachni::UI::Output.print_error "This interface is not available on MS Windows."
+    exit
+end
+
 Arachni::UI::CLI::RPC::Client::Local.new
