@@ -146,8 +146,9 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             audit taints( cluster ), self.class.options do |response, element|
                 # Completely body based, identical bodies will yield identical
                 # results.
-                next if optimization_cache[response.body.hash]
-                optimization_cache[response.body.hash] = true
+                k = "#{response.url.hash}-#{response.body.hash}".hash
+                next if optimization_cache[k]
+                optimization_cache[k] = true
 
                 check_and_log( response, element )
             end
@@ -221,7 +222,7 @@ Injects JS taint code and check to see if it gets executed as proof of vulnerabi
             elements:    [ Element::Form, Element::Link, Element::Cookie,
                            Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.4',
+            version:     '0.2.5',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in script context},

@@ -59,10 +59,10 @@ class Arachni::Checks::Xss < Arachni::Check::Base
             # out early.
             # If responses aren't identical due to noise, well, we're not losing
             # much.
-            next if optimization_cache[response.body.hash] == :checked
+            k = "#{response.url.hash}-#{response.body.hash}".hash
+            next if optimization_cache[k] == :checked
 
-            optimization_cache[response.body.hash] =
-                check_and_log( response, element )
+            optimization_cache[k] = check_and_log( response, element )
         end
     end
 
@@ -156,7 +156,7 @@ tainted responses to look for proof of vulnerability.
             elements:    [Element::Form, Element::Link, Element::Cookie,
                           Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.7',
+            version:     '0.4.8',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},

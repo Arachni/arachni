@@ -95,10 +95,10 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
 
     def run
         audit self.class.strings, self.class.options do |response, element|
-            next if optimization_cache[response.body.hash] == :checked
+            k = "#{response.url.hash}-#{response.body.hash}".hash
+            next if optimization_cache[k] == :checked
 
-            optimization_cache[response.body.hash] =
-                check_and_log( response, element )
+            optimization_cache[k] = check_and_log( response, element )
         end
     end
 
@@ -122,7 +122,7 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             description: %q{Cross-Site Scripting in event tag of HTML element.},
             elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.8',
+            version:     '0.1.9',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in event tag of HTML element},
