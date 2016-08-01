@@ -5,7 +5,7 @@ describe name_from_filename do
 
     def self.platforms
         [:access, :db2, :emc, :firebird, :frontbase, :hsqldb, :informix, :ingres,
-         :interbase, :maxdb, :mssql, :mysql, :oracle, :pgsql, :sqlite, :sybase]
+         :interbase, :maxdb, :mssql, :mysql, :oracle, :pgsql, :sqlite, :sybase, :java]
     end
 
     def self.elements
@@ -158,6 +158,15 @@ describe name_from_filename do
                 Element::LinkTemplate => 12,
                 Element::JSON         => 12,
                 Element::XML          => 12
+            },
+            java:       {
+                Element::Form         => 10,
+                Element::Link         => 10,
+                Element::Cookie       => 8,
+                Element::Header       => 4,
+                Element::LinkTemplate => 8,
+                Element::JSON         => 8,
+                Element::XML          => 8
             }
         }
     end

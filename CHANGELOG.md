@@ -74,7 +74,7 @@
         - `unvalidated_redirect`, `unvalidated_redirect_dom`, `xss`, `xss_dom`,
             `xss_dom_script_context`, `xss_script_context` -- Replaced `Proc`s
                 with class methods for `BrowserCluster` job callbacks.
-        - `sql_injection` -- Added more error signatures for HSQLDB.
+        - `sql_injection` -- Added more error signatures for HSQLDB and Java.
     - Passive
         - `backup_files`
             - Ignore media files to avoid FPs when dealing with galleries and the like.
