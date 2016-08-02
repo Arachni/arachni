@@ -188,6 +188,11 @@ module Audit
                 pending_jobs = browser_cluster.pending_job_counter
                 if pending_jobs != last_pending_jobs
                     browser_cluster.print_info "Pending jobs: #{pending_jobs}"
+
+                    browser_cluster.print_debug 'Current jobs:'
+                    browser_cluster.workers.each do |worker|
+                        browser_cluster.print_debug worker.job.to_s
+                    end
                 end
                 last_pending_jobs = pending_jobs
 
