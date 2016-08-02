@@ -37,7 +37,7 @@ class Arachni::Plugins::BrowserClusterJobMonitor < Arachni::Plugin::Base
 
 Monitor with:
 
-    watch -n1 cat /tmp/browser_cluster_debug.log
+    watch -n1 cat /tmp/browser_cluster_job_monitor.log
                          },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
