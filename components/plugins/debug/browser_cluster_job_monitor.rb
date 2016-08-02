@@ -44,7 +44,7 @@ Monitor with:
             options:     [
                 Options::String.new( :logfile,
                     description: 'Executable to be called prior to the scan.',
-                    default: '/tmp/browser_cluster_debug.log'
+                    default: '/tmp/browser_cluster_job_monitor.log'
                 )
             ]
         }
