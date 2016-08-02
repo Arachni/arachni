@@ -110,7 +110,7 @@ module Differential
         return if self.inputs.empty?
 
         with_missing_values = Set.new( self.inputs.select { |k, v| v.to_s.empty? }.keys )
-        if self.inputs.size == with_missing_values.size
+        if self.inputs.size > 1 && self.inputs.size == with_missing_values.size
             print_debug 'Differential analysis: Inputs are missing default values.'
             return false
         end
@@ -127,7 +127,8 @@ module Differential
         @differential_analysis_options = opts.dup
         opts = self.class::MUTATION_OPTIONS.merge( DIFFERENTIAL_OPTIONS.merge( opts ) )
         opts[:skip_like] = proc do |mutation|
-            with_missing_values.include? mutation.affected_input_name
+            self.inputs.size > 1 &&
+                with_missing_values.include?( mutation.affected_input_name )
         end
 
         mutations_size = 0
@@ -368,36 +369,29 @@ module Differential
                 #
                 #   force_false_baseline == false_response_body AND
                 #   false_response_body != true_response_body AND
-                #   force_false_response_code == 200 AND
-                #   true_response_code == 200 AND
-                #   false_response_code == 200
+                #   force_false_response_code in DIFFERENTIAL_ALLOWED_STATUS AND
+                #   true_response_code in DIFFERENTIAL_ALLOWED_STATUS AND
+                #   false_response_code in DIFFERENTIAL_ALLOWED_STATUS
 
-                # Check to see if the `true` response we're analyzing
-                # is a custom 404 page.
-                http.dynamic_404_handler._404?( result[:response] ) do |is_custom_404|
-                    # If this is a custom 404 page bail out.
-                    next if is_custom_404
+                options = result[:mutation].differential_analysis_options
+                pair    = options[:pairs].find { |pair| pair.hash == pair_hash }
 
-                    options = result[:mutation].differential_analysis_options
-                    pair    = options[:pairs].find { |pair| pair.hash == pair_hash }
+                issue_data = {
+                    vector:   result[:mutation],
+                    response: result[:response]
+                }
 
-                    issue_data = {
-                        vector:   result[:mutation],
-                        response: result[:response]
+                if pair
+                    issue_data[:remarks] = {
+                        differential_analysis: [
+                            "True expression: #{pair.keys.first}",
+                            "False expression: #{pair.values.first}",
+                            "Control false expression: #{options[:false]}"
+                        ]
                     }
-
-                    if pair
-                        issue_data[:remarks] = {
-                            differential_analysis: [
-                                "True expression: #{pair.keys.first}",
-                                "False expression: #{pair.values.first}",
-                                "Control false expression: #{options[:false]}"
-                            ]
-                        }
-                    end
-
-                    @auditor.log( issue_data )
                 end
+
+                @auditor.log( issue_data )
             end
         end
     end
@@ -450,7 +444,7 @@ module Differential
         #   * Remove the data if forced-false and boolean-false signatures
         #       don't match.
         if (@data_gathering[:controls][input] && gathered[:false_probes]) &&
-            (@signatures[:controls][input] != signature[:false])
+            !@signatures[:controls][input].similar?( signature[:false], 0.1 )
 
             @signatures[pair].delete( input )
             return true

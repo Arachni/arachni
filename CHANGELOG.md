@@ -48,6 +48,7 @@
         - `Analyzable`
             - `Differential`, `Signature` -- Updated to use `#line_buffered_audit`
                 to keep RAM consumption low when analyzing large responses.
+            - `Differential` -- Relaxed algorithm and removed custom-404 check.
     - `DOM`
         - `Capabilities`
             - `Submittable`, `Auditable` -- Switched from `Proc` to class methods
