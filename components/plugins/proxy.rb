@@ -45,7 +45,8 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
              timeout:          options[:timeout]
         )
 
-        @pages = Set.new
+        @pages       = Set.new
+        @pages_mutex = Mutex.new
         @login_sequence = []
 
         framework_pause
@@ -83,7 +84,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
 
         @server.shutdown
 
-        @pages.each { |p| framework.push_to_page_queue( p, true ) }
+        @pages_mutex.synchronize do
+            @pages.each { |p| framework.push_to_page_queue( p, true ) }
+        end
+
         framework_resume
     end
 
@@ -325,11 +329,13 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     def find_login_form_from_request( request )
         return if (params = request_parse_body( request.body )).empty?
 
-        f = session.find_login_form(
-            pages:  @pages.to_a,
-            action: normalize_url( request.url ),
-            inputs: params.keys
-        )
+        f = @pages_mutex.synchronize do
+            session.find_login_form(
+                pages:  @pages.to_a,
+                action: normalize_url( request.url ),
+                inputs: params.keys
+            )
+        end
 
         return if !f
         f.update( params )
@@ -340,28 +346,32 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
     #
     # @return   [Array<Arachni::Element::Form>]
     def forms_with_password
-        @pages.map { |p| p.forms.select { |f| f.requires_password? } }.flatten
+        @pages_mutex.synchronize do
+            @pages.map { |p| p.forms.select { |f| f.requires_password? } }.flatten
+        end
     end
 
     def prepare_pages_for_inspection
-        (@pages.map do |p|
-            next if !p.text?
-            p = p.dup
+        @pages_mutex.synchronize do
+            (@pages.map do |p|
+                next if !p.text?
+                p = p.dup
 
-            %w(links forms cookies jsons xmls).each do |type|
-                p.send(
-                    "#{type}=",
-                    p.send(type).reject { |e| e.inputs.empty? }
-                )
-            end
+                %w(links forms cookies jsons xmls).each do |type|
+                    p.send(
+                        "#{type}=",
+                        p.send(type).reject { |e| e.inputs.empty? }
+                    )
+                end
 
-            if !(p.forms.any? || p.links.any? || p.cookies.any? || p.jsons.any? ||
-                p.xmls.any?)
-                next
-            end
+                if !(p.forms.any? || p.links.any? || p.cookies.any? || p.jsons.any? ||
+                    p.xmls.any?)
+                    next
+                end
 
-            p
-        end).compact
+                p
+            end).compact
+        end
     end
 
     # Called by the proxy for each response.
@@ -386,7 +396,9 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         print_info " *  #{page.jsons.size} JSON"
         print_info " *  #{page.xmls.size} XML"
 
-        @pages << page.dup
+        @pages_mutex.synchronize do
+            @pages << page.dup
+        end
     end
 
     def update_forms( page, request, response )
