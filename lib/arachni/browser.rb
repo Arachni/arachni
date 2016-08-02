@@ -91,6 +91,8 @@ class Browser
     #   Preloaded resources, by URL.
     attr_reader :preloads
 
+    attr_reader :proxy
+
     # @return   [Watir::Browser]
     #   Watir driver interface.
     attr_reader :watir
