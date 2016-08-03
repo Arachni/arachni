@@ -19,6 +19,8 @@ class Arachni::Plugins::BrowserClusterJobMonitor < Arachni::Plugin::Base
                 s << "#{'-'  * 100}\n"
 
                 worker.proxy.active_connections.each do |connection|
+                    next if !connection
+
                     s << "* #{connection.request.url}\n"
                 end
 
