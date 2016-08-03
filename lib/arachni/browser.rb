@@ -681,6 +681,7 @@ class Browser
                 # Maybe we switched to a different page, wait until the custom
                 # JS env has been put in place.
                 javascript.wait_till_ready
+                javascript.set_element_ids
 
                 update_cookies
             end
