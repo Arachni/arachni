@@ -26,9 +26,10 @@ class Arachni::Plugins::BrowserClusterJobMonitor < Arachni::Plugin::Base
 
                 s << "\n"
             end
-            sleep 1
 
             IO.write( options[:logfile], s )
+
+            sleep 1
         end
     end
 
