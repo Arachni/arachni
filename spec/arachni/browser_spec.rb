@@ -1499,6 +1499,18 @@ describe Arachni::Browser do
             pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
         end
 
+        context 'when new elements are introduced' do
+            let(:url) { "#{@url}/trigger_events/with_new_elements" }
+
+            it 'sets element IDs' do
+                expect(@browser.selenium.find_elements( :css, 'a' )).to be_empty
+
+                @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+
+                expect(@browser.selenium.find_elements( :css, 'a' ).first.opening_tag).to eq '<a href="#blah" data-arachni-id="2073105">'
+            end
+        end
+
         context 'when new timers are introduced' do
             let(:url) { "#{@url}/trigger_events/with_new_timers/3000" }
 

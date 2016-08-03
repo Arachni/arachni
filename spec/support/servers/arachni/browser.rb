@@ -1247,6 +1247,27 @@ get '/trigger_events/with_new_timers/:delay' do |delay|
 HTML
 end
 
+get '/trigger_events/with_new_elements' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function addElement() {
+                document.getElementById( "my-div" ).innerHTML = "<a href='#blah'>Blah</a>";
+                document.getElementsByTagName('a')[0].addEventListener( 'click', function() {} );
+            }
+        </script>
+    <head>
+
+    <body>
+        <div id="my-div" onclick="addElement();">
+            Test
+        </div>
+    </body>
+</html>
+HTML
+end
+
 get '/trigger_events/invisible-div' do
     <<HTML
 <html>
