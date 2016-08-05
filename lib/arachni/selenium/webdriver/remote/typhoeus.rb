@@ -42,6 +42,10 @@ class Typhoeus < Common
 
         response = ::Typhoeus::Request.send( verb, url, options )
 
+        if response.timed_out?
+            raise Timeout::Error, "Request timed out: #{verb} #{url}"
+        end
+
         create_response extract_real_code( response ), response.body,
                         response.headers['Content-Type']
     end
