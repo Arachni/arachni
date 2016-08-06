@@ -1095,7 +1095,7 @@ class Browser
             client = Selenium::WebDriver::Remote::Http::Typhoeus.new
         end
 
-        client.timeout = Options.http.request_timeout / 1_000
+        client.timeout = Options.browser_cluster.job_timeout
 
         @selenium = Selenium::WebDriver.for(
             :remote,
