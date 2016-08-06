@@ -120,10 +120,6 @@ describe Arachni::BrowserCluster::Worker do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
-                    expect(subject.watir).to receive(:close) do
-                        raise Selenium::WebDriver::Error::WebDriverError
-                    end
-
                     watir = subject.watir
                     pid   = subject.browser_pid
 

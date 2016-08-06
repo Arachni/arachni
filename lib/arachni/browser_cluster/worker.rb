@@ -151,6 +151,7 @@ class Worker < Arachni::Browser
         false
     end
 
+    alias :browser_shutdown :shutdown
     # @note If there is a running job it will wait for it to finish.
     #
     # Shuts down the worker.
@@ -170,7 +171,7 @@ class Worker < Arachni::Browser
         kill_check.join
         @consumer.kill if @consumer
 
-        super()
+        browser_shutdown
     end
 
     def inspect
@@ -229,28 +230,22 @@ class Worker < Arachni::Browser
     end
 
     def browser_respawn
+        print_debug 'Re-spawning browser.'
         @time_to_live = @max_time_to_live
 
-        begin
-            # If PhantomJS is already dead this will block for quite some time so
-            # beware.
-            @watir.close if @watir && alive?
-        rescue Selenium::WebDriver::Error::WebDriverError,
-            Watir::Exception::Error
-        end
+        browser_shutdown
 
-        kill_process
-
-        # Browser may fail to respawn but there's nothing we can do about
-        # that, just leave it dead and try again at the next job.
+        # Browser may fail to respawn but there's nothing we can do about that,
+        # just leave it dead and try again at the next job.
         begin
-            @watir = ::Watir::Browser.new( selenium )
+            start_process
             true
         rescue Selenium::WebDriver::Error::WebDriverError,
             Browser::Error::Spawn => e
-            print_error 'Could not respawn the browser, will try again at the ' <<
-                            "next job. (#{e})"
-            print_error 'Please try increasing the maximum open files limit of your OS.'
+            print_error 'Could not respawn the browser, will try again at' <<
+                            " the next job. (#{e})"
+            print_error 'Please try increasing the maximum open files limit' <<
+                            ' of your OS.'
             nil
         end
     end

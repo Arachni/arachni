@@ -177,22 +177,9 @@ class Browser
         @width  = options[:width]  || 1600
         @height = options[:height] || 1200
 
-        @proxy = HTTP::ProxyServer.new(
-            concurrency:      @options[:concurrency],
-            address:          '127.0.0.1',
-            request_handler:  proc do |request, response|
-                exception_jail { request_handler( request, response ) }
-            end,
-            response_handler: proc do |request, response|
-                exception_jail { response_handler( request, response ) }
-            end
-        )
-
         @options[:store_pages] = true if !@options.include?( :store_pages )
 
-        @proxy.start_async
-
-        @watir = ::Watir::Browser.new( selenium )
+        start_process
 
         # User-controlled response cache, by URL.
         @cache = Support::Cache::LeastRecentlyUsed.new( 200 )
@@ -408,13 +395,6 @@ class Browser
     end
 
     def shutdown
-        begin
-            watir.close if alive?
-        # Bucnh of dirrent errors can be raised here, Selenium, HTTP client,
-        # don't try to catch them by type because we'll probably miss some.
-        rescue
-        end
-
         kill_process
         @proxy.shutdown rescue Reactor::Error::NotRunning
     end
@@ -1301,14 +1281,39 @@ class Browser
         @browser_url = "http://127.0.0.1:#{port}"
     end
 
+    def start_process
+        print_debug 'Starting proxy.'
+
+        @proxy = HTTP::ProxyServer.new(
+            concurrency:      @options[:concurrency],
+            address:          '127.0.0.1',
+            request_handler:  proc do |request, response|
+                exception_jail { request_handler( request, response ) }
+            end,
+            response_handler: proc do |request, response|
+                exception_jail { response_handler( request, response ) }
+            end
+        )
+
+        @proxy.start_async
+
+        print_debug "Started proxy at: #{@proxy.url}"
+
+        @watir = ::Watir::Browser.new( selenium )
+    end
+
     def kill_process
+        print_debug 'Killing process.'
+
         if @kill_process
             begin
                 @kill_process.close
-            rescue
+            rescue => e
+                print_debug_exception e
             end
         end
 
+        @proxy        = nil
         @kill_process = nil
         @watir        = nil
         @selenium     = nil
