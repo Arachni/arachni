@@ -564,18 +564,37 @@ describe Arachni::BrowserCluster do
             @cluster.wait
 
             expect(calls).to be > 1
+            expect(@cluster.job_done?( job )).to eq(true)
         end
 
-        it 'returns true' do
-            return_val = nil
+        it 'gets called after each job is done' do
+            @cluster = described_class.new
+
+            expect(@cluster).to receive(:job_done).with(job)
+
+            q = Queue.new
+            @cluster.queue( job ){ q << nil }
+            q.pop
+        end
+
+        it 'increments the .completed_job_count' do
+            pre = described_class.completed_job_count
 
             @cluster = described_class.new
-            @cluster.queue( job ) do
-                return_val = @cluster.job_done( job )
-            end
+            @cluster.queue( job ){}
             @cluster.wait
 
-            expect(return_val).to eq(true)
+            expect(described_class.completed_job_count).to be > pre
+        end
+
+        it 'adds the job time to the .total_job_time' do
+            pre = described_class.total_job_time
+
+            @cluster = described_class.new
+            @cluster.queue( job ){}
+            @cluster.wait
+
+            expect(described_class.total_job_time).to be > pre
         end
     end
 
