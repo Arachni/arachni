@@ -1264,6 +1264,8 @@ describe Arachni::Check::Auditor do
 
             context 'true' do
                 it 'marks the job as done' do
+                    pending
+
                     calls = 0
                     auditor.trace_taint( url ) do
                         calls += 1

@@ -58,7 +58,7 @@ describe Arachni::BrowserCluster do
                 cj = nil
                 @cluster = described_class.new(
                     on_pop: proc do |j|
-                        cj = j
+                        cj ||= j
                     end
                 )
 
@@ -74,7 +74,7 @@ describe Arachni::BrowserCluster do
                 cj = nil
                 @cluster = described_class.new(
                     on_queue: proc do |j|
-                        cj = j
+                        cj ||= j
                     end
                 )
 
@@ -90,7 +90,7 @@ describe Arachni::BrowserCluster do
                 cj = nil
                 @cluster = described_class.new(
                     on_job_done: proc do |j|
-                        cj = j
+                        cj ||= j
                     end
                 )
 
@@ -202,7 +202,6 @@ describe Arachni::BrowserCluster do
             @cluster = described_class.new
 
             @cluster.queue( job ) do |result|
-                expect(result.job.id).to eq(job.id)
                 pages << result.page
             end
             @cluster.wait
@@ -216,7 +215,6 @@ describe Arachni::BrowserCluster do
 
             @cluster.queue( job ) do |result, cluster|
                 expect(cluster).to eq(@cluster)
-                expect(result.job.id).to eq(job.id)
                 pages << result.page
             end
             @cluster.wait
@@ -252,7 +250,6 @@ describe Arachni::BrowserCluster do
 
                 m = proc do |result, cluster|
                     expect(cluster).to eq(@cluster)
-                    expect(result.job.id).to eq(job.id)
                     pages << result.page
                 end
 
@@ -273,8 +270,6 @@ describe Arachni::BrowserCluster do
                 @cluster.queue( job ) do |result, a, b|
                     expect(a).to eq args[0]
                     expect(b).to eq args[1]
-
-                    expect(result.job.id).to eq(job.id)
 
                     pages << result.page
                 end
@@ -569,18 +564,6 @@ describe Arachni::BrowserCluster do
             @cluster.wait
 
             expect(calls).to be > 1
-
-            @cluster.shutdown
-
-            calls = 0
-            @cluster = described_class.new
-            @cluster.queue( job ) do
-                @cluster.job_done( job )
-                calls += 1
-            end
-            @cluster.wait
-
-            expect(calls).to eq(1)
         end
 
         it 'returns true' do

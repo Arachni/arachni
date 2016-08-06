@@ -167,7 +167,9 @@ class Job
     #   Forwarded request (preserving its {#id} and thus its callback as well),
     #   configured with the given `options`.
     def forward_as( job_type, options = {} )
-        job_type.new forward_options( options )
+        # Remove the ID because this will be a different class/job type and
+        # we thus need to keep track of it separately in the BrowserCluster.
+        job_type.new forward_options( options ).tap { |h| h.delete :id }
     end
 
     # @return   [Integer]

@@ -8,8 +8,6 @@
 
 module Arachni
 
-# Real browser driver providing DOM/JS/AJAX support.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class BrowserCluster
     include UI::Output
@@ -177,14 +175,6 @@ class BrowserCluster
         nil
     end
 
-    # def on_queue( &block )
-        # synchronize { @on_queue << block }
-    # end
-
-    # def on_job_done( &block )
-        # synchronize { @on_job_done << block }
-    # end
-
     # @param    [Page, String, HTTP::Response]  resource
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.
@@ -239,7 +229,6 @@ class BrowserCluster
             @pending_jobs[job.id] = 0
 
             if @pending_job_counter <= 0
-                @pending_job_counter = 0
                 @done_signal << nil
             end
 
@@ -301,10 +290,6 @@ class BrowserCluster
         self
     end
 
-    def pause
-        @pause = true
-    end
-
     # Shuts the cluster down.
     def shutdown( wait = true )
         @shutdown = true
@@ -332,8 +317,6 @@ class BrowserCluster
     # @see #queue
     # @private
     def pop
-        sleep if @pause
-
         {} while job_done?( job = @jobs.pop )
         notify_on_pop job
         job
@@ -391,10 +374,7 @@ class BrowserCluster
         synchronize do
             increment_completed_job_count
             add_to_total_job_time( job.time )
-
-            @pending_job_counter  -= 1
-            @pending_jobs[job.id] -= 1
-            job_done( job ) if @pending_jobs[job.id] <= 0
+            job_done( job )
         end
     end
 

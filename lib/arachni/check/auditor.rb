@@ -676,9 +676,7 @@ module Auditor
     def trace_taint( resource, options = {}, &block )
         with_browser_cluster do |cluster|
             cluster.trace_taint( resource, options ) do |result|
-                # Mark the job as done and abort further analysis if the block
-                # returns true.
-                cluster.job_done( result.job ) if block.call( result.page )
+                block.call( result.page )
             end
         end
     end

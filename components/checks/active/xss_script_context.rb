@@ -196,8 +196,6 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             page:           page,
             referring_page: referring_page
         )
-
-        cluster.job_done( result.job )
     end
 
     def self.check_browser_result_cb

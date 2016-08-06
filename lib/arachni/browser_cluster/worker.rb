@@ -135,11 +135,14 @@ class Worker < Arachni::Browser
     # @see Jobs::EventTrigger
     # @see BrowserCluster#queue
     def distribute_event( resource, element, event )
-        master.queue @job.forward_as(
-            @job.class::EventTrigger,
-            resource: resource,
-            element:  element,
-            event:    event
+        master.queue(
+            @job.forward_as(
+                @job.class::EventTrigger,
+                resource: resource,
+                element:  element,
+                event:    event
+            ),
+            master.callback_for( @job )
         )
         true
     # Job may have been marked as done or the cluster may have been shut down.

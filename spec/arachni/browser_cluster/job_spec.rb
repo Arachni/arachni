@@ -248,14 +248,14 @@ describe Arachni::BrowserCluster::Job do
             expect(subject.forward_as( JobForwardAsTest ).forwarder).to eq(subject)
         end
 
-        it 'creates a new Job type with the same #id' do
+        it 'creates a new Job type with a new #id' do
             expect(subject).not_to be_kind_of JobForwardAsTest
 
             id = subject.id
 
             forwarded = subject.forward_as( JobForwardAsTest )
 
-            expect(forwarded.id).to eq(id)
+            expect(forwarded.id).to_not eq(id)
             expect(forwarded).to be_kind_of JobForwardAsTest
         end
 
