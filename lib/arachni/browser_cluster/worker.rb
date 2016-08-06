@@ -263,12 +263,6 @@ class Worker < Arachni::Browser
         @time_to_live -= 1
     end
 
-    def save_response( response )
-        super( response )
-        master.push_to_sitemap( response.url, response.code )
-        response
-    end
-
 end
 end
 end

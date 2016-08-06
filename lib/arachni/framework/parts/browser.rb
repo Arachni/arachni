@@ -76,11 +76,6 @@ module Browser
         @browser_job     = nil
     end
 
-    def browser_sitemap
-        return {} if !@browser_cluster
-        browser_cluster.sitemap
-    end
-
     def browser_job_update_skip_states( states )
         return if states.empty?
         browser_cluster.update_skip_states browser_job.id, states

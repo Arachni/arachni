@@ -55,10 +55,6 @@ class BrowserCluster
     #   Amount of browser instances in the pool.
     attr_reader :pool_size
 
-    # @return   [Hash<String, Integer>]
-    #   List of crawled URLs with their HTTP codes.
-    attr_reader :sitemap
-
     # @return   [Array<Worker>]
     #   Worker pool.
     attr_reader :workers
@@ -110,8 +106,6 @@ class BrowserCluster
         # Worker pool holding BrowserCluster::Worker instances.
         @workers     = []
 
-        # Stores visited resources from all workers.
-        @sitemap     = {}
         @mutex       = Monitor.new
         @done_signal = Queue.new
 
@@ -349,11 +343,6 @@ class BrowserCluster
     # @private
     def skip_state( job_id, state )
         synchronize { skip_states( job_id ) << state }
-    end
-
-    # @private
-    def push_to_sitemap( url, code )
-        synchronize { @sitemap[url] = code }
     end
 
     # @private

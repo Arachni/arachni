@@ -685,21 +685,4 @@ describe Arachni::BrowserCluster do
         end
     end
 
-    describe '#sitemap' do
-        it 'returns the sitemap as covered by the browser jobs' do
-            @cluster = described_class.new
-            @cluster.queue( job ) {}
-            @cluster.wait
-
-            expect(@cluster.sitemap.
-                reject { |k, v| k.start_with? Arachni::Browser::Javascript::SCRIPT_BASE_URL }).
-                to eq({
-                    "#{url}explore"   => 200,
-                    "#{url}post-ajax" => 404,
-                    "#{url}href-ajax" => 200,
-                    "#{url}get-ajax?ajax-token=my-token" => 200
-                })
-        end
-    end
-
 end
