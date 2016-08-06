@@ -231,8 +231,6 @@ class BrowserCluster
 
             Arachni.collect_young_objects
         end
-
-        true
     end
 
     # @param    [Job]  job
@@ -408,8 +406,8 @@ class BrowserCluster
     end
 
     def self.add_to_total_job_time( time )
-        @total_job_time ||= 0
-        @total_job_time += time.to_i
+        @total_job_time ||= 0.0
+        @total_job_time += time.to_f
     end
 
     def self.statistics
