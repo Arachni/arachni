@@ -216,7 +216,7 @@ class Worker < Arachni::Browser
                 exception_jail false do
                     j = master.pop
                     exception_jail( false ) { run_job j }
-                    master.decrease_pending_job j
+                    master.job_done j
                 end
             end
             @done_signal << nil

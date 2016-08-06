@@ -212,6 +212,9 @@ class BrowserCluster
         synchronize do
             print_debug "Job done: #{job}"
 
+            increment_completed_job_count
+            add_to_total_job_time( job.time )
+
             notify_on_job_done job
 
             if !job.never_ending?
@@ -219,10 +222,10 @@ class BrowserCluster
                 @job_callbacks.delete job.id
             end
 
-            @pending_job_counter -= @pending_jobs[job.id]
-            @pending_jobs[job.id] = 0
+            @pending_job_counter  -= 1
+            @pending_jobs[job.id] -= 1
 
-            if @pending_job_counter <= 0
+            if @pending_job_counter == 0
                 @done_signal << nil
             end
 
@@ -359,15 +362,6 @@ class BrowserCluster
     end
 
     # @private
-    def decrease_pending_job( job )
-        synchronize do
-            increment_completed_job_count
-            add_to_total_job_time( job.time )
-            job_done( job )
-        end
-    end
-
-    # @private
     def callback_for( job )
         @job_callbacks[job.id]
     end
@@ -456,7 +450,7 @@ class BrowserCluster
     end
 
     def fail_if_job_not_found( job )
-        return if @pending_jobs.include?( job.id ) || @job_callbacks.include?( job.id )
+        return if @pending_jobs.include?( job.id )
         fail Error::JobNotFound, 'Job could not be found.'
     end
 

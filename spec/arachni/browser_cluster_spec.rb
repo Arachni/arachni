@@ -611,14 +611,6 @@ describe Arachni::BrowserCluster do
             end
         end
 
-        context 'when a job has been marked as done' do
-            it 'returns true' do
-                @cluster = described_class.new
-                @cluster.job_done( job )
-                expect(@cluster.job_done?( job )).to eq(true)
-            end
-        end
-
         context 'when the job has not been queued' do
             it "raises #{described_class::Error::JobNotFound}" do
                 @cluster = described_class.new
