@@ -92,14 +92,14 @@ class ProxyServer
     end
 
     def shutdown
-        print_debug_level_2 'Shutting down..'
+        print_debug_level_2 'Shutting down...'
 
         @thread_pool.kill if @thread_pool
 
         @reactor.stop
         @reactor.wait
 
-        print_debug_level_2 'Shutdown.'
+        print_debug_level_2 '...shutdown.'
     end
 
     # @return   [Bool]

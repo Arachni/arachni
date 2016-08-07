@@ -75,10 +75,6 @@ class Worker < Arachni::Browser
         # If we can't respawn, then bail out.
         return if browser_respawn_if_necessary.nil?
 
-        # ap '=' * 250
-        # ap '=' * 250
-        # pre = $WATIR_REQ_COUNT
-
         time = Time.now
         begin
             with_timeout @job_timeout do
@@ -107,15 +103,15 @@ class Worker < Arachni::Browser
             browser_respawn
         end
 
-        # ap $WATIR_REQ_COUNT - pre
-
         decrease_time_to_live
         browser_respawn_if_necessary
 
         print_debug "Finished: #{@job}"
 
         true
-    rescue Selenium::WebDriver::Error::WebDriverError
+    rescue Selenium::WebDriver::Error::WebDriverError => e
+        print_debug_exception e
+
         browser_respawn
         nil
     ensure
@@ -159,19 +155,40 @@ class Worker < Arachni::Browser
         return if @shutdown
         @shutdown = true
 
+        print_debug "Shutting down (wait: #{wait}) ..."
+
         # Keep checking to see if any of the 'done' criteria are true.
         kill_check = Thread.new do
-            sleep 0.1 while alive? && wait && @job
+            while alive? && wait && @job
+                print_debug_level_2 "Waiting for job to complete: #{job}"
+                sleep 0.1
+            end
+
+            print_debug_level_2 'Signaling done.'
             @done_signal << nil
         end
 
+        print_debug_level_2 'Waiting for done signal...'
         # If we've got a job running wait for it to finish before closing the
         # browser otherwise we'll get Selenium errors and zombie processes.
         @done_signal.pop
-        kill_check.join
-        @consumer.kill if @consumer
+        print_debug_level_2 '...done.'
 
+        print_debug_level_2 'Waiting for kill check...'
+        kill_check.join
+        print_debug_level_2 '...done.'
+
+        if @consumer
+            print_debug_level_2 'Killing consumer thread...'
+            @consumer.kill
+            print_debug_level_2 '...done.'
+        end
+
+        print_debug_level_2 'Calling parent shutdown...'
         browser_shutdown
+        print_debug_level_2 '...done.'
+
+        print_debug '...shutdown complete.'
     end
 
     def inspect
@@ -216,7 +233,10 @@ class Worker < Arachni::Browser
                     master.job_done j
                 end
             end
+
+            print_debug 'Got shutdown signal...'
             @done_signal << nil
+            print_debug '...and acknowledged it.'
         end
     end
 
@@ -226,24 +246,29 @@ class Worker < Arachni::Browser
     end
 
     def browser_respawn
-        print_debug 'Re-spawning browser.'
+        print_debug "Re-spawning browser (TTD?: #{time_to_die?} - alive?: #{alive?}) ..."
         @time_to_live = @max_time_to_live
 
         browser_shutdown
 
         # Browser may fail to respawn but there's nothing we can do about that,
         # just leave it dead and try again at the next job.
-        begin
-            start_process
+        r = begin
+            boot
             true
         rescue Selenium::WebDriver::Error::WebDriverError,
             Browser::Error::Spawn => e
+
             print_error 'Could not respawn the browser, will try again at' <<
                             " the next job. (#{e})"
             print_error 'Please try increasing the maximum open files limit' <<
                             ' of your OS.'
             nil
         end
+
+        print_debug "...re-spawned browser: #{r}"
+
+        r
     end
 
     def time_to_die?

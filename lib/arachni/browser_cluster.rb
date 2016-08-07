@@ -226,6 +226,7 @@ class BrowserCluster
             @pending_jobs[job.id] -= 1
 
             if @pending_job_counter == 0
+                print_debug_level_2 'Pending job counter reached 0.'
                 @done_signal << nil
             end
 
@@ -281,28 +282,40 @@ class BrowserCluster
     # Blocks until all resources have been analyzed.
     def wait
         fail_if_shutdown
+
+        print_debug 'Waiting to finish...'
         @done_signal.pop if !done?
+        print_debug '...finish.'
+
         self
     end
 
     # Shuts the cluster down.
     def shutdown( wait = true )
+        print_debug 'Shutting down...'
         @shutdown = true
 
+        print_debug_level_2 'Clearing jobs...'
         # Clear the jobs -- don't forget this, it also removes the disk files for
         # the contained items.
         @jobs.clear
+        print_debug_level_2 '...done.'
 
+        print_debug_level_2 "Shutting down #{@workers} workers..."
         # Kill the browsers.
         @workers.each { |b| exception_jail( false ) { b.shutdown wait } }
         @workers.clear
+        print_debug_level_2 '...done.'
 
+        print_debug_level_2 'Clearing data and state...'
         # Very important to leave these for last, they may contain data
         # necessary to cleanly handle interrupted jobs.
         @job_callbacks.clear
         @skip_states_per_job.clear
         @pending_jobs.clear
+        print_debug_level_2 '...done.'
 
+        print_debug '...shutdown complete.'
         true
     end
 
@@ -312,8 +325,12 @@ class BrowserCluster
     # @see #queue
     # @private
     def pop
+        print_debug 'Popping...'
         {} while job_done?( job = @jobs.pop )
+        print_debug "...popped: #{job}"
+
         notify_on_pop job
+
         job
     end
 

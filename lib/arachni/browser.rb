@@ -179,7 +179,7 @@ class Browser
 
         @options[:store_pages] = true if !@options.include?( :store_pages )
 
-        start_process
+        boot
 
         # User-controlled response cache, by URL.
         @cache = Support::Cache::LeastRecentlyUsed.new( 200 )
@@ -396,7 +396,10 @@ class Browser
 
     def shutdown
         kill_process
+
+        print_debug 'Shutting down proxy...'
         @proxy.shutdown rescue Reactor::Error::NotRunning
+        print_debug '...done.'
     end
 
     # @return   [String]
@@ -1281,8 +1284,8 @@ class Browser
         @browser_url = "http://127.0.0.1:#{port}"
     end
 
-    def start_process
-        print_debug 'Starting proxy.'
+    def boot
+        print_debug 'Starting proxy...'
 
         @proxy = HTTP::ProxyServer.new(
             concurrency:      @options[:concurrency],
@@ -1297,9 +1300,11 @@ class Browser
 
         @proxy.start_async
 
-        print_debug "Started proxy at: #{@proxy.url}"
+        print_debug "... started proxy at: #{@proxy.url}"
 
+        print_debug 'Starting WebDriver...'
         @watir = ::Watir::Browser.new( selenium )
+        print_debug "... started WebDriver at: #{@browser_url}"
     end
 
     def kill_process
