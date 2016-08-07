@@ -64,6 +64,8 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
         merged['issue_percentage'] =
             ( ( merged['with_issues'].to_f / merged['total'].to_f ) * 100 ).round
 
+        merged['map'] = merged['map'].sort_by { h.values.first }
+
         merged
     end
 
