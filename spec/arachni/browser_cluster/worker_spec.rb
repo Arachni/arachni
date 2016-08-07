@@ -153,16 +153,6 @@ describe Arachni::BrowserCluster::Worker do
                 expect(subject.preloads).to be_empty
             end
 
-            it 'clears #cache' do
-                subject.cache page
-                expect(subject.cache).to be_any
-
-                @cluster.queue( custom_job ) {}
-                @cluster.wait
-
-                expect(subject.cache).to be_empty
-            end
-
             it 'clears #captured_pages' do
                 subject.captured_pages << page
 

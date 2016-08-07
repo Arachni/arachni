@@ -588,20 +588,6 @@ describe Arachni::Browser do
             end
         end
 
-        context 'when a response is cached' do
-            it 'is passed each response' do
-                responses = []
-                @browser.on_response { |response| responses << response }
-
-                @browser.cache Arachni::HTTP::Client.get( @url, mode: :sync )
-                @browser.goto @url
-
-                response = responses.first
-                expect(response).to be_kind_of Arachni::HTTP::Response
-                expect(response.url).to eq(@url)
-            end
-        end
-
         context 'when a request is performed by the browser' do
             it 'is passed each response' do
                 responses = []
@@ -2894,78 +2880,6 @@ describe Arachni::Browser do
                     expect { @browser.preload [] }.to raise_error Arachni::Browser::Error::Load
                 end
             end
-        end
-    end
-
-    describe '#cache' do
-        it 'keeps entries after they are used' do
-            @browser.cache Arachni::HTTP::Client.get( @url, mode: :sync )
-            clear_hit_count
-
-            expect(hit_count).to eq(0)
-
-            @browser.load @url
-            expect(@browser.source).to include( ua )
-            expect(@browser.cache).to include( @url )
-
-            expect(hit_count).to eq(0)
-
-            2.times do
-                @browser.load @url
-                expect(@browser.source).to include( ua )
-            end
-
-            expect(@browser.cache).to include( @url )
-
-            expect(hit_count).to eq(0)
-        end
-
-        it 'returns the URL of the resource' do
-            response = Arachni::HTTP::Client.get( @url, mode: :sync )
-            expect(@browser.cache( response )).to eq(response.url)
-
-            @browser.load response.url
-            expect(@browser.source).to include( ua )
-            expect(@browser.cache).to include( response.url )
-        end
-
-        context 'when given a' do
-            describe 'Arachni::HTTP::Response' do
-                it 'caches it' do
-                    @browser.cache Arachni::HTTP::Client.get( @url, mode: :sync )
-                    clear_hit_count
-
-                    expect(hit_count).to eq(0)
-
-                    @browser.load @url
-                    expect(@browser.source).to include( ua )
-                    expect(@browser.cache).to include( @url )
-
-                    expect(hit_count).to eq(0)
-                end
-            end
-
-            describe 'Arachni::Page' do
-                it 'caches it' do
-                    @browser.cache Arachni::Page.from_url( @url )
-                    clear_hit_count
-
-                    expect(hit_count).to eq(0)
-
-                    @browser.load @url
-                    expect(@browser.source).to include( ua )
-                    expect(@browser.cache).to include( @url )
-
-                    expect(hit_count).to eq(0)
-                end
-            end
-
-            describe 'other' do
-                it 'raises Arachni::Browser::Error::Load' do
-                    expect { @browser.cache [] }.to raise_error Arachni::Browser::Error::Load
-                end
-            end
-
         end
     end
 

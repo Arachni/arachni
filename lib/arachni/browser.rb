@@ -181,9 +181,6 @@ class Browser
 
         boot_up
 
-        # User-controlled response cache, by URL.
-        @cache = Support::Cache::LeastRecentlyUsed.new( 200 )
-
         # User-controlled preloaded responses, by URL.
         @preloads = {}
 
@@ -219,7 +216,6 @@ class Browser
     def clear_buffers
         synchronize do
             @preloads.clear
-            @cache.clear
             @captured_pages.clear
             @page_snapshots.clear
             @page_snapshots_with_sinks.clear
@@ -271,8 +267,7 @@ class Browser
         self
     end
 
-    # @note The preloaded resource will be removed once used, for a persistent
-    #   cache use {#cache}.
+    # @note The preloaded resource will be removed once used.
     #
     # @param    [HTTP::Response, Page]  resource
     #   Preloads a resource to be instantly available by URL via {#load}.
@@ -292,28 +287,6 @@ class Browser
         save_response( response ) if !response.url.include?( request_token )
 
         @preloads[response.url] = response
-        response.url
-    end
-
-    # @param    [HTTP::Response, Page]  resource
-    #   Cache a resource in order to be instantly available by URL via {#load}.
-    def cache( resource = nil )
-        return @cache if !resource
-
-        response =  case resource
-                        when HTTP::Response
-                            resource
-
-                        when Page
-                            resource.response
-
-                        else
-                            fail Error::Load,
-                                 "Can't load resource of type #{resource.class}."
-                    end
-
-        save_response response
-        @cache[response.url] = response
         response.url
     end
 
@@ -1535,8 +1508,8 @@ EOJS
         end
 
         # Signal the proxy to not actually perform the request if we have a
-        # preloaded or cached response for it.
-        if from_preloads( request, response ) || from_cache( request, response )
+        # preloaded response for it.
+        if from_preloads( request, response )
             print_debug_level_2 'Resource has been preloaded.'
 
             # There may be taints or custom JS code that need to be updated.
@@ -1781,16 +1754,6 @@ EOJS
             save_response( response ) if !preloaded.url.include?( request_token )
 
             preloaded
-        end
-    end
-
-    def from_cache( request, response )
-        synchronize do
-            return if !@cache.include?( request.url )
-
-            copy_response_data( @cache[request.url], response )
-            response.request = request
-            save_response response
         end
     end
 
