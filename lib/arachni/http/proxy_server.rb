@@ -58,7 +58,7 @@ class ProxyServer
     # Starts the server without blocking, it'll only block until the server is
     # up and running and ready to accept connections.
     def start_async
-        print_debug_level_2 'Starting'
+        print_debug_level_2 'Starting...'
 
         @reactor.run_in_thread
 
@@ -75,7 +75,7 @@ class ProxyServer
             @options.merge( parent: self )
         )
 
-        print_debug_level_2 'Started'
+        print_debug_level_2 "...started at: #{url}"
         nil
     end
 
