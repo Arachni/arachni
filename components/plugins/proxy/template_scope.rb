@@ -15,6 +15,7 @@ class Arachni::Plugins::Proxy
 #
 class TemplateScope
     include Arachni::Utilities
+    include Arachni::UI::Output
 
     PANEL_BASEDIR  = "#{Arachni::Plugins::Proxy::BASEDIR}panel/"
     PANEL_TEMPLATE = "#{PANEL_BASEDIR}panel.html.erb"
