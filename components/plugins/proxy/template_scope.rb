@@ -108,6 +108,10 @@ class TemplateScope
 
     def render( tpl, opts )
         erb tpl, opts.merge( layout: false )
+    rescue => e
+        print_error "Error when rendering: #{tpl}"
+        print_exception e
+        nil
     end
 
     def layout
