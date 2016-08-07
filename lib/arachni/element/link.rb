@@ -121,12 +121,9 @@ class Link < Base
                 next if !(parsed_url = Arachni::URI( href )) ||
                     parsed_url.scope.out?
 
-                # puts link.to_html
-
                 new(
                     url:    parser.url,
                     action: href.freeze,
-                    # source: Ox.dump( link ).freeze
                     source: link.to_html.freeze
                 )
             end.compact
