@@ -89,7 +89,7 @@ class URI
         #   Encoded string.
         def encode( string, good_characters = nil )
             CACHE[__method__].fetch [string, good_characters] do
-                Addressable::URI.encode_component( *[string, good_characters].compact )
+                Addressable::URI.encode_component( *[string, good_characters].compact ).recode
             end
         end
 
@@ -100,7 +100,7 @@ class URI
         # @return   [String]
         def decode( string )
             CACHE[__method__].fetch( string ) do
-                s = Addressable::URI.unencode( string )
+                s = Addressable::URI.unencode( string ).recode
                 s.gsub!( '+', ' ' ) if s
                 s
             end
