@@ -179,7 +179,7 @@ class Browser
 
         @options[:store_pages] = true if !@options.include?( :store_pages )
 
-        boot
+        boot_up
 
         # User-controlled response cache, by URL.
         @cache = Support::Cache::LeastRecentlyUsed.new( 200 )
@@ -395,11 +395,30 @@ class Browser
     end
 
     def shutdown
-        kill_process
+        print_debug 'Shutting down...'
 
-        print_debug 'Shutting down proxy...'
+        print_debug_level_2 'Killing process.'
+        if @kill_process
+            begin
+                @kill_process.close
+            rescue => e
+                print_debug_exception e
+            end
+        end
+
+        print_debug_level_2 'Shutting down proxy...'
         @proxy.shutdown rescue Reactor::Error::NotRunning
-        print_debug '...done.'
+        print_debug_level_2 '...done.'
+
+        @proxy        = nil
+        @kill_process = nil
+        @watir        = nil
+        @selenium     = nil
+        @lifeline_pid = nil
+        @browser_pid  = nil
+        @browser_url  = nil
+
+        print_debug '...shutdown complete.'
     end
 
     # @return   [String]
@@ -1211,11 +1230,11 @@ class Browser
             done   = false
             port   = Utilities.available_port
 
-            print_debug "Attempt ##{i}, chose port number #{port}"
+            print_debug_level_2 "Attempt ##{i}, chose port number #{port}"
 
             begin
                 with_timeout BROWSER_SPAWN_TIMEOUT do
-                    print_debug "Spawning process: #{self.class.executable}"
+                    print_debug_level_2 "Spawning process: #{self.class.executable}"
 
                     r, w  = IO.pipe
                     ri, @kill_process = IO.pipe
@@ -1236,7 +1255,7 @@ class Browser
                     w.close
                     ri.close
 
-                    print_debug 'Process spawned, waiting for it to boot-up...'
+                    print_debug_level_2 'Process spawned, waiting for WebDriver server...'
 
                     # Wait for PhantomJS to initialize.
                      while !output.include?( 'running on port' )
@@ -1250,7 +1269,7 @@ class Browser
 
                     @browser_pid = output.scan( /^PID: (\d+)/ ).flatten.first.to_i
 
-                    print_debug 'Boot-up complete.'
+                    print_debug_level_2 '...WebDriver server is up.'
                     done = true
                 end
             rescue Timeout::Error
@@ -1258,7 +1277,7 @@ class Browser
             end
 
             if !output.empty?
-                print_debug output
+                print_debug_level_2 output
             end
 
             if done
@@ -1266,8 +1285,8 @@ class Browser
                 break
             end
 
-            print_debug 'Killing process.'
-            kill_process
+            print_debug_level_2 'Killing process.'
+            shutdown
         end
 
         # Something went really bad, the browser couldn't be spawned even
@@ -1284,9 +1303,10 @@ class Browser
         @browser_url = "http://127.0.0.1:#{port}"
     end
 
-    def boot
-        print_debug 'Starting proxy...'
+    def boot_up
+        print_debug 'Booting up...'
 
+        print_debug_level_2 'Starting proxy...'
         @proxy = HTTP::ProxyServer.new(
             concurrency:      @options[:concurrency],
             address:          '127.0.0.1',
@@ -1297,34 +1317,14 @@ class Browser
                 exception_jail { response_handler( request, response ) }
             end
         )
-
         @proxy.start_async
+        print_debug_level_2 "... started proxy at: #{@proxy.url}"
 
-        print_debug "... started proxy at: #{@proxy.url}"
-
-        print_debug 'Starting WebDriver...'
+        print_debug_level_2 'Starting WebDriver...'
         @watir = ::Watir::Browser.new( selenium )
-        print_debug "... started WebDriver at: #{@browser_url}"
-    end
+        print_debug_level_2 "... started WebDriver at: #{@browser_url}"
 
-    def kill_process
-        print_debug 'Killing process.'
-
-        if @kill_process
-            begin
-                @kill_process.close
-            rescue => e
-                print_debug_exception e
-            end
-        end
-
-        @proxy        = nil
-        @kill_process = nil
-        @watir        = nil
-        @selenium     = nil
-        @lifeline_pid = nil
-        @browser_pid  = nil
-        @browser_url  = nil
+        print_debug '...boot-up completed.'
     end
 
     def store_pages?
