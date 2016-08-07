@@ -94,7 +94,7 @@ class Worker < Arachni::Browser
             end
 
             job.time = Time.now - time
-        rescue TimeoutError => e
+        rescue Timeout::Error => e
             job.timed_out!( Time.now - time )
 
             print_bad "Job timed-out after #{@job_timeout} seconds: #{@job}"

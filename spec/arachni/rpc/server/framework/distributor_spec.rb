@@ -413,7 +413,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { expect(q.pop).to eq([true, true]) }
+                Timeout.timeout( 5 ) { expect(q.pop).to eq([true, true]) }
             rescue Timeout::Error
                 raised = true
             end
@@ -435,7 +435,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { expect([q.pop, q.pop]).to eq([true, true]) }
+                Timeout.timeout( 5 ) { expect([q.pop, q.pop]).to eq([true, true]) }
             rescue Timeout::Error
                 raised = true
             end
@@ -458,7 +458,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
                 raised = false
                 begin
-                    Timeout::timeout( 5 ) { expect([q.pop, q.pop, q.pop]).to eq([true, true, :after]) }
+                    Timeout.timeout( 5 ) { expect([q.pop, q.pop, q.pop]).to eq([true, true, :after]) }
                 rescue Timeout::Error
                     raised = true
                 end
@@ -482,7 +482,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { expect([q.pop, q.pop].sort).to eq(urls) }
+                Timeout.timeout( 5 ) { expect([q.pop, q.pop].sort).to eq(urls) }
             rescue Timeout::Error
                 raised = true
             end
@@ -504,7 +504,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
 
             raised = false
             begin
-                Timeout::timeout( 5 ) { expect([q.pop, q.pop].sort).to eq(urls) }
+                Timeout.timeout( 5 ) { expect([q.pop, q.pop].sort).to eq(urls) }
             rescue Timeout::Error
                 raised = true
             end
@@ -563,7 +563,7 @@ describe Arachni::RPC::Server::Framework::Distributor do
             raised = false
             begin
                 Timeout.timeout( 10 ) { pref_dispatchers = q.pop }
-            rescue TimeoutError
+            rescue Timeout::Error
                 raised = true
             end
 
