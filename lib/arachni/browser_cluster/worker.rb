@@ -183,10 +183,6 @@ class Worker < Arachni::Browser
         s << '>'
     end
 
-    def self.name
-        "BrowserCluster Worker##{object_id}"
-    end
-
     private
 
     # @return   [Support::LookUp::HashSet]
