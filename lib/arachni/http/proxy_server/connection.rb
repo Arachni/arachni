@@ -24,8 +24,9 @@ class Connection < Arachni::Reactor::Connection
         @options = options
         @parent  = options[:parent]
 
-        @body   = ''
-        @parser = ::HTTP::Parser.new
+        @body     = ''
+        @parser   = ::HTTP::Parser.new
+        @raw_request = ''
 
         @parser.on_message_begin = proc do
             if @reused
@@ -50,6 +51,11 @@ class Connection < Arachni::Reactor::Connection
             headers = cleanup_request_headers( @parser.headers )
 
             print_debug_level_3 "Request received: #{@parser.http_method} #{@parser.request_url}"
+
+            if headers['upgrade']
+                handle_upgrade( headers )
+                next
+            end
 
             if method == :connect
                 handle_connect( headers )
@@ -90,6 +96,19 @@ class Connection < Arachni::Reactor::Connection
                 end
             end
         end
+    end
+
+    def handle_upgrade( headers )
+        print_debug_level_3 'Preparing to upgrade.'
+
+        host = (headers['Host'] || @parser.request_url).split( ':', 2 ).first
+
+        @tunnel = reactor.connect( host, 80, Tunnel, @options.merge( client: self ) )
+
+        # This is our last HTTP message, from this point on we'll only be
+        # tunnelling to the origin server.
+        @last_http = true
+        @tunnel.write @raw_request
     end
 
     def handle_connect( headers )
@@ -196,29 +215,32 @@ class Connection < Arachni::Reactor::Connection
 
         @parent.mark_connection_inactive self
 
-        return if !@ssl_tunnel
+        if @ssl_interceptor
+            @ssl_interceptor.close( reason )
+            @ssl_interceptor = nil
+        end
 
-        @ssl_interceptor.close( reason )
-        @ssl_tunnel.close_without_callback
-
-        @ssl_tunnel      = nil
-        @ssl_interceptor = nil
+        if @tunnel
+            @tunnel.close_without_callback
+            @tunnel = nil
+        end
     end
 
     def on_flush
-        if !@ssl_tunnel || @last_http
+        if !@tunnel || @last_http
 
             if @last_http
                 print_debug_level_3 'Last response sent, switching to tunnel.'
-            else
+            elsif @request
                 print_debug_level_3 "Response sent for: #{@request.url}"
             end
 
             @last_http = false
         end
 
-        @body    = ''
-        @request = nil
+        @body        = ''
+        @raw_request = ''
+        @request     = nil
 
         @parser.reset!
         @parent.mark_connection_inactive self
@@ -230,8 +252,11 @@ class Connection < Arachni::Reactor::Connection
     end
 
     def on_read( data )
-        if @ssl_tunnel
-            @ssl_tunnel.write( data )
+        # We need this in case we need to establish a tunnel for an "Upgrade".
+        @raw_request << data
+
+        if @tunnel
+            @tunnel.write( data )
             return
         end
 
@@ -251,11 +276,10 @@ class Connection < Arachni::Reactor::Connection
             @options.merge( origin_host: origin_host )
         )
 
-        @ssl_tunnel = reactor.connect(
+        @tunnel = reactor.connect(
             @options[:address], @interceptor_port, Tunnel,
             @options.merge( client: self )
         )
-
     end
 
     def cleanup_request_headers( headers )

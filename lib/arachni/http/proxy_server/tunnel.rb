@@ -16,17 +16,17 @@ class Tunnel < Arachni::Reactor::Connection
     personalize_output
 
     def initialize( options )
-        print_debug_level_3 'New SSL tunnel.'
+        print_debug_level_3 'New tunnel.'
 
         @client = options[:client]
     end
 
     def on_connect
-        print_debug_level_3 'Connected to Interceptor.'
+        print_debug_level_3 'Connected.'
     end
 
     def write( data )
-        print_debug_level_3 " -> Forwarding #{data.size} bytes to Interceptor."
+        print_debug_level_3 " -> Forwarding #{data.size} bytes."
         super data
     end
 

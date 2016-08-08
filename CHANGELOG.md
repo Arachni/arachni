@@ -24,6 +24,8 @@
             frozen browser operations.
         - Added support for configurable concurrency of origin requests to keep
             the amount of `Thread`s low.
+        - Added support for `Connection: Upgrade` requests by tunneling WebSocket
+            connections.
     - `Client`
         - Added `X-Arachni-Scan-Seed` header that includes the random scan seed.
         - `Dynamic404Handler`

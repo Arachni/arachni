@@ -46,6 +46,8 @@ describe Arachni::HTTP::ProxyServer do
         expect(response.body).to eq 'HTTPS GET'
     end
 
+    it 'supports WebSockets'
+
     it 'removes any size limits on the HTTP responses' do
         Arachni::Options.http.response_max_size = 1
 
