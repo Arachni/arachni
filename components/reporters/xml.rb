@@ -7,6 +7,7 @@
 =end
 
 require 'nokogiri'
+require 'base64'
 
 # Creates an XML report of the audit.
 #
@@ -190,6 +191,15 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
         s.to_s.gsub( "\0", NULL )
     end
 
+    def encode_if_null( v )
+        if v.include?("\0")
+            retval = [ true, Base64.strict_encode64(v) ]
+        else
+            retval = [ false, v ]
+        end
+        return retval
+    end
+
     def add_inputs( xml, inputs, name = :inputs )
         xml.send( name ) {
             inputs.each do |k, v|
@@ -209,7 +219,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
     def add_parameters( xml, parameters )
         xml.parameters {
             parameters.each do |k, v|
-                xml.parameter( name: replace_nulls( k ), value: replace_nulls( v ) )
+                needs_b64, v = encode_if_null( v )
+                xml.parameter( name: replace_nulls( k ), base64: needs_b64, value: v )
             end
         }
     end
