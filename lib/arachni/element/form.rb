@@ -220,17 +220,11 @@ class Form < Base
         field_type_for( name ) == :fake
     end
 
-    # @param   (see .encode)
-    # @return  (see .encode)
-    #
     # @see .encode
     def encode( str )
         self.class.encode( str )
     end
 
-    # @param   (see .decode)
-    # @return  (see .decode)
-    #
     # @see .decode
     def decode( str )
         self.class.decode( str )

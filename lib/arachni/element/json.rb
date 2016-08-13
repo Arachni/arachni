@@ -69,17 +69,11 @@ class JSON < Base
         { self.action => self.inputs }
     end
 
-    # @param   (see .encode)
-    # @return  (see .encode)
-    #
     # @see .encode
     def encode( *args )
         self.class.encode( *args )
     end
 
-    # @param   (see .decode)
-    # @return  (see .decode)
-    #
     # @see .decode
     def decode( *args )
         self.class.decode( *args )
