@@ -43,7 +43,7 @@ describe name_from_filename do
             data = data_flow_sinks.last
             expect(data.function.source).to start_with 'function pre_eval('
             expect(data.function.name).to eq 'pre_eval'
-            expect(data.object).to eq 'DOMWindow'
+            expect(data.object).to eq 'Window'
             expect(data.taint).to include 'taint_tracer.log_execution_flow_sink()'
             expect(data.tainted_value).to include 'taint_tracer.log_execution_flow_sink()'
             expect(data.function.arguments).to eq [data.tainted_value]
@@ -53,20 +53,16 @@ describe name_from_filename do
             case issue.vector
 
                 when Element::Form::DOM
-                    expect(trace.size).to eq 2
                     expect(trace.first.function.source).to start_with 'function handleSubmit()'
                     expect(trace.first.function.name).to start_with 'handleSubmit'
 
                 when Element::LinkTemplate::DOM
-                    expect(trace.size).to eq 2
                     expect(trace.first.url).to eq issue.page.dom.url
 
                 when Element::Link::DOM
-                    expect(trace.size).to eq 2
                     expect(trace.first.url).to eq issue.page.dom.url
 
                 when Element::Cookie::DOM
-                    expect(trace.size).to eq 2
                     expect(trace.first.url).to eq issue.page.dom.url
 
                 when Element::UIInput::DOM
