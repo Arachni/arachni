@@ -120,7 +120,7 @@ describe Arachni::Options do
         end
 
         context 'when passed reserved host' do
-            %w(localhost 127.0.0.1).each do |hostname|
+            %w(localhost 127.0.0.1 127.0.0.2 127.1.1.1).each do |hostname|
                 context hostname do
                     it "raises #{described_class::Error::ReservedHostname}" do
                         expect { subject.url = "http://#{hostname}" }.to raise_error

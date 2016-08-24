@@ -90,7 +90,7 @@ describe Arachni::Element::Cookie do
                 end
 
                 it 'sets it to the URL host' do
-                    expect(subject.domain).to eq '127.0.0.2'
+                    expect(subject.domain).to eq Arachni::URI(url).host
                 end
             end
         end
@@ -270,7 +270,7 @@ describe Arachni::Element::Cookie do
                 comment:     nil,
                 secure:      nil,
                 path:        '/submit',
-                domain:      '127.0.0.2',
+                domain:      Arachni::URI(url).host,
                 httponly:    false
             })
         end

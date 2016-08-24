@@ -314,7 +314,7 @@ describe Arachni::Browser do
 
                 time = Time.now
                 subject.wait_for_timers
-                expect(Time.now - time).to be < 0.2
+                expect(Time.now - time).to be < 0.3
             end
         end
     end
@@ -641,7 +641,6 @@ describe Arachni::Browser do
                             }
                         } => :click
                     },
-                    { "#{@url}level4" => :request },
                     { "#{@url}level4" => :request }
                 ],
                 [
@@ -678,7 +677,6 @@ describe Arachni::Browser do
                             }
                         } => :click
                     },
-                    { "#{@url}level4" => :request },
                     { "#{@url}level4" => :request },
                     {
                         {
@@ -731,7 +729,6 @@ describe Arachni::Browser do
                                 }
                             } => :click
                         },
-                        { "#{@url}level4" => :request },
                         { "#{@url}level4" => :request }
                     ]
                 ].map { |transitions| transitions_from_array( transitions ) })
@@ -767,16 +764,15 @@ describe Arachni::Browser do
 
             entry = doms[0].execution_flow_sinks[0]
             expect(entry.data).to eq([1])
-            expect(entry.trace.size).to eq(3)
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to eq([1, 2])
 
             expect(entry.trace[1].function.name).to eq('onClick2')
             expect(entry.trace[1].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
             expect(entry.trace[1].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[2].function.name).to eq('onmouseover')
@@ -791,21 +787,20 @@ describe Arachni::Browser do
 
             entry = doms[0].execution_flow_sinks[1]
             expect(entry.data).to eq([1])
-            expect(entry.trace.size).to eq(4)
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3'
             expect(entry.trace[1].function.arguments).to eq([1, 2])
 
             expect(entry.trace[2].function.name).to eq('onClick2')
             expect(entry.trace[2].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick'
             expect(entry.trace[2].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[3].function.name).to eq('onmouseover')
@@ -836,16 +831,15 @@ describe Arachni::Browser do
 
             entry = doms[1].execution_flow_sinks[0]
             expect(entry.data).to eq([1])
-            expect(entry.trace.size).to eq(2)
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[1].function.name).to eq('onsubmit')
             expect(entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
 
             event = entry.trace[1].function.arguments.first
 
@@ -856,21 +850,20 @@ describe Arachni::Browser do
 
             entry = doms[1].execution_flow_sinks[1]
             expect(entry.data).to eq([1])
-            expect(entry.trace.size).to eq(3)
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3()'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3()'
             expect(entry.trace[1].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[2].function.name).to eq('onsubmit')
             expect(entry.trace[2].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick('
+            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick('
 
             event = entry.trace[2].function.arguments.first
 
@@ -894,16 +887,15 @@ describe Arachni::Browser do
 
             entry = doms[0].data_flow_sinks[0]
             expect(entry.function).to eq('blah')
-            expect(entry.trace.size).to eq(3)
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to eq([1, 2])
 
             expect(entry.trace[1].function.name).to eq('onClick2')
             expect(entry.trace[1].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
             expect(entry.trace[1].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[2].function.name).to eq('onmouseover')
@@ -918,21 +910,20 @@ describe Arachni::Browser do
 
             entry = doms[0].data_flow_sinks[1]
             expect(entry.function).to eq('blah')
-            expect(entry.trace.size).to eq(4)
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3'
             expect(entry.trace[1].function.arguments).to eq([1, 2])
 
             expect(entry.trace[2].function.name).to eq('onClick2')
             expect(entry.trace[2].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick'
             expect(entry.trace[2].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[3].function.name).to eq('onmouseover')
@@ -949,16 +940,15 @@ describe Arachni::Browser do
 
             entry = doms[1].data_flow_sinks[0]
             expect(entry.function).to eq('blah')
-            expect(entry.trace.size).to eq(2)
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[1].function.name).to eq('onsubmit')
             expect(entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
 
             event = entry.trace[1].function.arguments.first
 
@@ -969,21 +959,20 @@ describe Arachni::Browser do
 
             entry = doms[1].data_flow_sinks[1]
             expect(entry.function).to eq('blah')
-            expect(entry.trace.size).to eq(3)
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3()'
+            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3()'
             expect(entry.trace[1].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[2].function.name).to eq('onsubmit')
             expect(entry.trace[2].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick('
+            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick('
 
             event = entry.trace[2].function.arguments.first
 
@@ -1140,16 +1129,15 @@ describe Arachni::Browser do
             expect(sink_data).to eq([first_entry])
 
             expect(first_entry.data).to eq([1])
-            expect(first_entry.trace.size).to eq(2)
 
             expect(first_entry.trace[0].function.name).to eq('onClick')
             expect(first_entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[first_entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[first_entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
             expect(first_entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(first_entry.trace[1].function.name).to eq('onsubmit')
             expect(first_entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[first_entry.trace[1].line]).to include 'onClick('
+            expect(@browser.source.split("\n")[first_entry.trace[1].line - 1]).to include 'onClick('
             expect(first_entry.trace[1].function.arguments.size).to eq(1)
 
             event = first_entry.trace[1].function.arguments.first
@@ -2131,6 +2119,7 @@ describe Arachni::Browser do
     end
 
     describe '#trigger_events' do
+
         it 'returns self' do
             expect(@browser.load( @url + '/explore' ).trigger_events).to eq(@browser)
         end
@@ -2184,7 +2173,6 @@ describe Arachni::Browser do
                             }
                         } => :click
                     },
-                    { "#{@url}href-ajax" => :request },
                     { "#{@url}post-ajax" => :request },
                     { "#{@url}href-ajax" => :request }
                 ]
@@ -3066,7 +3054,7 @@ describe Arachni::Browser do
             cookie = cookies.find { |c| c.name == 'include_subdomains' }
             expect(cookie.name).to  eq 'include_subdomains'
             expect(cookie.value).to eq 'bar1'
-            expect(cookie.domain).to eq '.127.0.0.2'
+            expect(cookie.domain).to eq ".#{Arachni::URI( @url ).host}"
         end
 
         it 'ignores cookies for other domains' do

@@ -213,19 +213,31 @@ class Options
         parsed = Arachni::URI( url.to_s )
 
         if parsed.to_s.empty? || !parsed.absolute?
+
             fail Error::InvalidURL,
                  'Invalid URL argument, please provide a full absolute URL and try again.'
-        elsif %w(localhost 127.0.0.1).include? parsed.host
-            fail Error::ReservedHostname, "'#{parsed.host}' is reserved, please use a different hostname."
+
+        # PhantomJS won't proxy localhost.
+        elsif parsed.host == 'localhost' || parsed.host.start_with?( '127.' )
+
+            fail Error::ReservedHostname,
+                 "'#{parsed.host}' is reserved, please use a different IP address or hostname."
+
         else
+
             if scope.https_only? && parsed.scheme != 'https'
+
                 fail Error::InvalidURL,
                      "Invalid URL argument, the 'https-only' option requires"+
                          ' an HTTPS URL.'
+
             elsif !%w(http https).include?( parsed.scheme )
+
                 fail Error::InvalidURL,
                      'Invalid URL scheme, please provide an HTTP or HTTPS URL and try again.'
+
             end
+
         end
 
         @parsed_url = parsed

@@ -1291,10 +1291,13 @@ describe Arachni::HTTP::Client do
                         value:  'val2',
                         domain: Arachni::URI( @url ).domain
                     )
+
                     subject.update_cookies( cookies )
                     subject.request( @url + '/update_cookies', update_cookies: true )
                     subject.run
-                    expect(subject.cookies.first.value).to eq(cookies.first.value + ' [UPDATED!]')
+
+                    cookie = subject.cookies.find { |c| c.value == 'val2 [UPDATED!]'}
+                    expect(cookie).to be_truthy
                 end
             end
         end

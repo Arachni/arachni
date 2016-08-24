@@ -16,7 +16,7 @@ require_relative 'browser/javascript'
 
 module Arachni
 
-# @note Depends on PhantomJS 1.9.2.
+# @note Depends on PhantomJS 2.1.1.
 #
 # Real browser driver providing DOM/JS/AJAX support.
 #
@@ -1448,10 +1448,21 @@ EOJS
             # parsing lots of massive JSON responses at the same time will
             # have a significant impact on performance.
             takes_screenshot: false,
-            'phantomjs.page.settings.userAgent'  => Options.http.user_agent,
-            'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' => auth_token,
-            'phantomjs.page.settings.resourceTimeout' => Options.http.request_timeout,
-            'phantomjs.page.settings.loadImages' => !Options.browser_cluster.ignore_images
+
+            # Needs to include the string Webkit:
+            #   https://github.com/ariya/phantomjs/issues/14198
+            #
+            # Default is:
+            #   Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1
+            'phantomjs.page.settings.userAgent'                   =>
+                'Mozilla/5.0 AppleWebKit/538.1 (KHTML, like Gecko) ' <<
+                    "Arachni/#{Arachni::VERSION} Safari/538.1",
+            'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' =>
+                auth_token,
+            'phantomjs.page.settings.resourceTimeout'             =>
+                Options.http.request_timeout,
+            'phantomjs.page.settings.loadImages'                  =>
+                !Options.browser_cluster.ignore_images
         )
     end
 

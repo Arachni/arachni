@@ -18,6 +18,8 @@ class WebServerManager
         @servers = {}
         @consumed_ports = Set.new
 
+        @address = Socket.gethostbyname( Socket.gethostname ).first
+
         Dir.glob( File.join( @lib + '**', '*.rb' ) ) do |path|
             {} while @consumed_ports.include?( (port = Arachni::Utilities.available_port) )
             @consumed_ports << port
@@ -54,7 +56,7 @@ class WebServerManager
     end
 
     def address_for( name )
-        @address || '127.0.0.2'
+        @address
     end
 
     def port_for( name )

@@ -7,6 +7,8 @@
     - New
         - `arachni_reproduce` -- Reproduces the issues in the given report.
 - Options
+    - `url=` -- Raise error on addresses starting with `127.` because
+        PhantomJS 2.1.1 doesn't proxy any loopback connections.
     - New
         - `--http-authentication-type`
             - `auto` -- Default
@@ -34,6 +36,7 @@
                 - Directory name prepending and appending is ignored.
             - Updated to not dismiss redirects but follow the location.
 - `Browser`
+    - Updated engine to PhantomJS 2.1.1.
     - `#snapshot_id` -- Moved to browser-side `DOMMonitor` for better performance.
     - `Javascript`
         - `#dom_elements_with_events`

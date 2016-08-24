@@ -28,18 +28,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
         @browser.shutdown
     end
 
-    describe '#initialized' do
-        it 'returns true' do
-            expect(subject.initialized).to be_truthy
-        end
-    end
-
-    describe '#class' do
-        it "returns #{described_class}" do
-            expect(subject.class).to eq(described_class)
-        end
-    end
-
     it 'is aliased to _token_taint_tracer' do
         load "debug?input=_#{@javascript.token}_taint_tracer.log_execution_flow_sink()"
         @browser.watir.form.submit
@@ -50,6 +38,18 @@ describe Arachni::Browser::Javascript::TaintTracer do
         load "debug?input=_#{@javascript.token}tainttracer.log_execution_flow_sink()"
         @browser.watir.form.submit
         expect(subject.execution_flow_sinks).to be_any
+    end
+
+    describe '#initialized' do
+        it 'returns true' do
+            expect(subject.initialized).to be_truthy
+        end
+    end
+
+    describe '#class' do
+        it "returns #{described_class}" do
+            expect(subject.class).to eq(described_class)
+        end
     end
 
     describe '#taints=' do
@@ -78,10 +78,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 load "/data_trace/multiple-taints?taint1=#{taint1}&taint2=#{taint2}"
 
                 sink = subject.data_flow_sinks[taint1]
-                expect(sink.size).to eq(2)
 
                 entry = sink[0]
-                expect(entry.object).to eq('DOMWindow')
+                expect(entry.object).to eq('Window')
                 expect(entry.function.name).to eq('process')
                 expect(entry.function.source).to start_with 'function process'
                 expect(entry.function.arguments).to eq([
@@ -95,7 +94,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 expect(@browser.source.split("\n")[entry.trace[0].line-1]).to include 'process('
 
                 entry = sink[1]
-                expect(entry.object).to eq('DOMWindow')
+                expect(entry.object).to eq('Window')
                 expect(entry.function.name).to eq('process')
                 expect(entry.function.source).to start_with 'function process'
                 expect(entry.function.arguments).to eq([
@@ -109,10 +108,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 expect(@browser.source.split("\n")[entry.trace[0].line-1]).to include 'process('
 
                 sink = subject.data_flow_sinks[taint2]
-                expect(sink.size).to eq(2)
 
                 entry = sink[0]
-                expect(entry.object).to eq('DOMWindow')
+                expect(entry.object).to eq('Window')
                 expect(entry.function.name).to eq('process')
                 expect(entry.function.source).to start_with 'function process'
                 expect(entry.function.arguments).to eq([
@@ -123,10 +121,10 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 ])
                 expect(entry.tainted_value).to eq(taint2)
                 expect(entry.taint).to eq(taint2)
-                expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'process('
+                expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'process('
 
                 entry = sink[1]
-                expect(entry.object).to eq('DOMWindow')
+                expect(entry.object).to eq('Window')
                 expect(entry.function.name).to eq('process')
                 expect(entry.function.source).to start_with 'function process'
                 expect(entry.function.arguments).to eq([
@@ -137,7 +135,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 ])
                 expect(entry.tainted_value).to eq(taint2)
                 expect(entry.taint).to eq(taint2)
-                expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'process('
+                expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'process('
             end
         end
 
@@ -157,10 +155,9 @@ describe Arachni::Browser::Javascript::TaintTracer do
                     load_with_taint 'data_trace/user-defined-global-functions'
 
                     sink = subject.data_flow_sinks[taint]
-                    expect(sink.size).to eq(1)
 
                     entry = sink[0]
-                    expect(entry.object).to eq('DOMWindow')
+                    expect(entry.object).to eq('Window')
                     expect(entry.function.name).to eq('process')
                     expect(entry.function.source).to start_with 'function process'
                     expect(entry.function.arguments).to eq([
@@ -182,16 +179,15 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint "data_trace/window.#{function}"
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(1)
 
                             entry = sink[0]
-                            expect(entry.object).to eq('DOMWindow')
+                            expect(entry.object).to eq('Window')
                             expect(entry.function.name).to eq(function)
                             expect(entry.function.source).to start_with "function #{function}"
                             expect(entry.function.arguments).to eq([ taint ])
                             expect(entry.tainted_value).to eq(taint)
                             expect(entry.taint).to eq(taint)
-                            expect(@browser.source.split("\n")[entry.trace[0].line]).to include "#{function}("
+                            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include "#{function}("
                         end
                     end
                 end
@@ -203,7 +199,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/XMLHttpRequest.open'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('XMLHttpRequestPrototype')
@@ -215,7 +210,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'open('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'open('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -225,7 +220,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/XMLHttpRequest.send'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('XMLHttpRequestPrototype')
@@ -235,7 +229,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'send('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'send('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -245,7 +239,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/XMLHttpRequest.setRequestHeader'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('XMLHttpRequestPrototype')
@@ -255,7 +248,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'setRequestHeader('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'setRequestHeader('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -267,7 +260,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/AngularJS.element'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(2)
 
                         entry = sink[1]
                         expect(entry.object).to eq('angular')
@@ -277,7 +269,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'angular.element('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'angular.element('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -288,7 +280,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/$http.delete'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(4)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.$http')
@@ -315,7 +306,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/$http.head'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(4)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.$http')
@@ -342,7 +332,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/$http.jsonp'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(3)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.$http')
@@ -369,7 +358,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/$http.put'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(3)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.$http')
@@ -396,7 +384,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/$http.get'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(4)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.$http')
@@ -423,7 +410,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/$http.post'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(4)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.$http')
@@ -462,7 +448,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/ngRoute/'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(8)
 
                             # ngRoute module first schedules an HTTP request to grab
                             # the template from the given 'templateUrl'...
@@ -494,7 +479,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/jqLite.html'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(2)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.element')
@@ -504,7 +488,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             expect(entry.taint).to eq(taint)
 
                             trace = entry.trace[0]
-                            expect(@browser.source.split("\n")[trace.line-1]).to include 'html('
+                            expect(@browser.source.split("\n")[trace.line - 2]).to include 'html('
                             expect(trace.url).to eq(@browser.url)
                         end
                     end
@@ -514,7 +498,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/jqLite.text'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(2)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.element')
@@ -524,7 +507,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             expect(entry.taint).to eq(taint)
 
                             trace = entry.trace[0]
-                            expect(@browser.source.split("\n")[trace.line-1]).to include 'text('
+                            expect(@browser.source.split("\n")[trace.line - 2]).to include 'text('
                             expect(trace.url).to eq(@browser.url)
                         end
                     end
@@ -534,7 +517,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/jqLite.append'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(2)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.element')
@@ -544,7 +526,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             expect(entry.taint).to eq(taint)
 
                             trace = entry.trace[0]
-                            expect(@browser.source.split("\n")[trace.line]).to include 'append('
+                            expect(@browser.source.split("\n")[trace.line - 1]).to include 'append('
                             expect(trace.url).to eq(@browser.url)
                         end
                     end
@@ -554,7 +536,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/jqLite.prepend'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(2)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.element')
@@ -564,7 +545,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             expect(entry.taint).to eq(taint)
 
                             trace = entry.trace[0]
-                            expect(@browser.source.split("\n")[trace.line]).to include 'prepend('
+                            expect(@browser.source.split("\n")[trace.line - 1]).to include 'prepend('
                             expect(trace.url).to eq(@browser.url)
                         end
                     end
@@ -574,7 +555,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/jqLite.prop'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(2)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.element')
@@ -584,7 +564,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             expect(entry.taint).to eq(taint)
 
                             trace = entry.trace[0]
-                            expect(@browser.source.split("\n")[trace.line]).to include 'prop('
+                            expect(@browser.source.split("\n")[trace.line - 1]).to include 'prop('
                             expect(trace.url).to eq(@browser.url)
                         end
                     end
@@ -594,7 +574,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/jqLite.replaceWith'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(2)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.element')
@@ -604,7 +583,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             expect(entry.taint).to eq(taint)
 
                             trace = entry.trace[0]
-                            expect(@browser.source.split("\n")[trace.line-1]).to include 'replaceWith('
+                            expect(@browser.source.split("\n")[trace.line - 2]).to include 'replaceWith('
                             expect(trace.url).to eq(@browser.url)
                         end
                     end
@@ -614,7 +593,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             load_with_taint 'data_trace/AngularJS/jqLite.val'
 
                             sink = subject.data_flow_sinks[taint]
-                            expect(sink.size).to eq(2)
 
                             entry = sink[1]
                             expect(entry.object).to eq('angular.element')
@@ -624,7 +602,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                             expect(entry.taint).to eq(taint)
 
                             trace = entry.trace[0]
-                            expect(@browser.source.split("\n")[trace.line]).to include 'val('
+                            expect(@browser.source.split("\n")[trace.line - 1]).to include 'val('
                             expect(trace.url).to eq(@browser.url)
                         end
                     end
@@ -637,7 +615,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.cookie'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(2)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -647,7 +624,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'cookie('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'cookie('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -657,7 +634,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.ajax'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(3)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -674,7 +650,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'ajax('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'ajax('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -684,7 +660,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.get'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(4)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -697,7 +672,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'get('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'get('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -707,7 +682,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.post'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(3)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -717,7 +691,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'post('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'post('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -727,7 +701,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.load'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(3)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -737,7 +710,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'load('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'load('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -747,7 +720,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.html'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -757,7 +729,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line-1]).to include 'html('
+                        expect(@browser.source.split("\n")[trace.line - 2]).to include 'html('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -767,7 +739,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.text'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(2)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -777,7 +748,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line-1]).to include 'text('
+                        expect(@browser.source.split("\n")[trace.line - 2]).to include 'text('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -787,7 +758,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.append'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(2)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -797,7 +767,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'append('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'append('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -807,7 +777,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.prepend'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(2)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -817,7 +786,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'prepend('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'prepend('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -827,7 +796,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.before'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(2)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -837,7 +805,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'before('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'before('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -847,7 +815,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.prop'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -857,7 +824,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'prop('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'prop('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -867,7 +834,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.replaceWith'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(2)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -877,7 +843,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line-1]).to include 'replaceWith('
+                        expect(@browser.source.split("\n")[trace.line - 2]).to include 'replaceWith('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -887,7 +853,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/jQuery.val'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('jQuery')
@@ -897,7 +862,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'val('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'val('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -909,7 +874,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/String.replace'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('String')
@@ -922,7 +886,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'replace('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'replace('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -932,7 +896,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/String.concat'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('String')
@@ -943,7 +906,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'concat('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'concat('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -953,7 +916,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/String.indexOf'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('String')
@@ -964,7 +926,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'indexOf('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'indexOf('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -974,7 +936,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/String.lastIndexOf'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('String')
@@ -985,7 +946,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'lastIndexOf('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'lastIndexOf('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -997,7 +958,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/HTMLElement.insertAdjacentHTML'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('HTMLElementPrototype')
@@ -1010,7 +970,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'insertAdjacentHTML('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'insertAdjacentHTML('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1022,7 +982,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/Element.setAttribute'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('ElementPrototype')
@@ -1035,7 +994,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'setAttribute('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'setAttribute('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1047,7 +1006,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/Document.createTextNode'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('DocumentPrototype')
@@ -1058,7 +1016,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'document.createTextNode('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'document.createTextNode('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1070,7 +1028,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/CharacterData.insertData'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('CharacterDataPrototype')
@@ -1081,7 +1038,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'insertData('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'insertData('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1091,7 +1048,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/CharacterData.appendData'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('CharacterDataPrototype')
@@ -1102,7 +1058,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'appendData('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'appendData('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1112,7 +1068,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/CharacterData.replaceData'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('CharacterDataPrototype')
@@ -1123,7 +1078,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'replaceData('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'replaceData('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1135,7 +1090,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/Text.replaceWholeText'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('TextPrototype')
@@ -1146,7 +1100,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'replaceWholeText('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'replaceWholeText('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1158,7 +1112,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/HTMLDocument.write'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('HTMLDocumentPrototype')
@@ -1173,7 +1126,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'document.write('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'document.write('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1183,7 +1136,6 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         load_with_taint 'data_trace/HTMLDocument.writeln'
 
                         sink = subject.data_flow_sinks[taint]
-                        expect(sink.size).to eq(1)
 
                         entry = sink[0]
                         expect(entry.object).to eq('HTMLDocumentPrototype')
@@ -1198,7 +1150,7 @@ describe Arachni::Browser::Javascript::TaintTracer do
                         expect(entry.taint).to eq(taint)
 
                         trace = entry.trace[0]
-                        expect(@browser.source.split("\n")[trace.line]).to include 'document.writeln('
+                        expect(@browser.source.split("\n")[trace.line - 1]).to include 'document.writeln('
                         expect(trace.url).to eq(@browser.url)
                     end
                 end
@@ -1273,16 +1225,15 @@ describe Arachni::Browser::Javascript::TaintTracer do
             expect(sink_data).to eq([first_entry])
 
             expect(first_entry.function.name).to eq('blah')
-            expect(first_entry.trace.size).to eq(2)
 
             expect(first_entry.trace[0].function.name).to eq('onClick')
             expect(first_entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[first_entry.trace[0].line]).to include 'log_data_flow_sink'
+            expect(@browser.source.split("\n")[first_entry.trace[0].line - 1]).to include 'log_data_flow_sink'
             expect(first_entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(first_entry.trace[1].function.name).to eq('onsubmit')
             expect(first_entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[first_entry.trace[1].line]).to include 'onsubmit'
+            expect(@browser.source.split("\n")[first_entry.trace[1].line - 1]).to include 'onsubmit'
             expect(first_entry.trace[1].function.arguments.size).to eq(1)
 
             event = first_entry.trace[1].function.arguments.first
@@ -1311,16 +1262,15 @@ describe Arachni::Browser::Javascript::TaintTracer do
             expect(sink_data).to eq([first_entry])
 
             expect(first_entry.data).to eq([1])
-            expect(first_entry.trace.size).to eq(2)
 
             expect(first_entry.trace[0].function.name).to eq('onClick')
             expect(first_entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[first_entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[first_entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
             expect(first_entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(first_entry.trace[1].function.name).to eq('onsubmit')
             expect(first_entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[first_entry.trace[1].line]).to include 'onsubmit'
+            expect(@browser.source.split("\n")[first_entry.trace[1].line - 1]).to include 'onsubmit'
             expect(first_entry.trace[1].function.arguments.size).to eq(1)
 
             event = first_entry.trace[1].function.arguments.first
@@ -1349,16 +1299,15 @@ describe Arachni::Browser::Javascript::TaintTracer do
             expect(sink_data).to eq([first_entry])
 
             expect(first_entry.data).to eq([1])
-            expect(first_entry.trace.size).to eq(2)
 
             expect(first_entry.trace[0].function.name).to  eq('onClick')
             expect(first_entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[first_entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[first_entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
             expect(first_entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(first_entry.trace[1].function.name).to eq('onsubmit')
             expect(first_entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[first_entry.trace[1].line]).to include 'onsubmit'
+            expect(@browser.source.split("\n")[first_entry.trace[1].line - 1]).to include 'onsubmit'
             expect(first_entry.trace[1].function.arguments.size).to eq(1)
 
             event = first_entry.trace[1].function.arguments.first
@@ -1399,16 +1348,15 @@ describe Arachni::Browser::Javascript::TaintTracer do
             expect(sink_data).to eq([first_entry])
 
             expect(first_entry.function.name).to eq('blah')
-            expect(first_entry.trace.size).to eq(2)
 
             expect(first_entry.trace[0].function.name).to  eq('onClick')
             expect(first_entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[first_entry.trace[0].line]).to include 'log_data_flow_sink'
+            expect(@browser.source.split("\n")[first_entry.trace[0].line - 1]).to include 'log_data_flow_sink'
             expect(first_entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(first_entry.trace[1].function.name).to eq('onsubmit')
             expect(first_entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[first_entry.trace[1].line]).to include 'onsubmit'
+            expect(@browser.source.split("\n")[first_entry.trace[1].line - 1]).to include 'onsubmit'
             expect(first_entry.trace[1].function.arguments.size).to eq(1)
 
             event = first_entry.trace[1].function.arguments.first
@@ -1474,16 +1422,15 @@ describe Arachni::Browser::Javascript::TaintTracer do
                 expect(debugging_data).to eq([first_entry])
 
                 expect(first_entry.data).to eq([1])
-                expect(first_entry.trace.size).to eq(2)
 
                 expect(first_entry.trace[0].function.name).to eq('onClick')
                 expect(first_entry.trace[0].function.source).to start_with 'function onClick'
-                expect(@browser.source.split("\n")[first_entry.trace[0].line]).to include 'debug(1)'
+                expect(@browser.source.split("\n")[first_entry.trace[0].line - 1]).to include 'debug(1)'
                 expect(first_entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
                 expect(first_entry.trace[1].function.name).to eq('onsubmit')
                 expect(first_entry.trace[1].function.source).to start_with 'function onsubmit'
-                expect(@browser.source.split("\n")[first_entry.trace[1].line]).to include 'onClick('
+                expect(@browser.source.split("\n")[first_entry.trace[1].line - 1]).to include 'onClick('
                 expect(first_entry.trace[1].function.arguments.size).to eq(1)
 
                 event = first_entry.trace[1].function.arguments.first
