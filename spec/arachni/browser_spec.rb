@@ -20,7 +20,7 @@ describe Arachni::Browser do
     end
 
     let(:subject) { @browser }
-    let(:ua) { Arachni::Options.http.user_agent }
+    let(:ua) { described_class::USER_AGENT }
 
     def transitions_from_array( transitions )
         transitions.map do |t|
@@ -1072,8 +1072,6 @@ describe Arachni::Browser do
 
     describe '#to_page' do
         it "converts the working window to an #{Arachni::Page}" do
-            ua = Arachni::Options.http.user_agent
-
             @browser.load( @url )
             page = @browser.to_page
 
@@ -2230,10 +2228,6 @@ describe Arachni::Browser do
     describe '#source' do
         it 'returns the evaluated HTML source' do
             @browser.load @url
-
-            ua = Arachni::Options.http.user_agent
-            expect(ua).not_to be_empty
-
             expect(@browser.source).to include( ua )
         end
     end
@@ -2253,10 +2247,6 @@ describe Arachni::Browser do
     describe '#goto' do
         it 'loads the given URL' do
             @browser.goto @url
-
-            ua = Arachni::Options.http.user_agent
-            expect(ua).not_to be_empty
-
             expect(@browser.source).to include( ua )
         end
 
@@ -2267,8 +2257,6 @@ describe Arachni::Browser do
             @browser = described_class.new
 
             transition.play( @browser )
-            ua = Arachni::Options.http.user_agent
-            expect(ua).not_to be_empty
 
             expect(@browser.source).to include( ua )
         end

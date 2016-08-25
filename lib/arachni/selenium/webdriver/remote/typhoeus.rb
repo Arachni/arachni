@@ -3,7 +3,6 @@ require 'typhoeus'
 module Selenium
 module WebDriver
 module Remote
-
 module Http
 
 # The default client uses Threads to track timeout and we don't want that,
@@ -43,7 +42,7 @@ class Typhoeus < Common
         response = ::Typhoeus::Request.send( verb, url, options )
 
         if response.timed_out?
-            raise Timeout::Error, "Request timed out: #{verb} #{url}"
+            raise Timeout::Error, "Request timed out: #{verb} #{url}\n#{payload}"
         end
 
         create_response extract_real_code( response ), response.body,

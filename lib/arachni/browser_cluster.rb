@@ -212,6 +212,9 @@ class BrowserCluster
         synchronize do
             print_debug "Job done: #{job}"
 
+            @pending_job_counter  -= 1
+            @pending_jobs[job.id] -= 1
+
             increment_completed_job_count
             add_to_total_job_time( job.time )
 
@@ -221,9 +224,6 @@ class BrowserCluster
                 @skip_states_per_job.delete job.id
                 @job_callbacks.delete job.id
             end
-
-            @pending_job_counter  -= 1
-            @pending_jobs[job.id] -= 1
 
             if @pending_job_counter == 0
                 print_debug_level_2 'Pending job counter reached 0.'
@@ -276,7 +276,11 @@ class BrowserCluster
     #   `true` if there are no resources to analyze and no running workers.
     def done?
         fail_if_shutdown
-        @pending_job_counter == 0
+        synchronize { @pending_job_counter == 0 }
+    end
+
+    def pending_job_counter
+        synchronize { @pending_job_counter }
     end
 
     # Blocks until all resources have been analyzed.
@@ -301,7 +305,7 @@ class BrowserCluster
         @jobs.clear
         print_debug_level_2 '...done.'
 
-        print_debug_level_2 "Shutting down #{@workers} workers..."
+        print_debug_level_2 "Shutting down #{@workers.size} workers..."
         # Kill the browsers.
         @workers.each { |b| exception_jail( false ) { b.shutdown wait } }
         @workers.clear
@@ -387,9 +391,9 @@ class BrowserCluster
         end
     end
 
-    def increment_completed_job_count( *args )
+    def increment_completed_job_count
         synchronize do
-            self.class.increment_completed_job_count( *args )
+            self.class.increment_completed_job_count
         end
     end
 
@@ -409,9 +413,9 @@ class BrowserCluster
         @queued_job_count += 1
     end
 
-    def self.increment_completed_job_count( increment = 1 )
+    def self.increment_completed_job_count
         @completed_job_count ||= 0
-        @completed_job_count += increment
+        @completed_job_count += 1
     end
 
     def self.completed_job_count

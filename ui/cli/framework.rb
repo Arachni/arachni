@@ -39,6 +39,21 @@ class Framework
         @show_command_screen = nil
         @cleanup_handler     = nil
 
+        # Step into a pry session for debugging.
+        trap( 'USR1' ) do
+            Thread.new do
+                require 'pry'
+
+                mute
+                clear_screen
+
+                pry
+
+                clear_screen
+                unmute
+            end
+        end
+
         trap( 'INT' ) do
             hide_command_screen
             clear_screen

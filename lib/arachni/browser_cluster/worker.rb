@@ -20,15 +20,15 @@ class BrowserCluster
 class Worker < Arachni::Browser
     personalize_output
 
+    # How many times to retry timed-out jobs.
+    TRIES = 6
+
     # @return    [BrowserCluster]
     attr_reader   :master
 
     # @return    [Job]
     #   Currently assigned job.
     attr_reader   :job
-
-    # @return   [Integer]
-    attr_accessor :job_timeout
 
     # @return    [Integer]
     attr_accessor :max_time_to_live
@@ -44,14 +44,11 @@ class Worker < Arachni::Browser
             Options.browser_cluster.worker_time_to_live
         @time_to_live     = @max_time_to_live
 
-        @job_timeout      = options.delete( :job_timeout ) ||
-            Options.browser_cluster.job_timeout
+        @done_signal = Queue.new
 
         # Don't store pages if there's a master, we'll be sending them to him
         # as soon as they're logged.
         super options.merge( store_pages: false )
-
-        @done_signal = Queue.new
 
         start_capture
 
@@ -75,29 +72,37 @@ class Worker < Arachni::Browser
         # If we can't respawn, then bail out.
         return if browser_respawn_if_necessary.nil?
 
-        time = Time.now
+        tries = 0
         begin
-            with_timeout @job_timeout do
-                exception_jail false do
-                    begin
-                        @job.configure_and_run( self )
-                    rescue Selenium::WebDriver::Error::WebDriverError,
-                        Watir::Exception::Error => e
+            time = Time.now
 
-                        print_debug "Error while processing job: #{@job}"
-                        print_debug
-                        print_debug_exception e
-
-                        browser_respawn
-                    end
-                end
-            end
+            @job.configure_and_run( self )
 
             job.time = Time.now - time
+        rescue Selenium::WebDriver::Error::WebDriverError,
+            Watir::Exception::Error => e
+
+            print_debug "Error while processing job: #{@job}"
+            print_debug
+            print_debug_exception e
+
+            browser_respawn
+
+        # This can be thrown by a Selenium call somewhere down the line,
+        # catch it here and retry the entire job.
         rescue Timeout::Error => e
+
+            tries += 1
+            if !@shutdown && tries <= TRIES
+                print_info "Retrying (#{tries}/#{TRIES}) due to time out: #{@job}"
+                browser_respawn
+                reset
+                retry
+            end
+
             job.timed_out!( Time.now - time )
 
-            print_bad "Job timed-out after #{@job_timeout} seconds: #{@job}"
+            print_bad "Job timed-out #{TRIES} times: #{@job}"
 
             # Could have left us with a broken browser.
             browser_respawn
@@ -109,20 +114,16 @@ class Worker < Arachni::Browser
         print_debug "Finished: #{@job}"
 
         true
-    rescue Selenium::WebDriver::Error::WebDriverError => e
-        print_debug_exception e
+
+    # Something went horribly wrong, cleanup.
+    rescue => e
+        print_error "Error while processing job: #{@job}"
+        print_exception e
 
         browser_respawn
-        nil
+        reset
     ensure
-        @javascript.taint = nil
-
-        clear_buffers
-
-        # The jobs may have configured callbacks to capture pages etc.,
-        # remove them.
-        clear_observers
-
+        reset
         @job = nil
     end
 
@@ -202,6 +203,16 @@ class Worker < Arachni::Browser
 
     private
 
+    def reset
+        @javascript.taint = nil
+
+        clear_buffers
+
+        # The jobs may have configured callbacks to capture pages etc.,
+        # remove them.
+        clear_observers
+    end
+
     # @return   [Support::LookUp::HashSet]
     #   States that have been visited and should be skipped, for the given
     #   {#job}.
@@ -254,7 +265,9 @@ class Worker < Arachni::Browser
         # Browser may fail to respawn but there's nothing we can do about that,
         # just leave it dead and try again at the next job.
         r = begin
-            boot_up
+
+            start_webdriver
+
             true
         rescue Selenium::WebDriver::Error::WebDriverError,
             Browser::Error::Spawn => e

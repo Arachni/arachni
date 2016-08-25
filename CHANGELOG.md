@@ -7,8 +7,12 @@
     - New
         - `arachni_reproduce` -- Reproduces the issues in the given report.
 - Options
-    - `url=` -- Raise error on addresses starting with `127.` because
+    - `url` -- Raise error on addresses starting with `127.` because
         PhantomJS 2.1.1 doesn't proxy any loopback connections.
+    - `--browser-cluster-job-timeout`
+        - Repurposed to apply to communication requests for Selenium rather than
+            the entire job.
+        - Lowered to `10` seconds.
     - New
         - `--http-authentication-type`
             - `auto` -- Default
@@ -44,6 +48,9 @@
             - Updated it to return results in batches, in order to keep RAM
                 usage under control when processing large pages with thousands
                 of elements with events.
+- `BrowserCluster`
+    - `Worker`
+        - `#run_job` -- Retry 5 times on job time-outs.
 - `Element`
     - `Capabilities`
         - `Auditable`

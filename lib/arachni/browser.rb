@@ -9,7 +9,6 @@
 require 'childprocess'
 require 'watir-webdriver'
 require_relative 'selenium/webdriver/element'
-require_relative 'selenium/webdriver/remote/typhoeus'
 require_relative 'processes/manager'
 require_relative 'browser/element_locator'
 require_relative 'browser/javascript'
@@ -80,6 +79,12 @@ class Browser
         /<\s*link.*?href=\s*['"]?(.*?)?['"]?[\s>]/im,
         /src\s*=\s*['"]?(.*?)?['"]?[\s>]/i,
     ]
+
+    # Unfortunately, we can't expose the HTTP user-agent for client-side
+    # stuff, because Selenium needs to know that we're using a Webkit-based
+    # browser in order to use the right JS code to trigger events etc.
+    USER_AGENT = 'Mozilla/5.0 AppleWebKit/538.1 (KHTML, like Gecko) ' <<
+        "Arachni/#{Arachni::VERSION} Safari/538.1"
 
     # @return   [Array<Page::DOM::Transition>]
     attr_reader :transitions
@@ -179,7 +184,7 @@ class Browser
 
         @options[:store_pages] = true if !@options.include?( :store_pages )
 
-        boot_up
+        start_webdriver
 
         # User-controlled preloaded responses, by URL.
         @preloads = {}
@@ -403,7 +408,7 @@ class Browser
     # @return   [String]
     #   Current URL, as provided by the browser.
     def dom_url
-        javascript.run( 'return document.URL;' )
+        @selenium.current_url
     end
 
     # Explores the browser's DOM tree and captures page snapshots for each
@@ -672,7 +677,7 @@ class Browser
             transition
         rescue Selenium::WebDriver::Error::WebDriverError => e
 
-            print_debug "Error when triggering event for: #{url}"
+            print_debug "Error when triggering event for: #{dom_url}"
             print_debug "-- '#{event}' on: #{opening_tag} -- #{locator.css}"
             print_debug
             print_debug_exception e
@@ -688,14 +693,19 @@ class Browser
     #
     # @param    [Browser::ElementLocator]   locator
     # @param    [Symbol,String]   event
-    # @param    [Bool]   ret
-    #   Return JS result?
     # @param    [Numeric]   wait
     #   Amount of time to wait (in seconds) after triggering the event.
-    def fire_event_js( locator, event, ret: false, wait: 0.1 )
+    def fire_event_js( locator, event, wait: 0.1 )
         r = javascript.run <<-EOJS
             var element = document.querySelector( #{locator.css.inspect} );
-            var event   = document.createEvent( "Events" );
+
+            // Could not be found.
+            if( !element ) return false;
+
+            // Invisible.
+            if( element.offsetWidth <= 0 && element.offsetHeight <= 0 ) return false;
+
+            var event = document.createEvent( "Events" );
 
             event.initEvent( "#{event}", true, true );
 
@@ -707,10 +717,13 @@ class Browser
             event.keyCode  = 0;
             event.charCode = 'a';
 
-            #{'return' if ret} element.dispatchEvent( event );
+            element.dispatchEvent( event );
+
+            return true;
         EOJS
 
-        sleep wait
+        sleep( wait ) if r
+
         r
     end
 
@@ -1056,20 +1069,9 @@ class Browser
     def selenium
         return @selenium if @selenium
 
-        # Using Typhoeus for Selenium results in memory violation errors on
-        # Windows, so use the default Net::HTTP-based client.
-        if Arachni.windows?
-            client = Selenium::WebDriver::Remote::Http::Default.new
-
-        # However, using the default client results in Threads being used because
-        # Net::HTTP uses them for timeouts, and Threads are resource intensive
-        # (around 1MB per Thread).
-        #
-        # So, if we're not on Windows, use Typhoeus.
-        else
-            client = Selenium::WebDriver::Remote::Http::Typhoeus.new
-        end
-
+        # For some weird reason the Typhoeus client is very slow for
+        # PhantomJS 2.1.1 and causes a boatload of time-outs.
+        client = Selenium::WebDriver::Remote::Http::Default.new
         client.timeout = Options.browser_cluster.job_timeout
 
         @selenium = Selenium::WebDriver.for(
@@ -1203,6 +1205,8 @@ class Browser
             done   = false
             port   = Utilities.available_port
 
+            start_proxy
+
             print_debug_level_2 "Attempt ##{i}, chose port number #{port}"
 
             begin
@@ -1259,6 +1263,8 @@ class Browser
             end
 
             print_debug_level_2 'Killing process.'
+
+            # Kill everything.
             shutdown
         end
 
@@ -1276,7 +1282,7 @@ class Browser
         @browser_url = "http://127.0.0.1:#{port}"
     end
 
-    def boot_up
+    def start_proxy
         print_debug 'Booting up...'
 
         print_debug_level_2 'Starting proxy...'
@@ -1292,7 +1298,9 @@ class Browser
         )
         @proxy.start_async
         print_debug_level_2 "... started proxy at: #{@proxy.url}"
+    end
 
+    def start_webdriver
         print_debug_level_2 'Starting WebDriver...'
         @watir = ::Watir::Browser.new( selenium )
         print_debug_level_2 "... started WebDriver at: #{@browser_url}"
@@ -1455,8 +1463,7 @@ EOJS
             # Default is:
             #   Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1
             'phantomjs.page.settings.userAgent'                   =>
-                'Mozilla/5.0 AppleWebKit/538.1 (KHTML, like Gecko) ' <<
-                    "Arachni/#{Arachni::VERSION} Safari/538.1",
+                USER_AGENT,
             'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' =>
                 auth_token,
             'phantomjs.page.settings.resourceTimeout'             =>

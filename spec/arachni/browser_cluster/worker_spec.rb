@@ -18,7 +18,7 @@ describe Arachni::BrowserCluster::Worker do
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
     let(:job) do
         Arachni::BrowserCluster::Jobs::DOMExploration.new(
-            resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync )
+            resource: Arachni::Page.from_url( url + 'explore', mode: :sync )
         )
     end
     let(:custom_job) { Factory[:custom_job] }
@@ -26,19 +26,6 @@ describe Arachni::BrowserCluster::Worker do
     let(:subject) { @cluster.workers.first }
 
     describe '#initialize' do
-        describe ':job_timeout' do
-            it 'sets how much time to allow each job to run' do
-                @worker = described_class.new( job_timeout: 10 )
-                expect(@worker.job_timeout).to eq(10)
-            end
-
-            it "defaults to #{Arachni::OptionGroups::BrowserCluster}#job_timeout" do
-                Arachni::Options.browser_cluster.job_timeout = 5
-                @worker = described_class.new
-                expect(@worker.job_timeout).to eq(5)
-            end
-        end
-
         describe ':max_time_to_live' do
             it 'sets how many jobs should be run before respawning' do
                 @worker = described_class.new( max_time_to_live: 10 )
@@ -253,42 +240,34 @@ describe Arachni::BrowserCluster::Worker do
                     expect(pid).not_to eq(subject.browser_pid)
                 end
             end
-
-            context 'when cookie clearing raises' do
-                context 'Selenium::WebDriver::Error::NoSuchWindowError' do
-                    it 'respawns' do
-                        allow(subject.watir).to receive(:cookies) do
-                            raise Selenium::WebDriver::Error::NoSuchWindowError
-                        end
-
-                        watir = subject.watir
-                        pid   = subject.browser_pid
-
-                        subject.run_job( custom_job )
-
-                        expect(watir).not_to eq(subject.watir)
-                        expect(pid).not_to eq(subject.browser_pid)
-                    end
-                end
-            end
         end
 
-        context 'when the job takes more than #job_timeout' do
+        context 'when a Selenium request takes more than OptionGroup::BrowserCluster#job_timeout' do
             before do
-                subject.job_timeout = 1
+                allow(subject).to receive(:trigger_events) { raise Timeout::Error }
             end
 
-            it 'sets Job#time' do
-                @cluster.queue( sleep_job ) {}
+            it "retries #{described_class::TRIES} times" do
+                expect(subject).to receive(:reset).exactly(described_class::TRIES + 1).times
+
+                @cluster.queue( job ) {}
                 @cluster.wait
-                expect(sleep_job.time).to be > 1
-                expect(sleep_job.time).to be < 1.1
             end
 
-            it 'sets Job#timed_out?' do
-                @cluster.queue( sleep_job ) {}
-                @cluster.wait
-                expect(sleep_job).to be_timed_out
+            context "after #{described_class::TRIES} tries" do
+                it 'sets Job#time' do
+                    @cluster.queue( job ) {}
+                    @cluster.wait
+
+                    expect(job.time).to be > 0
+                end
+
+                it 'sets Job#timed_out?' do
+                    @cluster.queue( job ) {}
+                    @cluster.wait
+
+                    expect(job).to be_timed_out
+                end
             end
         end
     end
