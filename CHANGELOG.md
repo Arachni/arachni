@@ -24,7 +24,10 @@
         - `--scope-dom-event-limit` -- Limits the amount of DOM events to be
             triggered for each DOM depth.
         - `--daemon-friendly` -- Disables status screen.
-- HTTP
+- `UI`
+    - `CLI`
+        - `Framework` -- Trap `USR1` signal and go into a `pry` session for debugging.
+- `HTTP`
     - `ProxyServer`
         - Fixed state of abruptly closed SSL interceptor connections leading to
             frozen browser operations.
