@@ -79,7 +79,7 @@ class Worker < Arachni::Browser
 
             @job.configure_and_run( self )
 
-            job.time = Time.now - time
+            @job.time = Time.now - time
 
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
@@ -104,7 +104,7 @@ class Worker < Arachni::Browser
                 retry
             end
 
-            job.timed_out!( Time.now - time )
+            @job.timed_out!( Time.now - time )
 
             print_bad "Job timed-out #{TRIES} times: #{@job}"
 
@@ -123,10 +123,10 @@ class Worker < Arachni::Browser
         browser_respawn
     ensure
         print_debug "Finished: #{@job}"
+        @job = nil
 
         reset
-        master.job_done @job
-        @job = nil
+        master.job_done job
     end
 
     # Direct the distribution to the master and let it take it from there.

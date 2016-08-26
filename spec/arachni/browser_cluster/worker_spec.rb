@@ -44,7 +44,7 @@ describe Arachni::BrowserCluster::Worker do
         it 'processes jobs from #master' do
             expect(subject).to receive(:run_job).with(custom_job)
             @cluster.queue( custom_job ){}
-            @cluster.wait
+            sleep 1
         end
 
         it 'assigns #job to the running job' do
