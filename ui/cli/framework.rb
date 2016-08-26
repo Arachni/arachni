@@ -39,18 +39,20 @@ class Framework
         @show_command_screen = nil
         @cleanup_handler     = nil
 
-        # Step into a pry session for debugging.
-        trap( 'USR1' ) do
-            Thread.new do
-                require 'pry'
+        if Signal.list.include?( 'USR1' )
+            # Step into a pry session for debugging.
+            trap( 'USR1' ) do
+                Thread.new do
+                    require 'pry'
 
-                mute
-                clear_screen
+                    mute
+                    clear_screen
 
-                pry
+                    pry
 
-                clear_screen
-                unmute
+                    clear_screen
+                    unmute
+                end
             end
         end
 
