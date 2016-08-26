@@ -74,16 +74,17 @@ class Worker < Arachni::Browser
 
         tries = 0
         begin
+
             time = Time.now
 
             @job.configure_and_run( self )
 
             job.time = Time.now - time
+
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
 
-            print_debug "Error while processing job: #{@job}"
-            print_debug
+            print_debug "WebDriver error while processing job: #{@job}"
             print_debug_exception e
 
             browser_respawn
@@ -95,8 +96,11 @@ class Worker < Arachni::Browser
             tries += 1
             if !@shutdown && tries <= TRIES
                 print_info "Retrying (#{tries}/#{TRIES}) due to time out: #{@job}"
+                print_debug_exception e
+
                 browser_respawn
                 reset
+
                 retry
             end
 
@@ -111,19 +115,17 @@ class Worker < Arachni::Browser
         decrease_time_to_live
         browser_respawn_if_necessary
 
-        print_debug "Finished: #{@job}"
-
-        true
-
     # Something went horribly wrong, cleanup.
     rescue => e
         print_error "Error while processing job: #{@job}"
         print_exception e
 
         browser_respawn
-        reset
     ensure
+        print_debug "Finished: #{@job}"
+
         reset
+        master.job_done @job
         @job = nil
     end
 
@@ -238,11 +240,7 @@ class Worker < Arachni::Browser
     def start
         @consumer ||= Thread.new do
             while !@shutdown
-                exception_jail false do
-                    j = master.pop
-                    exception_jail( false ) { run_job j }
-                    master.job_done j
-                end
+                run_job master.pop
             end
 
             print_debug 'Got shutdown signal...'
