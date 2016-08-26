@@ -221,8 +221,8 @@ class Options
         elsif parsed.host == 'localhost' || parsed.host.start_with?( '127.' )
 
             fail Error::ReservedHostname,
-                 'Loopback interfaces are nor supported, please use a different' <<
-                     ' IP address or hostname.'
+                 "Loopback interfaces (like #{parsed.host}) are nor supported," <<
+                     ' please use a different IP address or hostname.'
 
         else
 
