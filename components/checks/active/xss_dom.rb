@@ -11,7 +11,7 @@ class Arachni::Checks::XssDom < Arachni::Check::Base
     prefer :xss
 
     def self.tag_name
-        "some_dangerous_input_#{random_seed}"
+        "#{shortname}_#{random_seed}"
     end
 
     def self.tag
@@ -71,7 +71,7 @@ tainted responses to look for proof of vulnerability.
 },
             elements:    DOM_ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.3',
+            version:     '0.1.4',
 
             issue:       {
                 name:            %q{DOM-based Cross-Site Scripting (XSS)},
