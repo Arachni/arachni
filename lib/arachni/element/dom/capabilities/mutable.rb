@@ -18,9 +18,13 @@ module Mutable
 
     def prepare_mutation_options( options )
         options = super( options )
-        # No sense in doing this for the DOM, either payload will be raw in the
-        # first place or the browser will override us.
+        # No sense in doing these for the DOM:
+        #
+        # Either payload will be raw in the first place or the browser will
+        # override us.
         options.delete :with_raw_payloads
+        # Browser handles the submission, there may not even be an HTTP request.
+        options.delete :with_both_http_methods
         options
     end
 
