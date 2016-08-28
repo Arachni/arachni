@@ -79,7 +79,16 @@
         - `rate_limiter` -- Rate limits HTTP requests.
     - `proxy` -- `bind_address` default switched to `127.0.0.1`, `0.0.0.0` breaks
         SSL interception on MS Windows.
-    - `metrics` -- Fixed division by 0 error when no requests have been performed.
+    - `metrics`
+        - Fixed division by 0 error when no requests have been performed.
+        - Added:
+            - HTTP
+                - Request time-outs
+                - Responses per second
+            - Browser cluster
+                - Seconds per job
+                - Total job time
+                - Job count
     - `email_notify`
         - Retry on error.
         - Default to `afr` as a report format.

@@ -29,6 +29,8 @@ class PluginFormatters::Metrics < Arachni::Plugin::Formatter
         print_ok 'HTTP'
         http = results['http']
         print_info "Requests: #{http['requests']}"
+        print_info "Request time-outs:     #{http['request_time_outs']}"
+        print_info "Responses per second:  #{http['responses_per_second'].round( 4 )}"
         print_info "Minimum response time: #{http['response_time_min'].round( 4 )} seconds"
         print_info "Maximum response time: #{http['response_time_max'].round( 4 )} seconds"
         print_info "Average response time: #{http['response_time_average'].round( 4 )} seconds"
@@ -38,6 +40,13 @@ class PluginFormatters::Metrics < Arachni::Plugin::Formatter
         print_info "Minimum request size:  #{Arachni::Utilities.bytes_to_kilobytes http['request_size_min']} KB"
         print_info "Maximum request size:  #{Arachni::Utilities.bytes_to_kilobytes http['request_size_max']} KB"
         print_info "Average request size:  #{Arachni::Utilities.bytes_to_kilobytes http['request_size_average']} KB"
+        print_line
+
+        print_ok 'Browser cluster'
+        browser_cluster = results['browser_cluster']
+        print_info "Seconds per job: #{browser_cluster['seconds_per_job'].round( 4 )}"
+        print_info "Total job time:  #{browser_cluster['total_job_time']} seconds"
+        print_info "Job count:       #{browser_cluster['job_count']}"
         print_line
 
         print_ok 'Resources'

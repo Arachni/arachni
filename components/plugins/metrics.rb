@@ -25,18 +25,25 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
             },
             'http'      => {
                 'requests'              => 0,
-                'response_time_min'     => 0,
-                'response_time_max'     => 0,
-                'response_time_average' => 0,
+                'request_time_outs'     => 0,
                 'request_size_min'      => 0,
                 'request_size_max'      => 0,
                 'request_size_average'  => 0,
+                'responses_per_second'  => 0.0,
+                'response_time_min'     => 0,
+                'response_time_max'     => 0,
+                'response_time_average' => 0,
                 'response_size_min'     => 0,
                 'response_size_max'     => 0,
                 'response_size_average' => 0
             },
+            'browser_cluster' => { #
+                'seconds_per_job' => 0.0,
+                'total_job_time'  => 0.0,
+                'job_count'       => 0
+            },
             'resource'  => {
-                'binary'            => Arachni::Support::LookUp::HashSet.new,
+                'binary'             => Arachni::Support::LookUp::HashSet.new,
                 'without_parameters' => Arachni::Support::LookUp::HashSet.new,
                 'with_parameters'    => Arachni::Support::LookUp::HashSet.new
             },
@@ -179,7 +186,21 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 
         @metrics = process( @metrics )
 
-        @metrics['http']['requests'] = framework.statistics[:http][:response_count]
+        statistics = framework.statistics
+
+        @metrics['browser_cluster']['seconds_per_job'] =
+            statistics[:browser_cluster][:seconds_per_job]
+
+        @metrics['browser_cluster']['total_job_time'] =
+            statistics[:browser_cluster][:total_job_time]
+
+        @metrics['browser_cluster']['job_count'] =
+            statistics[:browser_cluster][:queued_job_count]
+
+        @metrics['http']['requests'] = statistics[:http][:response_count]
+
+        @metrics['http']['request_time_outs']    = statistics[:http][:time_out_count]
+        @metrics['http']['responses_per_second'] = statistics[:http][:total_responses_per_second]
 
         if @metrics['http']['requests'] > 0
             @metrics['http']['response_time_average'] =
@@ -192,7 +213,7 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
                 @metrics['general']['egress_traffic'] / @metrics['http']['requests']
         end
 
-        @metrics['scan']['duration']      = framework.statistics[:runtime]
+        @metrics['scan']['duration']      = statistics[:runtime]
         @metrics['scan']['authenticated'] = !!Arachni::Options.session.check_url
 
         register_results @metrics

@@ -79,6 +79,20 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
                     </dd>
 
                     <dt>
+                        Requests time outs
+                    </dt>
+                    <dd>
+                        <%= results['http']['request_time_outs'] %>
+                    </dd>
+
+                    <dt>
+                        Responses per second
+                    </dt>
+                    <dd>
+                        <%= results['http']['responses_per_second'].round(4) %>
+                    </dd>
+
+                    <dt>
                         Minimum response time
                     </dt>
                     <dd>
@@ -162,6 +176,30 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
             </div>
 
             <div class="col-md-9">
+                <h3>Browser cluster</h3>
+                <dl class="dl-horizontal">
+                    <dt>
+                        Seconds per job
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['seconds_per_job'].round(4) %>
+                    </dd>
+
+                    <dt>
+                        Total job time
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['total_job_time'] %>s
+                    </dd>
+
+                    <dt>
+                        Job count
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['job_count'] %>
+                    </dd>
+                </dl>
+
                 <h3>Elements</h3>
                 <dl class="dl-horizontal">
                     <dt>
