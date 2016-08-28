@@ -37,9 +37,10 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
                 'response_size_max'     => 0,
                 'response_size_average' => 0
             },
-            'browser_cluster' => { #
+            'browser_cluster' => {
                 'seconds_per_job' => 0.0,
                 'total_job_time'  => 0.0,
+                'job_time_outs'   => 0.0,
                 'job_count'       => 0
             },
             'resource'  => {
@@ -187,6 +188,9 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
         @metrics = process( @metrics )
 
         statistics = framework.statistics
+
+        @metrics['browser_cluster']['job_time_outs'] =
+            statistics[:browser_cluster][:time_out_count]
 
         @metrics['browser_cluster']['seconds_per_job'] =
             statistics[:browser_cluster][:seconds_per_job]

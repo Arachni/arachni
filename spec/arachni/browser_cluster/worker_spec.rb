@@ -268,6 +268,15 @@ describe Arachni::BrowserCluster::Worker do
 
                     expect(job).to be_timed_out
                 end
+
+                it 'increments the BrowserCluster timeout count' do
+                    time_out_count = Arachni::BrowserCluster.statistics[:time_out_count]
+
+                    @cluster.queue( job ) {}
+                    @cluster.wait
+
+                    expect(Arachni::BrowserCluster.statistics[:time_out_count]).to eq time_out_count+1
+                end
             end
         end
     end

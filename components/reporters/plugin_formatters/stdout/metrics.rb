@@ -44,9 +44,10 @@ class PluginFormatters::Metrics < Arachni::Plugin::Formatter
 
         print_ok 'Browser cluster'
         browser_cluster = results['browser_cluster']
+        print_info "Job count:       #{browser_cluster['job_count']}"
+        print_info "Timed-out jobs:  #{browser_cluster['job_time_outs']}"
         print_info "Seconds per job: #{browser_cluster['seconds_per_job'].round( 4 )}"
         print_info "Total job time:  #{browser_cluster['total_job_time']} seconds"
-        print_info "Job count:       #{browser_cluster['job_count']}"
         print_line
 
         print_ok 'Resources'

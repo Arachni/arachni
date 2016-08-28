@@ -179,6 +179,20 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
                 <h3>Browser cluster</h3>
                 <dl class="dl-horizontal">
                     <dt>
+                        Job count
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['job_count'] %>
+                    </dd>
+
+                    <dt>
+                        Timed-out jobs
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['job_time_outs'] %>
+                    </dd>
+
+                    <dt>
                         Seconds per job
                     </dt>
                     <dd>
@@ -190,13 +204,6 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
                     </dt>
                     <dd>
                         <%= results['browser_cluster']['total_job_time'] %>s
-                    </dd>
-
-                    <dt>
-                        Job count
-                    </dt>
-                    <dd>
-                        <%= results['browser_cluster']['job_count'] %>
                     </dd>
                 </dl>
 

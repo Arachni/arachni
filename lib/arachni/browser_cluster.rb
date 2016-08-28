@@ -397,6 +397,12 @@ class BrowserCluster
         end
     end
 
+    def increment_time_out_count
+        synchronize do
+            self.class.increment_time_out_count
+        end
+    end
+
     def add_to_total_job_time( time )
         synchronize do
             self.class.add_to_total_job_time( time )
@@ -418,6 +424,11 @@ class BrowserCluster
         @completed_job_count += 1
     end
 
+    def self.increment_time_out_count
+        @time_out_count ||= 0
+        @time_out_count += 1
+    end
+
     def self.completed_job_count
         @completed_job_count.to_i
     end
@@ -436,7 +447,8 @@ class BrowserCluster
             seconds_per_job:     seconds_per_job,
             total_job_time:      total_job_time,
             queued_job_count:    @queued_job_count    || 0,
-            completed_job_count: @completed_job_count || 0
+            completed_job_count: @completed_job_count || 0,
+            time_out_count:      @time_out_count      || 0
         }
     end
 

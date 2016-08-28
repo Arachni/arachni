@@ -86,6 +86,7 @@
                 - Request time-outs
                 - Responses per second
             - Browser cluster
+                - Timed-out jobs
                 - Seconds per job
                 - Total job time
                 - Job count

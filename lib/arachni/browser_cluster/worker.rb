@@ -107,6 +107,7 @@ class Worker < Arachni::Browser
             @job.timed_out!( Time.now - time )
 
             print_bad "Job timed-out #{TRIES} times: #{@job}"
+            master.increment_time_out_count
 
             # Could have left us with a broken browser.
             browser_respawn

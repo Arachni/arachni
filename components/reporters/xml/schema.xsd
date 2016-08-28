@@ -82,6 +82,7 @@
             <xs:element name="seconds_per_job" type="xs:float"/>
             <xs:element name="total_job_time" type="xs:float"/>
             <xs:element name="job_count" type="xs:integer"/>
+            <xs:element name="job_time_outs" type="xs:integer"/>
         </xs:all>
     </xs:complexType>
 
