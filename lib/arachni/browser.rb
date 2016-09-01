@@ -344,7 +344,7 @@ class Browser
 
                     print_info "#{css.inspect} appeared for: #{url}"
                 rescue Selenium::WebDriver::Error::TimeOutError
-                    print_bad "#{css.inspect} did not appeared for: #{url}"
+                    print_bad "#{css.inspect} did not appear for: #{url}"
                 end
 
             end
