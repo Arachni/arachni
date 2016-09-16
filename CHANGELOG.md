@@ -71,6 +71,9 @@
 - Session -- Allow for a submit input to be specified when the login needs to be
     triggered by clicking it, rather than just triggering the submit event on
     the form.
+- REST API
+    - Added `GET /scans/:id/summary` to return scan progress data without
+        `issues`, `errors` and `sitemap`.
 - Report
     - Added `#seed` attribute that includes the random scan seed.
 - Plugins

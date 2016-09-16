@@ -130,6 +130,12 @@ class Server < Sinatra::Base
         json data
     end
 
+    get '/scans/:id/summary' do
+        fail_if_not_exists
+
+        json scan_for( params[:id] ).progress
+    end
+
     get '/scans/:id/report.html.zip' do
         fail_if_not_exists
         content_type 'zip'

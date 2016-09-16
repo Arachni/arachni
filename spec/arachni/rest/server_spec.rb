@@ -4,18 +4,23 @@ require "#{Arachni::Options.paths.lib}/rest/server"
 describe Arachni::Rest::Server do
     include RequestHelpers
 
-    let(:scan_url) { 'http://testfire.net' }
+    let(:scan_url) { @scan_url }
     let(:url) { tpl_url % id }
     let(:id) { @id }
     let(:non_existent_id) { 'stuff' }
 
     before do
+        @scan_url = web_server_url_for(:framework)
         reset_options
     end
 
     def create_scan
         post '/scans',
-             url: scan_url,
+             url:             scan_url,
+             checks:          ['test'],
+             audit:           {
+                 elements:    [:links, :forms, :cookies]
+             },
              browser_cluster: {
                  pool_size: 0
              }
@@ -210,10 +215,18 @@ describe Arachni::Rest::Server do
         end
 
         it 'gets progress info' do
-            get url
+            loop do
+                get url
+                break if !response_data['busy']
+                sleep 0.5
+            end
 
-            %w(issues sitemap errors status busy statistics messages).each do |key|
+            %w(errors status busy messages statistics).each do |key|
                 expect(response_data).to include key
+            end
+
+            %w(issues sitemap statistics).each do |key|
+                expect(response_data).to be_any
             end
         end
 
@@ -227,6 +240,39 @@ describe Arachni::Rest::Server do
             it 'always returns all issues'
             it 'always returns all errors'
             it 'always returns all sitemap entries'
+        end
+
+        context 'when passed a non-existent id' do
+            let(:id) { non_existent_id }
+
+            it 'returns 404' do
+                get url
+                expect(response_code).to eq 404
+            end
+        end
+    end
+
+    describe 'GET /scans/:id/summary' do
+        let(:tpl_url) { '/scans/%s/summary' }
+
+        before do
+            @id = create_scan
+        end
+
+        it 'does not include issues and sitemap' do
+            loop do
+                get url
+                break if !response_data['busy']
+                sleep 0.5
+            end
+
+            %w(status busy messages statistics).each do |key|
+                expect(response_data).to include key
+            end
+
+            %w(issues sitemap errors).each do |key|
+                expect(response_data).to_not include key
+            end
         end
 
         context 'when passed a non-existent id' do
@@ -423,7 +469,7 @@ describe Arachni::Rest::Server do
             put url
             get "/scans/#{id}"
 
-            expect(response_data['status']).to eq 'pausing'
+            expect(['pausing', 'paused']).to include response_data['status']
         end
 
         context 'when passed a non-existent id' do
@@ -447,7 +493,7 @@ describe Arachni::Rest::Server do
             put "/scans/#{id}/pause"
             get "/scans/#{id}"
 
-            expect(response_data['status']).to eq 'pausing'
+            expect(['pausing', 'paused']).to include response_data['status']
 
             put url
             get "/scans/#{id}"
