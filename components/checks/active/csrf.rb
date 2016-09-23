@@ -24,8 +24,8 @@
 #   * Extract forms.
 # * Check forms that appear *only* when logged-in for CSRF.
 #
-# In order for the check to give meaningful results, a valid cookie-jar of a logged-in
-# user must be supplied to the framework.
+# In order for the check to give meaningful results, a valid session of a
+# logged-in user must be supplied to the framework.
 #
 # However, as Arachni goes through the system it will gather
 # cookies just like a user would, so if there are forms that only appear
@@ -50,86 +50,26 @@ class Arachni::Checks::CSRF < Arachni::Check::Base
 
             print_status "Found #{logged_out.size} context irrelevant forms."
 
-            # get forms that are worthy of testing for CSRF i.e. appear only when the user is logged-in
+            # get forms that are worthy of testing for CSRF i.e. appear only
+            # when the user is logged-in
             candidates = page.forms - logged_out
 
             print_status "Found #{candidates.size} CSRF candidates."
 
-            candidates.each { |form| _log( form ) if unsafe?( form ) }
+            candidates.each do |form|
+                # If the form has no source then it was dynamically provided by
+                # some component, so skip it.
+                next if !form.source
+
+                # If a form has a nonce then we're cool.
+                next if form.has_nonce?
+
+                log_form( form )
+            end
         end
     end
 
-    # Tries to detect if a form is protected using an anti-CSRF token.
-    #
-    # @param    [Arachni::Element::Form]  form
-    #
-    # @return   [Bool]
-    #   `true` if the form has no anti-CSRF token, `false` otherwise
-    def unsafe?( form )
-        # If a form has a nonce then we're cool, bail out early
-        return false if form.has_nonce?
-
-        # If the form has no source then it was dynamically provided by some
-        # component, so skip them.
-        return false if !form.source
-
-        #
-        # Nobody says that tokens must be in a +value+ attribute, they can
-        # just as well be in +name+ -- so we check them both...
-        #
-        found_token = (form.inputs || []).map do |k, v|
-            csrf_token?( v ) || csrf_token?( k )
-        end.include?( true )
-
-        return false if found_token
-
-        link_vars = uri_parse_query( form.action )
-        if link_vars.any?
-            # and we also need to check for a token in the form action.
-            found_token = link_vars.to_a.flatten.
-                map { |val| csrf_token?( val ) }.include?( true )
-        end
-
-        !found_token
-    end
-
-    # Checks if the str is an anti-CSRF token of base10/16/32/64.
-    #
-    # @param  [String]  str
-    def csrf_token?( str )
-        return false if !str
-        return true if str.to_s.include?( 'csrf' )
-
-        # we could use regexps but i kinda like lcamtuf's (Michal's) way
-        base16_len_min    = 8
-        base16_digit_num  = 2
-
-        base64_len_min    = 6
-        base64_digit_num  = 1
-        base64_case       = 2
-        base64_digit_num2 = 3
-        base64_slash_cnt  = 2
-
-        len = str.size
-        digit_cnt = str.scan( /[0-9]+/ ).join.size
-
-        if len >= base16_len_min && digit_cnt >= base16_digit_num
-            return true
-        end
-
-        upper_cnt = str.scan( /[A-Z]+/ ).join.size
-        slash_cnt = str.scan( /\/+/ ).join.size
-
-        if len >= base64_len_min && slash_cnt <= base64_slash_cnt &&
-            ((digit_cnt >= base64_digit_num && upper_cnt >= base64_case ) ||
-                digit_cnt >= base64_digit_num2)
-            return true
-        end
-
-        false
-    end
-
-    def _log( form )
+    def log_form( form )
         url  = form.action
         name = form.name_or_id
 
@@ -155,7 +95,7 @@ checks them for lack of anti-CSRF tokens.
 },
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.3.5',
+            version:     '0.4',
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},
