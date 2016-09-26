@@ -309,7 +309,7 @@ module Differential
 
     def gather_signatures( seed, opts, &block )
         buffer             = {}
-        received_responses = 0
+        received_responses = {}
 
         opts[:precision].times do |i|
             line_buffered_audit( seed, opts ) do |r, e, completed|
@@ -318,6 +318,9 @@ module Differential
                 body = r.body.gsub( e.seed, '' )
 
                 buffer[altered_hash] ||= []
+
+                received_responses[altered_hash] ||= 0
+                received_responses[altered_hash]  += 1
 
                 if buffer[altered_hash][i]
                     buffer[altered_hash][i] << body
@@ -329,10 +332,7 @@ module Differential
 
                 response_check( r, e )
 
-                received_responses += 1
-
-                next if received_responses !=
-                    @data_gathering[:mutations_size] * opts[:precision]
+                next if received_responses[altered_hash] != opts[:precision]
 
                 refined = buffer[altered_hash].pop
                 buffer[altered_hash].each do |signature|
