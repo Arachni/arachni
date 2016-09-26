@@ -780,7 +780,7 @@ get '/with-ajax' do
             get_ajax.send();
 
             post_ajax = new XMLHttpRequest();
-            post_ajax.open( "POST", "/post-ajax", true );
+            post_ajax.open( "POST", "/post-ajax?post-query=blah", true );
             post_ajax.send( "post-name=post-value" );
         </script>
     <head>

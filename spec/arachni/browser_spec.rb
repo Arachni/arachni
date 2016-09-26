@@ -2916,6 +2916,23 @@ describe Arachni::Browser do
         end
 
         context 'when a POST request is performed' do
+            context 'with query parameters' do
+                it "is added as an #{Arachni::Element::Form} to the page" do
+                    @browser.load @url + '/with-ajax'
+
+                    pages = @browser.captured_pages
+                    expect(pages.size).to eq(2)
+
+                    form = find_page_with_form_with_input( pages, 'post-name' ).
+                        forms.find { |form| form.inputs.include? 'post-query' }
+
+                    expect(form.url).to eq(@url + 'with-ajax')
+                    expect(form.action).to eq(@url + 'post-ajax')
+                    expect(form.inputs).to eq({ 'post-query' => 'blah' })
+                    expect(form.method).to eq(:get)
+                end
+            end
+
             context 'with form data' do
                 it "is added as an #{Arachni::Element::Form} to the page" do
                     @browser.load @url + '/with-ajax'
@@ -2927,7 +2944,7 @@ describe Arachni::Browser do
                         forms.find { |form| form.inputs.include? 'post-name' }
 
                     expect(form.url).to eq(@url + 'with-ajax')
-                    expect(form.action).to eq(@url + 'post-ajax')
+                    expect(form.action).to eq(@url + 'post-ajax?post-query=blah')
                     expect(form.inputs).to eq({ 'post-name' => 'post-value' })
                     expect(form.method).to eq(:post)
                 end

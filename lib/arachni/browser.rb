@@ -1708,6 +1708,16 @@ EOJS
                 )
 
             when :post
+                inputs = request.parsed_url.query_parameters
+                if inputs.any?
+                    elements[:forms] << Form.new(
+                        url:    @last_url,
+                        action: request.url,
+                        method: :get,
+                        inputs: inputs
+                    )
+                end
+
                 if !found_element && (inputs = request.body_parameters).any?
                     elements[:forms] << Form.new(
                         url:    @last_url,
