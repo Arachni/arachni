@@ -40,8 +40,13 @@ module Signature
             /DOCUMENT_ROOT=.*HTTP_USER_AGENT=/
         end,
         'passwd'   => proc do |response|
-            next if !response.body.include?( 'bin/' )
-            /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/
+            if response.body.include?( 'bin/' )
+                /:.+:\d+:\d+:.+:[0-9a-zA-Z\/]+/
+
+            # Response may have encoded chars as HTML entities.
+            elsif response.body.include?( 'bin&#x2f;' ) && response.body.include?( '&#x3a;' )
+                /&#x3a;.+&#x3a;\d+&#x3a;\d+&#x3a;.+&#x3a;[0-9a-zA-Z&#;]+/
+            end
         end,
         'boot.ini' => '[boot loader]',
         'win.ini'  => '[extensions]',
