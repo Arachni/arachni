@@ -16,7 +16,7 @@
 class Arachni::Checks::PathTraversal < Arachni::Check::Base
 
     MINIMUM_TRAVERSALS = 0
-    MAXIMUM_TRAVERSALS = 6
+    MAXIMUM_TRAVERSALS = 8
 
     def self.options
         @options ||= {
@@ -98,7 +98,7 @@ of relevant content in the HTML responses.
 },
             elements:    ELEMENTS_WITH_INPUTS,
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.7',
+            version:     '0.4.8',
             platforms:   payloads.keys,
 
             issue:       {

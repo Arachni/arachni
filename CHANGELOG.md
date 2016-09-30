@@ -107,7 +107,7 @@
         - `sql_injection` -- Added more error signatures for HSQLDB and Java.
         - `csrf` -- Removed heuristics that try to match tokens based on format;
             now only uses a nonce check.
-        - `sql_injection` -- Added more Java errors.
+        - `path_traversal` -- Increased maximum traversals to 8.
     - Passive
         - `backup_files`
             - Ignore media files to avoid FPs when dealing with galleries and the like.
