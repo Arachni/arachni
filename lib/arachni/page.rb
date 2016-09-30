@@ -90,8 +90,6 @@ class Page
         data[:response][:request]       ||= {}
         data[:response][:request][:url] ||= data[:response][:url]
 
-        ELEMENTS.each { |e| data[e] ||= [] }
-
         data[:cookie_jar] ||= []
 
         data[:response][:request] = Arachni::HTTP::Request.new( data[:response][:request] )

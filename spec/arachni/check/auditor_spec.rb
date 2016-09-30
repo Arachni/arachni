@@ -144,7 +144,7 @@ describe Arachni::Check::Auditor do
     describe '.check?' do
         context 'when elements have been provided' do
             it 'restricts the check' do
-                page = Arachni::Page.from_data( url: url, body: 'stuff' )
+                page = Arachni::Page.from_data( url: url, body: 'stuff',headers: [] )
                 allow(page).to receive(:has_script?) { true }
                 auditor.class.info[:elements] =
                     element_classes + [Arachni::Element::Body, Arachni::Element::GenericDOM]
@@ -205,6 +205,7 @@ describe Arachni::Check::Auditor do
                 let(:page) do
                     p = Arachni::Page.from_data(
                         url: url,
+                        headers: [],
                         "#{element.type}s".gsub( '_dom', '').to_sym => [Factory[element.type]]
                     )
                     allow(p.dom).to receive(:depth) { 1 }

@@ -994,7 +994,7 @@ describe Arachni::Page do
                 expect(page.links).to eq([])
                 expect(page.forms).to eq([])
                 expect(page.cookies).to eq([])
-                expect(page.headers).to eq([])
+                expect(page.headers).to eq(page.parser.headers)
 
                 expect(page.cookie_jar).to eq([])
 
