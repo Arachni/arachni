@@ -601,6 +601,11 @@ describe Arachni::Parser do
             subject.response.request.headers['X-Custom-Header'] = 'My-stuff'
             expect(subject.headers.find { |h| h.name == 'X-Custom-Header' }).to be_truthy
         end
+
+        it "excludes #{Arachni::HTTP::Client::SEED_HEADER_NAME}" do
+            subject.response.request.headers[Arachni::HTTP::Client::SEED_HEADER_NAME] = 'My-stuff'
+            expect(subject.headers.find { |h| h.name == Arachni::HTTP::Client::SEED_HEADER_NAME }).to be_falsey
+        end
     end
 
     describe '#link_vars' do

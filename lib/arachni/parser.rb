@@ -252,7 +252,7 @@ class Parser
             'User-Agent'      => Options.http.user_agent || '',
             'Referer'         => @url,
             'Pragma'          => 'no-cache'
-        }.merge( response.request.headers ).
+        }.merge( response.request.headers.tap { |h| h.delete HTTP::Client::SEED_HEADER_NAME } ).
             map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
     end
 
