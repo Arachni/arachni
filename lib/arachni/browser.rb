@@ -499,7 +499,7 @@ class Browser
 
         count = 1
         each_element_with_events do |locator, events|
-            state = "#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
+            state = "#{dom.url}:#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
             next if skip_state?( state )
             skip_state state
 
@@ -1041,7 +1041,7 @@ class Browser
     def response
         u = dom_url
 
-        if dom_url == 'about:blank'
+        if u == 'about:blank'
             print_debug 'Blank page.'
             return
         end
@@ -1506,13 +1506,13 @@ EOJS
         end
 
         if @javascript.serve( request, response )
-            print_debug_level_2 "Serving local JS."
+            print_debug_level_2 'Serving local JS.'
             return
         end
 
         if !request.url.include?( request_token )
             if ignore_request?( request )
-                print_debug_level_2 "Out of scope, ignoring."
+                print_debug_level_2 'Out of scope, ignoring.'
                 return
             end
 
@@ -1552,6 +1552,14 @@ EOJS
 
     def response_handler( request, response )
         return if request.url.include?( request_token )
+
+        # Prevent PhantomJS from caching the root page, we need to have an
+        # associated response.
+        if @last_url == response.url
+            response.headers.delete 'Cache-control'
+            response.headers.delete 'Etag'
+            response.headers.delete 'Date'
+        end
 
         print_debug_level_2 "Got response: #{response.url}"
 

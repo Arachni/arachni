@@ -89,6 +89,58 @@ get '/open-new-window' do
 HTML
 end
 
+get '/Date' do
+    headers['Date'] = 'Thu, 29 Sep 2016 09:57:11 GMT'
+
+    <<HTML
+<html>
+<script src="/Date/asset"></script>
+
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Date/asset' do
+    headers['Date'] = 'Thu, 29 Sep 2016 09:57:11 GMT'
+    ''
+end
+
+get '/Etag' do
+    etag '1'
+
+    <<HTML
+<html>
+<script src="/Etag/asset"></script>
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Etag/asset' do
+    etag '1'
+    ''
+end
+
+get '/Cache-Control' do
+    headers['Cache-Control'] = 'public, max-age=300'
+
+    <<HTML
+<html>
+<script src="/Cache-Control/asset"></script>
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Cache-Control/asset' do
+    headers['Cache-Control'] = 'public, max-age=300'
+    ''
+end
+
 get '/If-None-Match' do
     etag '1'
 

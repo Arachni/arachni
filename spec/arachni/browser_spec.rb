@@ -2267,6 +2267,24 @@ describe Arachni::Browser do
         end
 
         context 'when requesting the page URL' do
+            it 'does not receive a Date header' do
+                subject.goto "#{@url}/Date"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Date'
+            end
+
+            it 'does not receive an Etag header' do
+                subject.goto "#{@url}/Etag"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Etag'
+            end
+
+            it 'does not receive a Cache-Control header' do
+                subject.goto "#{@url}/Cache-Control"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Cache-Control'
+            end
+
             it 'does not send If-None-Match request headers' do
                 subject.goto "#{@url}/If-None-Match"
                 expect(subject.response.code).to eq(200)
@@ -2289,6 +2307,52 @@ describe Arachni::Browser do
         end
 
         context 'when requesting something other than the page URL' do
+            it 'receives a Date header' do
+                url = "#{@url}Date"
+
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
+
+                expect(response.code).to eq(200)
+                expect(response.headers).to include 'Date'
+            end
+
+            it 'receives an Etag header' do
+                url = "#{@url}Etag"
+
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
+
+                expect(response.code).to eq(200)
+                expect(response.headers).to include 'Etag'
+            end
+
+            it 'receives a Cache-Control header' do
+                url = "#{@url}Cache-Control"
+
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
+
+                expect(response.code).to eq(200)
+                expect(response.headers).to include 'Cache-Control'
+            end
+
+            #
             it 'sends If-None-Match request headers' do
                 url = "#{@url}If-None-Match"
 
