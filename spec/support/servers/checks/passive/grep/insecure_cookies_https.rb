@@ -30,6 +30,15 @@ class InsecureCookiesSServer < Sinatra::Base
             value:  "value4",
             secure: true
         })
+
+        <<EOHTML
+<html>
+<script>
+    document.cookie = "jscookie=blah";
+    document.cookie = "jscookie2=blah;secure";
+</script>
+</html>
+EOHTML
     end
 
 end

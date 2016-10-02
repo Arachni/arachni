@@ -215,6 +215,7 @@
                 there's no way to verify SSNs.
             - `http_only_cookies`, `insecure_cookies` -- Only check current page
                 cookies, don't let the CookieJar ones sneak in.
+            - `insecure_cookies` -- Check JS cookies too.
 - Plugins
     - `proxy`
         - Removed injection of control toolbar to each response.
