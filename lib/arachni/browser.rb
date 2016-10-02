@@ -819,6 +819,7 @@ class Browser
         page                          = r.to_page
         page.body                     = source
         page.dom.url                  = d_url
+        page.dom.cookies              = self.cookies
         page.dom.digest               = @javascript.dom_digest
         page.dom.execution_flow_sinks = @javascript.execution_flow_sinks
         page.dom.data_flow_sinks      = data_flow_sinks[@javascript.taint] || []

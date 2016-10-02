@@ -1115,6 +1115,12 @@ describe Arachni::Browser do
             expect(page.dom.skip_states).to be_subset @browser.skip_states
         end
 
+        it "assigns the proper #{Arachni::Page::DOM}#cookies" do
+            @browser.load "#{@url}/dom-cookies-names"
+
+            expect(@browser.to_page.dom.cookies).to eq @browser.cookies
+        end
+
         it "assigns the proper #{Arachni::Page::DOM} sink data" do
             @browser.load "#{web_server_url_for( :taint_tracer )}/debug" <<
                               "?input=#{@browser.javascript.log_execution_flow_sink_stub(1)}"
