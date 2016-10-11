@@ -9,6 +9,8 @@
 - Options
     - `url` -- Raise error on addresses starting with `127.` because
         PhantomJS 2.1.1 doesn't proxy any loopback connections.
+    - `--http-cookie-string` -- Updated to only accept `Set-Cookie` formatted
+        cookies instead of `Cookie` ones.
     - `--browser-cluster-job-timeout`
         - Repurposed to apply to communication requests for Selenium rather than
             the entire job.

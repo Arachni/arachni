@@ -86,11 +86,7 @@ class CookieJar
 
             self << case c
                         when String
-                            begin
-                                Cookie.from_string( ::Arachni::Options.url.to_s, c )
-                            rescue
-                                Cookie.from_set_cookie( ::Arachni::Options.url.to_s, c )
-                            end
+                            Cookie.from_set_cookie( ::Arachni::Options.url.to_s, c )
 
                         when Hash
                             next if c.empty?

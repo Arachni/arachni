@@ -180,10 +180,7 @@ class HTTP < Arachni::OptionGroup
     attr_accessor :cookie_jar_filepath
 
     # @return    [String]
-    #   Cookies in the form of a:
-    #
-    #   * Request `Cookie` header: `name=value; name2=value2`
-    #   * Response `Set-Cookie` header:
+    #   Cookies in the form of a `Set-Cookie` response header:
     #       `name2=value2; Expires=Wed, 09 Jun 2021 10:18:14 GMT`
     attr_accessor :cookie_string
 

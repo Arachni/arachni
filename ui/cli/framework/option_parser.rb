@@ -345,7 +345,8 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--http-cookie-string COOKIE',
-               "Cookie representation as a 'Cookie' HTTP request header."
+               "Cookie representation as a 'Set-Cookie' HTTP response header.",
+               'Example: my_cookie=my_value; Path=/, other_cookie=other_value; Path=/test'
         ) do |cookie|
             options.http.cookie_string = cookie
         end

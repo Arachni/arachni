@@ -398,13 +398,14 @@ describe Arachni::HTTP::Client do
 
         context "when #{Arachni::OptionGroups::HTTP}#cookie_string is set" do
             it 'parses the string and add those cookies to the CookieJar' do
-                @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2; stuff=%25blah; another_name=another_val'
+                @opts.http.cookie_string = 'my_cookie_name=val1;path=/my/path,blah_name=val2, stuff=%25blah, another_name=another_val'
                 expect(subject.cookie_jar.cookies).to be_empty
                 subject.reset
                 cookies = subject.cookie_jar.cookies
                 expect(cookies.size).to eq(4)
                 expect(cookies.first.name).to eq('my_cookie_name')
                 expect(cookies.first.value).to eq('val1')
+                expect(cookies.first.path).to eq('/my/path')
                 expect(cookies[1].name).to eq('blah_name')
                 expect(cookies[1].value).to eq('val2')
                 expect(cookies[2].name).to eq('stuff')
@@ -417,7 +418,7 @@ describe Arachni::HTTP::Client do
 
     describe '#cookies' do
         it 'returns the current cookies' do
-            @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2; another_name=another_val'
+            @opts.http.cookie_string = 'my_cookie_name=val1,blah_name=val2, another_name=another_val'
             expect(subject.cookie_jar.cookies).to be_empty
             subject.reset
             expect(subject.cookies.size).to eq(3)
@@ -888,7 +889,7 @@ describe Arachni::HTTP::Client do
             end
             context 'false' do
                 it 'uses the raw data from the cookie jar' do
-                    @opts.http.cookie_string = 'my_cookie_name="val1";"blah_name"=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name="val1","blah_name"=val2,another_name=another_val'
                     expect(subject.cookie_jar.cookies).to be_empty
                     subject.reset
 
@@ -904,7 +905,7 @@ describe Arachni::HTTP::Client do
                 end
                 context 'when custom cookies are provided' do
                     it 'merges them with the cookie_jar and override it' do
-                        @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                        @opts.http.cookie_string = 'my_cookie_name=val1,blah_name=val2,another_name=another_val'
                         expect(subject.cookie_jar.cookies).to be_empty
                         subject.reset
 
@@ -925,7 +926,7 @@ describe Arachni::HTTP::Client do
             end
             context 'nil' do
                 it 'defaults to false' do
-                    @opts.http.cookie_string = 'my_cookie_name="val1";"blah_name"=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name="val1","blah_name"=val2,another_name=another_val'
                     expect(subject.cookie_jar.cookies).to be_empty
                     subject.reset
 
@@ -1107,7 +1108,7 @@ describe Arachni::HTTP::Client do
 
             describe 'nil' do
                 it 'uses te cookies in the CookieJar' do
-                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name=val1,blah_name=val2,another_name=another_val'
                     expect(subject.cookie_jar.cookies).to be_empty
                     subject.reset
 
@@ -1150,7 +1151,7 @@ describe Arachni::HTTP::Client do
                 end
 
                 it 'merges them with the cookie-jar' do
-                    @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                    @opts.http.cookie_string = 'my_cookie_name=val1,blah_name=val2,another_name=another_val'
                     expect(subject.cookie_jar.cookies).to be_empty
                     subject.reset
 
@@ -1334,7 +1335,7 @@ describe Arachni::HTTP::Client do
 
         context 'when cookie-jar lookup fails' do
             it 'only uses the given cookies' do
-                @opts.http.cookie_string = 'my_cookie_name=val1;blah_name=val2;another_name=another_val'
+                @opts.http.cookie_string = 'my_cookie_name=val1,blah_name=val2,another_name=another_val'
                 expect(subject.cookie_jar.cookies).to be_empty
                 subject.reset
                 expect(subject.cookie_jar.cookies).to be_any
