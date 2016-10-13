@@ -710,7 +710,7 @@
     <xs:complexType name="stackframe">
         <xs:all>
             <xs:element name="function" type="function"/>
-            <xs:element name="line" type="xs:integer"/>
+            <xs:element name="line" type="xs:integer" nillable="true"/>
             <xs:element name="url" type="xs:string"/>
         </xs:all>
     </xs:complexType>

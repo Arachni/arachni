@@ -120,7 +120,9 @@
 - Path extractors
     - `data_url` -- Extract from all elements, not just links.
 - Reporters
-    - `xml` -- Replace unsupported null-bytes with a placeholder.
+    - `xml`
+        - Replaced unsupported null-bytes with a placeholder.
+        - Made `issues/issue/page/dom/data_flow_sinks/data_flow_sink/frame/line` nil-able.
 
 ## 1.4 _(February 7, 2016)_
 

@@ -289,7 +289,12 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             trace.each do |frame|
                 xml.frame {
                     add_function( xml, frame.function )
-                    xml.line frame.line
+                    line = xml.line( frame.line )
+
+                    if frame.line.nil?
+                        line['xsi:nil'] = true
+                    end
+
                     xml.url frame.url
                 }
             end
