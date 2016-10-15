@@ -229,8 +229,6 @@ class BrowserCluster
                 print_debug_level_2 'Pending job counter reached 0.'
                 @done_signal << nil
             end
-
-            Arachni.collect_young_objects
         end
     end
 
