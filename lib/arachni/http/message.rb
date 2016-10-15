@@ -43,13 +43,10 @@ class Message
     end
 
     def update( options )
-        options = options.dup
-
-        @normalize_url = options.delete( :normalize_url )
-        @normalize_url = true if @normalize_url.nil?
+        @normalize_url = options[:normalize_url]
 
         # Headers are necessary for subsequent operations to set them first.
-        @headers = Headers.new( options.delete( :headers ) || {} )
+        @headers = Headers.new( options[:headers] || {} )
 
         options.each do |k, v|
             begin
@@ -75,7 +72,7 @@ class Message
     end
 
     def url=( url )
-        if @normalize_url
+        if @normalize_url || @normalize_url.nil?
             @url = URI.normalize_url( url ).to_s.freeze
         else
             @url = url.to_s.freeze
