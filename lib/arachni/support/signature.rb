@@ -45,11 +45,13 @@ class Signature
     # @return   [Signature]
     #   `self`
     def refine!( data )
+        @hash_cache = nil
         @tokens &= tokenize( data )
         self
     end
 
     def <<( data )
+        @hash_cache = nil
         @tokens.merge tokenize( data )
         self
     end
@@ -94,11 +96,11 @@ class Signature
     # @return [Signature]
     #   Copy of `self`.
     def dup
-        self.class.new( '' ).tap { |s| s.copy( tokens, @options ) }
+        self.class.new( '' ).tap { |s| s.copy( @hash_cache, tokens, @options ) }
     end
 
     def hash
-        tokens.hash
+        @hash_cache ||= tokens.hash
     end
 
     # @param [Signature]    other
@@ -108,9 +110,10 @@ class Signature
 
     protected
 
-    def copy( tokens, options )
-        @tokens  = tokens.dup
-        @options = options.dup
+    def copy( hash, tokens, options )
+        @hash_cache = hash
+        @tokens     = tokens.dup
+        @options    = options.dup
     end
 
     private
