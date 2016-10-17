@@ -526,7 +526,8 @@ class Request < Message
 
                 @on_body.each do |b|
                     exception_jail false do
-                        if b.call( chunk.recode, self.response ) == :abort
+                        chunk.recode!
+                        if b.call( chunk, self.response ) == :abort
                             break aborted = :abort
                         end
                     end
@@ -541,7 +542,8 @@ class Request < Message
             typhoeus_request.on_body do |chunk|
                 next aborted if aborted
 
-                line_buffer << chunk.recode
+                chunk.recode!
+                line_buffer << chunk
 
                 lines = line_buffer.lines
 
@@ -585,7 +587,8 @@ class Request < Message
             typhoeus_request.on_body do |chunk|
                 next aborted if aborted
 
-                lines_buffer << chunk.recode
+                chunk.recode!
+                lines_buffer << chunk
 
                 lines, middle, remnant = lines_buffer.rpartition( /[\r\n]/ )
                 lines << middle
