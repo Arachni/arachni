@@ -53,12 +53,8 @@ module WithNodes
         else
             html = "#{indent}<#{name}"
 
-            attrs = attributes.map do |k, v|
-                "#{k}=#{v.inspect}"
-            end.join( ' ' )
-
-            if !attrs.empty?
-                html << " #{attrs}"
+            attributes.each do |k, v|
+                html << " #{k}=#{v.inspect}"
             end
 
             html << ">\n"
