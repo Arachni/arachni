@@ -28,11 +28,11 @@ class Element
     end
 
     def []( name )
-        @attributes[name.to_sym]
+        @attributes[name]
     end
 
     def []=( name, value )
-        @attributes[name.to_sym] = value
+        @attributes[name] = value
     end
 
 end

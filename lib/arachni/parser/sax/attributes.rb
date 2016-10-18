@@ -13,11 +13,11 @@ class Element
 class Attributes < Hash
 
     def []( name )
-        super name.to_s
+        super name.to_s.freeze
     end
 
     def []=( name, value )
-        super name.to_s, value
+        super name.to_s.freeze, value.freeze
     end
 
 end
