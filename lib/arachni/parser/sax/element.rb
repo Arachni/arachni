@@ -32,7 +32,7 @@ class Element
     end
 
     def []=( name, value )
-        @attributes[name] = value
+        @attributes[name] = value.freeze
     end
 
 end

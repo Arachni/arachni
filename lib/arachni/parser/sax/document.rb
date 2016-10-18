@@ -70,8 +70,7 @@ class Document < Ox::Sax
     end
 
     def attr( name, value )
-        name = name.downcase
-        @current_node[name] = value if @current_node != self
+        @current_node[name.downcase] = value if @current_node != self
     end
 
     def text( value )
