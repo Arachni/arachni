@@ -312,7 +312,7 @@ module Differential
         received_responses = {}
 
         opts[:precision].times do |i|
-            line_buffered_audit( seed, opts ) do |r, e, completed|
+            audit( seed, opts ) do |r, e|
                 altered_hash = e.affected_input_name.hash
 
                 body = r.body.gsub( e.seed, '' )
@@ -322,13 +322,7 @@ module Differential
                 received_responses[altered_hash] ||= 0
                 received_responses[altered_hash]  += 1
 
-                if buffer[altered_hash][i]
-                    buffer[altered_hash][i] << body
-                else
-                    buffer[altered_hash][i] = Support::Signature.new( body )
-                end
-
-                next if !completed
+                buffer[altered_hash][i] = Support::Signature.new( body )
 
                 response_check( r, e )
 

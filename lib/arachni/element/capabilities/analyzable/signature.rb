@@ -132,7 +132,7 @@ module Signature
 
         fail_if_signatures_invalid( opts[:signatures] )
 
-        line_buffered_audit( payloads, opts ) { |response| get_matches( response ) }
+        audit( payloads, opts ) { |response| get_matches( response ) }
     end
 
     private
