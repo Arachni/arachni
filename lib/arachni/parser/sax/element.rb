@@ -7,7 +7,7 @@
 =end
 
 require_relative 'with_nodes'
-require_relative 'attributes'
+require_relative 'element/attributes'
 
 module Arachni
 class Parser
@@ -28,11 +28,11 @@ class Element
     end
 
     def []( name )
-        @attributes[name.to_sym]
+        @attributes[name]
     end
 
     def []=( name, value )
-        @attributes[name.to_sym] = value
+        @attributes[name] = value
     end
 
 end

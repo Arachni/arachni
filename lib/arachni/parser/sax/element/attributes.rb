@@ -17,7 +17,7 @@ class Attributes < Hash
     end
 
     def []=( name, value )
-        super name.to_s, value
+        super name.to_s.freeze, value.freeze
     end
 
 end
