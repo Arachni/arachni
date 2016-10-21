@@ -22,9 +22,14 @@ class Element
     def initialize( name )
         super()
 
-        @name       = name.to_sym
+        @name       = name.downcase.to_sym
         @value      = ''
         @attributes = Attributes.new
+    end
+
+    def value=( v )
+        v.strip!
+        @value = v.freeze
     end
 
     def []( name )

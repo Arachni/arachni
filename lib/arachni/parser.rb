@@ -35,7 +35,6 @@ class Parser
     include UI::Output
     include Utilities
 
-
     CACHE_SIZES = {
         parse:          50,
         parse_xml:      50,
@@ -52,11 +51,21 @@ class Parser
         textarea input select button comment
     )
 
+    REJECT_NODES = proc do |e|
+        case e.name
+            when :a
+                href = e['href'].to_s
+                href.empty? || href == '#'
+            else
+                false
+        end
+    end
+
     class <<self
 
         def parse( html, options = {} )
             CACHE[__method__].fetch [html, options] do
-                document, sax_options  = prepare_ox_options( options )
+                document, sax_options = prepare_ox_options( options )
 
                 begin
                     Ox.sax_html( document, StringIO.new( html ), sax_options )
@@ -64,8 +73,6 @@ class Parser
                 end
 
                 document
-
-                # Document.new( Ox.parse( "<!DOCTYPE html>#{html}" ) )
             end
         end
 
@@ -86,7 +93,10 @@ class Parser
 
         def parse_fragment( html )
             CACHE[__method__].fetch html do
-                parse( html ).children.first
+                parse( html ).children.first.tap do |o|
+                    o.parent   = nil
+                    o.document = nil
+                end
             end
         end
 
@@ -233,7 +243,11 @@ class Parser
         if from_document?
             @document
         else
-            @document = self.class.parse( body, whitelist: WHITELIST )
+            @document = self.class.parse(
+                body,
+                whitelist: WHITELIST,
+                reject:    REJECT_NODES
+            )
         end
     end
 

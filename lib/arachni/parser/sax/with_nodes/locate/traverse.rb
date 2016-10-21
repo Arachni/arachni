@@ -13,12 +13,6 @@ module WithNodes
 module Locate
 module Traverse
 
-    def push_child( child )
-    end
-
-    def close_node( node )
-    end
-
     def traverse( klass = nil, &block )
         traverser children, klass, &block
     end
@@ -83,6 +77,11 @@ module Traverse
         end
     end
 
+    def fail_if_not_in_whitelist( name )
+        return if !document || document.whitelisted?( name )
+
+        fail "Element '#{name}' not in whitelist."
+    end
 
 end
 end

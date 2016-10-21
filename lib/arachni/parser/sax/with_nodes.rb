@@ -6,8 +6,7 @@
     web site for more information on licensing and terms of use.
 =end
 
-require_relative 'locate/lookup'
-require_relative 'locate/traverse'
+require_relative 'with_nodes/locate/traverse'
 
 module Arachni
 class Parser
@@ -15,7 +14,6 @@ module SAX
 module WithNodes
 
     include Locate::Traverse
-    # include Locate::LookUp
 
     attr_accessor :document
     attr_accessor :parent
@@ -34,8 +32,6 @@ module WithNodes
     def <<( child )
         if !child.is_a?( String )
             child.parent = self
-
-            push_child child
         end
 
         @children << child
@@ -69,13 +65,6 @@ module WithNodes
         end
     end
 
-    private
-
-    def fail_if_not_in_whitelist( name )
-        return if !document || document.whitelisted?( name )
-
-        fail "Element '#{name}' not in whitelist."
-    end
 
 end
 end

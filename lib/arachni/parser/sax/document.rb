@@ -33,6 +33,8 @@ class Document < Ox::Sax
             @stop_on_first.merge options[:stop_on_first]
         end
 
+        @reject = options[:reject]
+
         @current_node = self
     end
 
@@ -41,8 +43,6 @@ class Document < Ox::Sax
     end
 
     def start_element( name )
-        name = name.downcase
-
         # We were instructed to stop on the first sight of the previous element
         # but came across this one before it closed.
         fail Stop if @stop
@@ -59,23 +59,22 @@ class Document < Ox::Sax
     end
 
     def end_element( name )
-        name = name.downcase
-
         # Finished parsing the desired element, abort.
         fail Stop if stop?( name )
 
-        close_node @current_node
+        if @reject && @reject.call( @current_node )
+            @current_node.parent.children.delete @current_node
+        end
 
         @current_node = @current_node.parent
     end
 
     def attr( name, value )
-        @current_node[name.downcase] = value if @current_node != self
+        @current_node.attributes[name] = value if @current_node != self
     end
 
     def text( value )
-        value.strip!
-        @current_node << value
+        @current_node << value.freeze
     end
 
     def comment( value )
@@ -102,10 +101,12 @@ class Document < Ox::Sax
         @whitelist.include?( name.to_s )
     end
 
+    private
+
     def stop?( name )
         return false if @stop_on_first.empty?
 
-        @stop_on_first.include?( name.to_s )
+        @stop_on_first.include?( name.to_s.downcase )
     end
 
 end
