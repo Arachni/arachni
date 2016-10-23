@@ -1332,6 +1332,7 @@ class Browser
     def wait_for_pending_requests
         sleep 0.1
 
+        t = Time.now
         last_connections = []
         while @proxy.has_pending_requests?
             connections = @proxy.active_connections
@@ -1348,7 +1349,13 @@ class Browser
             end
             last_connections = connections
 
-            sleep 0.01
+            sleep 0.1
+
+            # If the browser sends incomplete data the connection will remain
+            # open indefinitely.
+            next if Time.now - t < Options.browser_cluster.job_timeout
+            connections.each(&:close)
+            break
         end
     end
 
@@ -1384,16 +1391,16 @@ class Browser
         end
 
         return if set_cookies.empty? &&
-            Arachni::Options::browser_cluster.local_storage.empty?
+            Arachni::Options.browser_cluster.local_storage.empty?
 
         set_cookie = set_cookies.values.map(&:to_set_cookie)
         print_debug_level_2 "Setting cookies: #{set_cookie}"
 
         body = ''
-        if Arachni::Options::browser_cluster.local_storage.any?
+        if Arachni::Options.browser_cluster.local_storage.any?
             body = <<EOJS
                 <script>
-                    var data = #{Arachni::Options::browser_cluster.local_storage.to_json};
+                    var data = #{Arachni::Options.browser_cluster.local_storage.to_json};
 
                     for( prop in data ) {
                         localStorage.setItem( prop, data[prop] );
