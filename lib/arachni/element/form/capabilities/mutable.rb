@@ -100,13 +100,13 @@ module Mutable
 
                 select_node.children.each do |child|
                     next if !child.is_a?( Arachni::Parser::SAX::Element ) ||
-                        child.name.to_s != 'option'
+                        child.name != :option
 
                     try_input do
                         elem = self.dup
                         elem.mutation_with_original_values
                         elem.affected_input_name  = input
-                        elem.affected_input_value = child['value'] || child.text
+                        elem.affected_input_value = child['value'] || child.text.strip
                         yield elem if !generated.include?( elem )
                         generated << elem
                     end

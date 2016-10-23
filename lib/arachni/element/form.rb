@@ -305,7 +305,7 @@ class Form < Base
                     next if !name
 
                     # Handle the easy stuff first...
-                    if elem.name.to_sym != :select
+                    if elem.name != :select
                         options[:inputs][name] = elem_attrs
 
                         if elem_attrs[:type] == :submit
