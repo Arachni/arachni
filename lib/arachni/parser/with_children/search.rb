@@ -8,10 +8,9 @@
 
 module Arachni
 class Parser
-module SAX
-module WithNodes
-module Locate
-module Traverse
+module WithChildren
+
+module Search
 
     def traverse( klass = nil, &block )
         traverser children, klass, &block
@@ -25,10 +24,17 @@ module Traverse
         end
     end
 
+    def nodes_by_class( klass )
+        @nodes_by_name ||= {}
+        @nodes_by_name[name] ||= begin
+            descendants.select do |e|
+                e.kind_of? klass
+            end
+        end
+    end
+
     def nodes_by_name( name )
         name = name.to_s.downcase
-
-        fail_if_not_in_whitelist( name )
 
         @nodes_by_name ||= {}
         @nodes_by_name[name.hash] ||= begin
@@ -38,7 +44,9 @@ module Traverse
         end
     end
 
-    def nodes_by_names( names )
+    def nodes_by_names( *names )
+        names = names.flatten
+
         @nodes_by_name ||= {}
         @nodes_by_name[names.hash] ||= names.map { |n| nodes_by_name( n ) }.flatten
     end
@@ -77,16 +85,8 @@ module Traverse
         end
     end
 
-    def fail_if_not_in_whitelist( name )
-        return if !document || document.whitelisted?( name )
-
-        fail "Element '#{name}' not in whitelist."
-    end
-
-end
-end
-end
-end
-end
 end
 
+end
+end
+end

@@ -25,6 +25,9 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
             @seed = seed
         end
 
+        def document
+        end
+
         def landed?
             !!@landed
         end
@@ -36,7 +39,7 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
             return if ATTRIBUTE_NAME != name || value != @seed
 
             @landed = true
-            fail Arachni::Parser::SAX::Document::Stop
+            fail Arachni::Parser::SAX::Stop
         end
     end
 

@@ -14,7 +14,7 @@ class Arachni::Parser::Extractors::Comments < Arachni::Parser::Extractors::Base
     def run
         return [] if !check_for?( '<!--' )
 
-        document.nodes_by_name('comment').map do |comment|
+        document.nodes_by_class( Arachni::Parser::Nodes::Comment ).map do |comment|
             comment.value.scan( /(^|\s)(\/[\/a-zA-Z0-9%._-]+)/ )
         end.flatten.select { |s| s.start_with? '/' }
     end

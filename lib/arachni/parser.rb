@@ -51,28 +51,18 @@ class Parser
         textarea input select button comment
     )
 
-    REJECT_NODES = proc do |e|
-        case e.name
-            when :a
-                href = e['href'].to_s
-                href.empty? || href == '#'
-            else
-                false
-        end
-    end
-
     class <<self
 
         def parse( html, options = {} )
             CACHE[__method__].fetch [html, options] do
-                document, sax_options = prepare_ox_options( options )
+                handler, sax_options = prepare_ox_options( options )
 
                 begin
-                    Ox.sax_html( document, StringIO.new( html ), sax_options )
-                rescue SAX::Document::Stop
+                    Ox.sax_html( handler, StringIO.new( html ), sax_options )
+                rescue SAX::Stop
                 end
 
-                document
+                handler.document
             end
         end
 
@@ -84,7 +74,7 @@ class Parser
             push_parse_pool.post do
                 begin
                     Ox.sax_html( document, buffer, sax_options )
-                rescue SAX::Document::Stop
+                rescue SAX::Stop
                 end
             end
 
@@ -121,7 +111,7 @@ class Parser
         end
 
         def prepare_ox_options( options )
-            document = options[:handler] || SAX::Document.new( options )
+            handler = options[:handler] || SAX.new( options )
 
             sax_options = {}
             if options[:whitelist] && options[:whitelist].any?
@@ -137,7 +127,7 @@ class Parser
                 sax_options[:overlay] = overlay
             end
 
-            [document, sax_options]
+            [handler, sax_options]
         end
 
     end
@@ -151,14 +141,14 @@ class Parser
     # @return   [HTTP::Response]
     attr_accessor :response
 
-    # @param  [SAX::Document, HTTP::Response, Array<HTTP::Response>] resource
+    # @param  [Document, HTTP::Response, Array<HTTP::Response>] resource
     #   Response(s) to analyze and parse. By providing multiple responses the
     #   parser will be able to perform some preliminary differential analysis
     #   and identify nonce tokens in inputs.
     def initialize( resource )
         case resource
 
-            when SAX::Document
+            when Document
                 @resource = :document
                 @document = resource
 
@@ -233,7 +223,7 @@ class Parser
         @body || (@response.body if from_response?)
     end
 
-    # @return   [Arachni::Parser::SAX::Document, nil]
+    # @return   [Arachni::Parser::Document, nil]
     #   Returns a parsed HTML document from the body of the HTTP response or
     #   `nil` if the response data wasn't {#text? text-based} or the response
     #   couldn't be parsed.
@@ -245,8 +235,7 @@ class Parser
         else
             @document = self.class.parse(
                 body,
-                whitelist: WHITELIST,
-                reject:    REJECT_NODES
+                whitelist: WHITELIST
             )
         end
     end

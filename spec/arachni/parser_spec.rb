@@ -27,7 +27,7 @@ describe Arachni::Parser do
     let(:from_document) { Arachni::Parser.new( document ) }
 
     describe '#initialize' do
-        context 'Arachni::SAX::Document' do
+        context 'Arachni::Parser::Document' do
             subject { from_document }
 
             it 'sets it as #document' do

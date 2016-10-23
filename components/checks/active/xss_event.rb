@@ -49,6 +49,9 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
             @attributes = Set.new( ATTRIBUTES )
         end
 
+        def document
+        end
+
         def attr( name, value )
             name  = name.to_s.downcase
             value = value.downcase
@@ -61,11 +64,11 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
                 # so we settle.
                 if value =~ /^(vb|)script:/ && value.include?( @seed )
                     @proof = value
-                    fail Arachni::Parser::SAX::Document::Stop
+                    fail Arachni::Parser::SAX::Stop
                 end
             elsif value.include?( @seed )
                 @proof = value
-                fail Arachni::Parser::SAX::Document::Stop
+                fail Arachni::Parser::SAX::Stop
             end
         end
     end

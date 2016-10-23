@@ -50,6 +50,9 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             @attributes = Set.new( ATTRIBUTES )
         end
 
+        def document
+        end
+
         def tainted?
             !!@tainted
         end
@@ -71,18 +74,18 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             if name == 'src'
                 if @seed.start_with?( 'javascript:' ) && value == @seed
                     @tainted = true
-                    fail Arachni::Parser::SAX::Document::Stop
+                    fail Arachni::Parser::SAX::Stop
                 end
             else
                 if value == @seed
                     @tainted = true
-                    fail Arachni::Parser::SAX::Document::Stop
+                    fail Arachni::Parser::SAX::Stop
                 end
             end
 
             if value.include?( @seed )
                 @tainted = true
-                fail Arachni::Parser::SAX::Document::Stop
+                fail Arachni::Parser::SAX::Stop
             end
         end
 
@@ -90,7 +93,7 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
             return if !@in_script || value !~ /#{Regexp.escape( @seed )}/i
 
             @tainted = true
-            fail Arachni::Parser::SAX::Document::Stop
+            fail Arachni::Parser::SAX::Stop
         end
     end
 

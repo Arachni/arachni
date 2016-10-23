@@ -6,22 +6,30 @@
     web site for more information on licensing and terms of use.
 =end
 
+require_relative 'with_children/search'
+
 module Arachni
 class Parser
-module SAX
-class Element
-class Attributes < Hash
+module WithChildren
 
-    def []( name )
-        super name.to_s
+    include Search
+
+    def children
+        @children ||= []
     end
 
-    def []=( name, value )
-        super name.to_s.downcase.freeze, value.freeze
+    def text
+        txt = children.find { |n| n.is_a? Parser::Nodes::Text }
+        return if !txt
+
+        txt.value
     end
 
-end
-end
+    def <<( child )
+        child.parent = self
+        children << child
+    end
+
 end
 end
 end

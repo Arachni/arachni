@@ -106,7 +106,7 @@ describe Arachni::Page do
 
         it 'restores Arachni::Element::Form#node of #forms' do
             form = subject.forms.last
-            expect(form.node).to be_kind_of Arachni::Parser::SAX::Element
+            expect(form.node).to be_kind_of Arachni::Parser::Nodes::Element
             expect(form.node).to be_truthy
 
             expect(restored.forms.last.node.to_s).to eq(form.node.to_s)
@@ -114,7 +114,7 @@ describe Arachni::Page do
 
         it 'restores Arachni::Element::Link#node of #links' do
             link = subject.links.last
-            expect(link.node).to be_kind_of Arachni::Parser::SAX::Element
+            expect(link.node).to be_kind_of Arachni::Parser::Nodes::Element
             expect(link.node).to be_truthy
 
             expect(restored.links.last.node.to_s).to eq(link.node.to_s)
@@ -867,7 +867,7 @@ describe Arachni::Page do
 
             it 'preserves Arachni::Element::Form#node of #forms' do
                 form = subject.forms.last
-                expect(form.node).to be_kind_of Arachni::Parser::SAX::Element
+                expect(form.node).to be_kind_of Arachni::Parser::Nodes::Element
                 expect(form.node).to be_truthy
 
                 expect(subject.send(method).forms.last.node.to_s).to eq(form.node.to_s)
@@ -875,7 +875,7 @@ describe Arachni::Page do
 
             it 'preserves Arachni::Element::Link#node of #links' do
                 link = subject.links.last
-                expect(link.node).to be_kind_of Arachni::Parser::SAX::Element
+                expect(link.node).to be_kind_of Arachni::Parser::Nodes::Element
                 expect(link.node).to be_truthy
 
                 expect(subject.send(method).links.last.node.to_s).to eq(link.node.to_s)

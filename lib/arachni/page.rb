@@ -337,7 +337,7 @@ class Page
         response.request.method
     end
 
-    # @return   [Arachni::Parser::SAX::Document]
+    # @return   [Arachni::Parser::Document]
     #   Parsed {#body HTML} document.
     def document
         @cache[:document] ||= (parser.nil? ?
