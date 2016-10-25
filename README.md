@@ -588,6 +588,7 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
     state, based on a URL fragment.
 - Webhook notify (`webhook_notify`) -- Sends a webhook payload over HTTP at the end of the scan.
 - Rate limiter (`rate_limiter`) -- Rate limits HTTP requests.
+- Page dump (`page_dump`) -- Dumps page data to disk as YAML.
 
 ##### Defaults
 

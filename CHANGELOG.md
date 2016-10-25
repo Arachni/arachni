@@ -79,6 +79,7 @@
     - New
         - `webhook_notify` -- Sends a webhook payload over HTTP at the end of the scan.
         - `rate_limiter` -- Rate limits HTTP requests.
+        - `page_dump` -- Dumps page data to disk as YAML.
     - `proxy` -- `bind_address` default switched to `127.0.0.1`, `0.0.0.0` breaks
         SSL interception on MS Windows.
     - `metrics`
