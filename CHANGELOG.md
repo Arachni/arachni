@@ -48,6 +48,7 @@
     - Updated engine to PhantomJS 2.1.1.
     - `#snapshot_id` -- Moved to browser-side `DOMMonitor` for better performance.
     - `#capture` -- Extract query parameters from `POST` requests.
+    - `ElementLocator` -- Fixed bug causing broken CSS selectors with UTF8 characters.
     - `Javascript`
         - `#dom_elements_with_events`
             - Moved code to browser-side `DOMMonitor`.

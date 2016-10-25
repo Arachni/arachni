@@ -88,14 +88,14 @@ class ElementLocator
             end
         end
 
-        "#{tag_name}#{attrs.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
+        "#{tag_name}#{attrs.map { |k, v| "[#{k}=\"#{v.escape_double_quote}\"]"}.join}"
     end
 
     # @return   [String]
     #   Locator as an HTML opening tag.
     def to_s
         "<#{tag_name}#{' ' if attributes.any?}" <<
-            attributes.map { |k, v| "#{k}=#{v.inspect}" }.join( ' ' ) << '>'
+            attributes.map { |k, v| "#{k}=\"#{v.escape_double_quote}\"" }.join( ' ' ) << '>'
     end
     alias :inspect :to_s
 

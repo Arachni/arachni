@@ -54,6 +54,10 @@ class String
         dup.sub_in_groups!( regexp, substitutions )
     end
 
+    def escape_double_quote
+        gsub( '"', '\"' )
+    end
+
     # @param    [Regexp]    regexp
     #   Regular expression with named captures.
     # @param    [Hash]    updates
