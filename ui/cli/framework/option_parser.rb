@@ -626,11 +626,10 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Profiles'
 
-        on( '--profile-save-filepath FILEPATH', String,
+        on( '--`profile-save-filepath` FILEPATH', String,
                'Save the current configuration profile/options to FILEPATH.'
         ) do |filepath|
-            save_profile( filepath )
-            exit 0
+            @save_profile_path = filepath
         end
 
         on( '--profile-load-filepath FILEPATH', String,
@@ -694,6 +693,11 @@ class OptionParser < UI::CLI::OptionParser
     end
 
     def after_parse
+        if @save_profile_path
+            save_profile( @save_profile_path )
+            exit 0
+        end
+
         options.url = ARGV.shift
     rescue Options::Error::InvalidURL => e
         print_bad e
