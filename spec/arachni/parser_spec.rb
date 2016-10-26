@@ -606,6 +606,11 @@ describe Arachni::Parser do
             subject.response.request.headers[Arachni::HTTP::Client::SEED_HEADER_NAME] = 'My-stuff'
             expect(subject.headers.find { |h| h.name == Arachni::HTTP::Client::SEED_HEADER_NAME }).to be_falsey
         end
+
+        it 'excludes Content-Type' do
+            subject.response.request.headers['Content-Length'] = '123'
+            expect(subject.headers.find { |h| h.name == 'Content-Length' }).to be_falsey
+        end
     end
 
     describe '#link_vars' do

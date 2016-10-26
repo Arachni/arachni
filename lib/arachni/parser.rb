@@ -51,10 +51,10 @@ class Parser
         textarea input select button comment
     )
 
-    IGNORE_REQUEST_HEADERS = Set.new([
+    IGNORE_REQUEST_HEADERS = [
         HTTP::Client::SEED_HEADER_NAME,
         'Content-Length'
-    ])
+    ]
 
     class <<self
 
@@ -262,7 +262,7 @@ class Parser
             'Pragma'          => 'no-cache'
         }.merge(
             response.request.headers.dup.tap do |h|
-                h.reject! { |k, _| IGNORE_REQUEST_HEADERS.include? k }
+                IGNORE_REQUEST_HEADERS.each { |k| h.delete k }
             end
         ).map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
     end
