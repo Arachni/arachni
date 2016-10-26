@@ -51,6 +51,11 @@ class Parser
         textarea input select button comment
     )
 
+    IGNORE_REQUEST_HEADERS = Set.new([
+        HTTP::Client::SEED_HEADER_NAME,
+        'Content-Length'
+    ])
+
     class <<self
 
         def parse( html, options = {} )
@@ -255,8 +260,11 @@ class Parser
             'User-Agent'      => Options.http.user_agent || '',
             'Referer'         => @url,
             'Pragma'          => 'no-cache'
-        }.merge( response.request.headers.tap { |h| h.delete HTTP::Client::SEED_HEADER_NAME } ).
-            map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
+        }.merge(
+            response.request.headers.dup.tap do |h|
+                h.reject! { |k, _| IGNORE_REQUEST_HEADERS.include? k }
+            end
+        ).map { |k, v| Header.new( url: @url, inputs: { k => v } ) }.freeze
     end
 
     # @return [Array<Element::Form>]
