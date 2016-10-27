@@ -748,6 +748,7 @@
 
     <xs:complexType name="parameter">
         <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="base64" type="xs:boolean"/>
         <xs:attribute name="value" type="xs:string"/>
     </xs:complexType>
 
