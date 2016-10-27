@@ -626,7 +626,7 @@ class OptionParser < UI::CLI::OptionParser
         separator ''
         separator 'Profiles'
 
-        on( '--`profile-save-filepath` FILEPATH', String,
+        on( '--profile-save-filepath FILEPATH', String,
                'Save the current configuration profile/options to FILEPATH.'
         ) do |filepath|
             @save_profile_path = filepath
