@@ -20,9 +20,13 @@ module Arachni
 
 lib = Options.paths.lib
 
+require lib + 'parser/extractors/base'
+require lib + 'parser/document'
+require lib + 'parser/sax'
+require lib + 'parser/with_children'
+
 # Load all available element types.
 Dir.glob( lib + 'element/*.rb' ).each { |f| require f }
-Dir.glob( lib + 'parser/**/*.rb' ).each { |f| require f }
 
 require lib + 'page'
 require lib + 'utilities'
