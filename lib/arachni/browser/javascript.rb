@@ -165,7 +165,7 @@ class Javascript
         print_debug_level_2 'Waiting for custom JS...'
 
         if !supported?
-            print_debug_level_2 '...failed.'
+            print_debug_level_2 '...unsupported.'
             return
         end
 
@@ -174,7 +174,7 @@ class Javascript
             sleep 0.1
 
             if Time.now - t > Options.browser_cluster.job_timeout
-                print_debug_level_2 'Timeout reached.'
+                print_debug_level_2 '...timed out.'
                 return
             end
         end
