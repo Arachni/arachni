@@ -186,8 +186,12 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
         }
     end
 
-    def replace_nulls( s )
+    def self.replace_nulls( s )
         s.to_s.gsub( "\0", NULL )
+    end
+
+    def replace_nulls( *args )
+        self.class.replace_nulls( *args )
     end
 
     def add_inputs( xml, inputs, name = :inputs )

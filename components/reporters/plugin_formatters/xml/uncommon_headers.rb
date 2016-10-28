@@ -18,7 +18,10 @@ class PluginFormatters::UncommonHeaders < Arachni::Plugin::Formatter
 
                 xml.headers {
                     headers.each do |name, value|
-                        xml.header name: name, value: value
+                        xml.header(
+                            name:  Arachni::Reporters::XML.replace_nulls( name ),
+                            value: Arachni::Reporters::XML.replace_nulls( value )
+                        )
                     end
                 }
             }

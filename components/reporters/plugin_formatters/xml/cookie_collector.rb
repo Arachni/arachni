@@ -17,11 +17,14 @@ class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
         results.each_with_index do |result, i|
             xml.entry {
                 xml.time Time.parse( result['time'] ).xmlschema
-                xml.url result['response']['url']
+                xml.url XML.replace_nulls( result['response']['url'] )
 
                 xml.cookies {
                     result['cookies'].each do |name, value|
-                        xml.cookie( name: name, value: value )
+                        xml.cookie(
+                            name:  Arachni::Reporters::XML.replace_nulls( name ),
+                            value: Arachni::Reporters::XML.replace_nulls( value )
+                        )
                     end
                 }
             }
