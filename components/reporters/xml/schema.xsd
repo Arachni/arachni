@@ -53,7 +53,7 @@
             <xs:element name="general" type="plugin_metrics_results_general"/>
             <xs:element name="scan" type="plugin_metrics_results_scan"/>
             <xs:element name="http" type="plugin_metrics_results_http"/>
-            <xs:element name="browser_cluster" type="plugin_metrics_results_browser_cluster"/>
+            <xs:element name="browser_cluster" minOccurs="0" type="plugin_metrics_results_browser_cluster"/>
             <xs:element name="resource" type="plugin_metrics_results_resource"/>
             <xs:element name="element" type="plugin_metrics_results_element"/>
             <xs:element name="dom" type="plugin_metrics_results_dom"/>
@@ -88,22 +88,22 @@
 
     <xs:complexType name="plugin_metrics_results_http">
         <xs:all>
-            <xs:element name="requests" type="xs:integer"/>
+            <xs:element name="requests" minOccurs="0" type="xs:integer"/>
 
-            <xs:element name="request_time_outs" type="xs:integer"/>
-            <xs:element name="request_size_min" type="xs:float"/>
-            <xs:element name="request_size_max" type="xs:float"/>
-            <xs:element name="request_size_average" type="xs:float"/>
+            <xs:element name="request_time_outs" minOccurs="0" type="xs:integer"/>
+            <xs:element name="request_size_min" minOccurs="0" type="xs:float"/>
+            <xs:element name="request_size_max" minOccurs="0" type="xs:float"/>
+            <xs:element name="request_size_average" minOccurs="0" type="xs:float"/>
 
-            <xs:element name="response_time_min" type="xs:float"/>
-            <xs:element name="response_time_max" type="xs:float"/>
-            <xs:element name="response_time_average" type="xs:float"/>
+            <xs:element name="response_time_min" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_time_max" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_time_average" minOccurs="0" type="xs:float"/>
 
-            <xs:element name="responses_per_second" type="xs:float"/>
+            <xs:element name="responses_per_second" minOccurs="0" type="xs:float"/>
 
-            <xs:element name="response_size_min" type="xs:float"/>
-            <xs:element name="response_size_max" type="xs:float"/>
-            <xs:element name="response_size_average" type="xs:float"/>
+            <xs:element name="response_size_min" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_size_max" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_size_average" minOccurs="0" type="xs:float"/>
         </xs:all>
     </xs:complexType>
 
