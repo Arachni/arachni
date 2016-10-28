@@ -19,6 +19,26 @@ describe Arachni::Browser::Javascript do
 
     subject { @browser.javascript }
 
+    describe '#wait_till_ready' do
+        it 'waits until the JS environment is #ready?'
+
+        context 'when it exceeds Options.browser_cluster.job_timeout' do
+            it 'returns' do
+                Arachni::Options.browser_cluster.job_timeout = 5
+                t = Time.now
+
+                @browser.load "#{@taint_tracer_url}/debug"
+
+                allow(subject).to receive(:ready?) { false }
+
+                subject.wait_till_ready
+
+                expect(Time.now - t).to be > 5
+                expect(Time.now - t).to be < 6
+            end
+        end
+    end
+
     describe '#dom_monitor' do
         it 'provides access to the DOMMonitor javascript interface' do
             @browser.load "#{@taint_tracer_url}/debug"

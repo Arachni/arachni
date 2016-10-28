@@ -169,15 +169,27 @@ class Javascript
             return
         end
 
-        sleep 0.1 while !ready?
+        t = Time.now
+        while !ready?
+            sleep 0.1
+
+            if Time.now - t > Options.browser_cluster.job_timeout
+                print_debug_level_2 'Timeout reached.'
+                return
+            end
+        end
 
         print_debug_level_2 '...done.'
+        true
     end
 
     # @return   [Bool]
     #   `true` if our custom JS environment has been initialized.
     def ready?
-        !!run( "return window._#{token}" ) rescue false
+        !!run( "return window._#{token}" )
+    rescue => e
+        print_debug_exception e, 2
+        false
     end
 
     # @param    [String]    script
