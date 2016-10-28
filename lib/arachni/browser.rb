@@ -1059,7 +1059,17 @@ class Browser
         if r
             print_debug "Origin server timed-out when requesting: #{u}"
         else
-            print_debug "Response never arrived: #{u}"
+            print_debug "Response never arrived for: #{u}"
+
+            print_debug 'Available responses are:'
+            @window_responses.each do |k, _|
+                print_debug "-- #{k}"
+            end
+
+            print_debug 'Tried:'
+            print_debug "-- #{u}"
+            print_debug "-- #{normalize_url( u )}"
+            print_debug "-- #{normalize_watir_url( u )}"
         end
 
         nil
