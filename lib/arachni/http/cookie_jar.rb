@@ -203,7 +203,12 @@ class CookieJar
     end
 
     def to_uri( url )
-        u = url.is_a?( ::URI ) || url.is_a?( ::Arachni::URI ) ? url : uri_parse( url.to_s )
+        u = url.is_a?( Arachni::URI ) ? url : Arachni::URI( url.to_s )
+
+        if !u
+            fail "Failed to parse: #{url}"
+        end
+
         fail ArgumentError, 'Complete absolute URL required.' if u.relative?
         u
     end
