@@ -35,7 +35,9 @@ class Dynamic404Handler
     # @param  [Block]   block
     #   To be passed `true` or `false` depending on the result of the analysis.
     def _404?( response, &block )
-        url = response.url
+        # This matters, the request URL may differ from the response one due to
+        # redirections and we need to test the original.
+        url = response.request.url
 
         # Easy pickins, well-behaved static 404 handler and a URL that doesn't
         # need advanced analysis.

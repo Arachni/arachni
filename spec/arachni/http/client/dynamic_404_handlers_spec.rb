@@ -14,6 +14,38 @@ describe Arachni::HTTP::Client::Dynamic404Handler do
     let(:url) { "#{@url}/" }
 
     describe '#_404?' do
+        context 'when not dealing with a redirect' do
+            context 'to an outside custom 404' do
+                it 'returns true' do
+                    @dynamic_404_handler_redirect_1 =
+                        web_server_url_for( :dynamic_404_handler_redirect_1 )
+
+                    @dynamic_404_handler_redirect_2 =
+                        web_server_url_for( :dynamic_404_handler_redirect_2 )
+
+                    Arachni::HTTP::Client.get(
+                        "#{@dynamic_404_handler_redirect_1}/set-redirect",
+                        parameters: {
+                            url: @dynamic_404_handler_redirect_2
+                        },
+                        mode: :sync
+                    )
+
+                    response = client.get(
+                        @dynamic_404_handler_redirect_1 + '/test/stuff.php',
+                        follow_location: true,
+                        mode:            :sync
+                    )
+
+                    bool = false
+                    subject._404?( response ) { |c_bool| bool = c_bool }
+                    client.run
+
+                    expect(bool).to be_true
+                end
+            end
+        end
+
         context 'when not dealing with a not-found response' do
             it 'returns false' do
                 res = nil
