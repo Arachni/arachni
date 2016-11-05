@@ -209,7 +209,11 @@ class CookieJar
             fail "Failed to parse: #{url}"
         end
 
-        fail ArgumentError, 'Complete absolute URL required.' if u.relative?
+        if !u.relative?
+            fail ArgumentError,
+                 "Complete absolute URL required, got: #{u}"
+        end
+
         u
     end
 
