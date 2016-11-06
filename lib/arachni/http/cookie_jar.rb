@@ -211,7 +211,7 @@ class CookieJar
 
         if !u.relative?
             fail ArgumentError,
-                 "Complete absolute URL required, got: #{u}"
+                 "Complete absolute URL required, got: #{url} (#{u})"
         end
 
         u
