@@ -137,7 +137,7 @@ class Client
             SEED_HEADER_NAME      => Arachni::Utilities.random_seed
         )
         headers['From'] = Options.authorized_by if Options.authorized_by
-        headers.merge!( Options.http.request_headers )
+        headers.merge!( Options.http.request_headers, false )
     end
 
     # @return   [Arachni::HTTP]
@@ -384,7 +384,7 @@ class Client
 
             request = Request.new( options.merge(
                 url:         url,
-                headers:     headers.merge( options.delete( :headers ) || {} ),
+                headers:     headers.merge( options.delete( :headers ) || {}, false ),
                 cookies:     cookies,
                 raw_cookies: raw_cookies
             ))

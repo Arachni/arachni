@@ -2,20 +2,60 @@ require 'spec_helper'
 
 describe Arachni::HTTP::Headers do
 
-    context 'when it includes multiple same names that differ in case' do
-        subject do
-            described_class.new( cookies )
-        end
-        let(:cookies) do
-            {
-                'set-cookie' => 'mycookie1=myvalue1',
-                'Set-Cookie' => 'mycookie2=myvalue2',
-                'SET-COOKIE' => 'mycookie3=myvalue3'
-            }
+    subject do
+        described_class.new
+    end
+
+    describe '#merge!' do
+        context 'by default' do
+            context 'when it includes multiple same names that differ in case' do
+                let(:cookies) do
+                    {
+                        'set-cookie' => 'mycookie1=myvalue1',
+                        'Set-Cookie' => 'mycookie2=myvalue2',
+                        'SET-COOKIE' => 'mycookie3=myvalue3'
+                    }
+                end
+
+                it 'merges them into an array' do
+                    subject.merge!( cookies )
+                    expect(subject['set-cookie']).to eq(cookies.values)
+                end
+            end
         end
 
-        it 'merges them into an array' do
-            expect(subject['set-cookie']).to eq(cookies.values)
+        context 'when convert to array is false' do
+            context 'when it includes multiple same names that differ in case' do
+                let(:cookies) do
+                    {
+                        'set-cookie' => 'mycookie1=myvalue1',
+                        'Set-Cookie' => 'mycookie2=myvalue2',
+                        'SET-COOKIE' => 'mycookie3=myvalue3'
+                    }
+                end
+
+                it 'does not merge them into an array' do
+                    subject.merge!( cookies, false )
+                    expect(subject['set-cookie']).to eq(cookies.values.last)
+                end
+            end
+        end
+
+        context 'when convert to array is true' do
+            context 'when it includes multiple same names that differ in case' do
+                let(:cookies) do
+                    {
+                        'set-cookie' => 'mycookie1=myvalue1',
+                        'Set-Cookie' => 'mycookie2=myvalue2',
+                        'SET-COOKIE' => 'mycookie3=myvalue3'
+                    }
+                end
+
+                it 'does not merge them into an array' do
+                    subject.merge!( cookies )
+                    expect(subject['set-cookie']).to eq(cookies.values)
+                end
+            end
         end
     end
 

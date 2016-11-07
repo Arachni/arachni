@@ -21,7 +21,7 @@ class HTTP
     attr_reader :cookie_jar
 
     def initialize
-        @headers    = {}
+        @headers    = Arachni::HTTP::Headers.new
         @cookie_jar = Arachni::HTTP::CookieJar.new
     end
 

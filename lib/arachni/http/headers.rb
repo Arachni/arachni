@@ -29,17 +29,23 @@ class Headers < Hash
         merge!( headers || {} )
     end
 
-    def merge!( headers )
+    def merge!( headers, convert_to_array = true )
         headers.each do |k, v|
             # Handle headers with identical normalized names, like a mixture of
             # Set-Cookie and SET-COOKIE.
-            if include? k
+            if convert_to_array && include?( k )
                 self[k] = [self[k]].flatten
                 self[k] << v
             else
                 self[k] = v
             end
         end
+    end
+
+    def merge( headers, convert_to_array = true )
+        d = dup
+        d.merge! headers, convert_to_array
+        d
     end
 
     # @note `field` will be capitalized appropriately before storing.
