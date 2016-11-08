@@ -20,8 +20,12 @@ class Arachni::Plugins::BrowserClusterJobMonitor < Arachni::Plugin::Base
 
                 worker.proxy.active_connections.each do |connection|
                     next if !connection
-
-                    s << "* #{connection.request.url}\n"
+ q
+                    if connection.request
+                        s << "* #{connection.request.url}\n"
+                    else
+                        s << "* Still reading request data.\n"
+                    end
                 end
 
                 s << "\n"
