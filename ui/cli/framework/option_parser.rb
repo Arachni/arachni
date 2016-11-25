@@ -267,6 +267,28 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.with_both_http_methods = true
         end
 
+        on( '--audit-with-complex-mutation',
+               'Audit forms with complexe conbination.',
+               '(*WARNING*: This will severely increase the scan-time.)'
+        ) do
+            options.audit.with_complex_mutation = true
+        end
+        
+        on( '--audit-with-complex-mutation-header',
+               'Audit header with complexe conbination.',
+               '(*WARNING*: This will severely increase the scan-time.)'
+        ) do
+            options.audit.with_complex_mutation_header = true
+        end
+        
+        on( '--audit-with-complex-mutation-trainer',
+               'Audit with complexe conbination for trainer.',
+               '(*WARNING*: This will severely increase the scan-time.)'
+        ) do
+            options.audit.with_complex_mutation_trainer = true
+            options.audit.with_complex_mutation = true
+        end
+
         on( '--audit-exclude-vector PATTERN', Regexp,
                'Exclude input vectors whose name matches PATTERN.',
                '(Can be used multiple times.)' ) do |name|

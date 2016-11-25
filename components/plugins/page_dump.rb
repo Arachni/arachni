@@ -18,7 +18,7 @@ class Arachni::Plugins::PageDump < Arachni::Plugin::Base
             data = {
                 url:         page.dom.url,
                 response:    page.response.to_s,
-                request:     page.response.to_s,
+                request:     page.request.to_s,
                 source:      page.body,
                 transitions: page.dom.transitions.map(&:to_h)
             }

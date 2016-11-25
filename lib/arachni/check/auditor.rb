@@ -51,6 +51,25 @@ module Auditor
     #   Identifier of the object to be marked as audited.
     #
     # @see #audited?
+    def auditedsc( id )
+        Auditor.audited << "spechar-#{id}"
+    end
+    
+    # @param    [#to_s] id
+    #   Identifier of the object to be checked.
+    #
+    # @return   [Bool]
+    #   `true` if audited, `false` otherwise.
+    #
+    # @see #audited
+    def auditedsc?( id )
+        Auditor.audited.include?( "spechar-#{id}" )
+    end
+    
+    # @param    [#to_s]  id
+    #   Identifier of the object to be marked as audited.
+    #
+    # @see #audited?
     def audited( id )
         Auditor.audited << "#{self.class}-#{id}"
     end
@@ -519,7 +538,8 @@ module Auditor
                     prepare_each_element(page.cookies, &block )
 
                 when Element::Header.type
-                    prepare_each_element( page.headers, &block )
+                    prepare_each_element_header( page.headers, &block )
+                    #prepare_each_element( page.headers, &block )
 
                 when Element::LinkTemplate.type
                     prepare_each_element( page.link_templates, &block )
@@ -709,6 +729,55 @@ module Auditor
             d = e.dup
             d.auditor = self
             block.call d
+        end
+    end
+
+    def prepare_each_element_header( elements, &block )
+        if Options.audit.with_complex_mutation_header
+            tmp_array = []
+            begin
+                File.open(File.dirname( __FILE__ ) + '/../element/header/headers.db') do |fh|
+                    fh.each_line do |linex|
+                        linex.delete!("\n")
+                        tmp_array.push(linex)
+                    end
+                end
+            rescue
+                print_debug_level_2 "ERROR on file headers.db not found: #{File.dirname( __FILE__ ) + '/../element/header/headers.db'}"
+            end
+            elements.each do |e|
+              #verify if not exist in element
+              e.inputs.keys.each { |k| tmp_array.delete k }
+            end
+            elements.each do |e|
+                #create new header
+                for new_head in tmp_array
+                    #verify if not exist in element else continue
+                    d = e.dup
+                    tmphash = {}
+                    tmphash[new_head] = ""
+                    d.inputs = tmphash
+                    d.auditor = self
+                    block.call d
+                end
+                #end
+                #why skip element user agent, ...?
+                next if skip?( e ) || e.inputs.empty?
+                d = e.dup
+                d.auditor = self
+                block.call d
+            end
+        #d = e.dup
+        #d.auditor = self
+        #block.call d
+        else
+            elements.each do |e|
+                next if skip?( e ) || e.inputs.empty?
+            
+                d = e.dup
+                d.auditor = self
+                block.call d
+            end
         end
     end
 

@@ -53,6 +53,30 @@ class Audit < Arachni::OptionGroup
     # @note Default is `false`.
     #
     # @return    [Bool]
+    #   Change mutation forms by conbination
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :with_complex_mutation
+    
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Change mutation header by add header and mutation cobination.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :with_complex_mutation_header
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
+    #   Change mutation header & forms cobination on trainer.
+    #
+    # @see Element::Capabilities::Mutable#each_mutation
+    attr_accessor :with_complex_mutation_trainer
+    
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
     #   Inject payloads into extra element parameters.
     #
     # @see Element::Capabilities::Mutable#each_mutation
@@ -172,10 +196,13 @@ class Audit < Arachni::OptionGroup
     alias :ui_form_doms=  :ui_forms=
 
     set_defaults(
-        parameter_values:        true,
-        exclude_vector_patterns: [],
-        include_vector_patterns: [],
-        link_templates:          []
+        parameter_values:              true,
+        with_complex_mutation:         false,
+        with_complex_mutation_header:  false,
+        with_complex_mutation_trainer: false,
+        exclude_vector_patterns:       [],
+        include_vector_patterns:       [],
+        link_templates:                []
     )
 
     def with_raw_payloads?
@@ -284,9 +311,9 @@ class Audit < Arachni::OptionGroup
     end
     alias :element? :elements?
 
-    [:links, :forms, :cookies, :headers, :cookies_extensively,
+    [:links, :forms, :cookies, :headers, :cookies_extensively, :with_complex_mutation, :with_complex_mutation_header, :with_complex_mutation_trainer,
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
-     :jsons, :xmls, :ui_inputs, :ui_input_doms, :ui_forms, :ui_form_doms,
+     :jsons, :xmls, :ui_inputs, :ui_input_doms, :ui_forms, :ui_form_doms, 
      :parameter_values, :parameter_names, :with_extra_parameter].each do |attribute|
         define_method "#{attribute}?" do
             !!send( attribute )

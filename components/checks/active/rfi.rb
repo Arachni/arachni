@@ -9,6 +9,7 @@
 # Simple Remote File Inclusion (and tutorial) check.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
+# Modified by Lionel PRAT <lionel.prat9@gmail>: add remote connexion on local network with netcat + log tentative
 #
 # @see http://cwe.mitre.org/data/definitions/94.html
 # @see http://projects.webappsec.org/Remote-File-Inclusion
@@ -30,6 +31,13 @@ class Arachni::Checks::Rfi < Arachni::Check::Base # *always* extend Arachni::Che
         # Debugging output will only appear if "--debug" is enabled.
         #
         print_debug 'In #prepare'
+        port_open = `ps -aux |grep '705cd559b16e6946826207c2199bd890'|grep 'nc'|awk -F '-p' '{print $2}'|awk '{print $1}'`
+        port = port_open.scan(/[0-9]+/).join
+        if !(port =~ /[0-9]+/)
+            print_status 'RFI CHECK LOAD: you can start test rfi with remote connexion on local network. If you can, run on another shell:'+"\n"+'while true; do  nc -l -p 8080 -c \'echo -e "HTTP/1.1 200 OK\r\n$(date)\r\n\r\n";echo "705cd559b16e6946826207c2199bd890"\' -vv &>> /tmp/log_rfi;done'
+            print_status 'Wait 15sec for run cmd...'
+            sleep 15
+        end
     end
 
     #
@@ -43,12 +51,26 @@ class Arachni::Checks::Rfi < Arachni::Check::Base # *always* extend Arachni::Che
     # It's Framework convention to name the method which contains the strings
     # to be injected {.payloads}.
     #
+    #change: playload local => while true; do  nc -l -p 8080 -c 'echo -e "HTTP/1.1 200 OK\r\n$(date)\r\n\r\n";echo "705cd559b16e6946826207c2199bd890"' -vv &>> /tmp/log_rfi;done
     def self.payloads
-        @payloads ||= [
-            'hTtP://tests.arachni-scanner.com/rfi.md5.txt',
-            'http://tests.arachni-scanner.com/rfi.md5.txt',
-            'tests.arachni-scanner.com/rfi.md5.txt'
-        ]
+        port_open = `ps -aux |grep '705cd559b16e6946826207c2199bd890'|grep 'nc'|awk -F '-p' '{print $2}'|awk '{print $1}'`
+        port = port_open.scan(/[0-9]+/).join
+        if port =~ /[0-9]+/
+            ip = Socket.ip_address_list.detect{|intf| intf.ipv4_private?}
+            ip.ip_address
+            #Fixe choice port
+            @payloads ||= [
+                'hTtP://'+ip.ip_address+':'+port+'/rfi.md5.txt',
+                'http://'+ip.ip_address+':'+port+'/rfi.md5.txt',
+                ip.ip_address+':'+port+'/rfi.md5.txt'
+            ]
+        else    
+            @payloads ||= [
+                'hTtP://tests.arachni-scanner.com/rfi.md5.txt',
+                'http://tests.arachni-scanner.com/rfi.md5.txt',
+                'tests.arachni-scanner.com/rfi.md5.txt'
+            ]
+        end
     end
 
     #
