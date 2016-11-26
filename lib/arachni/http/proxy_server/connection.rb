@@ -89,6 +89,8 @@ class Connection < Arachni::Reactor::Connection
                         )
 
                         handle_request( @request )
+                    rescue => e
+                        close e
                     ensure
                         @parent.return_request_token( token )
                         print_debug_level_3 "Returned request token ##{token}."
