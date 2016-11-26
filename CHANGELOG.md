@@ -99,8 +99,16 @@
         - Default to `afr` as a report format.
 - Checks
     - Active
-        - `xss_event`, `xss_script_context`, `xss_tag` -- Replaced full parsing
-            of responses with SAX.
+        - `xss` -- Only check HTML responses to avoid FPs.
+        - `xss_event`
+            - Replaced full parsing of responses with SAX.
+            - Only check HTML responses to avoid FPs.
+        - `xss_script_context`
+            - Replaced full parsing of responses with SAX.
+            - Only check HTML responses to avoid FPs.
+        - `xss_tag`
+            - Replaced full parsing of responses with SAX.
+            - Only check HTML responses to avoid FPs.
         - `unvalidated_redirect`, `unvalidated_redirect_dom`, `xss`, `xss_dom`,
             `xss_dom_script_context`, `xss_script_context` -- Replaced `Proc`s
                 with class methods for `BrowserCluster` job callbacks.

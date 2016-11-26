@@ -55,6 +55,8 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
     end
 
     def check_and_log( response, element )
+        return if !response.html?
+
         # If we have no body or it doesn't contain the ATTRIBUTE_NAME under any
         # context there's no point in parsing the HTML to verify the vulnerability.
         return if !(response.body =~ /#{ATTRIBUTE_NAME}/i)

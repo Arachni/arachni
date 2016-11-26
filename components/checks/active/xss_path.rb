@@ -51,6 +51,8 @@ class Arachni::Checks::XssPath < Arachni::Check::Base
     end
 
     def check_and_log( response )
+        return if !response.html?
+
         body = response.body.downcase
 
         # check for the existence of the tag name in the response before

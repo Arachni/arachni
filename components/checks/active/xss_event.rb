@@ -98,6 +98,8 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
 
     def run
         audit self.class.strings, self.class.options do |response, element|
+            next if !response.html?
+
             k = "#{response.url.hash}-#{response.body.hash}".hash
             next if optimization_cache[k] == :checked
 

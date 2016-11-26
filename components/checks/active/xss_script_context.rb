@@ -147,6 +147,8 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
     def run
         with_browser_cluster do |cluster|
             audit taints( cluster ), self.class.options do |response, element|
+                next if !response.html?
+
                 # Completely body based, identical bodies will yield identical
                 # results.
                 k = "#{response.url.hash}-#{response.body.hash}".hash

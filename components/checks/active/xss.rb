@@ -55,6 +55,8 @@ class Arachni::Checks::Xss < Arachni::Check::Base
 
     def run
         audit( self.class.strings, self.class.options ) do |response, element|
+            next if !response.html?
+
             # If there's no vuln responses will usually be identical, so bail
             # out early.
             # If responses aren't identical due to noise, well, we're not losing
