@@ -35,10 +35,6 @@ class Javascript
         h.merge!( path => IO.read(path) )
     end
 
-    HTML_IDENTIFIERS = [
-        '<!doctype html', '<html', '<head', '<body', '<title', '<script'
-    ].map { |s| Regexp.new s, Regexp::IGNORECASE }
-
     NO_EVENTS_FOR_ELEMENTS = Set.new(%w(
         base bdo br head html iframe meta param script style title link hr
     ))
@@ -412,15 +408,8 @@ class Javascript
     def html?( response )
         return false if response.body.empty?
 
-        # We only care about HTML.
-        return false if !response.headers.content_type.to_s.downcase.start_with?( 'text/html' )
-
-        # Let's check that the response at least looks like it contains HTML
-        # code of interest.
-        return false if !HTML_IDENTIFIERS.find { |tag| response.body =~ tag }
-
-        # If there's a doctype then we're good to go.
-        return true if response.body.start_with?( '<!DOCTYPE html' )
+        # We only care about HTML responses.
+        return false if !response.html?
 
         # The last check isn't fool-proof, so don't do it when loading the page
         # for the first time, but only when the page loads stuff via AJAX and whatnot.
@@ -435,7 +424,7 @@ class Javascript
         # For example, it may have been JSON with the wrong content-type that
         # includes HTML -- it happens.
         #
-        # Beware, if there's a doctype in the beginning this will fail.
+        # Beware, if there's a doctype in the beginning this will get fooled.
         if !Parser.markup?( response.body )
             print_debug "Does not look like HTML: #{response.url}"
             print_debug "\n#{response.body}"

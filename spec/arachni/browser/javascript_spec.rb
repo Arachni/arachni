@@ -623,18 +623,6 @@ EOHTML
             it 'returns false'
         end
 
-        context 'when the Content-Type does not include text/html' do
-            it 'returns false'
-        end
-
-        context 'when the body does not include HTML identifiers such as' do
-            it 'returns false'
-        end
-
-        context 'when it starts with an HTML doctype' do
-            it 'returns true'
-        end
-
         context 'when it matches the last loaded URL' do
             it 'returns true'
         end

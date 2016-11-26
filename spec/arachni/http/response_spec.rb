@@ -140,6 +140,131 @@ describe Arachni::HTTP::Response do
         end
     end
 
+    describe '#html?' do
+        context 'when it starts with an HTML doctype' do
+            subject do
+                described_class.new(
+                    url:  'http://test.com',
+                    code: 200,
+                    body: body
+                )
+            end
+
+            let(:body) { '<!DOCTYPE html' }
+
+            expect_it { to be_html }
+        end
+
+        context 'when the Content-Type is' do
+            subject do
+                described_class.new(
+                    url:     'http://test.com',
+                    code:    200,
+                    headers: {
+                        'Content-Type' => content_type
+                    }
+                )
+            end
+
+            ['text/html', 'text/html; charset=ISO-8859-1',
+             'text/html ; charset=ISO-8859-1',
+             'application/xhtml+xml', 'application/xhtml+xml; charset=ISO-8859-1',
+             'application/xhtml+xml ; charset=ISO-8859-1'].each do |content_type|
+
+                context content_type.downcase do
+                    let(:content_type) { content_type.downcase }
+
+                    expect_it { to be_html }
+                end
+
+                context content_type.upcase do
+                    let(:content_type) { content_type.upcase }
+
+                    expect_it { to be_html }
+                end
+            end
+
+            context 'other' do
+                let(:content_type) { 'text/plain' }
+
+                expect_it { to_not be_html }
+            end
+
+            context 'missing' do
+                context 'and X-Content-Type-Options is' do
+                    context 'missing' do
+                        context 'and the body includes HTML identifier' do
+                            subject do
+                                described_class.new(
+                                    url:  'http://test.com',
+                                    code: 200,
+                                    body: body
+                                )
+                            end
+
+                            described_class::HTML_IDENTIFIERS.each do |id|
+                                context id.downcase do
+                                    let(:body) { id.downcase }
+
+                                    expect_it { to be_html }
+                                end
+
+                                context id.upcase do
+                                    let(:body) { id.upcase }
+
+                                    expect_it { to be_html }
+                                end
+                            end
+
+                            context 'other' do
+                                let(:body) { 'Stuff here' }
+
+                                expect_it { to_not be_html }
+                            end
+                        end
+                    end
+
+                    context 'nosniff' do
+                        context 'and the body includes HTML identifier' do
+                            subject do
+                                described_class.new(
+                                    url:  'http://test.com',
+                                    code: 200,
+                                    body: body,
+                                    headers: {
+                                        'X-Content-Type-Options' => 'nosniff'
+                                    }
+                                )
+                            end
+
+                            described_class::HTML_IDENTIFIERS.each do |id|
+                                context id.downcase do
+                                    let(:body) { id.downcase }
+
+                                    expect_it { to_not be_html }
+                                end
+
+                                context id.upcase do
+                                    let(:body) { id.upcase }
+
+                                    expect_it { to_not be_html }
+                                end
+                            end
+
+                            context 'other' do
+                                let(:body) { 'Stuff here' }
+
+                                expect_it { to_not be_html }
+                            end
+                        end
+                    end
+                end
+
+            end
+        end
+
+    end
+
     describe '#partial?' do
         context 'when the response body does not match the content-lenth' do
             it 'returns true' do

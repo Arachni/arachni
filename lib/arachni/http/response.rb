@@ -15,6 +15,12 @@ module HTTP
 class Response < Message
     require_relative 'response/scope'
 
+    HTML_CONTENT_TYPES = Set.new(%w(text/html application/xhtml+xml))
+    HTML_IDENTIFIERS   = [
+        '<!doctype html', '<html', '<head', '<body', '<title', '<script'
+    ]
+    HTML_IDENTIFIER_REGEXPS = HTML_IDENTIFIERS.map { |s| Regexp.new s, Regexp::IGNORECASE }
+
     # @return   [Integer]
     #   HTTP response status code.
     attr_accessor :code
@@ -163,6 +169,24 @@ class Response < Message
     #   `true` if timed out, `false` otherwise.
     def timed_out?
         return_code == :operation_timedout
+    end
+
+    def html?
+        # IF we've got a Content-Type that's all we need to know.
+        if (ct = headers.content_type)
+            ct = ct.split( ';' ).first
+            ct.strip!
+            return HTML_CONTENT_TYPES.include?( ct.downcase )
+        end
+
+        # Server insists we should only only use the content-type. respect it.
+        return false if headers['X-Content-Type-Options'].to_s.downcase.include?( 'nosniff' )
+
+        # If there's a doctype then we're good to go.
+        return true if body.start_with?( '<!DOCTYPE html' )
+
+        # Last resort, sniff the content-type from several HTML tags.
+        HTML_IDENTIFIER_REGEXPS.find { |regexp| body =~ regexp }
     end
 
     def body=( body )
