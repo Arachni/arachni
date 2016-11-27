@@ -23,4 +23,7 @@ group :prof do
     gem 'memory_profiler'
 end
 
+gem 'arachni-rpc',     github: 'Arachni/arachni-rpc'
+gem 'arachni-reactor', github: 'Arachni/arachni-reactor'
+
 gemspec
