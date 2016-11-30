@@ -29,7 +29,7 @@ class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
         (@set_payloads ||= Set.new( payloads )).include? Arachni::URI( url ).to_s
     end
     def payload?( url )
-        self.class.payload? url
+        self.class.payload? url.to_s.split( '?' ).first
     end
 
     def self.options
@@ -37,7 +37,24 @@ class Arachni::Checks::UnvalidatedRedirect < Arachni::Check::Base
             format: [ Format::STRAIGHT ],
             submit: {
                 follow_location: false
-            }
+            },
+
+            # Add one more mutation (on the fly) which will include the original
+            # value.
+            each_mutation: proc do |mutation|
+                next if !mutation.affected_input_value
+
+                m = mutation.dup
+
+                # Figure out the extension of the default value, if it has one.
+                original_value = m.default_inputs[m.affected_input_name]
+
+                # Null-terminate the injected value and append the ext.
+                m.affected_input_value += "/?#{original_value}"
+
+                # Pass our new mutation back to be audited.
+                m
+            end
         }
     end
 
