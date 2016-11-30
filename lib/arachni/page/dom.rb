@@ -140,7 +140,11 @@ class DOM
         # First transition will always be the page load and if that's all there
         # is then we're done.
         if playables.size == 1
-            browser.goto playables.first.options[:url]
+            surl = playables.first.options[:url]
+
+            browser.print_debug "Only have a URL load transition: #{surl}"
+            browser.goto surl
+
             return browser
 
         # Alternatively, try to load the page via its DOM#url in case it can
