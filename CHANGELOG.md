@@ -112,7 +112,7 @@
         - `unvalidated_redirect`, `unvalidated_redirect_dom`, `xss`, `xss_dom`,
             `xss_dom_script_context`, `xss_script_context` -- Replaced `Proc`s
                 with class methods for `BrowserCluster` job callbacks.
-        - `sql_injection` -- Added more error signatures for HSQLDB and Java.
+        - `sql_injection` -- Added more error signatures for HSQLDB, Java and SQLite.
         - `csrf` -- Removed heuristics that try to match tokens based on format;
             now only uses a nonce check.
         - `path_traversal` -- Increased maximum traversals to 8.
