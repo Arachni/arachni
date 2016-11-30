@@ -1570,13 +1570,75 @@ describe Arachni::Browser do
             context ':submit' do
                 let(:url) { "#{@url}/fire_event/form/onsubmit" }
 
+                def element
+                    @browser.selenium.find_element(:tag_name, :form)
+                end
+
+                context 'when there is a submit button' do
+                    let(:url) { "#{@url}/fire_event/form/submit_button" }
+                    let(:inputs) do
+                        {
+                            name:  'The Dude',
+                            email: 'the.dude@abides.com'
+                        }
+                    end
+
+                    it 'clicks it' do
+                        @browser.fire_event element, :submit, inputs: inputs
+
+                        expect(@browser.watir.div( id: 'container-name' ).text).to eq(
+                           inputs[:name]
+                        )
+                        expect(@browser.watir.div( id: 'container-email' ).text).to eq(
+                            inputs[:email]
+                        )
+                    end
+                end
+
+                context 'when there is a submit input' do
+                    let(:url) { "#{@url}/fire_event/form/submit_input" }
+                    let(:inputs) do
+                        {
+                            name:  'The Dude',
+                            email: 'the.dude@abides.com'
+                        }
+                    end
+
+                    it 'clicks it' do
+                        @browser.fire_event element, :submit, inputs: inputs
+
+                        expect(@browser.watir.div( id: 'container-name' ).text).to eq(
+                            inputs[:name]
+                        )
+                        expect(@browser.watir.div( id: 'container-email' ).text).to eq(
+                            inputs[:email]
+                        )
+                    end
+                end
+
+                context 'when there is no submit button or input' do
+                    let(:url) { "#{@url}/fire_event/form/onsubmit" }
+                    let(:inputs) do
+                        {
+                            name:  'The Dude',
+                            email: 'the.dude@abides.com'
+                        }
+                    end
+
+                    it 'triggers the submit event' do
+                        @browser.fire_event element, :submit, inputs: inputs
+
+                        expect(@browser.watir.div( id: 'container-name' ).text).to eq(
+                            inputs[:name]
+                        )
+                        expect(@browser.watir.div( id: 'container-email' ).text).to eq(
+                            inputs[:email]
+                        )
+                    end
+                end
+
                 context 'when option' do
                     describe ':inputs' do
-
-                        def element
-                            @browser.selenium.find_element(:tag_name, :form)
-                        end
-
                         context 'is given' do
                             let(:inputs) do
                                 {
@@ -2291,6 +2353,12 @@ describe Arachni::Browser do
                 expect(subject.response.headers).not_to include 'Cache-Control'
             end
 
+            it 'does not receive a Last-Modified header' do
+                subject.goto "#{@url}/Last-Modified"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Last-Modified'
+            end
+
             it 'does not send If-None-Match request headers' do
                 subject.goto "#{@url}/If-None-Match"
                 expect(subject.response.code).to eq(200)
@@ -2358,7 +2426,21 @@ describe Arachni::Browser do
                 expect(response.headers).to include 'Cache-Control'
             end
 
-            #
+            it 'receives a Last-Modified header' do
+                url = "#{@url}Last-Modified"
+
+                response = nil
+                subject.on_response do |r|
+                    next if r.url == url
+                    response = r
+                end
+
+                subject.goto url
+
+                expect(response.code).to eq(200)
+                expect(response.headers).to include 'Last-Modified'
+            end
+
             it 'sends If-None-Match request headers' do
                 url = "#{@url}If-None-Match"
 

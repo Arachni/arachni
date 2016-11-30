@@ -613,8 +613,8 @@ class Browser
             transition = Page::DOM::Transition.new( locator, event, options ) do
                 force = true
 
-                # It's better to use the Watir helpers whenever possible instead
-                # of firing events manually.
+                # It's better to use the helpers whenever possible instead of
+                # firing events manually.
                 if tag_name == :form
                     fill_in_form_inputs( element, options[:inputs] )
 
@@ -625,7 +625,16 @@ class Browser
                     if event == :submit
                         force = false
 
-                        element.submit
+                        begin
+                            element.find_elements( :css,
+                                "input[type='submit'], button[type='submit']"
+                            ).first.click
+                        rescue => e
+                            print_debug "No submit button, will trigger 'submit' event."
+                            print_debug_exception e
+
+                            element.submit
+                        end
                     end
 
                 elsif event == :click
@@ -1577,6 +1586,7 @@ EOJS
             response.headers.delete 'Cache-control'
             response.headers.delete 'Etag'
             response.headers.delete 'Date'
+            response.headers.delete 'Last-Modified'
         end
 
         print_debug_level_2 "Got response: #{response.url}"

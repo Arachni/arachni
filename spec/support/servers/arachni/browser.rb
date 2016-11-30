@@ -124,6 +124,23 @@ get '/Etag/asset' do
     ''
 end
 
+get '/Last-Modified' do
+    headers['Last-Modified'] = 'Wed, 21 Oct 2015 07:28:00 GMT'
+
+    <<HTML
+<html>
+<script src="/Last-Modified/asset"></script>
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Last-Modified/asset' do
+    headers['Last-Modified'] = 'Wed, 21 Oct 2015 07:28:00 GMT'
+    ''
+end
+
 get '/Cache-Control' do
     headers['Cache-Control'] = 'public, max-age=300'
 
@@ -439,6 +456,64 @@ get '/fire_event/form/disabled_inputs' do
             <textarea name="name" ></textarea>
             <input disabled id="email"/>
             <input/>
+        </fom>
+
+        <div id="container-name">
+        </div>
+        <div id="container-email">
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
+get '/fire_event/form/submit_button' do
+    <<-EOHTML
+<html>
+    <script>
+        function submitForm() {
+            document.getElementById("container-name").innerHTML =
+                document.getElementsByName("name")[0].value;
+
+            document.getElementById("container-email").innerHTML =
+                document.getElementById("email").value;
+        }
+    </script>
+
+    <body>
+        <form>
+            <textarea name="name" ></textarea>
+            <input id="email"/>
+            <button onclick="submitForm();return false;" type="submit"/>
+        </fom>
+
+        <div id="container-name">
+        </div>
+        <div id="container-email">
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
+get '/fire_event/form/submit_input' do
+    <<-EOHTML
+<html>
+    <script>
+        function submitForm() {
+            document.getElementById("container-name").innerHTML =
+                document.getElementsByName("name")[0].value;
+
+            document.getElementById("container-email").innerHTML =
+                document.getElementById("email").value;
+        }
+    </script>
+
+    <body>
+        <form>
+            <textarea name="name" ></textarea>
+            <input id="email"/>
+            <input onclick="submitForm();return false;" type="submit"/>
         </fom>
 
         <div id="container-name">
