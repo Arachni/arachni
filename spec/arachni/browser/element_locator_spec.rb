@@ -162,16 +162,29 @@ describe Arachni::Browser::ElementLocator do
                 end
             end
 
+            context "and a #{described_class::ARACHNI_ID}" do
+                it "only includes the #{described_class::ARACHNI_ID}" do
+                    expect(described_class.new(
+                       tag_name: :a,
+                       attributes: {
+                           stuff:  'blah',
+                           stuff2: 'blah2',
+                           described_class::ARACHNI_ID =>     'my-id'
+                       }
+                   ).css).to eq("a[#{described_class::ARACHNI_ID}=\"my-id\"]")
+                end
+            end
+
             context 'and includes data ones' do
-                it "excludes all but #{described_class::ARACHNI_ID}" do
+                it 'excludes them' do
                     expect(described_class.new(
                         tag_name: :a,
                         attributes: {
-                            'data-stuff'                => 'blah',
-                            'data-stuff2'               => 'blah2',
-                            described_class::ARACHNI_ID => 'blah3'
+                            'data-stuff'  => 'blah',
+                            'data-stuff2' => 'blah2',
+                            'class'       => 'blah3'
                         }
-                    ).css).to eq("a[#{described_class::ARACHNI_ID}=\"blah3\"]")
+                    ).css).to eq('a[class="blah3"]')
                 end
             end
         end
