@@ -29,6 +29,20 @@ get '/login' do
             <input name='username' value='' />
             <input name='password' type='password' value='' />
             <input name='token' type='hidden' value='secret!' />
+            <input name="submit_me" type="submit" value="Login!"/>
+        </form>
+    HTML
+end
+
+get '/without_button' do
+    cookies[:you_need_to] = 'preserve this'
+
+    <<-HTML
+        <form method='post' name='login_form' action="/login">
+            <input name='username' value='' />
+            <input name='password' type='password' value='' />
+            <input name='token' type='hidden' value='secret!' />
+            <input name="submit_me" type="hidden" value="Login!"/>
         </form>
     HTML
 end
@@ -63,6 +77,12 @@ get '/javascript_login' do
 
             var input = document.createElement("input");
             input.type = "submit";
+            input.name = "submit_me";
+            input.value = "Login!";
+            form.appendChild(input);
+
+            var input = document.createElement("input");
+            input.type = "submit";
             form.appendChild(input);
 
             document.body.appendChild(form);
@@ -83,6 +103,7 @@ get '/disappearing_login' do
             <input name='username' value='' />
             <input name='password' type='password' value='' />
             <input name='token' type='hidden' value='secret!' />
+            <input name="submit_me" type="submit" value="Login!"/>
         </form>
     HTML
 end
@@ -98,13 +119,15 @@ get '/multiple' do
             <input name='username' value='' />
             <input name='password' type='password' value='' />
             <input name='token' type='hidden' value='secret!' />
+            <input name="submit_me" type="submit" value="Login!"/>
         </form>
     HTML
 end
 
 post '/login' do
     if params['username'] == 'john' && params['password'] == 'doe' &&
-        params['token'] == 'secret!'
+        params['token'] == 'secret!' && params['submit_me'] == 'Login!'
+
         cookies[:success] = true
         redirect '/'
     else

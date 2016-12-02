@@ -1,5 +1,24 @@
 # ChangeLog
 
+## Under development
+
+- Session -- Allow for a submit input to be specified when the login needs to be
+    triggered by clicking it, rather than just triggering the submit event on
+    the form.
+- Plugins
+    - `metrics` -- Fixed division by 0 error when no requests have been performed.
+    - `email_notify`
+        - Retry on error.
+        - Default to `afr` as a report format.
+- Checks
+    - Passive
+        - `backup_files`
+            - Ignore media files to avoid FPs when dealing with galleries and the like.
+            - Added issue remark explaining how the original resource name was manipulated.
+        - `backup_directories` -- Added issue remark explaining how the original
+            resource name was manipulated.
+        - `xst` -- Run once for each protocol, not just for the first page.
+
 ## 1.4 _(February 7, 2016)_
 
 - Native MS Windows compatibility.

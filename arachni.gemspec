@@ -88,13 +88,13 @@ Gem::Specification.new do |s|
     s.add_dependency 'addressable',       '2.3.6'
 
     # E-mail plugin.
-    s.add_dependency 'pony',              '1.8'
+    s.add_dependency 'pony',              '1.11'
 
     # For the Arachni console (arachni_console).
     s.add_dependency 'rb-readline',       '0.5.1'
 
     # Markup parsing.
-    s.add_dependency 'nokogiri',          '1.6.8rc2'
+    s.add_dependency 'nokogiri',          '1.6.7.2'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',    '1.4.5'

@@ -1760,6 +1760,59 @@ describe Arachni::Browser do
                 end
             end
 
+            context ':fill' do
+                before(:each) do
+                    @browser.load url
+                end
+
+                let(:url) { "#{@url}/fire_event/form/onsubmit" }
+                let(:inputs) do
+                    {
+                        name:  "The Dude",
+                        email: "the.dude@abides.com"
+                    }
+                end
+
+                def element
+                    @browser.selenium.find_element(:tag_name, :form)
+                end
+
+                it 'fills in the form inputs' do
+                    @browser.fire_event element, :fill, inputs: inputs
+
+                    expect(@browser.watir.textarea( name: 'name' ).value).to eq(
+                        inputs[:name]
+                    )
+
+                    expect(@browser.watir.input( id: 'email' ).value).to eq(
+                        inputs[:email]
+                    )
+
+                    expect(@browser.watir.div( id: 'container-name' ).text).to be_empty
+                    expect(@browser.watir.div( id: 'container-email' ).text).to be_empty
+                end
+
+                it 'returns a playable transition' do
+                    @browser.load url
+                    transition = @browser.fire_event element, :fill, inputs: inputs
+
+                    @browser.load url
+
+                    expect(@browser.watir.textarea( name: 'name' ).value).to be_empty
+                    expect(@browser.watir.input( id: 'email' ).value).to be_empty
+
+                    transition.play @browser
+
+                    expect(@browser.watir.textarea( name: 'name' ).value).to eq(
+                        inputs[:name]
+                    )
+
+                    expect(@browser.watir.input( id: 'email' ).value).to eq(
+                        inputs[:email]
+                    )
+                end
+            end
+
             context 'image button' do
                 context ':click' do
                     before( :each ) { @browser.start_capture }

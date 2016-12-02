@@ -84,7 +84,7 @@ module Report
 
             IO.binread( outfile )
         ensure
-            File.delete( outfile ) if outfile
+            File.delete( outfile ) if outfile && File.exists?( outfile )
             @reporters.clear
             @reporters.load loaded
         end

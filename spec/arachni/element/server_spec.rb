@@ -83,6 +83,12 @@ describe Arachni::Element::Server do
                 expect(logged_issue.trusted).to be_truthy
             end
 
+            it 'assigns the extra Issue options' do
+                auditable.log_remote_file_if_exists( @base_url + 'true', false, trusted: false )
+                @framework.http.run
+                expect(Arachni::Data.issues.first).to_not be_trusted
+            end
+
             context 'when one issue is logged' do
                 it "does not push the response to the #{Arachni::Trainer}" do
                     auditable.log_remote_file_if_exists( @base_url + 'true' )

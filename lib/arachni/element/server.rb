@@ -67,7 +67,7 @@ class Server < Base
     #   * `true` if everything went fine.
     #
     # @see #remote_file_exist?
-    def log_remote_file_if_exists( url, silent = false, &block )
+    def log_remote_file_if_exists( url, silent = false, options = {}, &block )
         # Make sure the URL is valid.
         return false if !(url.start_with?( 'http://' ) || url.start_with?( 'https://' ))
 
@@ -76,7 +76,7 @@ class Server < Base
             auditor.print_status( "Analyzing response for: #{url}" ) if !silent
             next if !bool
 
-            @candidates << [response, block]
+            @candidates << [response, block, options]
         end
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
@@ -158,11 +158,11 @@ class Server < Base
         return if @candidates.empty?
 
         if @candidates.size == 1
-            response, block = @candidates.first
+            response, block, options = @candidates.first
 
             # Single issue, not enough confidence to use it for training, err
             # on the side of caution.
-            log response, false, &block
+            log response, false, options, &block
 
             return
         end
@@ -188,8 +188,8 @@ class Server < Base
         train = similarity < SIMILARITY_TOLERANCE
 
         issue_digests = []
-        @candidates.each do |response, block|
-            issue_digests << log( response, train, &block ).digest
+        @candidates.each do |response, block, options|
+            issue_digests << log( response, train, options, &block ).digest
         end
 
         return if train
@@ -199,10 +199,10 @@ class Server < Base
         @candidates.clear
     end
 
-    def log( response, train = true, &block )
+    def log( response, train = true, options = {}, &block )
         block.call( response ) if block_given?
 
-        issue = auditor.log_remote_file( response )
+        issue = auditor.log_remote_file( response, false, options )
 
         return issue if !train
 
