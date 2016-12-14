@@ -179,8 +179,7 @@ class String
     def binary?
         # Stolen from YAML.
         BINARY_CACHE.fetch self do
-            (encoding == Encoding::ASCII_8BIT ||
-                index("\x00") ||
+            ( index("\x00") ||
                 count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3)
         end
     end
