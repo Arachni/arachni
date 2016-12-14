@@ -158,10 +158,11 @@ class Response < Message
         end
 
         # Last resort, more resource intensive binary detection.
-        @is_text = begin
-            !@body.binary?
+        begin
+            @is_text = !@body.binary?
         rescue ArgumentError
-            :inconclusive
+            @is_text = :inconclusive
+            nil
         end
     end
 
