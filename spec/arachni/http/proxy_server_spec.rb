@@ -56,6 +56,35 @@ describe Arachni::HTTP::ProxyServer do
         test_proxy( proxy )
     end
 
+    context 'when the response is text-based' do
+        let(:url) { "#{@url}/text" }
+
+        it 'sets charset encoding to UTF8' do
+            proxy = described_class.new
+            proxy.start_async
+
+            expect(via_proxy( proxy, url ).headers['Content-Type']).to eq 'text/html; charset=utf-8'
+        end
+
+        it 'transcodes to UTF-8' do
+            proxy = described_class.new
+            proxy.start_async
+
+            expect(via_proxy( proxy, url ).body.encoding.name).to eq 'UTF-8'
+        end
+    end
+
+    context 'when the response is binary' do
+        let(:url) { "#{@url}/binary" }
+
+        it 'does not add a charset' do
+            proxy = described_class.new
+            proxy.start_async
+
+            expect(via_proxy( proxy, url ).headers['Content-Type']).to eq 'application/binary'
+        end
+    end
+
     describe '#initialize' do
         describe ':address' do
             it 'sets the bind address' do

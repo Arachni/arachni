@@ -14,8 +14,8 @@ class Connection < Arachni::Reactor::Connection
     include Arachni::UI::Output
     personalize_output
 
-    SKIP_HEADERS = %w(transfer-encoding connection proxy-connection
-        content-encoding te trailers accept-encoding)
+    SKIP_HEADERS = %w(transfer-encoding connection proxy-connection keep-alive
+        content-encoding te trailers accept-encoding accept-ranges vary)
 
     attr_reader :parent
     attr_reader :request
@@ -192,6 +192,11 @@ class Connection < Arachni::Reactor::Connection
 
         headers = cleanup_response_headers( response.headers )
         headers['Content-Length'] = response.body.bytesize
+
+        if response.text? && headers.content_type
+            headers['Content-Type'] =
+                "#{headers.content_type.split( ';' ).first}; charset=utf-8"
+        end
 
         headers.each do |k, v|
             if v.is_a?( Array )
