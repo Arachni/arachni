@@ -209,6 +209,16 @@ describe Arachni::URI do
             expect(described_class.parse( 'javascript:stuff()' )).to be_nil
             expect(described_class.parse( 'jAvaScRipT:stuff()' )).to be_nil
         end
+
+        it 'ignores data: URLs' do
+            expect(described_class.parse( 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA
+AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO
+9TXL0Y4OHwAAAABJRU5ErkJggg==' )).to be_nil
+
+            expect(described_class.parse( 'dAtA:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA
+AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO
+9TXL0Y4OHwAAAABJRU5ErkJggg==' )).to be_nil
+        end
     end
 
     describe '.fast_parse' do

@@ -155,8 +155,11 @@ class URI
         #     * `:query`
         def fast_parse( url )
             return if !url || url.empty?
-            return if url.start_with?( '#' ) ||
-                url.downcase.start_with?( 'javascript:' )
+            return if url.start_with?( '#' )
+
+            durl = url.downcase
+            return if durl.start_with?( 'javascript:' ) ||
+                durl.start_with?( 'data:' )
 
             # One to rip apart.
             url = url.dup

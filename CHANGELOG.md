@@ -29,6 +29,8 @@
 - `UI`
     - `CLI`
         - `Framework` -- Trap `USR1` signal and go into a `pry` session for debugging.
+- `URI`
+    - `.fast_parse` --- Ignore `data:` URIs.
 - `HTTP`
     - `ProxyServer`
         - Fixed state of abruptly closed SSL interceptor connections leading to
