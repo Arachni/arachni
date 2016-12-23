@@ -48,6 +48,7 @@
             - Updated to not dismiss redirects but follow the location.
 - `Browser`
     - Updated engine to PhantomJS 2.1.1.
+    - Remove `Content-Security-Policy` to allow the Arachni JS env to run.
     - `#snapshot_id` -- Moved to browser-side `DOMMonitor` for better performance.
     - `#capture` -- Extract query parameters from `POST` requests.
     - `ElementLocator` -- Fixed bug causing broken CSS selectors with UTF8 characters.

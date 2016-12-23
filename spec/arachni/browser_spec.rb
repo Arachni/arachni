@@ -2334,6 +2334,12 @@ describe Arachni::Browser do
             expect(described_class.asset_domains).to include Arachni::URI( @url ).domain
         end
 
+        it 'does not receive a Content-Security-Policy header' do
+            subject.goto "#{@url}/Content-Security-Policy"
+            expect(subject.response.code).to eq(200)
+            expect(subject.response.headers).not_to include 'Content-Security-Policy'
+        end
+
         context 'when requesting the page URL' do
             it 'does not receive a Date header' do
                 subject.goto "#{@url}/Date"

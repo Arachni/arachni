@@ -89,6 +89,17 @@ get '/open-new-window' do
 HTML
 end
 
+get '/Content-Security-Policy' do
+    headers['Content-Security-Policy'] = "default-src 'self'"
+
+    <<HTML
+<html>
+    <body>
+    </body>
+</html>
+HTML
+end
+
 get '/Date' do
     headers['Date'] = 'Thu, 29 Sep 2016 09:57:11 GMT'
 

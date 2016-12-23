@@ -1589,6 +1589,9 @@ EOJS
             response.headers.delete 'Last-Modified'
         end
 
+        # Allow our own scripts to run.
+        response.headers.delete 'Content-Security-Policy'
+
         print_debug_level_2 "Got response: #{response.url}"
 
         @request_transitions.each do |transition|
