@@ -1,6 +1,6 @@
 # License
 
-Copyright 2010-2016 [Tasos Laskos](mailto:tasos.laskos@arachni-scanner.com).
+Copyright 2010-2017 [Sarosys LLC](http://www.sarosys.com).
 
 ```
                     Arachni Public Source License
