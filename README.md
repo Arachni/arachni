@@ -69,7 +69,7 @@ If you get an error when trying to run Arachni, use `bundle exec` like so:
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2017 [Sarosys LLC](http://www.sarosys.com)</td>
+        <td>2010-2017 <a href="http://www.sarosys.com">Sarosys LLC</a></td>
     </tr>
     <tr>
         <th>License</th>
