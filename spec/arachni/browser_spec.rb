@@ -442,10 +442,22 @@ describe Arachni::Browser do
             end
 
             it 'pushes it to the existing transitions' do
-                transition = { stuff: :here }
-                captured = subject.capture_snapshot( stuff: :here )
+                transition = Arachni::Page::DOM::Transition.new(
+                    :page, :load
+                )
+                captured = subject.capture_snapshot( transition )
 
                 expect(captured.first.dom.transitions).to include transition
+            end
+        end
+
+        context 'when a page has the same transitions but different states' do
+            it 'only captures the first state' do
+                subject.load( "#{@url}/ever-changing-dom", take_snapshot: false )
+                expect(subject.capture_snapshot).to be_any
+
+                subject.load( "#{@url}/ever-changing-dom", take_snapshot: false )
+                expect(subject.capture_snapshot).to be_empty
             end
         end
 

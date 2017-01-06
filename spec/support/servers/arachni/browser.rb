@@ -761,6 +761,22 @@ get '/ever-changing-via-js' do
 HTML
 end
 
+get '/ever-changing-dom' do
+    <<HTML
+<html>
+    <head>
+        <title>My title!</title>
+    </head>
+
+    <body>
+        <a href="#{Time.now.to_i}" onclick="doStuff()">
+            Blah
+        </a>
+    </body>
+</html>
+HTML
+end
+
 get '/set-javascript-cookie' do
     <<HTML
     <script>

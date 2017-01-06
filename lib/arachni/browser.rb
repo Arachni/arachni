@@ -934,6 +934,13 @@ class Browser
 
                 next if already_seen
 
+                # Safegued against pages which generate an inf number of DOM
+                # states regardless of UI interactions.
+                transition_id ="#{page.dom.url}:#{page.dom.playable_transitions.map(&:hash)}"
+                transition_id_seen = skip_state?( transition_id )
+                skip_state transition_id
+                next if transition_id_seen
+
                 notify_on_new_page( page )
 
                 if store_pages?

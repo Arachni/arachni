@@ -51,6 +51,7 @@
     - Remove `Content-Security-Policy` to allow the Arachni JS env to run.
     - `#snapshot_id` -- Moved to browser-side `DOMMonitor` for better performance.
     - `#capture` -- Extract query parameters from `POST` requests.
+    - `#capture_snapshot` -- Deduplicate based on DOM URL and transitions as well.
     - `ElementLocator` -- Fixed bug causing broken CSS selectors with UTF8 characters.
     - `Javascript`
         - `#dom_elements_with_events`
