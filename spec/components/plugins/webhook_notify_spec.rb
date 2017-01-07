@@ -32,7 +32,7 @@ describe name_from_filename do
                 "X-XSS-Protection: 1; mode=block\r\n" <<
                 "X-Content-Type-Options: nosniff\r\n" <<
                 "X-Frame-Options: SAMEORIGIN\r\n" <<
-                "Content-Length: 176\r\n\r\n" <<
+                "Content-Length: 174\r\n\r\n" <<
                 "[\"application/json\",\"{\\\"SEED\\\":\\\"#{Arachni::Utilities.random_seed}\\\",\\\"URL\\\":\\\"#{options.url}\\\",\\\"MAX_SEVERITY\\\":\\\"\\\",\\\"ISSUE_COUNT\\\":\\\"0\\\",\\\"DURATION\\\":\\\"#{framework.report.delta_time}\\\"}\"]"
             )
         end
@@ -61,7 +61,7 @@ describe name_from_filename do
                 "X-XSS-Protection: 1; mode=block\r\n" <<
                 "X-Content-Type-Options: nosniff\r\n" <<
                 "X-Frame-Options: SAMEORIGIN\r\n" <<
-                "Content-Length: 187\r\n\r\n" <<
+                "Content-Length: 185\r\n\r\n" <<
                 "[\"application/xml\",\"<SEED>#{Arachni::Utilities.random_seed}</SEED><URL>#{options.url}</URL><MAX_SEVERITY></MAX_SEVERITY><ISSUE_COUNT>0</ISSUE_COUNT><DURATION>#{framework.report.delta_time}</DURATION>\"]"
             )
         end
