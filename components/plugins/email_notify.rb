@@ -35,8 +35,8 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 address:              options[:server_address],
                 port:                 options[:server_port],
                 enable_starttls_auto: options[:tls],
-                user_name:            options[:username],
-                password:             options[:password],
+                user_name:            !options[:username].empty? ? options[:username] : nil,
+                password:             !options[:password].empty? ? options[:password] : nil,
                 authentication:       !options[:authentication].empty? ? options[:authentication].to_sym : nil,
                 domain:               options[:domain]
             }
