@@ -496,10 +496,11 @@ class Browser
     #   `self`
     def trigger_events
         dom = self.state
+        url = normalize_url( dom.url )
 
         count = 1
         each_element_with_events do |locator, events|
-            state = "#{dom.url}:#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
+            state = "#{url}:#{locator.tag_name}:#{locator.attributes}:#{events.keys.sort}"
             next if skip_state?( state )
             skip_state state
 
