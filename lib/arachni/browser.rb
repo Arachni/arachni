@@ -496,6 +496,8 @@ class Browser
     #   `self`
     def trigger_events
         dom = self.state
+        return self if !dom
+
         url = normalize_url( dom.url )
 
         count = 1
