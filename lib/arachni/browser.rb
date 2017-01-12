@@ -246,9 +246,11 @@ class Browser
 
         case resource
             when String
+                @transitions = []
                 goto resource, options
 
             when HTTP::Response
+                @transitions = []
                 goto preload( resource ), options
 
             when Page
@@ -286,7 +288,7 @@ class Browser
 
                         else
                             fail Error::Load,
-                                 "Can't load resource of type #{resource.class}."
+                                 "Can't preload resource of type #{resource.class}."
                     end
 
         save_response( response ) if !response.url.include?( request_token )
