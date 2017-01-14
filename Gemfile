@@ -23,4 +23,6 @@ group :prof do
     gem 'memory_profiler'
 end
 
+gem 'ox', github: 'ohler55/ox'
+
 gemspec

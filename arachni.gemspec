@@ -98,7 +98,7 @@ Gem::Specification.new do |s|
     # Markup parsing, for reports and Element::XML.
     s.add_dependency 'nokogiri',            '1.6.8.1'
     # Really fast and lightweight markup parsing, for pages.
-    s.add_dependency 'ox',                  '2.4.7'
+    s.add_dependency 'ox',                  '2.4.8a1'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',      '1.4.5'
