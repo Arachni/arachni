@@ -1361,7 +1361,7 @@ class Browser
     end
 
     def wait_for_pending_requests
-        sleep 0.1
+        sleep 0.2
 
         t = Time.now
         last_connections = []
