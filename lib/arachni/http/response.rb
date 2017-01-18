@@ -122,7 +122,7 @@ class Response < Message
     alias :redirection? :redirect?
 
     def headers_string=( string )
-        @headers_string = string.freeze
+        @headers_string = string.to_s.recode.freeze
     end
 
     # @note Depends on the response code.
