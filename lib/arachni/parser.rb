@@ -52,7 +52,7 @@ class Parser
 
     WHITELIST = %w(
         title base a form frame iframe meta input select option script link area
-        textarea input select button comment
+        textarea input select button comment !--
     )
 
     IGNORE_REQUEST_HEADERS = [
