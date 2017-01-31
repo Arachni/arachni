@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Under development
+## 1.5 _(January 31, 2017)_
 
 - Executables
     - `arachni_rpcd_monitor` -- Brought up to date with Dispatcher refactoring.
