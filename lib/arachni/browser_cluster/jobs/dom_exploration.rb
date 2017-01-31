@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -34,6 +34,18 @@ class DOMExploration < Job
 
         browser.load resource
         browser.trigger_events
+    end
+
+    def resource=( r )
+        # Pages are heavy objects, better just keep the DOM since the browsers
+        # will only load them by it anyways.
+        if r.is_a? Page
+            @resource = r.dom
+            @resource.page = nil
+            return r
+        end
+
+        @resource = r
     end
 
     def dup

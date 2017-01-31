@@ -11,6 +11,8 @@ describe Arachni::Element::Cookie do
     it_should_behave_like 'inputtable', single_input: true
     it_should_behave_like 'mutable',    single_input: true
     it_should_behave_like 'auditable'
+    it_should_behave_like 'buffered_auditable'
+    it_should_behave_like 'line_buffered_auditable'
 
     before :each do
         @framework ||= Arachni::Framework.new
@@ -56,6 +58,39 @@ describe Arachni::Element::Cookie do
             describe '#simple' do
                 it 'returns name/val as a key/pair' do
                     expect(subject.simple).to eq(inputs)
+                end
+            end
+        end
+
+        context 'domain' do
+            context 'specified' do
+                subject do
+                    described_class.new(
+                        url:     "#{url}submit",
+                        name:    inputs.keys.first,
+                        value:   inputs.values.first,
+                        expires: Time.now + 99999999999,
+                        domain:  '.localhost'
+                    )
+                end
+
+                it 'sets it to the given value' do
+                    expect(subject.domain).to eq '.localhost'
+                end
+            end
+
+            context 'missing' do
+                subject do
+                    described_class.new(
+                        url:     "#{url}submit",
+                        name:    inputs.keys.first,
+                        value:   inputs.values.first,
+                        expires: Time.now + 99999999999
+                    )
+                end
+
+                it 'sets it to the URL host' do
+                    expect(subject.domain).to eq Arachni::URI(url).host
                 end
             end
         end
@@ -235,7 +270,7 @@ describe Arachni::Element::Cookie do
                 comment:     nil,
                 secure:      nil,
                 path:        '/submit',
-                domain:      '127.0.0.2',
+                domain:      Arachni::URI(url).host,
                 httponly:    false
             })
         end
@@ -295,32 +330,39 @@ describe Arachni::Element::Cookie do
     end
 
     describe '#to_set_cookie' do
-        it 'returns a string suitable for the Set-Cookie HTTP response header' do
-            c = described_class.new(
-                url:      url,
-                name:     'blah=ha%',
-                value:    'some stuff ;',
-                secure:   true,
-                httponly: true
-            )
+        context 'when the cookie is for all subdomains' do
+            it 'includes a Domain attribute' do
+                c = described_class.new(
+                    url:    url,
+                    name:   'blah=ha%',
+                    value:  'some stuff ;',
+                    path:   '/stuff',
+                    domain: '.localhost'
+                )
 
-            expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/; Secure; HttpOnly'
-            )
-            expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
+                expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
+                expect(c.to_set_cookie).to eq(
+                    'blah%3Dha%25=some+stuff+%3B; Path=/stuff; Domain=.localhost'
+                )
+            end
+        end
 
-            c = described_class.new(
-                url:    url,
-                name:   'blah=ha%',
-                value:  'some stuff ;',
-                path:   '/stuff',
-                domain: '.localhost'
-            )
+        context 'when the cookie is for a single domain' do
+            it 'does not include a Domain attribute' do
+                c = described_class.new(
+                    url:      url,
+                    name:     'blah=ha%',
+                    value:    'some stuff ;',
+                    secure:   true,
+                    httponly: true,
+                    domain:   'localhost'
+                )
 
-            expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
-            expect(c.to_set_cookie).to eq(
-                'blah%3Dha%25=some+stuff+%3B; Path=/stuff'
-            )
+                expect(c.to_set_cookie).to eq(
+                    'blah%3Dha%25=some+stuff+%3B; Path=/; Secure; HttpOnly'
+                )
+                expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
+            end
         end
     end
 
@@ -337,7 +379,7 @@ describe Arachni::Element::Cookie do
         end
 
         context 'when there are raw data' do
-            context 'and is not a mutation' do
+            context 'and has not been updated' do
                 it 'returns them' do
                     c = described_class.new(
                         url:    url,
@@ -350,7 +392,7 @@ describe Arachni::Element::Cookie do
                 end
             end
 
-            context 'and is a mutation' do
+            context 'and has been updated' do
                 it 'returns the encoded name/value pair' do
                     c = described_class.new(
                         url:    url,
@@ -359,7 +401,7 @@ describe Arachni::Element::Cookie do
                         raw_name: 'blah',
                         raw_value: 'blah2'
                     )
-                    expect(c).to receive(:mutation?) { true }
+                    expect(c).to receive(:updated?) { true }
                     expect(c.to_s).to eq('blah%3Dha%25=some+stuff+%3B')
                 end
             end
@@ -412,28 +454,32 @@ describe Arachni::Element::Cookie do
             cookie = cookies.shift
             expect(cookie.action).to eq(url)
             expect(cookie.url).to eq(url)
-            expect(cookie.inputs).to eq({ 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' })
-            expect(cookie.simple).to eq({ 'NAME' => 'OP5jTLV6VhYHADJAbJ1ZR@L8~081210' })
+            expect(cookie.inputs).to eq({ 'coo@ki e2' => 'blah val2@' })
+            expect(cookie.simple).to eq({ 'coo@ki e2' => 'blah val2@' })
             expect(cookie.domain).to eq('.blah-domain')
             expect(cookie.path).to eq('/')
             expect(cookie.secure).to eq(false)
             expect(cookie.session?).to eq(false)
             expect(cookie.expires).to eq(Time.parse( '2020-08-09 16:59:20 +0300' ))
-            expect(cookie.name).to eq('NAME')
-            expect(cookie.value).to eq('OP5jTLV6VhYHADJAbJ1ZR@L8~081210')
+            expect(cookie.name).to eq('coo@ki e2')
+            expect(cookie.raw_name).to eq('coo%40ki+e2')
+            expect(cookie.value).to eq('blah val2@')
+            expect(cookie.raw_value).to eq('blah+val2%40')
 
             cookie = cookies.shift
             expect(cookie.action).to eq(url)
             expect(cookie.url).to eq(url)
-            expect(cookie.inputs).to eq({ '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' })
-            expect(cookie.simple).to eq({ '_superapp_session' => 'BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg%3D%3D--810acaa3759101ed79740e25de31e0c5bad76cdc' })
+            expect(cookie.inputs).to eq({ '_superapp_session' => 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==' })
+            expect(cookie.simple).to eq({ '_superapp_session' => 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==' })
             expect(cookie.domain).to eq('192.168.1.1')
             expect(cookie.path).to eq('/')
             expect(cookie.secure).to eq(false)
             expect(cookie.session?).to eq(true)
             expect(cookie.expires).to be_nil
             expect(cookie.name).to eq('_superapp_session')
-            expect(cookie.value).to eq('BAh7CkkiD3Nlc3Npb25faWQGOgZFRiIlNWMyOWY5MjE5YmU0MWMzMWM0ZGQxNTdkNzJkOTFmZTRJIhBfY3NyZl90b2tlbgY7AEZJIjF6RStYQzdONGxScUZybWxhbUwwUDI2RWZuai9laWVsS3FKRXhZYnlQUmJjPQY7AEZJIgtsb2NhbGUGOwBGSSIHZW4GOwBGSSIVdXNlcl9jcmVkZW50aWFscwY7AEZJIgGAOThiOGU5ZTcwMDFlOGI4N2IzNjQxMjlkNWYxNGExYzg3NjY5ZjE1ZjFjMDM3MWJiNjg1OGFlOTBlNjQxM2I1Y2JiODlkNTExMjU1MzBhMDk0ZjlmN2JlNjAyZTMzMjYxNzc5OGM2OTg1ZGRlYzgxNmFlZmEzYmRjNDk4YTBjNzcGOwBUSSIYdXNlcl9jcmVkZW50aWFsc19pZAY7AEZpBg==--810acaa3759101ed79740e25de31e0c5bad76cdc')
+            expect(cookie.raw_name).to eq('_superapp_session')
+            expect(cookie.value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==')
+            expect(cookie.raw_value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D')
         end
     end
 
@@ -450,46 +496,61 @@ describe Arachni::Element::Cookie do
         end
     end
 
+    describe '.from_parser' do
+        let(:parser) do
+            Arachni::Parser.new(
+                Arachni::HTTP::Response.new(
+                    url:  url,
+                    body: html,
+                    headers: {
+                        'Content-Type' => 'text/html'
+                    })
+            )
+        end
 
-    describe '.from_document' do
         context 'when there are any set-cookie attributes in http-equiv' do
-            context 'with a String document' do
-                it 'returns an array of cookies' do
-                    html = <<-EOHTML
+            let(:html) do
+                <<-EOHTML
                     <html>
                     <head>
                         <meta http-equiv="Set-Cookie" content="cookie=val+1; httponly">
                         <meta http-equiv="Set-Cookie" content="cookie2+1=val2; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/; Domain=.foo.com; HttpOnly; secure">
                     </head>
                     </html>
-                    EOHTML
-
-                    cookies = described_class.from_document( 'http://test.com', html )
-                    expect(cookies.size).to eq(2)
-
-                    cookie = cookies.shift
-                    expect(cookie.name).to eq('cookie')
-                    expect(cookie.value).to eq('val 1')
-                    expect(cookie.raw_name).to eq('cookie')
-                    expect(cookie.raw_value).to eq('val+1')
-                    expect(cookie.expired?).to eq(false)
-                    expect(cookie.session?).to eq(true)
-                    expect(cookie.secure?).to eq(false)
-
-                    cookie = cookies.shift
-                    expect(cookie.name).to eq('cookie2 1')
-                    expect(cookie.value).to eq('val2')
-                    expect(cookie.raw_name).to eq('cookie2+1')
-                    expect(cookie.raw_value).to eq('val2')
-                    expect(cookie.path).to eq('/')
-                    expect(cookie.domain).to eq('.foo.com')
-                    expect(cookie.secure?).to eq(true)
-                    expect(cookie.expired?).to eq(true)
-                end
+                EOHTML
             end
+
+            it 'returns an array of cookies' do
+                cookies = described_class.from_parser( parser )
+                expect(cookies.size).to eq(2)
+
+                cookie = cookies.shift
+                expect(cookie.name).to eq('cookie')
+                expect(cookie.value).to eq('val 1')
+                expect(cookie.raw_name).to eq('cookie')
+                expect(cookie.raw_value).to eq('val+1')
+                expect(cookie.expired?).to eq(false)
+                expect(cookie.session?).to eq(true)
+                expect(cookie.secure?).to eq(false)
+
+                cookie = cookies.shift
+                expect(cookie.name).to eq('cookie2 1')
+                expect(cookie.value).to eq('val2')
+                expect(cookie.raw_name).to eq('cookie2+1')
+                expect(cookie.raw_value).to eq('val2')
+                expect(cookie.path).to eq('/')
+                expect(cookie.domain).to eq('.foo.com')
+                expect(cookie.secure?).to eq(true)
+                expect(cookie.expired?).to eq(true)
+            end
+
             context 'with an empty string' do
+                let(:html) do
+                    ''
+                end
+
                 it 'returns an empty array' do
-                     expect(described_class.from_document( '', '' )).to be_empty
+                     expect(described_class.from_parser( parser )).to be_empty
                 end
             end
         end
@@ -572,6 +633,40 @@ describe Arachni::Element::Cookie do
                 expect(cookie.raw_name).to eq('coo%40ki+e2')
                 expect(cookie.raw_value).to eq('blah+val2%40')
                 expect(cookie.path).to eq('/')
+            end
+        end
+
+        context 'when there is a domain' do
+            context 'and it starts with a dot' do
+                it 'uses it verbatim' do
+                    sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.test.com; HttpOnly'
+                    cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                    expect(cookie.domain).to eq '.test.com'
+                end
+            end
+
+            context 'and it does not start with a dot' do
+                it 'prefixes it with a dot' do
+                    sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=test.com; HttpOnly'
+                    cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                    expect(cookie.domain).to eq '.test.com'
+                end
+            end
+
+            context 'and it is an IP address' do
+                it 'uses it verbatim' do
+                    sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=127.0.0.2; HttpOnly'
+                    cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                    expect(cookie.domain).to eq '127.0.0.2'
+                end
+            end
+        end
+
+        context 'when there is no domain' do
+            it 'uses it URL host' do
+                sc = 'coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; HttpOnly'
+                cookie = described_class.from_set_cookie( 'http://test.com/stuff', sc ).first
+                expect(cookie.domain).to eq 'test.com'
             end
         end
 

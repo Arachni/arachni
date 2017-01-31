@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -7,7 +7,6 @@
 =end
 
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.1
 class Arachni::Checks::Captcha < Arachni::Check::Base
 
     CAPTCHA_RX = /.*captcha.*/i
@@ -16,23 +15,23 @@ class Arachni::Checks::Captcha < Arachni::Check::Base
         return if !page.body =~ CAPTCHA_RX
 
         # since we only care about forms parse the HTML and match forms only
-        page.document.css( 'form' ).each do |form|
+        page.document.nodes_by_name( 'form' ).each do |form|
             # pretty dumb way to do this but it's a pretty dumb issue anyways...
             next if !(proof = find_proof( form ))
 
             log(
                 signature: CAPTCHA_RX,
                 proof:     proof,
-                vector:    Element::Form.from_document( page.url, form ).first
+                vector:    Element::Form.from_node( page.url, form ).first
             )
         end
     end
 
     def find_proof( node )
-        node.css('input').each do |input|
-            html = input.to_html
-            return html if html =~ CAPTCHA_RX
-        end
+        node.nodes_by_name('input').each do |input|
+                html = input.to_html
+                return html if html =~ CAPTCHA_RX
+            end
 
         nil
     end
@@ -43,7 +42,7 @@ class Arachni::Checks::Captcha < Arachni::Check::Base
             description: %q{Greps pages for forms with CAPTCHAs.},
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.1',
+            version:     '0.2.2',
 
             issue:       {
                 name:        %q{CAPTCHA protected form},

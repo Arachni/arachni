@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -8,8 +8,6 @@
 
 module Arachni
 
-# Real browser driver providing DOM/JS/AJAX support.
-#
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class BrowserCluster
     include UI::Output
@@ -57,10 +55,6 @@ class BrowserCluster
     #   Amount of browser instances in the pool.
     attr_reader :pool_size
 
-    # @return   [Hash<String, Integer>]
-    #   List of crawled URLs with their HTTP codes.
-    attr_reader :sitemap
-
     # @return   [Array<Worker>]
     #   Worker pool.
     attr_reader :workers
@@ -107,12 +101,11 @@ class BrowserCluster
 
         # Jobs are off-loaded to disk.
         @jobs = Support::Database::Queue.new
+        @jobs.max_buffer_size = 10
 
         # Worker pool holding BrowserCluster::Worker instances.
         @workers     = []
 
-        # Stores visited resources from all workers.
-        @sitemap     = {}
         @mutex       = Monitor.new
         @done_signal = Queue.new
 
@@ -129,8 +122,13 @@ class BrowserCluster
     #
     # @param    [Block] block
     #   Block to which to pass a {Worker} as soon as one is available.
-    def with_browser( &block )
-        queue( Jobs::BrowserProvider.new, &block )
+    def with_browser( *args, &block )
+        method_handler = nil
+        if args.last.is_a? Method
+            method_handler = args.pop
+        end
+
+        queue( Jobs::BrowserProvider.new( args ), method_handler, &block )
     end
 
     # @param    [Job]  job
@@ -139,7 +137,7 @@ class BrowserCluster
     #
     # @raise    [AlreadyShutdown]
     # @raise    [Job::Error::AlreadyDone]
-    def queue( job, &block )
+    def queue( job, cb = nil, &block )
         fail_if_shutdown
         fail_if_job_done job
 
@@ -154,7 +152,12 @@ class BrowserCluster
 
             @pending_job_counter  += 1
             @pending_jobs[job.id] += 1
-            @job_callbacks[job.id] = block if block
+
+            if cb
+                @job_callbacks[job.id] = cb
+            elsif block
+                @job_callbacks[job.id] = block
+            end
 
             if !@job_callbacks[job.id]
                 fail ArgumentError, "No callback set for job ID #{job.id}."
@@ -166,14 +169,6 @@ class BrowserCluster
         nil
     end
 
-    # def on_queue( &block )
-        # synchronize { @on_queue << block }
-    # end
-
-    # def on_job_done( &block )
-        # synchronize { @on_job_done << block }
-    # end
-
     # @param    [Page, String, HTTP::Response]  resource
     #   Resource to explore, if given a `String` it will be treated it as a URL
     #   and will be loaded.
@@ -184,9 +179,10 @@ class BrowserCluster
     #
     # @see Jobs::DOMExploration
     # @see #queue
-    def explore( resource, options = {}, &block )
+    def explore( resource, options = {}, cb = nil, &block )
         queue(
             Jobs::DOMExploration.new( options.merge( resource: resource ) ),
+            cb,
             &block
         )
     end
@@ -201,8 +197,12 @@ class BrowserCluster
     #
     # @see Jobs::TaintTrace
     # @see #queue
-    def trace_taint( resource, options = {}, &block )
-        queue( Jobs::TaintTrace.new( options.merge( resource: resource ) ), &block )
+    def trace_taint( resource, options = {}, cb = nil, &block )
+        queue(
+            Jobs::TaintTrace.new( options.merge( resource: resource ) ),
+            cb,
+            &block
+        )
     end
 
     # @param    [Job]  job
@@ -212,6 +212,12 @@ class BrowserCluster
         synchronize do
             print_debug "Job done: #{job}"
 
+            @pending_job_counter  -= 1
+            @pending_jobs[job.id] -= 1
+
+            increment_completed_job_count
+            add_to_total_job_time( job.time )
+
             notify_on_job_done job
 
             if !job.never_ending?
@@ -219,18 +225,11 @@ class BrowserCluster
                 @job_callbacks.delete job.id
             end
 
-            @pending_job_counter -= @pending_jobs[job.id]
-            @pending_jobs[job.id] = 0
-
-            if @pending_job_counter <= 0
-                @pending_job_counter = 0
+            if @pending_job_counter == 0
+                print_debug_level_2 'Pending job counter reached 0.'
                 @done_signal << nil
             end
-
-            Arachni.collect_young_objects
         end
-
-        true
     end
 
     # @param    [Job]  job
@@ -260,7 +259,11 @@ class BrowserCluster
             print_debug "Got job result: #{result}"
 
             exception_jail( false ) do
-                @job_callbacks[result.job.id].call result
+                @job_callbacks[result.job.id].call( *[
+                    result,
+                    result.job.args,
+                    self
+                ].flatten.compact)
             end
         end
 
@@ -271,34 +274,50 @@ class BrowserCluster
     #   `true` if there are no resources to analyze and no running workers.
     def done?
         fail_if_shutdown
-        @pending_job_counter == 0
+        synchronize { @pending_job_counter == 0 }
+    end
+
+    def pending_job_counter
+        synchronize { @pending_job_counter }
     end
 
     # Blocks until all resources have been analyzed.
     def wait
         fail_if_shutdown
+
+        print_debug 'Waiting to finish...'
         @done_signal.pop if !done?
+        print_debug '...finish.'
+
         self
     end
 
     # Shuts the cluster down.
     def shutdown( wait = true )
+        print_debug 'Shutting down...'
         @shutdown = true
 
+        print_debug_level_2 'Clearing jobs...'
         # Clear the jobs -- don't forget this, it also removes the disk files for
         # the contained items.
         @jobs.clear
+        print_debug_level_2 '...done.'
 
+        print_debug_level_2 "Shutting down #{@workers.size} workers..."
         # Kill the browsers.
         @workers.each { |b| exception_jail( false ) { b.shutdown wait } }
         @workers.clear
+        print_debug_level_2 '...done.'
 
+        print_debug_level_2 'Clearing data and state...'
         # Very important to leave these for last, they may contain data
         # necessary to cleanly handle interrupted jobs.
         @job_callbacks.clear
         @skip_states_per_job.clear
         @pending_jobs.clear
+        print_debug_level_2 '...done.'
 
+        print_debug '...shutdown complete.'
         true
     end
 
@@ -308,8 +327,12 @@ class BrowserCluster
     # @see #queue
     # @private
     def pop
+        print_debug 'Popping...'
         {} while job_done?( job = @jobs.pop )
+        print_debug "...popped: #{job}"
+
         notify_on_pop job
+
         job
     end
 
@@ -343,11 +366,6 @@ class BrowserCluster
     end
 
     # @private
-    def push_to_sitemap( url, code )
-        synchronize { @sitemap[url] = code }
-    end
-
-    # @private
     def update_skip_states( id, lookups )
         synchronize { skip_states( id ).merge lookups }
     end
@@ -357,18 +375,6 @@ class BrowserCluster
         synchronize do
             @skip_states_per_job[id] ||=
                 Support::LookUp::HashSet.new( hasher: :persistent_hash )
-        end
-    end
-
-    # @private
-    def decrease_pending_job( job )
-        synchronize do
-            increment_completed_job_count
-            add_to_total_job_time( job.time )
-
-            @pending_job_counter  -= 1
-            @pending_jobs[job.id] -= 1
-            job_done( job ) if @pending_jobs[job.id] <= 0
         end
     end
 
@@ -383,9 +389,15 @@ class BrowserCluster
         end
     end
 
-    def increment_completed_job_count( *args )
+    def increment_completed_job_count
         synchronize do
-            self.class.increment_completed_job_count( *args )
+            self.class.increment_completed_job_count
+        end
+    end
+
+    def increment_time_out_count
+        synchronize do
+            self.class.increment_time_out_count
         end
     end
 
@@ -405,9 +417,14 @@ class BrowserCluster
         @queued_job_count += 1
     end
 
-    def self.increment_completed_job_count( increment = 1 )
+    def self.increment_completed_job_count
         @completed_job_count ||= 0
-        @completed_job_count += increment
+        @completed_job_count += 1
+    end
+
+    def self.increment_time_out_count
+        @time_out_count ||= 0
+        @time_out_count += 1
     end
 
     def self.completed_job_count
@@ -419,8 +436,8 @@ class BrowserCluster
     end
 
     def self.add_to_total_job_time( time )
-        @total_job_time ||= 0
-        @total_job_time += time.to_i
+        @total_job_time ||= 0.0
+        @total_job_time += time.to_f
     end
 
     def self.statistics
@@ -428,7 +445,8 @@ class BrowserCluster
             seconds_per_job:     seconds_per_job,
             total_job_time:      total_job_time,
             queued_job_count:    @queued_job_count    || 0,
-            completed_job_count: @completed_job_count || 0
+            completed_job_count: @completed_job_count || 0,
+            time_out_count:      @time_out_count      || 0
         }
     end
 
@@ -461,7 +479,7 @@ class BrowserCluster
     end
 
     def fail_if_job_not_found( job )
-        return if @pending_jobs.include?( job.id ) || @job_callbacks.include?( job.id )
+        return if @pending_jobs.include?( job.id )
         fail Error::JobNotFound, 'Job could not be found.'
     end
 

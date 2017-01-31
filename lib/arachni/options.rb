@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -95,6 +95,9 @@ class Options
     # @return    [String]
     #   The URL to audit.
     attr_reader   :url
+
+    # @return    [Arachni::URI]
+    attr_reader   :parsed_url
 
     # @return    [Array<String, Symbol>]
     #   Checks to load, by name.
@@ -210,22 +213,36 @@ class Options
         parsed = Arachni::URI( url.to_s )
 
         if parsed.to_s.empty? || !parsed.absolute?
+
             fail Error::InvalidURL,
                  'Invalid URL argument, please provide a full absolute URL and try again.'
-        elsif %w(localhost 127.0.0.1).include? parsed.host
-            fail Error::ReservedHostname, "'#{parsed.host}' is reserved, please use a different hostname."
+
+        # PhantomJS won't proxy localhost.
+        elsif parsed.host == 'localhost' || parsed.host.start_with?( '127.' )
+
+            fail Error::ReservedHostname,
+                 "Loopback interfaces (like #{parsed.host}) are nor supported," <<
+                     ' please use a different IP address or hostname.'
+
         else
+
             if scope.https_only? && parsed.scheme != 'https'
+
                 fail Error::InvalidURL,
                      "Invalid URL argument, the 'https-only' option requires"+
                          ' an HTTPS URL.'
+
             elsif !%w(http https).include?( parsed.scheme )
+
                 fail Error::InvalidURL,
                      'Invalid URL scheme, please provide an HTTP or HTTPS URL and try again.'
+
             end
+
         end
 
-        @url = parsed.to_s
+        @parsed_url = parsed
+        @url        = parsed.to_s
     end
 
     # Configures options via a Hash object.
@@ -333,6 +350,7 @@ class Options
         hash = hash.deep_clone
 
         hash.delete( 'url' ) if !hash['url']
+        hash.delete( 'parsed_url' )
 
         hash
     end
@@ -349,6 +367,7 @@ class Options
         end
 
         hash.delete( :url ) if !hash[:url]
+        hash.delete( :parsed_url )
         hash.delete(:paths)
 
         hash.deep_clone

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -49,6 +49,7 @@ class Framework
         @sitemap = {}
 
         @page_queue            = Support::Database::Queue.new
+        @page_queue.max_buffer_size = 10
         @page_queue_total_size = 0
 
         @url_queue                 = Support::Database::Queue.new

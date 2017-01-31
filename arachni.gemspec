@@ -1,6 +1,6 @@
 # coding: utf-8
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -10,7 +10,7 @@
 Gem::Specification.new do |s|
     require File.expand_path( File.dirname( __FILE__ ) ) + '/lib/arachni/version'
 
-    s.required_ruby_version = '>= 2.0.0'
+    s.required_ruby_version = '>= 2.2.0'
 
     s.name              = 'arachni'
     s.version           = Arachni::VERSION
@@ -42,72 +42,78 @@ Gem::Specification.new do |s|
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
-    s.add_dependency 'awesome_print'
+    s.add_dependency 'awesome_print',       '1.6.1'
 
-    s.add_dependency 'rack'
+    s.add_dependency 'rack',                '1.6.4'
 
+    # Don't specify version, messes with the packages since they always grab the
+    # latest one.
     s.add_dependency 'bundler'
 
-    s.add_dependency 'concurrent-ruby',     '1.0.0'
-    s.add_dependency 'concurrent-ruby-ext', '1.0.0'
+    s.add_dependency 'concurrent-ruby',     '1.0.2'
+    s.add_dependency 'concurrent-ruby-ext', '1.0.2'
 
     # For compressing/decompressing system state archives.
-    s.add_dependency 'rubyzip',           '1.1.6'
+    s.add_dependency 'rubyzip',             '1.1.6'
 
     # HTTP proxy server
-    s.add_dependency 'http_parser.rb'
+    s.add_dependency 'http_parser.rb',      '0.6.0'
 
     # HTML report
-    s.add_dependency 'coderay',           '1.1.0'
+    s.add_dependency 'coderay',             '1.1.0'
 
-    s.add_dependency 'childprocess',      '0.5.3'
+    s.add_dependency 'childprocess',        '0.5.3'
 
     # RPC serialization.
-    s.add_dependency 'msgpack',           '0.7.0'
+    s.add_dependency 'msgpack',             '0.7.0'
 
     if RUBY_PLATFORM != 'java'
         # Optimized JSON.
-        s.add_dependency 'oj',            '~> 2.14.3'
-        s.add_dependency 'oj_mimic_json'
+        s.add_dependency 'oj',              '2.15.0'
+        s.add_dependency 'oj_mimic_json',   '1.0.1'
     end
 
     # Web server
-    s.add_dependency 'puma',              '2.14.0'
+    s.add_dependency 'puma',                '2.14.0'
 
     # REST API
-    s.add_dependency 'sinatra',           '1.4.6'
-    s.add_dependency 'sinatra-contrib',   '1.4.6'
+    s.add_dependency 'sinatra',             '1.4.6'
+    s.add_dependency 'sinatra-contrib',     '1.4.6'
 
     # RPC client/server implementation.
-    s.add_dependency 'arachni-rpc',       '0.2.1.3'
+    s.add_dependency 'arachni-rpc',         '~> 0.2.1.4'
 
     # HTTP client.
-    s.add_dependency 'typhoeus',          '1.0.1'
+    s.add_dependency 'typhoeus',            '1.0.2'
 
     # Fallback URI parsing and encoding utilities.
-    s.add_dependency 'addressable',       '2.3.6'
+    s.add_dependency 'addressable',         '2.3.6'
 
     # E-mail plugin.
-    s.add_dependency 'pony',              '1.8'
+    s.add_dependency 'pony',                '1.11'
 
     # For the Arachni console (arachni_console).
-    s.add_dependency 'rb-readline',       '0.5.1'
+    s.add_dependency 'rb-readline',         '0.5.1'
 
-    # Markup parsing.
-    s.add_dependency 'nokogiri',          '1.6.8rc2'
+    # Markup parsing, for reports and Element::XML.
+    s.add_dependency 'nokogiri',            '1.6.8.1'
+    # Really fast and lightweight markup parsing, for pages.
+    s.add_dependency 'ox',                  '2.4.9'
 
     # Outputting data in table format (arachni_rpcd_monitor).
-    s.add_dependency 'terminal-table',    '1.4.5'
+    s.add_dependency 'terminal-table',      '1.4.5'
 
     # Browser support for DOM/JS/AJAX analysis stuff.
-    s.add_dependency 'watir-webdriver',   '0.8.0'
+    # Lock webdriver, newer versions has issues.
+    s.add_dependency 'selenium-webdriver',  '3.0.1'
+    s.add_dependency 'watir-webdriver',     '0.8.0'
 
     # Markdown to HTML conversion, used by the HTML report for component
     # descriptions.
-    s.add_dependency 'kramdown',          '1.4.1'
+    s.add_dependency 'kramdown',            '1.4.1'
 
     # Used to scrub Markdown for XSS etc.
-    s.add_dependency 'loofah',            '~> 2.0.0'
+    s.add_dependency 'loofah',              '2.0.3'
 
     s.post_install_message = <<MSG
 
@@ -124,7 +130,7 @@ License            - Arachni Public Source License v1.0
                         (https://github.com/Arachni/arachni/blob/master/LICENSE.md)
 Author             - Tasos "Zapotek" Laskos (http://twitter.com/Zap0tek)
 Twitter            - http://twitter.com/ArachniScanner
-Copyright          - 2010-2016 Tasos Laskos
+Copyright          - 2010-2017 Sarosys LLC (http://www.sarosys.com)
 
 Please do not hesitate to ask for assistance (via the support portal)
 or report a bug (via GitHub Issues) if you come across any problem.

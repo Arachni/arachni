@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,16 +17,19 @@
 # @see http://www.owasp.org/index.php/Cross_Site_Tracing
 class Arachni::Checks::Xst < Arachni::Check::Base
 
-    def self.ran?
-        @ran ||= false
+    RAN = Set.new
+
+    def self.ran_for?( proto )
+        RAN.include? proto
     end
 
-    def self.ran
-        @ran = true
+    def self.ran_for( proto )
+        RAN << proto
     end
 
     def run
-        return if self.class.ran?
+        return if self.class.ran_for?( page.parsed_url.scheme )
+        self.class.ran_for( page.parsed_url.scheme )
 
         print_status 'Checking...'
 
@@ -38,12 +41,7 @@ class Arachni::Checks::Xst < Arachni::Check::Base
                 response: response,
                 proof:    response.status_line
             )
-            print_ok 'TRACE is enabled.'
         end
-    end
-
-    def clean_up
-        self.class.ran
     end
 
     def self.info
@@ -52,7 +50,7 @@ class Arachni::Checks::Xst < Arachni::Check::Base
             description: %q{Sends an HTTP TRACE request and checks if it succeeded.},
             elements:    [ Element::Server ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.7',
+            version:     '0.1.8',
 
             issue:       {
                 name:            %q{HTTP TRACE},

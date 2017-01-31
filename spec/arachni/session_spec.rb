@@ -22,8 +22,9 @@ describe Arachni::Session do
         subject.configure(
             url:    "#{@url}/login",
             inputs: {
-                username: 'john',
-                password: 'doe'
+                username:  'john',
+                password:  'doe',
+                submit_me: 'Login!'
             }
         )
 
@@ -172,7 +173,8 @@ describe Arachni::Session do
                         url:    "#{@url}/javascript_login",
                         inputs: {
                             username: 'john',
-                            password: 'doe'
+                            password: 'doe',
+                            submit_me: 'Login!'
                         }
                     )
 
@@ -187,13 +189,15 @@ describe Arachni::Session do
                 it 'returns the resulting browser evaluated page' do
                     expect(configured.login).to be_kind_of Arachni::Page
 
-                    transition = configured.login.dom.transitions.first
+                    transitions = configured.login.dom.transitions
+
+                    transition = transitions[0]
                     expect(transition.event).to eq(:load)
                     expect(transition.element).to eq(:page)
                     expect(transition.options[:url]).to eq(configured.configuration[:url])
 
-                    transition = configured.login.dom.transitions.last
-                    expect(transition.event).to eq(:submit)
+                    transition = transitions[1]
+                    expect(transition.event).to eq(:fill)
                     expect(transition.element.tag_name).to eq(:form)
 
                     expect(transition.options[:inputs]['username']).to eq(
@@ -203,6 +207,62 @@ describe Arachni::Session do
                     expect(transition.options[:inputs]['password']).to eq(
                         configured.configuration[:inputs][:password]
                     )
+
+                    expect(transition.options[:inputs]['submit_me']).to eq(
+                        configured.configuration[:inputs][:submit_me]
+                    )
+
+                    transition = transitions[2]
+                    expect(transition.event).to eq(:click)
+                    expect(transition.element).to eq(
+                        Arachni::Browser::ElementLocator.new(
+                            tag_name:   :input,
+                            attributes: {
+                                "name" => "submit_me",
+                                "type" => "submit",
+                                "value" => "Login!"
+                            }
+                        )
+                    )
+                end
+
+                context 'when a parameter is a submit input' do
+                    it 'clicks it' do
+                        subject.configure(
+                            url:    "#{@url}/login",
+                            inputs: {
+                                username: 'john',
+                                password: 'doe',
+                                submit_me: 'Login!'
+                            }
+                        )
+
+                        @opts.session.check_url     = @url
+                        @opts.session.check_pattern = 'logged-in user'
+
+                        subject.login
+
+                        expect(subject).to be_logged_in
+                    end
+                end
+
+                context 'when no parameters match a submit input' do
+                    it 'submits the form' do
+                        subject.configure(
+                            url:    "#{@url}/without_button",
+                            inputs: {
+                                username: 'john',
+                                password: 'doe'
+                            }
+                        )
+
+                        @opts.session.check_url     = @url
+                        @opts.session.check_pattern = 'logged-in user'
+
+                        subject.login
+
+                        expect(subject).to be_logged_in
+                    end
                 end
             end
         end
@@ -333,7 +393,7 @@ describe Arachni::Session do
     end
 
     describe '#find_login_form' do
-        before { @id = "#{@url}/login:form:[\"password\", \"token\", \"username\"]" }
+        before { @id = "#{@url}/login:form:[\"password\", \"submit_me\", \"token\", \"username\"]" }
         context 'when passed an array of :pages' do
             it 'should go through its forms and locate the login one' do
                 p = Arachni::Page.from_url( @url + '/login' )
@@ -462,7 +522,8 @@ describe Arachni::Session do
                     url:    "#{@url}/disappearing_login",
                     inputs: {
                         username: 'john',
-                        password: 'doe'
+                        password: 'doe',
+                        submit_me: 'Login!'
                     }
                 )
 

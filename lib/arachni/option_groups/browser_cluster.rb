@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -50,7 +50,11 @@ class BrowserCluster < Arachni::OptionGroup
         local_storage:       {},
         wait_for_elements:   {},
         pool_size:           6,
-        job_timeout:         25,
+        # Not actually a timeout for the job anymore, sets a timeout for Selenium
+        # communication HTTP requests.
+        # Name hijacked for compatibility, but should probably change in the
+        # future.
+        job_timeout:         10,
         worker_time_to_live: 100,
         ignore_images:       false,
         screen_width:        1600,

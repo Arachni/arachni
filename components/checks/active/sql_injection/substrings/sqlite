@@ -1,3 +1,4 @@
 SQLite/JDBCDriver
 SQLite.Exception
 System.Data.SQLite.SQLiteException
+SQLITE_ERROR

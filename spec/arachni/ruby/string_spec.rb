@@ -185,6 +185,12 @@ describe String do
         end
     end
 
+    describe '#escape_double_quote' do
+        it 'escapes double quotes' do
+            expect('stuff" here'.escape_double_quote).to eq 'stuff\" here'
+        end
+    end
+
     describe '#words' do
         context 'when strict is set to true' do
             it 'does not include boundaries' do

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -29,6 +29,14 @@ class Scope < Arachni::OptionGroup
     #
     # @see Page::Scope#dom_depth_limit_reached?
     attr_accessor :dom_depth_limit
+
+    # @note `nil` is infinite -- default is `nil`.
+    #
+    # @return    [Integer]
+    #   How many DOM events to trigger for each snapshot.
+    #
+    # @see Browser#trigger_events
+    attr_accessor :dom_event_limit
 
     # @note `nil` is infinite -- default is `nil`.
     #
@@ -214,6 +222,10 @@ class Scope < Arachni::OptionGroup
 
     def page_limit_reached?( count )
         page_limit && page_limit.to_i > 0 && count >= page_limit
+    end
+
+    def dom_event_limit_reached?( count )
+        dom_event_limit && count >= dom_event_limit
     end
 
     # Sets the redundancy filters.

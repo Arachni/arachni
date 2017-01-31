@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -32,6 +32,7 @@ class SSLInterceptor < Connection
 
     def on_close( reason = nil )
         print_debug_level_3 "Closed because: [#{reason.class}] #{reason}"
+        @parent.mark_connection_inactive self
     end
 
     def start_tls

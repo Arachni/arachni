@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -31,6 +31,9 @@ class LinkTemplate < Base
     include Capabilities::WithDOM
     include Capabilities::Inputtable
     include Capabilities::Auditable
+
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
 
     # @return   [Regexp]
     #   Regular expressions with named captures, serving as templates used to
@@ -134,7 +137,7 @@ class LinkTemplate < Base
         def from_response( response, templates = Arachni::Options.audit.link_templates )
             url = response.url
 
-            links = from_document( url, response.body, templates )
+            links = from_parser( Arachni::Parser.new( response ) , templates )
 
             template, inputs = extract_inputs( url, templates )
             if template
@@ -153,28 +156,16 @@ class LinkTemplate < Base
         # {Arachni::OptionGroups::Audit#link_templates templates} from a
         # document.
         #
-        # @param    [String]    url
-        #   URL of the document -- used for path normalization purposes.
-        # @param    [String, Nokogiri::HTML::Document]    document
+        # @param    [Arachni::Parser]    parser
         # @param    [Array<Regexp>]    templates
         #
         # @return   [Array<LinkTemplate>]
-        def from_document( url, document, templates = Arachni::Options.audit.link_templates )
+        def from_parser( parser, templates = Arachni::Options.audit.link_templates )
             return [] if templates.empty?
 
-            if !document.is_a?( Nokogiri::HTML::Document )
-                document = Arachni::Parser.parse( document.to_s )
-            end
-
-            base_url = begin
-                document.search( '//base[@href]' )[0]['href']
-            rescue
-                url
-            end
-
-            document.search( '//a' ).map do |link|
+            parser.document.nodes_by_name( :a ).map do |link|
                 next if too_big?( link['href'] )
-                next if !(href = to_absolute( link['href'], base_url ))
+                next if !(href = to_absolute( link['href'], parser.base ))
 
                 template, inputs = extract_inputs( href, templates )
                 next if !template && !self::DOM.data_from_node( link )
@@ -184,7 +175,7 @@ class LinkTemplate < Base
                 end
 
                 new(
-                    url:      url.freeze,
+                    url:      parser.url,
                     action:   href.freeze,
                     inputs:   inputs || {},
                     template: template,

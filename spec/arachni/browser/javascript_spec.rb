@@ -19,39 +19,23 @@ describe Arachni::Browser::Javascript do
 
     subject { @browser.javascript }
 
-    describe '.events_for' do
-        it 'returns events for the given element' do
-            described_class::EVENTS_PER_ELEMENT.each do |element, events|
-                expect(described_class.events_for( element )).to eq(Set.new(described_class::GLOBAL_EVENTS | events))
+    describe '#wait_till_ready' do
+        it 'waits until the JS environment is #ready?'
+
+        context 'when it exceeds Options.browser_cluster.job_timeout' do
+            it 'returns' do
+                Arachni::Options.browser_cluster.job_timeout = 5
+                t = Time.now
+
+                @browser.load "#{@taint_tracer_url}/debug"
+
+                allow(subject).to receive(:ready?) { false }
+
+                subject.wait_till_ready
+
+                expect(Time.now - t).to be > 5
+                expect(Time.now - t).to be < 6
             end
-        end
-    end
-
-    describe '.select_events' do
-        it 'selects only events valid for the given element' do
-            events = {
-                onclick:   'blah();',
-                mouseover: 'blah2();',
-                onselect:  'my-id'
-            }
-            expect(described_class.select_events( :div, events )).to eq({
-                onclick:   'blah();',
-                mouseover: 'blah2();',
-            })
-        end
-    end
-
-    describe '.select_event_attributes' do
-        it 'selects only attributes that are events' do
-            attributes = {
-                onclick:     'blah();',
-                onmouseover: 'blah2();',
-                id:          'my-id'
-            }
-            expect(described_class.select_event_attributes( attributes )).to eq({
-                onclick:     'blah();',
-                onmouseover: 'blah2();'
-            })
         end
     end
 
@@ -166,34 +150,79 @@ describe Arachni::Browser::Javascript do
         end
     end
 
-    describe '#dom_elements_with_events' do
+    describe '#each_dom_element_with_events' do
+        context 'when given a whitelist of tag names' do
+            it 'only returns those types of elements' do
+                @browser.load @dom_monitor_url + 'elements_with_events/whitelist'
+
+                e = []
+                subject.each_dom_element_with_events ['span'] do |element|
+                    e << element
+                end
+
+                expect(e).to eq([
+                    {
+                     'tag_name'   => 'span',
+                     'events'     =>
+                         {
+                             click: [
+                                 'function (parent_click) {}',
+                                 'function (child_click) {}',
+                                 'function (window_click) {}',
+                                 'function (document_click) {}'
+                             ]
+                         },
+                     'attributes' => { 'id' => 'child-span' }
+                    }
+                ])
+            end
+        end
+
         context 'when using event attributes' do
             it 'returns information about all DOM elements along with their events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/attributes'
 
-                expect(subject.dom_elements_with_events).to eq([
+                e = []
+                subject.each_dom_element_with_events do |element|
+                    e << element
+                end
+
+                expect(e).to eq([
                     {
                         'tag_name'   => 'button',
                         'events'     => {
-                            onclick: [ 'handler_1()' ]
+                            click: [ 'handler_1()' ]
                         },
                         'attributes' => { 'onclick' => 'handler_1()', 'id' => 'my-button' }
                     },
                     {
                         'tag_name'   => 'button',
                         'events'     => {
-                            onclick: ['handler_2()']
+                            click: ['handler_2()']
                         },
                         'attributes' => { 'onclick' => 'handler_2()', 'id' => 'my-button2' }
                     },
                     {
                         'tag_name'   => 'button',
                         'events'     => {
-                            onclick: ['handler_3()']
+                            click: ['handler_3()']
                         },
                         'attributes' => { 'onclick' => 'handler_3()', 'id' => 'my-button3' }
                     }
                 ])
+            end
+
+            context 'with inappropriate events for the element' do
+                it 'ignores them' do
+                    @browser.load @dom_monitor_url + 'elements_with_events/attributes/inappropriate'
+
+                    e = []
+                    subject.each_dom_element_with_events do |element|
+                        e << element
+                    end
+
+                    expect(e).to be_empty
+                end
             end
         end
 
@@ -201,12 +230,17 @@ describe Arachni::Browser::Javascript do
             it 'returns information about all DOM elements along with their events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/listeners'
 
-                expect(subject.dom_elements_with_events).to eq([
+                e = []
+                subject.each_dom_element_with_events do |element|
+                    e << element
+                end
+
+                expect(e).to eq([
                     {
                         'tag_name'   => 'button',
                         'events'     => {
                             click: ['function (my_button_click) {}', 'function (my_button_click2) {}'],
-                            onmouseover: ['function (my_button_onmouseover) {}']
+                            mouseover: ['function (my_button_onmouseover) {}']
                         },
                         'attributes' => { 'id' => 'my-button' } },
                     {
@@ -220,7 +254,26 @@ describe Arachni::Browser::Javascript do
 
             it 'does not include custom events' do
                 @browser.load @dom_monitor_url + 'elements_with_events/listeners/custom'
-                expect(subject.dom_elements_with_events).to be_empty
+
+                e = []
+                subject.each_dom_element_with_events do |element|
+                    e << element
+                end
+
+                expect(e).to be_empty
+            end
+
+            context 'with inappropriate events for the element' do
+                it 'ignores them' do
+                    @browser.load @dom_monitor_url + 'elements_with_events/listeners/inappropriate'
+
+                    e = []
+                    subject.each_dom_element_with_events do |element|
+                        e << element
+                    end
+
+                    expect(e).to be_empty
+                end
             end
         end
     end
@@ -568,18 +621,6 @@ EOHTML
     describe '#html?' do
         context 'when the body is empty' do
             it 'returns false'
-        end
-
-        context 'when the Content-Type does not include text/html' do
-            it 'returns false'
-        end
-
-        context 'when the body does not include HTML identifiers such as' do
-            it 'returns false'
-        end
-
-        context 'when it starts with an HTML doctype' do
-            it 'returns true'
         end
 
         context 'when it matches the last loaded URL' do

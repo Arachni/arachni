@@ -36,7 +36,7 @@ describe Arachni::RPC::Server::ActiveOptions do
                         'name'  => 'value',
                         'name2' => 'value2'
                     },
-                    'cookie_string' => 'name3=value3;name4=value4'
+                    'cookie_string' => 'name3=value3,name4=value4'
                 }
             }
 

@@ -3,11 +3,11 @@ module WebDriver
 class Element
 
     def html
-        @bridge.executeScript( 'return arguments[0].outerHTML', self )
+        @bridge.execute_script( 'return arguments[0].outerHTML', self )
     end
 
     def opening_tag
-        @bridge.executeScript(
+        @bridge.execute_script(
             %Q[
                 var s = '<' + arguments[0].tagName.toLowerCase();
                 var attrs = arguments[0].attributes;
@@ -22,14 +22,14 @@ class Element
     end
 
     def events
-        (@bridge.executeScript( 'return arguments[0]._arachni_events;', self ) || []).
+        (@bridge.execute_script( 'return arguments[0]._arachni_events;', self ) || []).
             map { |event, fn| [event.to_sym, fn] } |
             (::Arachni::Browser::Javascript.events.flatten.map(&:to_s) & attributes).
                 map { |event| [event.to_sym, attribute( event )] }
     end
 
     def attributes
-        @bridge.executeScript(
+        @bridge.execute_script(
             %Q[
                 var s = [];
                 var attrs = arguments[0].attributes;

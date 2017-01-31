@@ -16,7 +16,7 @@ describe name_from_filename do
         it 'locates the form and login successfully' do
             options.plugins[component_name] = {
                 'url'        => url + '/login',
-                'parameters' => 'username=john&password=doe',
+                'parameters' => 'username=john&password=doe&submit_me=submitted',
                 'check'      => 'Hi there logged-in user'
             }
 
@@ -32,7 +32,7 @@ describe name_from_filename do
         it 'provides a login sequence and login check to the framework' do
             options.plugins[component_name] = {
                 'url'        => url + '/login',
-                'parameters' => 'username=john&password=doe',
+                'parameters' => 'username=john&password=doe&submit_me=submitted',
                 'check'      => 'Hi there logged-in user'
             }
 

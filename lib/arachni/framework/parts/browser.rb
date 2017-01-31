@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -76,17 +76,14 @@ module Browser
         @browser_job     = nil
     end
 
-    def browser_sitemap
-        return {} if !@browser_cluster
-        browser_cluster.sitemap
-    end
-
     def browser_job_update_skip_states( states )
         return if states.empty?
         browser_cluster.update_skip_states browser_job.id, states
     end
 
-    def handle_browser_page( page )
+    def handle_browser_page( result, * )
+        page = result.is_a?( Page ) ? result : result.page
+
         synchronize do
             return if !push_to_page_queue page
 
@@ -114,9 +111,11 @@ module Browser
         # needs to have a clean state.
         schedule_dom_metadata_application( page )
 
-        browser_cluster.queue( browser_job.forward( resource: page.dom.state ) ) do |result|
-            handle_browser_page result.page
-        end
+        @perform_browser_analysis_cb ||= method(:handle_browser_page)
+        browser_cluster.queue(
+            browser_job.forward( resource: page.dom.state ),
+            @perform_browser_analysis_cb
+        )
 
         true
     end
@@ -132,16 +131,17 @@ module Browser
             find { |c| c.check? page, [Element::Form::DOM, Element::Cookie::DOM], true }
 
         dom = page.dom.state
-        browser_cluster.with_browser do |browser|
-            apply_dom_metadata( browser, dom )
-        end
+        dom.page = nil # Help out the GC.
+
+        @dom_metadata_application_cb ||= method(:apply_dom_metadata)
+        browser_cluster.with_browser dom, @dom_metadata_application_cb
     end
 
     def apply_dom_metadata( browser, dom )
         bp = nil
 
         begin
-            bp = browser.load( dom ).to_page
+            bp = browser.load( dom, take_snapshot: false ).to_page
         rescue Selenium::WebDriver::Error::WebDriverError,
             Watir::Exception::Error => e
             print_debug "Could not apply metadata to '#{dom.url}'" <<

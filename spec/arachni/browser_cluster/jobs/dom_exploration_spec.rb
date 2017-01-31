@@ -60,7 +60,12 @@ describe Arachni::BrowserCluster::Jobs::DOMExploration do
         end
 
         context 'Arachni::Page' do
-            subject { described_class.new( resource: Arachni::Page.from_url( url ) ) }
+            let(:page) { Arachni::Page.from_url( url ) }
+            subject { described_class.new( resource: page ) }
+
+            it 'only stores the DOM' do
+                expect(subject.resource).to eq page.dom
+            end
 
             it 'loads it and explores the DOM' do
                 test subject

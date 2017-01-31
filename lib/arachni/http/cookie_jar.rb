@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -86,11 +86,7 @@ class CookieJar
 
             self << case c
                         when String
-                            begin
-                                Cookie.from_string( ::Arachni::Options.url.to_s, c )
-                            rescue
-                                Cookie.from_set_cookie( ::Arachni::Options.url.to_s, c )
-                            end
+                            Cookie.from_set_cookie( ::Arachni::Options.url.to_s, c )
 
                         when Hash
                             next if c.empty?
@@ -207,8 +203,17 @@ class CookieJar
     end
 
     def to_uri( url )
-        u = url.is_a?( ::URI ) || url.is_a?( ::Arachni::URI ) ? url : uri_parse( url.to_s )
-        fail ArgumentError, 'Complete absolute URL required.' if u.relative?
+        u = url.is_a?( Arachni::URI ) ? url : Arachni::URI( url.to_s )
+
+        if !u
+            fail "Failed to parse: #{url}"
+        end
+
+        if !u.absolute?
+            fail ArgumentError,
+                 "Complete absolute URL required, got: #{url} (#{u})"
+        end
+
         u
     end
 

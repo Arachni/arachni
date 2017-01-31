@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -85,6 +85,8 @@ class Client
     # Default 1 minute timeout for HTTP requests.
     HTTP_TIMEOUT = 60_000
 
+    SEED_HEADER_NAME = 'X-Arachni-Scan-Seed'
+
     # @return   [String]
     #   Framework target URL, used as reference.
     attr_reader :url
@@ -129,12 +131,13 @@ class Client
 
         headers.clear
         headers.merge!(
-            'Accept'          => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'User-Agent'      => Options.http.user_agent,
-            'Accept-Language' => 'en-US,en;q=0.8,he;q=0.6'
+            'Accept'              => 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'User-Agent'          => Options.http.user_agent,
+            'Accept-Language'     => 'en-US,en;q=0.8,he;q=0.6',
+            SEED_HEADER_NAME      => Arachni::Utilities.random_seed
         )
         headers['From'] = Options.authorized_by if Options.authorized_by
-        headers.merge!( Options.http.request_headers )
+        headers.merge!( Options.http.request_headers, false )
     end
 
     # @return   [Arachni::HTTP]
@@ -374,12 +377,33 @@ class Client
                 end
             end
 
+            on_headers    = options.delete(:on_headers)
+            on_body       = options.delete(:on_body)
+            on_body_line  = options.delete(:on_body_line)
+            on_body_lines = options.delete(:on_body_lines)
+
             request = Request.new( options.merge(
                 url:         url,
-                headers:     headers.merge( options.delete( :headers ) || {} ),
+                headers:     headers.merge( options.delete( :headers ) || {}, false ),
                 cookies:     cookies,
                 raw_cookies: raw_cookies
             ))
+
+            if on_headers
+                request.on_headers( &on_headers )
+            end
+
+            if on_body
+                request.on_body( &on_body )
+            end
+
+            if on_body_line
+                request.on_body_line( &on_body_line )
+            end
+
+            if on_body_lines
+                request.on_body_lines( &on_body_lines )
+            end
 
             if block_given?
                 request.on_complete( &block )
@@ -531,7 +555,8 @@ class Client
         end
 
         if add_callbacks
-            request.on_complete( &method(:global_on_complete) )
+            @global_on_complete ||= method(:global_on_complete)
+            request.on_complete( &@global_on_complete )
         end
 
         synchronize { @request_count += 1 }

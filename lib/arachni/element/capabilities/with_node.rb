@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -15,10 +15,10 @@ module Element::Capabilities
 module WithNode
     include WithSource
 
-    # @return [Nokogiri::XML::Element]
+    # @return [Ox::Element]
     def node
         return if !@source
-        Arachni::Parser.parse_fragment( @source.dup )
+        Arachni::Parser.parse_fragment( @source )
     end
 
 end

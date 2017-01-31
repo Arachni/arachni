@@ -224,6 +224,10 @@ get '/log_remote_file_if_exists/redirect' do
     redirect '/log_remote_file_if_exists/redirected'
 end
 
+get '/log_remote_file_if_exists/redirect/not_found' do
+    redirect '/log_remote_file_if_exists/false'
+end
+
 get '/log_remote_file_if_exists/redirected' do
     'Sucess!'
 end
@@ -243,6 +247,10 @@ end
 
 get '/log_remote_file_if_exists/custom_404/dynamic/*' do
     'This is a custom 404, try to catch it. ;)<br/> Random bit: ' + rand( 999 ).to_s
+end
+
+get '/log_remote_file_if_exists/custom_404/redirect/*' do
+    redirect '/log_remote_file_if_exists/redirected'
 end
 
 get '/log_remote_file_if_exists/custom_404/combo/*' do

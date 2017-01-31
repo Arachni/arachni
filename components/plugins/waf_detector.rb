@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -55,11 +55,11 @@ class Arachni::Plugins::WAFDetector < Arachni::Plugin::Base
             vanilla:  nil,
             spicy:    nil
         }
+
+        framework_pause
     end
 
     def run
-        framework_pause
-
         print_status "Starting detection with a precision of #{@precision}."
 
         print_status 'Stage #1: Requesting original page.'

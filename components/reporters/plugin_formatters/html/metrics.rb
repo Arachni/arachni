@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -76,6 +76,20 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
                     </dt>
                     <dd>
                         <%= results['http']['requests'] %>
+                    </dd>
+
+                    <dt>
+                        Requests time outs
+                    </dt>
+                    <dd>
+                        <%= results['http']['request_time_outs'] %>
+                    </dd>
+
+                    <dt>
+                        Responses per second
+                    </dt>
+                    <dd>
+                        <%= results['http']['responses_per_second'].round(4) %>
                     </dd>
 
                     <dt>
@@ -162,6 +176,37 @@ class PluginFormatters::Metrics  < Arachni::Plugin::Formatter
             </div>
 
             <div class="col-md-9">
+                <h3>Browser cluster</h3>
+                <dl class="dl-horizontal">
+                    <dt>
+                        Job count
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['job_count'] %>
+                    </dd>
+
+                    <dt>
+                        Timed-out jobs
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['job_time_outs'] %>
+                    </dd>
+
+                    <dt>
+                        Seconds per job
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['seconds_per_job'].round(4) %>
+                    </dd>
+
+                    <dt>
+                        Total job time
+                    </dt>
+                    <dd>
+                        <%= results['browser_cluster']['total_job_time'] %>s
+                    </dd>
+                </dl>
+
                 <h3>Elements</h3>
                 <dl class="dl-horizontal">
                     <dt>

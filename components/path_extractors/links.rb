@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,13 +9,12 @@
 # Extracts paths from "link" HTML elements.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
 class Arachni::Parser::Extractors::Links < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'link' )
+        return [] if !check_for?( 'link' )
 
-        document.search( '//link[@href]' ).map { |a| a['href'] }
+        document.nodes_by_name( 'link' ).map { |l| l['href'] }
     end
 
 end

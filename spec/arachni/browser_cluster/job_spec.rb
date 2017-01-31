@@ -83,6 +83,7 @@ end
 describe Arachni::BrowserCluster::Job do
     let(:browser_cluster) { MockBrowserCluster.new }
     let(:worker) { MockWorker.new }
+    let(:args) { [1, 2] }
 
     describe '#id' do
         it 'gets incremented with each initialization' do
@@ -164,7 +165,7 @@ describe Arachni::BrowserCluster::Job do
     end
 
     describe '#dup' do
-        subject { JobDupTest.new( never_ending: true, my_data: 'stuff' ) }
+        subject { JobDupTest.new( never_ending: true, my_data: 'stuff', args: args ) }
 
         it 'copies the Job' do
             expect(subject.my_data).to eq('stuff')
@@ -191,13 +192,19 @@ describe Arachni::BrowserCluster::Job do
             expect(dup.time).to eq 10
             expect(subject).to be_timed_out
         end
+
+        it 'preserves #args' do
+            expect(subject.args).to eq args
+
+            dup = subject.dup
+            expect(dup.args).to eq args
+        end
     end
 
     describe '#forward' do
-        subject { JobForwardTest.new( my_data: 'stuff' ) }
+        subject { JobForwardTest.new( args: args, my_data: 'stuff' ) }
 
         it 'sets the original Job as the #forwarder' do
-            id = subject.id
             expect(subject.forward.forwarder).to eq(subject)
         end
 
@@ -218,8 +225,12 @@ describe Arachni::BrowserCluster::Job do
             expect(job.forward.never_ending?).to be_falsey
         end
 
-        it 'does not preserve any existing data' do
+        it 'does not preserve arbitrary data' do
             expect(subject.forward.my_data).to be_nil
+        end
+
+        it 'preserves #args' do
+            expect(subject.forward.args).to eq args
         end
 
         context 'when options are given' do
@@ -230,21 +241,21 @@ describe Arachni::BrowserCluster::Job do
     end
 
     describe '#forward_as' do
-        subject { JobForwardTest.new( my_data: 'stuff' ) }
+        subject { JobForwardTest.new( args: args, my_data: 'stuff' ) }
 
         it 'sets the original Job as the #forwarder' do
             id = subject.id
             expect(subject.forward_as( JobForwardAsTest ).forwarder).to eq(subject)
         end
 
-        it 'creates a new Job type with the same #id' do
+        it 'creates a new Job type with a new #id' do
             expect(subject).not_to be_kind_of JobForwardAsTest
 
             id = subject.id
 
             forwarded = subject.forward_as( JobForwardAsTest )
 
-            expect(forwarded.id).to eq(id)
+            expect(forwarded.id).to_not eq(id)
             expect(forwarded).to be_kind_of JobForwardAsTest
         end
 
@@ -260,13 +271,17 @@ describe Arachni::BrowserCluster::Job do
             expect(job.forward_as( JobForwardAsTest ).never_ending?).to be_falsey
         end
 
-        it 'does not preserve any existing data' do
+        it 'does not preserve arbitrary existing data' do
             expect(subject).not_to be_kind_of JobForwardAsTest
 
             forwarded = subject.forward_as( JobForwardAsTest )
 
             expect(forwarded.my_data).to be_nil
             expect(forwarded).to be_kind_of JobForwardAsTest
+        end
+
+        it 'preserves #args' do
+            expect(subject.forward.args).to eq args
         end
 
         context 'when options are given' do

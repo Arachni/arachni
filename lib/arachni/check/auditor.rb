@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -161,6 +161,108 @@ module Auditor
                 info[:max_issues]
             end
 
+            # Populates and logs an {Arachni::Issue}.
+            #
+            # @param    [Hash]  options
+            #   {Arachni::Issue} initialization options.
+            #
+            # @return   [Issue]
+            def self.log( options )
+                options       = options.dup
+                vector        = options[:vector]
+                audit_options = vector.respond_to?( :audit_options ) ?
+                    vector.audit_options : {}
+
+                if options[:referring_page]
+                    referring_page = options[:referring_page]
+                elsif vector.page
+                    referring_page = vector.page
+                else
+                    fail ArgumentError, 'Missing :referring_page option.'
+                end
+
+                if options[:response]
+                    page = options.delete(:response).to_page
+                elsif options[:page]
+                    page = options.delete(:page)
+                else
+                    page = referring_page
+                end
+
+                # Don't check the page scope, the check may have exceeded the DOM depth
+                # limit but the check is allowed to do that, only check for an out of
+                # scope response.
+                return if !page.response.parsed_url.seed_in_host? && page.response.scope.out?
+
+                msg = "In #{vector.type}"
+
+                active = vector.respond_to?( :affected_input_name ) && vector.affected_input_name
+
+                if active
+                    msg << " input '#{vector.affected_input_name}'"
+                elsif vector.respond_to?( :inputs )
+                    msg << " with inputs '#{vector.inputs.keys.join(', ')}'"
+                end
+
+                vector.print_ok "#{msg} with action #{vector.action}"
+
+                if Arachni::UI::Output.verbose?
+                    if active
+                        vector.print_verbose "Injected:  #{vector.affected_input_value.inspect}"
+                    end
+
+                    if options[:signature]
+                        vector.print_verbose "Signature: #{options[:signature]}"
+                    end
+
+                    if options[:proof]
+                        vector.print_verbose "Proof:     #{options[:proof]}"
+                    end
+
+                    if page.dom.transitions.any?
+                        vector.print_verbose 'DOM transitions:'
+                        page.dom.print_transitions( method(:print_verbose), '    ' )
+                    end
+
+                    if !(request_dump = page.request.to_s).empty?
+                        vector.print_verbose "Request: \n#{request_dump}"
+                    end
+
+                    vector.print_verbose( '---------' ) if only_positives?
+                end
+
+                # Platform identification by vulnerability.
+                platform_type = nil
+                if (platform = (options.delete(:platform) || audit_options[:platform]))
+                    Platform::Manager[vector.action] << platform if Options.fingerprint?
+                    platform_type = Platform::Manager[vector.action].find_type( platform )
+                end
+
+                log_issue(options.merge(
+                    platform_name:  platform,
+                    platform_type:  platform_type,
+                    page:           page,
+                    referring_page: referring_page
+                ))
+            end
+
+            # Helper method for issue logging.
+            #
+            # @param    [Hash]  options
+            #   {Issue} options.
+            #
+            # @return   [Issue]
+            #
+            # @see .create_issue
+            def self.log_issue( options )
+                return if issue_limit_reached?
+                self.issue_counter += 1
+
+                issue = create_issue( options )
+                Data.issues << issue
+                issue
+            end
+
             # Helper method for creating an issue.
             #
             # @param    [Hash]  options
@@ -263,9 +365,9 @@ module Auditor
     #   * `true` if everything went fine.
     #
     # @see Element::Server#remote_file_exist?
-    def log_remote_file_if_exists( url, silent = false, &block )
+    def log_remote_file_if_exists( url, silent = false, options = {}, &block )
         @server ||= Element::Server.new( page.url ).tap { |s| s.auditor = self }
-        @server.log_remote_file_if_exists( url, silent, &block )
+        @server.log_remote_file_if_exists( url, silent, options, &block )
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
 
@@ -281,82 +383,6 @@ module Auditor
     def match_and_log( patterns, &block )
         @body ||= Element::Body.new( self.page.url ).tap { |b| b.auditor = self }
         @body.match_and_log( patterns, &block )
-    end
-
-    # Populates and logs an {Arachni::Issue}.
-    #
-    # @param    [Hash]  options
-    #   {Arachni::Issue} initialization options.
-    #
-    # @return   [Issue]
-    def log( options )
-        options       = options.dup
-        vector        = options[:vector]
-        audit_options = vector.respond_to?( :audit_options ) ?
-            vector.audit_options : {}
-
-        if options[:response]
-            page = options.delete(:response).to_page
-        elsif options[:page]
-            page = options.delete(:page)
-        else
-            page = self.page
-        end
-
-        # Don't check the page scope, the check may have exceeded the DOM depth
-        # limit but the check is allowed to do that, only check for an out of
-        # scope response.
-        return if !page.response.parsed_url.seed_in_host? && page.response.scope.out?
-
-        msg = "In #{vector.type}"
-
-        active = vector.respond_to?( :affected_input_name ) && vector.affected_input_name
-
-        if active
-            msg << " input '#{vector.affected_input_name}'"
-        elsif vector.respond_to?( :inputs )
-            msg << " with inputs '#{vector.inputs.keys.join(', ')}'"
-        end
-
-        print_ok "#{msg} with action #{vector.action}"
-
-        if verbose?
-            if active
-                print_verbose "Injected:  #{vector.affected_input_value.inspect}"
-            end
-
-            if options[:signature]
-                print_verbose "Signature: #{options[:signature]}"
-            end
-
-            if options[:proof]
-                print_verbose "Proof:     #{options[:proof]}"
-            end
-
-            if page.dom.transitions.any?
-                print_verbose 'DOM transitions:'
-                page.dom.print_transitions( method(:print_verbose), '    ' )
-            end
-
-            if !(request_dump = page.request.to_s).empty?
-                print_verbose "Request: \n#{request_dump}"
-            end
-
-            print_verbose( '---------' ) if only_positives?
-        end
-
-        # Platform identification by vulnerability.
-        platform_type = nil
-        if (platform = (options.delete(:platform) || audit_options[:platform]))
-            Platform::Manager[vector.action] << platform if Options.fingerprint?
-            platform_type = Platform::Manager[vector.action].find_type( platform )
-        end
-
-        log_issue(options.merge(
-            platform_name: platform,
-            platform_type: platform_type,
-            page:          page
-        ))
     end
 
     # Logs the existence of a remote file as an issue.
@@ -376,15 +402,15 @@ module Auditor
     # @return   [Issue]
     #
     # @see #log_issue
-    def log_remote_file( page_or_response, silent = false )
+    def log_remote_file( page_or_response, silent = false, options = {} )
         page = page_or_response.is_a?( Page ) ?
             page_or_response : page_or_response.to_page
 
-        issue = log_issue(
+        issue = log_issue({
             vector: Element::Server.new( page.url ),
             proof:  page.response.status_line,
             page:   page
-        )
+        }.merge( options ))
 
         print_ok( "Found #{page.url}" ) if !silent
 
@@ -401,12 +427,17 @@ module Auditor
     #
     # @see .create_issue
     def log_issue( options )
-        return if issue_limit_reached?
-        self.class.issue_counter += 1
+        self.class.log_issue( options.merge( referring_page: @page ) )
+    end
 
-        issue = self.class.create_issue( options.merge( referring_page: self.page ) )
-        Data.issues << issue
-        issue
+    # Populates and logs an {Arachni::Issue}.
+    #
+    # @param    [Hash]  options
+    #   {Arachni::Issue} initialization options.
+    #
+    # @return   [Issue]
+    def log( options )
+        self.class.log( options.merge( referring_page: @page ) )
     end
 
     # @see Arachni::Check::Base#preferred
@@ -573,6 +604,21 @@ module Auditor
         end
     end
 
+    # Calls {Arachni::Element::Capabilities::Auditable#buffered_audit}
+    # for every element.
+    #
+    # Uses {#each_candidate_element} to decide which elements to audit.
+    #
+    # @see OPTIONS
+    # @see Arachni::Element::Capabilities::Auditable#buffered_audit
+    def buffered_audit( payloads, opts = {}, &block )
+        opts = OPTIONS.merge( opts )
+        each_candidate_element( opts[:elements] ) do |e|
+            e.buffered_audit( payloads, opts, &block )
+            audited( e.coverage_id )
+        end
+    end
+
     # Provides easy access to element auditing using simple signature analysis
     # and automatically logs results.
     #
@@ -630,9 +676,7 @@ module Auditor
     def trace_taint( resource, options = {}, &block )
         with_browser_cluster do |cluster|
             cluster.trace_taint( resource, options ) do |result|
-                # Mark the job as done and abort further analysis if the block
-                # returns true.
-                cluster.job_done( result.job ) if block.call( result.page )
+                block.call( result.page )
             end
         end
     end
@@ -651,8 +695,8 @@ module Auditor
     #   Block to passed a {BrowserCluster::Worker}, if/when one is available.
     #
     # @see BrowserCluster::Worker#with_browser
-    def with_browser( &block )
-        with_browser_cluster { |cluster| cluster.with_browser( &block ) }
+    def with_browser( *args, &block )
+        with_browser_cluster { |cluster| cluster.with_browser( *args, &block ) }
         true
     end
 
@@ -670,7 +714,7 @@ module Auditor
 
     def prepare_each_dom_element( elements, &block )
         elements.each do |e|
-            next if skip?( e ) || !e.dom || e.dom.inputs.empty?
+            next if !e.dom || e.dom.inputs.empty? || skip?( e.dom )
 
             d = e.dup.dom
             d.auditor = self

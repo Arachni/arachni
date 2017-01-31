@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -33,6 +33,7 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
         print_info '---------------'
 
         print_info "Version:           #{report.version}"
+        print_info "Seed:              #{report.seed}"
         print_info "Audit started on:  #{report.start_datetime}"
         print_info "Audit finished on: #{report.finish_datetime}"
         print_info "Runtime:           #{report.delta_time}"
@@ -216,7 +217,7 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
             name:        'Stdout',
             description: %q{Prints the results to standard output.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.3.2'
+            version:     '0.3.3'
         }
     end
 

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -15,6 +15,7 @@ class Arachni::Plugins::Proxy
 #
 class TemplateScope
     include Arachni::Utilities
+    include Arachni::UI::Output
 
     PANEL_BASEDIR  = "#{Arachni::Plugins::Proxy::BASEDIR}panel/"
     PANEL_TEMPLATE = "#{PANEL_BASEDIR}panel.html.erb"
@@ -108,6 +109,10 @@ class TemplateScope
 
     def render( tpl, opts )
         erb tpl, opts.merge( layout: false )
+    rescue => e
+        print_error "Error when rendering: #{tpl}"
+        print_exception e
+        nil
     end
 
     def layout

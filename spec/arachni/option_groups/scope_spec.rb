@@ -7,7 +7,7 @@ describe Arachni::OptionGroups::Scope do
     %w(directory_depth_limit dom_depth_limit page_limit restrict_paths extend_paths
         redundant_path_patterns auto_redundant_paths include_path_patterns
         exclude_path_patterns exclude_content_patterns include_subdomains https_only
-        url_rewrites exclude_binaries exclude_file_extensions
+        url_rewrites exclude_binaries exclude_file_extensions dom_event_limit
     ).each do |method|
         it { is_expected.to respond_to method }
         it { is_expected.to respond_to "#{method}=" }
@@ -133,6 +133,31 @@ describe Arachni::OptionGroups::Scope do
                     subject.page_limit = 5
                     expect(subject.page_limit_reached?( 5 )).to be_truthy
                     expect(subject.page_limit_reached?( 6 )).to be_truthy
+                end
+            end
+        end
+    end
+
+    describe '#dom_event_limit_reached?' do
+        context 'when #page_limit has' do
+            context 'not been set' do
+                it 'returns false' do
+                    expect(subject.dom_event_limit_reached?( 44 )).to be_falsey
+                end
+            end
+
+            context 'not been reached' do
+                it 'returns false' do
+                    subject.dom_event_limit = 5
+                    expect(subject.dom_event_limit_reached?( 2 )).to be_falsey
+                end
+            end
+
+            context 'been reached' do
+                it 'returns true' do
+                    subject.dom_event_limit = 5
+                    expect(subject.dom_event_limit_reached?( 5 )).to be_truthy
+                    expect(subject.dom_event_limit_reached?( 6 )).to be_truthy
                 end
             end
         end

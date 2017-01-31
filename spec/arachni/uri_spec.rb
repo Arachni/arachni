@@ -79,7 +79,7 @@ describe Arachni::URI do
            "http://test.com/stuff?name=val&amp;name2=val2"=>
                "http://test.com/stuff?name=val&name2=val2",
            "http://testfire.net/bank/queryxpath.aspx?__EVENTVALIDATION=%2FwEWAwLNx%2B2YBwKw59eKCgKcjoPABw%3D%3D&__VIEWSTATE=%2FwEPDwUKMTEzMDczNTAxOWRk&_ctl0%3A_ctl0%3AContent%3AMain%3AButton1=Query&_ctl0%3A_ctl0%3AContent%3AMain%3ATextBox1=Enter+title+%28e.g.+IBM%29%27%3Becho+287630581954%2B4196403186331128%3B%23"=>
-               "http://testfire.net/bank/queryxpath.aspx?__EVENTVALIDATION=/wEWAwLNx+2YBwKw59eKCgKcjoPABw==&__VIEWSTATE=/wEPDwUKMTEzMDczNTAxOWRk&_ctl0:_ctl0:Content:Main:Button1=Query&_ctl0:_ctl0:Content:Main:TextBox1=Enter+title+(e.g.+IBM)';echo+287630581954+4196403186331128;%23",
+               "http://testfire.net/bank/queryxpath.aspx?__EVENTVALIDATION=/wEWAwLNx%202YBwKw59eKCgKcjoPABw==&__VIEWSTATE=/wEPDwUKMTEzMDczNTAxOWRk&_ctl0:_ctl0:Content:Main:Button1=Query&_ctl0:_ctl0:Content:Main:TextBox1=Enter%20title%20(e.g.%20IBM)';echo%20287630581954%204196403186331128;%23",
            "http://192.168.0.232/dvwa/phpinfo.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000%23%5E%28%24%21%40%24%29%28%28%29%29%29%2A%2A%2A%2A%2A%2A&_arachni_trainer_c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e=c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e"=>
                "http://192.168.0.232/dvwa/phpinfo.php?=PHPB8B5F2A0-3C92-11d3-A3A9-4C7B08C10000%23%5E($!@$)(()))******&_arachni_trainer_c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e=c987fdb6d3955bd60191449bc465bb5ca760f60661fa4bcdf28736ae04aa2a1e",
            "http://foo.com/user/login?user%5Bname%5D=bar&user%5Bpass%5D=asdasd%26asdihbasd"=>
@@ -209,6 +209,16 @@ describe Arachni::URI do
             expect(described_class.parse( 'javascript:stuff()' )).to be_nil
             expect(described_class.parse( 'jAvaScRipT:stuff()' )).to be_nil
         end
+
+        it 'ignores data: URLs' do
+            expect(described_class.parse( 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA
+AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO
+9TXL0Y4OHwAAAABJRU5ErkJggg==' )).to be_nil
+
+            expect(described_class.parse( 'dAtA:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUA
+AAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO
+9TXL0Y4OHwAAAABJRU5ErkJggg==' )).to be_nil
+        end
     end
 
     describe '.fast_parse' do
@@ -237,13 +247,6 @@ describe Arachni::URI do
             expect(parsed_uri[:host]).to eq(host)
             expect(parsed_uri[:path]).to eq(path)
             expect(parsed_uri[:query]).to eq(query)
-        end
-
-        it 'returns a frozen hash (with frozen values)' do
-            h = described_class.fast_parse( 'http://test.com/stuff/' )
-
-            expect { h[:stuff] = 0 }.to raise_error
-            expect { h[:path] << '/' }.to raise_error
         end
 
         it 'ignores javascript: URLs' do

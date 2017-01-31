@@ -1,0 +1,4 @@
+org.hibernate.QueryException: unexpected char:
+org.hibernate.QueryException: expecting '
+java.sql.SQLSyntaxErrorException
+java.sql.SQLException

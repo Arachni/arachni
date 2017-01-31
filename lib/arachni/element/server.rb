@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -67,7 +67,7 @@ class Server < Base
     #   * `true` if everything went fine.
     #
     # @see #remote_file_exist?
-    def log_remote_file_if_exists( url, silent = false, &block )
+    def log_remote_file_if_exists( url, silent = false, options = {}, &block )
         # Make sure the URL is valid.
         return false if !(url.start_with?( 'http://' ) || url.start_with?( 'https://' ))
 
@@ -76,7 +76,7 @@ class Server < Base
             auditor.print_status( "Analyzing response for: #{url}" ) if !silent
             next if !bool
 
-            @candidates << [response, block]
+            @candidates << [response, block, options]
         end
     end
     alias :log_remote_directory_if_exists :log_remote_file_if_exists
@@ -105,7 +105,7 @@ class Server < Base
             #
             # If a resource does exist though it will be fingerprinted down the
             # line.
-            http.get( url, performer: self, fingerprint: false ) do |r|
+            http.get( url, performer: self, fingerprint: false, follow_location: true ) do |r|
                 if r.code == 200
                     http.dynamic_404_handler._404?( r ) { |bool| block.call( !bool, r ) }
                 else
@@ -113,7 +113,7 @@ class Server < Base
                 end
             end
         else
-            http.request( url, method: :head, performer: self ) do |response|
+            http.request( url, method: :head, performer: self, follow_location: true ) do |response|
                 block.call( response.code == 200, response )
             end
         end
@@ -158,11 +158,11 @@ class Server < Base
         return if @candidates.empty?
 
         if @candidates.size == 1
-            response, block = @candidates.first
+            response, block, options = @candidates.first
 
             # Single issue, not enough confidence to use it for training, err
             # on the side of caution.
-            log response, false, &block
+            log response, false, options, &block
 
             return
         end
@@ -188,8 +188,8 @@ class Server < Base
         train = similarity < SIMILARITY_TOLERANCE
 
         issue_digests = []
-        @candidates.each do |response, block|
-            issue_digests << log( response, train, &block ).digest
+        @candidates.each do |response, block, options|
+            issue_digests << log( response, train, options, &block ).digest
         end
 
         return if train
@@ -199,10 +199,10 @@ class Server < Base
         @candidates.clear
     end
 
-    def log( response, train = true, &block )
+    def log( response, train = true, options = {}, &block )
         block.call( response ) if block_given?
 
-        issue = auditor.log_remote_file( response )
+        issue = auditor.log_remote_file( response, false, options )
 
         return issue if !train
 

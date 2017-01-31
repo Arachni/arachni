@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -25,7 +25,13 @@ module Output
     end
 
     def intercept_print_message( message )
-        depersonalize_output? ? message : "#{self.class.fullname}: #{message}"
+        if self.class == Class
+            fullname = self.fullname
+        else
+            fullname = self.class.fullname
+        end
+
+        depersonalize_output? ? message : "#{fullname}: #{message}"
     end
 
 end

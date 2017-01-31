@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -16,8 +16,14 @@ module Jobs
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class BrowserProvider < Job
 
+    def initialize( *args )
+        super()
+
+        @args = args
+    end
+
     def run
-        browser.master.callback_for( self ).call browser
+        browser.master.callback_for( self ).call *[browser, @args].flatten.compact
     end
 
     def to_s

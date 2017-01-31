@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -33,6 +33,18 @@ class OptionParser < UI::CLI::OptionParser
         ) do |email_address|
             options.authorized_by = email_address
         end
+    end
+
+    def daemon_friendly
+        on( '--daemon-friendly',
+            'Enable this option when running the process in the background.'
+        ) do |b|
+            @daemon_friendly = b
+        end
+    end
+
+    def daemon_friendly?
+        !!@daemon_friendly
     end
 
     def output
@@ -160,6 +172,13 @@ class OptionParser < UI::CLI::OptionParser
             options.scope.dom_depth_limit = limit
         end
 
+        on( '--scope-dom-event-limit LIMIT', Integer,
+            'How many DOM events to trigger for each DOM depth, for pages with JavaScript code.',
+            "(Default: #{options.scope.dom_event_limit.nil? ? 'inf' : options.scope.dom_event_limit })",
+        ) do |limit|
+            options.scope.dom_event_limit = limit
+        end
+
         on( '--scope-https-only', 'Forces the system to only follow HTTPS URLs.',
             "(Default: #{!!options.scope.https_only})"
         ) do
@@ -214,7 +233,7 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.xmls = true
         end
 
-        on( '--audit-ui-inputs', 'Audit orphan Input elements with events.' ) do
+        on( '--audit-ui-inputs', 'Audit orphan <input> elements with events.' ) do
             options.audit.ui_inputs = true
         end
 
@@ -249,7 +268,7 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--audit-exclude-vector PATTERN', Regexp,
-               'Exclude input vectorS whose name matches PATTERN.',
+               'Exclude input vectors whose name matches PATTERN.',
                '(Can be used multiple times.)' ) do |name|
             options.audit.exclude_vector_patterns << name
         end
@@ -326,7 +345,8 @@ class OptionParser < UI::CLI::OptionParser
         end
 
         on( '--http-cookie-string COOKIE',
-               "Cookie representation as an 'Cookie' HTTP request header."
+               "Cookie representation as a 'Set-Cookie' HTTP response header.",
+               'Example: my_cookie=my_value; Path=/, other_cookie=other_value; Path=/test'
         ) do |cookie|
             options.http.cookie_string = cookie
         end
@@ -339,6 +359,11 @@ class OptionParser < UI::CLI::OptionParser
         on( '--http-authentication-password PASSWORD',
                'Password for HTTP authentication.' ) do |password|
             options.http.authentication_password = password
+        end
+
+        on( "--http-authentication-type #{OptionGroups::HTTP::AUTHENTICATION_TYPES.join(',')}",
+            'HTTP authentication type.', '(Default: auto)' ) do |type|
+            options.http.authentication_type = type
         end
 
         on( '--http-proxy ADDRESS:PORT', 'Proxy to use.' ) do |url|
@@ -604,8 +629,7 @@ class OptionParser < UI::CLI::OptionParser
         on( '--profile-save-filepath FILEPATH', String,
                'Save the current configuration profile/options to FILEPATH.'
         ) do |filepath|
-            save_profile( filepath )
-            exit 0
+            @save_profile_path = filepath
         end
 
         on( '--profile-load-filepath FILEPATH', String,
@@ -669,6 +693,11 @@ class OptionParser < UI::CLI::OptionParser
     end
 
     def after_parse
+        if @save_profile_path
+            save_profile( @save_profile_path )
+            exit 0
+        end
+
         options.url = ARGV.shift
     rescue Options::Error::InvalidURL => e
         print_bad e

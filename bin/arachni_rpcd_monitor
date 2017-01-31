@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,5 +9,10 @@
 
 require_relative '../lib/arachni'
 require_relative '../ui/cli/rpc/client/dispatcher_monitor'
+
+if Arachni.windows?
+    Arachni::UI::Output.print_error "This interface is not available on MS Windows."
+    exit
+end
 
 Arachni::UI::CLI::RPC::Client::DispatcherMonitor.new

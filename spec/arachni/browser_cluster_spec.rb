@@ -3,9 +3,11 @@ require 'spec_helper'
 describe Arachni::BrowserCluster do
 
     let(:url) { Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) }
+    let(:args) { [] }
     let(:job) do
         Arachni::BrowserCluster::Jobs::DOMExploration.new(
-            resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync )
+            resource: Arachni::HTTP::Client.get( url + 'explore', mode: :sync ),
+            args:     args
         )
     end
     let(:custom_job) { Factory[:custom_job] }
@@ -56,7 +58,7 @@ describe Arachni::BrowserCluster do
                 cj = nil
                 @cluster = described_class.new(
                     on_pop: proc do |j|
-                        cj = j
+                        cj ||= j
                     end
                 )
 
@@ -72,7 +74,7 @@ describe Arachni::BrowserCluster do
                 cj = nil
                 @cluster = described_class.new(
                     on_queue: proc do |j|
-                        cj = j
+                        cj ||= j
                     end
                 )
 
@@ -88,7 +90,7 @@ describe Arachni::BrowserCluster do
                 cj = nil
                 @cluster = described_class.new(
                     on_job_done: proc do |j|
-                        cj = j
+                        cj ||= j
                     end
                 )
 
@@ -137,6 +139,27 @@ describe Arachni::BrowserCluster do
 
             expect(worker).to be_kind_of described_class::Worker
         end
+
+        context 'when arguments have been provided' do
+            it 'passes them to the callback' do
+                worker = nil
+
+                @cluster = described_class.new
+                aa, bb, cc = nil
+                @cluster.with_browser 1, 2, 3 do |browser, a, b, c|
+                    worker = browser
+                    aa = a
+                    bb = b
+                    cc = c
+                end
+                @cluster.wait
+
+                expect(aa).to eq 1
+                expect(bb).to eq 2
+                expect(cc).to eq 3
+                expect(worker).to be_kind_of described_class::Worker
+            end
+        end
     end
 
     describe '#javascript_token' do
@@ -179,7 +202,19 @@ describe Arachni::BrowserCluster do
             @cluster = described_class.new
 
             @cluster.queue( job ) do |result|
-                expect(result.job.id).to eq(job.id)
+                pages << result.page
+            end
+            @cluster.wait
+
+            browser_explore_check_pages pages
+        end
+
+        it 'passes self to the callback' do
+            pages = []
+            @cluster = described_class.new
+
+            @cluster.queue( job ) do |result, cluster|
+                expect(cluster).to eq(@cluster)
                 pages << result.page
             end
             @cluster.wait
@@ -206,6 +241,42 @@ describe Arachni::BrowserCluster do
             result = results.first
             expect(result.my_data).to eq('Some stuff')
             expect(result.job.id).to eq(custom_job.id)
+        end
+
+        context 'when a callback argument is given' do
+            it 'sets it as a callback' do
+                pages = []
+                @cluster = described_class.new
+
+                m = proc do |result, cluster|
+                    expect(cluster).to eq(@cluster)
+                    pages << result.page
+                end
+
+                @cluster.queue( job, m )
+                @cluster.wait
+
+                browser_explore_check_pages pages
+            end
+        end
+
+        context 'when Job#args have been set' do
+            let(:args) { [1, 2] }
+
+            it 'passes them to the callback' do
+                pages = []
+                @cluster = described_class.new
+
+                @cluster.queue( job ) do |result, a, b|
+                    expect(a).to eq args[0]
+                    expect(b).to eq args[1]
+
+                    pages << result.page
+                end
+                @cluster.wait
+
+                browser_explore_check_pages pages
+            end
         end
 
         context 'when no callback has been provided' do
@@ -262,6 +333,20 @@ describe Arachni::BrowserCluster do
             Arachni::Utilities.normalize_url( web_server_url_for( :browser ) ) + 'explore'
         end
 
+        context 'when a callback argument is given' do
+            it 'sets it as a callback' do
+                pages = []
+                m = proc do |result|
+                    pages << result.page
+                end
+
+                @cluster.explore( url, {}, m )
+                @cluster.wait
+
+                browser_explore_check_pages pages
+            end
+        end
+
         context 'when the resource is a' do
             context 'String' do
                 it 'loads the URL and explores the DOM' do
@@ -312,6 +397,20 @@ describe Arachni::BrowserCluster do
             let(:url) do
                 Arachni::Utilities.normalize_url( web_server_url_for( :taint_tracer ) ) +
                     "/data_trace/user-defined-global-functions?taint=#{taint}"
+            end
+
+            context 'when a callback argument is given' do
+                it 'sets it as a callback' do
+                    pages = []
+                    m = proc do |result|
+                        pages << result.page
+                    end
+
+                    @cluster.trace_taint( url, { taint: taint }, m )
+                    @cluster.wait
+
+                    browser_cluster_job_taint_tracer_data_flow_check_pages  pages
+                end
             end
 
             context 'and the resource is a' do
@@ -465,30 +564,37 @@ describe Arachni::BrowserCluster do
             @cluster.wait
 
             expect(calls).to be > 1
-
-            @cluster.shutdown
-
-            calls = 0
-            @cluster = described_class.new
-            @cluster.queue( job ) do
-                @cluster.job_done( job )
-                calls += 1
-            end
-            @cluster.wait
-
-            expect(calls).to eq(1)
+            expect(@cluster.job_done?( job )).to eq(true)
         end
 
-        it 'returns true' do
-            return_val = nil
+        it 'gets called after each job is done' do
+            @cluster = described_class.new
+
+            expect(@cluster).to receive(:job_done).with(job)
+
+            q = Queue.new
+            @cluster.queue( job ){ q << nil }
+            q.pop
+        end
+
+        it 'increments the .completed_job_count' do
+            pre = described_class.completed_job_count
 
             @cluster = described_class.new
-            @cluster.queue( job ) do
-                return_val = @cluster.job_done( job )
-            end
+            @cluster.queue( job ){}
             @cluster.wait
 
-            expect(return_val).to eq(true)
+            expect(described_class.completed_job_count).to be > pre
+        end
+
+        it 'adds the job time to the .total_job_time' do
+            pre = described_class.total_job_time
+
+            @cluster = described_class.new
+            @cluster.queue( job ){}
+            @cluster.wait
+
+            expect(described_class.total_job_time).to be > pre
         end
     end
 
@@ -521,14 +627,6 @@ describe Arachni::BrowserCluster do
                 @cluster.wait
 
                 expect(@cluster.job_done?( job )).to eq(false)
-            end
-        end
-
-        context 'when a job has been marked as done' do
-            it 'returns true' do
-                @cluster = described_class.new
-                @cluster.job_done( job )
-                expect(@cluster.job_done?( job )).to eq(true)
             end
         end
 
@@ -595,23 +693,6 @@ describe Arachni::BrowserCluster do
                 cluster.shutdown
                 expect { cluster.done? }.to raise_error described_class::Error::AlreadyShutdown
             end
-        end
-    end
-
-    describe '#sitemap' do
-        it 'returns the sitemap as covered by the browser jobs' do
-            @cluster = described_class.new
-            @cluster.queue( job ) {}
-            @cluster.wait
-
-            expect(@cluster.sitemap.
-                reject { |k, v| k.start_with? Arachni::Browser::Javascript::SCRIPT_BASE_URL }).
-                to eq({
-                    "#{url}explore"   => 200,
-                    "#{url}post-ajax" => 404,
-                    "#{url}href-ajax" => 200,
-                    "#{url}get-ajax?ajax-token=my-token" => 200
-                })
         end
     end
 

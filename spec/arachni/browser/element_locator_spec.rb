@@ -125,42 +125,66 @@ describe Arachni::Browser::ElementLocator do
                     }
                 ).css).to eq('a[stuff="blah"]')
             end
+
+            context 'with values that include double quotes' do
+                it 'escapes them' do
+                    expect(described_class.new(
+                        tag_name: :a,
+                        attributes: {
+                            stuff: 'bl"ah'
+                        }
+                    ).css).to eq('a[stuff="bl\"ah"]')
+                end
+            end
         end
 
         context 'when there are multiple attributes' do
             it 'returns a CSS locator with the attributes' do
                 expect(described_class.new(
-                           tag_name: :a,
-                           attributes: {
-                               stuff:  'blah',
-                               stuff2: 'blah2'
-                           }
-                       ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
+                    tag_name: :a,
+                    attributes: {
+                        stuff:  'blah',
+                        stuff2: 'blah2'
+                    }
+                ).css).to eq('a[stuff="blah"][stuff2="blah2"]')
             end
 
             context 'and an ID' do
                 it 'only includes the ID' do
                     expect(described_class.new(
-                               tag_name: :a,
-                               attributes: {
-                                   stuff:  'blah',
-                                   stuff2: 'blah2',
-                                   id:     'my-id'
-                               }
-                           ).css).to eq('a[id="my-id"]')
+                        tag_name: :a,
+                        attributes: {
+                            stuff:  'blah',
+                            stuff2: 'blah2',
+                            id:     'my-id'
+                        }
+                    ).css).to eq('a[id="my-id"]')
+                end
+            end
+
+            context "and a #{described_class::ARACHNI_ID}" do
+                it "only includes the #{described_class::ARACHNI_ID}" do
+                    expect(described_class.new(
+                       tag_name: :a,
+                       attributes: {
+                           stuff:  'blah',
+                           stuff2: 'blah2',
+                           described_class::ARACHNI_ID =>     'my-id'
+                       }
+                   ).css).to eq("a[#{described_class::ARACHNI_ID}=\"my-id\"]")
                 end
             end
 
             context 'and includes data ones' do
-                it "excludes all but #{described_class::ARACHNI_ID}" do
+                it 'excludes them' do
                     expect(described_class.new(
                         tag_name: :a,
                         attributes: {
-                            'data-stuff'                => 'blah',
-                            'data-stuff2'               => 'blah2',
-                            described_class::ARACHNI_ID => 'blah3'
+                            'data-stuff'  => 'blah',
+                            'data-stuff2' => 'blah2',
+                            'class'       => 'blah3'
                         }
-                    ).css).to eq("a[#{described_class::ARACHNI_ID}=\"blah3\"]")
+                    ).css).to eq('a[class="blah3"]')
                 end
             end
         end

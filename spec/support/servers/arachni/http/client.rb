@@ -56,8 +56,8 @@ end
 
 get '/partial_stream' do
     stream do |out|
-        5.times do
-            out.puts "Hello!"
+        5.times do |i|
+            out.puts "#{i}: Hello!"
             out.close
         end
 
@@ -67,13 +67,52 @@ end
 
 get '/stream' do
     stream do |out|
-        5.times do
-            out.puts 'Hello!'
+        5.times do |i|
+            out.puts "#{i}: Hello!"
             sleep 1
         end
 
         out.flush
     end
+end
+
+get '/fail_stream' do
+    stream do |out|
+        fail
+
+        out.flush
+    end
+end
+
+get '/fast_stream' do
+    stream do |out|
+        5.times do |i|
+            out.puts "#{i}: Hello!"
+        end
+
+        out.flush
+    end
+end
+
+get '/lines' do
+    stream do |out|
+        500.times do |i|
+            out.puts "#{i}: test"
+        end
+        out.flush
+    end
+end
+
+get '/lines/non-stream' do
+    s = ''
+    2_000.times do |i|
+        s << "#{i}: test\n"
+    end
+    s
+end
+
+get '/lines/incomplete' do
+    [ 200, { 'Content-Length' => '1000' }, "Blah\nHello!" ]
 end
 
 get '/fingerprint.php' do

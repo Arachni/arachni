@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -21,6 +21,8 @@ class Header < Base
 
     # Generic element capabilities.
     include Arachni::Element::Capabilities::Auditable
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
     include Arachni::Element::Capabilities::Submittable
     include Arachni::Element::Capabilities::Inputtable
     include Arachni::Element::Capabilities::Analyzable

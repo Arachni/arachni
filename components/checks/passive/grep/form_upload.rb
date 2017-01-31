@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,8 +9,6 @@
 # Looks for and logs forms with file inputs.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-#
-# @version 0.2.2
 class Arachni::Checks::FormUpload < Arachni::Check::Base
 
     def run
@@ -19,7 +17,7 @@ class Arachni::Checks::FormUpload < Arachni::Check::Base
                 next if form.details_for( name )[:type] != :file
 
                 log(
-                    proof: form.node.xpath('input[@type="file"]').to_html,
+                    proof: form.node.nodes_by_attribute_name_and_value( 'type','file' ).first.to_html,
                     vector: form
                 )
             end
@@ -32,7 +30,7 @@ class Arachni::Checks::FormUpload < Arachni::Check::Base
             description: 'Logs upload forms which require manual testing.',
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.2.2',
+            version:     '0.2.3',
 
             issue:       {
                 name:        %q{Form-based File Upload},

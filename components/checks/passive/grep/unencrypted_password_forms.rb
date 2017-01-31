@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -27,7 +27,7 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
 
             cform = form.dup
             cform.affected_input_name = name
-            log( vector: cform  )
+            log( vector: cform, proof: form.source )
         end
 
         audited form.id
@@ -45,7 +45,7 @@ class Arachni::Checks::UnencryptedPasswordForms < Arachni::Check::Base
                 over an encrypted channel (HTTPS).},
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.1',
+            version:     '0.2.2',
 
             issue:       {
                 name:            %q{Unencrypted password form},

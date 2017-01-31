@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -31,6 +31,9 @@ class Link < Base
     include Capabilities::WithDOM
     include Capabilities::Submittable
     include Capabilities::Auditable
+
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
 
     DECODE_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
@@ -65,17 +68,11 @@ class Link < Base
         uri.to_s
     end
 
-    # @param   (see .encode)
-    # @return  (see .encode)
-    #
     # @see .encode
     def encode( *args )
         self.class.encode( *args )
     end
 
-    # @param   (see .decode)
-    # @return  (see .decode)
-    #
     # @see .decode
     def decode( *args )
         self.class.decode( *args )
@@ -100,42 +97,26 @@ class Link < Base
         # @return   [Array<Link>]
         def from_response( response )
             url = response.url
-            [new( url: url )] | from_document( url, response.body )
+            [new( url: url )] | from_parser( Arachni::Parser.new( response ) )
         end
 
-        # Extracts links from a document.
-        #
-        # @param    [String]    url
-        #   URL of the document -- used for path normalization purposes.
-        # @param    [String, Nokogiri::HTML::Document]    document
+        # @param    [Parser]    parser
         #
         # @return   [Array<Link>]
-        def from_document( url, document )
-            if !document.is_a?( Nokogiri::HTML::Document )
-                document = document.to_s
+        def from_parser( parser )
+            return [] if parser.body && !in_html?( parser.body )
 
-                return [] if !in_html?( document )
-
-                document = Arachni::Parser.parse( document )
-            end
-
-            base_url =  begin
-                document.search( '//base[@href]' )[0]['href']
-            rescue
-                url
-            end
-
-            document.search( '//a' ).map do |link|
+            parser.document.nodes_by_name( :a ).map do |link|
                 next if too_big?( link['href'] )
 
-                href = to_absolute( link['href'], base_url )
+                href = to_absolute( link['href'], parser.base )
                 next if !href
 
                 next if !(parsed_url = Arachni::URI( href )) ||
                     parsed_url.scope.out?
 
                 new(
-                    url:    url.freeze,
+                    url:    parser.url,
                     action: href.freeze,
                     source: link.to_html.freeze
                 )

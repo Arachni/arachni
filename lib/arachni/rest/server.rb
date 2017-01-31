@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -128,6 +128,12 @@ class Server < Sinatra::Base
         session[params[:id]][:seen_sitemap] += data[:sitemap].size
 
         json data
+    end
+
+    get '/scans/:id/summary' do
+        fail_if_not_exists
+
+        json scan_for( params[:id] ).progress
     end
 
     get '/scans/:id/report.html.zip' do

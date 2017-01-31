@@ -18,7 +18,6 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
     end
 
     describe '#signature_analysis' do
-
         before do
             @seed = 'my_seed'
             Arachni::Framework.reset
@@ -81,7 +80,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                     end
                 end
 
-                context 'String' do
+                context 'Regexp' do
                     it 'tries to match the provided pattern' do
                         @positive.signature_analysis(
                             @seed,
@@ -92,6 +91,17 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                         expect(issues.size).to eq(1)
                         expect(issues.first.vector.seed).to eq(@seed)
                         expect(issues.first).to be_trusted
+                    end
+
+                    context 'multi-line' do
+                        it 'raises error' do
+                            expect do
+                                @positive.signature_analysis(
+                                    @seed,
+                                    signatures: /ff/m
+                                )
+                            end.to raise_error ArgumentError
+                        end
                     end
                 end
 
@@ -105,6 +115,17 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                         @auditor.http.run
                         expect(issues.size).to eq(1)
                         expect(issues.first.vector.seed).to eq(@seed)
+                    end
+
+                    context 'with multi-line Regexp' do
+                        it 'raises error' do
+                            expect do
+                                @positive.signature_analysis(
+                                    @seed,
+                                    signatures: [/ff/m]
+                                )
+                            end.to raise_error ArgumentError
+                        end
                     end
                 end
 
@@ -126,6 +147,28 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                         expect(issues.size).to eq(1)
                         expect(issues[0].platform_name).to eq(:windows)
                         expect(issues[0].signature).to eq(regexps[:windows].source)
+                    end
+
+                    context 'with multi-line Regexp' do
+                        it 'raises error' do
+                            expect do
+                                @positive.signature_analysis(
+                                    @seed,
+                                    signatures: {
+                                        windows: /ff/m
+                                    }
+                                )
+                            end.to raise_error ArgumentError
+
+                            expect do
+                                @positive.signature_analysis(
+                                    @seed,
+                                    signatures: {
+                                        windows: [/ff/m]
+                                    }
+                                )
+                            end.to raise_error ArgumentError
+                        end
                     end
 
                     context 'when the payloads are per platform' do
@@ -168,7 +211,7 @@ describe Arachni::Element::Capabilities::Analyzable::Signature do
                             end
                         end
 
-                        context 'when there is not a payload for the regexp platform' do
+                        context 'when there is not a payload for the platform' do
                             it 'matches against all payload responses and assigns the pattern platform to the issue' do
                                 payloads = {
                                     windows: "#{@seed} windows",

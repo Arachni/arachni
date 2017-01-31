@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -91,7 +91,7 @@ class DOM < DOM
     end
 
     def self.data_from_node( node )
-        href = node.attributes['href'].to_s
+        href = node['href'].to_s
         return if !href.include? '#'
 
         fragment = Link.decode( href.split( '#', 2 ).last.to_s )

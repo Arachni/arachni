@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
-gem 'rake'
+gem 'rake', '11.3.0'
+gem 'pry'
 
 group :docs do
     gem 'yard'
@@ -19,6 +20,7 @@ group :prof do
     gem 'sys-proctable'
     gem 'ruby-mass'
     gem 'benchmark-ips'
+    gem 'memory_profiler'
 end
 
 gemspec

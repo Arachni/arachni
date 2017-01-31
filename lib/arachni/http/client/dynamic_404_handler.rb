@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -35,7 +35,9 @@ class Dynamic404Handler
     # @param  [Block]   block
     #   To be passed `true` or `false` depending on the result of the analysis.
     def _404?( response, &block )
-        url = response.url
+        # This matters, the request URL may differ from the response one due to
+        # redirections and we need to test the original.
+        url = response.request.url
 
         # Easy pickins, well-behaved static 404 handler and a URL that doesn't
         # need advanced analysis.
@@ -253,7 +255,7 @@ class Dynamic404Handler
                         # Both attempts yielded in the same result, the webapp
                         # was stable during the process and the signature can be
                         # considered accurate.
-                        if control_data[:rdiff] == signature_data[:rdiff]
+                        if control_data[:rdiff].similar? signature_data[:rdiff]
                             block.call response, :done
 
                         # Coo-coo for cocoa puffs, can't work with it.
@@ -329,7 +331,8 @@ class Dynamic404Handler
         !!(
             !resource_name.empty? ||
             uri.resource_extension ||
-            uri.resource_name.to_s.include?( '~' )
+            uri.resource_name.to_s.include?( '~' ) ||
+            uri.resource_name.to_s.include?( '-' )
         )
     end
 
@@ -371,15 +374,22 @@ class Dynamic404Handler
         up_to_path = uri.up_to_path
 
         trv_back = File.dirname( Arachni::URI( up_to_path ).path )
-        trv_back += '/' if trv_back[-1] != '/'
+        trv_back << '/' if trv_back[-1] != '/'
 
         parsed = uri.dup
-        parsed.path  = trv_back
-        trv_back_url = parsed.to_s
+        parsed.path   = trv_back
+        parsed.query  = ''
+        trv_back_url  = parsed.to_s
 
-        [
+        g = [
             # Get a random path with an extension.
-            proc { up_to_path + random_string + '.' + random_string[0..precision] },
+            proc {
+                s = up_to_path.dup
+                s << random_string
+                s << '.'
+                s << random_string[0..precision]
+                s
+            },
 
             # Get a random path without an extension.
             proc { up_to_path + random_string },
@@ -395,11 +405,32 @@ class Dynamic404Handler
             proc { trv_back_url + random_string_alpha_capital },
 
             # Move up a dir and get a random file with an extension.
-            proc { trv_back_url + random_string + '.' + random_string[0..precision] },
+            proc {
+                s = trv_back_url.dup
+                s << random_string
+                s << '.'
+                s << random_string[0..precision]
+                s
+            },
 
             # Get a random directory.
-            proc { up_to_path + random_string + '/' }
+            proc {
+                s = up_to_path.dup
+                s << random_string
+                s << '/'
+                s
+            }
         ]
+
+        if !(rn = uri.resource_name.to_s).empty?
+            # Append a random string to the resource name.
+            g << proc { url.gsub( rn, "#{rn}#{random_string[0..precision]}" ) }
+
+            # Prepend a random string to the resource name.
+            g << proc { url.gsub( rn, "#{random_string[0..precision]}#{rn}" ) }
+        end
+
+        g
     end
 
     # @return   [Array<Proc>]
@@ -413,12 +444,37 @@ class Dynamic404Handler
 
         if !resource_name.empty?
             # Get an existing resource with a random extension.
-            probes << proc { up_to_path + resource_name + '.' + random_string[0..precision] }
+            probes << proc {
+                s = up_to_path.dup
+                s << resource_name
+                s << '.'
+                s << random_string[0..precision]
+                s
+            }
         end
 
         if resource_extension
             # Get a random filename with an existing extension.
-            probes << proc { up_to_path + random_string + '.' + resource_extension }
+            probes << proc {
+                s = up_to_path.dup
+                s << random_string
+                s << '.'
+                s << resource_extension
+                s
+            }
+        end
+
+        # Some webapps do routing based on name resources with "-" as a separator.
+        if uri.resource_name.include?( '-' )
+            rn = uri.resource_name
+
+            probes << proc {
+                up_to_path.sub( rn, rn.gsub( '-', "#{random_string}-" ) )
+            }
+
+            probes << proc {
+                up_to_path.sub( rn, rn.gsub( '-', "-#{random_string}" ) )
+            }
         end
 
         if uri.resource_name.include?( '~' )
@@ -436,13 +492,15 @@ class Dynamic404Handler
     def request( url, &block )
         Client.get( url,
             # This is important, helps us reduce waiting callers.
-            high_priority: true,
+            high_priority:   true,
 
             # We're going to be checking for a lot of non-existent resources,
             # don't bother fingerprinting them
-            fingerprint:   false,
+            fingerprint:     false,
 
-            performer:     self,
+            follow_location: true,
+
+            performer:       self,
             &block
         )
     end

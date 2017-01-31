@@ -267,9 +267,7 @@ get '/data_trace/AngularJS/ngRoute/' do
 
     <script>
         angular.element(document).ready(function() {
-            angular.element(document).scope().$apply(function() {
-                console.log( $http )
-            });
+            angular.element(document).scope().$apply(function() {});
         });
     </script>
 </html>
@@ -787,6 +785,20 @@ get '/debug' do
 
         <form id="my_form" onsubmit="onClick('some-arg', 'arguments-arg', 'here-arg'); return false;">
         </form>
+    </html>
+    EOHTML
+end
+
+get '/eval' do
+    <<-EOHTML
+    <html>
+        <script>
+            function run() {
+                return #{params[:input]};
+            }
+
+            run( 1, 2 );
+        </script>
     </html>
     EOHTML
 end

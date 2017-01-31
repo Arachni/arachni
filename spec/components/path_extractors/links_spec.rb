@@ -12,7 +12,7 @@ describe name_from_filename do
     end
 
     def text
-        results.map { |u| "<link href='#{u}'>Stuff</form>" }.join
+        results.map { |u| "<link href='#{u}'>Stuff</link>" }.join
     end
 
     easy_test

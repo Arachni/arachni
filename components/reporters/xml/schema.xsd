@@ -5,6 +5,7 @@
         <xs:complexType>
             <xs:all>
                 <xs:element name="version" type="xs:string"/>
+                <xs:element name="seed" type="xs:string"/>
                 <xs:element name="start_datetime" type="xs:dateTime" />
                 <xs:element name="finish_datetime" type="xs:dateTime"/>
                 <xs:element name="sitemap" type="sitemap"/>
@@ -52,6 +53,7 @@
             <xs:element name="general" type="plugin_metrics_results_general"/>
             <xs:element name="scan" type="plugin_metrics_results_scan"/>
             <xs:element name="http" type="plugin_metrics_results_http"/>
+            <xs:element name="browser_cluster" minOccurs="0" type="plugin_metrics_results_browser_cluster"/>
             <xs:element name="resource" type="plugin_metrics_results_resource"/>
             <xs:element name="element" type="plugin_metrics_results_element"/>
             <xs:element name="dom" type="plugin_metrics_results_dom"/>
@@ -75,20 +77,33 @@
         </xs:all>
     </xs:complexType>
 
+    <xs:complexType name="plugin_metrics_results_browser_cluster">
+        <xs:all>
+            <xs:element name="seconds_per_job" type="xs:float"/>
+            <xs:element name="total_job_time" type="xs:float"/>
+            <xs:element name="job_count" type="xs:integer"/>
+            <xs:element name="job_time_outs" type="xs:integer"/>
+        </xs:all>
+    </xs:complexType>
+
     <xs:complexType name="plugin_metrics_results_http">
         <xs:all>
-            <xs:element name="requests" type="xs:integer"/>
-            <xs:element name="response_time_min" type="xs:float"/>
-            <xs:element name="response_time_max" type="xs:float"/>
-            <xs:element name="response_time_average" type="xs:float"/>
+            <xs:element name="requests" minOccurs="0" type="xs:integer"/>
 
-            <xs:element name="response_size_min" type="xs:float"/>
-            <xs:element name="response_size_max" type="xs:float"/>
-            <xs:element name="response_size_average" type="xs:float"/>
+            <xs:element name="request_time_outs" minOccurs="0" type="xs:integer"/>
+            <xs:element name="request_size_min" minOccurs="0" type="xs:float"/>
+            <xs:element name="request_size_max" minOccurs="0" type="xs:float"/>
+            <xs:element name="request_size_average" minOccurs="0" type="xs:float"/>
 
-            <xs:element name="request_size_min" type="xs:float"/>
-            <xs:element name="request_size_max" type="xs:float"/>
-            <xs:element name="request_size_average" type="xs:float"/>
+            <xs:element name="response_time_min" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_time_max" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_time_average" minOccurs="0" type="xs:float"/>
+
+            <xs:element name="responses_per_second" minOccurs="0" type="xs:float"/>
+
+            <xs:element name="response_size_min" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_size_max" minOccurs="0" type="xs:float"/>
+            <xs:element name="response_size_average" minOccurs="0" type="xs:float"/>
         </xs:all>
     </xs:complexType>
 
@@ -695,7 +710,7 @@
     <xs:complexType name="stackframe">
         <xs:all>
             <xs:element name="function" type="function"/>
-            <xs:element name="line" type="xs:integer"/>
+            <xs:element name="line" type="xs:integer" nillable="true"/>
             <xs:element name="url" type="xs:string"/>
         </xs:all>
     </xs:complexType>
@@ -714,7 +729,7 @@
 
     <xs:complexType name="headers">
         <xs:sequence>
-            <xs:element name="header" type="input"
+            <xs:element name="header" type="header"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>
@@ -726,7 +741,7 @@
 
     <xs:complexType name="parameters">
         <xs:sequence>
-            <xs:element name="parameter" type="input"
+            <xs:element name="parameter" type="parameter"
                         minOccurs="0" maxOccurs="unbounded"/>
         </xs:sequence>
     </xs:complexType>

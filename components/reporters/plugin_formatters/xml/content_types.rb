@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -21,12 +21,15 @@ class PluginFormatters::ContentTypes < Arachni::Plugin::Formatter
                     xml.url  info['url']
                     xml.method_ info['method']
 
-                    info['parameters'].each do |name, value|
-                        xml.parameters {
-                            xml.name name
-                            xml.value value
-                        }
-                    end
+                    xml.parameters {
+                        info['parameters'].each do |name, value|
+                            xml.parameter(
+                                name: Arachni::Reporters::XML.replace_nulls( name ),
+                                value: Arachni::Reporters::XML.replace_nulls( value )
+                            )
+                        end
+                    }
+
                 }
             end
         end

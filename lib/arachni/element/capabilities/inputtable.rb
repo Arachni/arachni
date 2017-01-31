@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -38,7 +38,7 @@ module Capabilities::Inputtable
     end
 
     INPUTTABLE_CACHE = {
-        inputtable_id: Support::Cache::LeastRecentlyPushed.new( 100_000 )
+        inputtable_id: Support::Cache::LeastRecentlyPushed.new( 1_000 )
     }
 
     # Frozen version of {#inputs}, has all the original names and values.
@@ -132,6 +132,10 @@ module Capabilities::Inputtable
             end
             h
         end
+    end
+
+    def updated?
+        @default_inputs != self.inputs
     end
 
     # Resets the inputs to their original format/values.

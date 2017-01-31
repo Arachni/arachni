@@ -1,5 +1,11 @@
 Factory.define :dom_data do
     {
+        cookies:              [
+            Arachni::Element::Cookie.new(
+                url:    'http://test/dom',
+                inputs: { 'name' => 'val' }
+            )
+        ],
         skip_states:          Arachni::Support::LookUp::HashSet.new.tap { |h| h << 0 },
         transitions:          [
             Factory[:page_load_with_cookies_transition].complete,

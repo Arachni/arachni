@@ -1,6 +1,6 @@
 require 'yaml'
 require 'sinatra'
-set :logging, false
+require 'sinatra/streaming'
 
 get '/' do
     params.to_s
@@ -8,6 +8,38 @@ end
 
 get '/submit' do
     params.to_hash.to_yaml
+end
+
+get '/submit/buffered' do
+    stream do |out|
+        2_000.times do |i|
+            out.print "Blah"
+        end
+
+        out.print 'START_PARAMS'
+        out.print params.to_hash.to_yaml
+        out.print 'END_PARAMS'
+
+        2_000.times do |i|
+            out.print "Blah"
+        end
+    end
+end
+
+get '/submit/line_buffered' do
+    stream do |out|
+        2_000.times do |i|
+            out.puts "Blah"
+        end
+
+        out.puts 'START_PARAMS'
+        out.puts params.to_hash.to_yaml
+        out.puts 'END_PARAMS'
+
+        2_000.times do |i|
+            out.puts "Blah"
+        end
+    end
 end
 
 get '/refreshable' do

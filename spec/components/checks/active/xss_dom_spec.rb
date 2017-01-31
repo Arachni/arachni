@@ -41,7 +41,7 @@ describe name_from_filename do
 
                     expect(data_flow_sink.function.source).to start_with 'function decodeURI()'
                     expect(data_flow_sink.function.name).to eq 'decodeURI'
-                    expect(data_flow_sink.object).to eq 'DOMWindow'
+                    expect(data_flow_sink.object).to eq 'Window'
                     expect(data_flow_sink.tainted_value).to include Arachni::URI(issue.vector.seed).to_s
                     expect(data_flow_sink.function.arguments).to eq [data_flow_sink.tainted_value]
 
@@ -54,7 +54,7 @@ describe name_from_filename do
 
                     expect(data_flow_sink.function.source).to start_with 'function decodeURIComponent()'
                     expect(data_flow_sink.function.name).to eq 'decodeURIComponent'
-                    expect(data_flow_sink.object).to eq 'DOMWindow'
+                    expect(data_flow_sink.object).to eq 'Window'
                     expect(data_flow_sink.tainted_value).to include Arachni::URI(issue.vector.seed).to_s
                     expect(data_flow_sink.function.arguments).to eq [data_flow_sink.tainted_value]
 

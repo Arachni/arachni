@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,11 +17,14 @@ class PluginFormatters::CookieCollector < Arachni::Plugin::Formatter
         results.each_with_index do |result, i|
             xml.entry {
                 xml.time Time.parse( result['time'] ).xmlschema
-                xml.url result['response']['url']
+                xml.url XML.replace_nulls( result['response']['url'] )
 
                 xml.cookies {
                     result['cookies'].each do |name, value|
-                        xml.cookie( name: name, value: value )
+                        xml.cookie(
+                            name:  Arachni::Reporters::XML.replace_nulls( name ),
+                            value: Arachni::Reporters::XML.replace_nulls( value )
+                        )
                     end
                 }
             }

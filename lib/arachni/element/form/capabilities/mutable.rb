@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -95,15 +95,21 @@ module Mutable
             # and we don't want to parse it unless we have a select input.
             break if !node
 
-            escape = "'#{input.split( "'" ).join( "', \"'\", '" )}', ''"
-            node.xpath( "select[@name=concat(#{escape})]" ).css('option').each do |option|
-                try_input do
-                    elem = self.dup
-                    elem.mutation_with_original_values
-                    elem.affected_input_name  = input
-                    elem.affected_input_value = option['value'] || option.text
-                    yield elem if !generated.include?( elem )
-                    generated << elem
+            node.nodes_by_name( 'select' ).each do |select_node|
+                next if select_node['name'] != input
+
+                select_node.children.each do |child|
+                    next if !child.is_a?( Arachni::Parser::Nodes::Element ) ||
+                        child.name != :option
+
+                    try_input do
+                        elem = self.dup
+                        elem.mutation_with_original_values
+                        elem.affected_input_name  = input
+                        elem.affected_input_value = child['value'] || child.text.strip
+                        yield elem if !generated.include?( elem )
+                        generated << elem
+                    end
                 end
             end
         end
@@ -125,4 +131,3 @@ end
 end
 end
 end
-

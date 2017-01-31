@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -64,17 +64,20 @@ class Manager < Arachni::Component::Manager
 
         schedule.each do |name, options|
             instance = create( name, options )
-            instance.prepare
+
+            exception_jail do
+                instance.prepare
+            end rescue next
 
             @jobs[name] = Thread.new do
                 exception_jail( false ) do
                     Thread.current[:instance] = instance
                     Thread.current[:instance].run
                     Thread.current[:instance].clean_up
+                end
 
-                    synchronize do
-                        @jobs.delete name
-                    end
+                synchronize do
+                    @jobs.delete name
                 end
             end
         end

@@ -46,12 +46,43 @@ describe Arachni::HTTP::ProxyServer do
         expect(response.body).to eq 'HTTPS GET'
     end
 
+    it 'supports WebSockets'
+
     it 'removes any size limits on the HTTP responses' do
         Arachni::Options.http.response_max_size = 1
 
         proxy = described_class.new
         proxy.start_async
         test_proxy( proxy )
+    end
+
+    context 'when the response is text-based' do
+        let(:url) { "#{@url}/text" }
+
+        it 'sets charset encoding to UTF8' do
+            proxy = described_class.new
+            proxy.start_async
+
+            expect(via_proxy( proxy, url ).headers['Content-Type']).to eq 'text/html; charset=utf-8'
+        end
+
+        it 'transcodes to UTF-8' do
+            proxy = described_class.new
+            proxy.start_async
+
+            expect(via_proxy( proxy, url ).body.encoding.name).to eq 'UTF-8'
+        end
+    end
+
+    context 'when the response is binary' do
+        let(:url) { "#{@url}/binary" }
+
+        it 'does not add a charset' do
+            proxy = described_class.new
+            proxy.start_async
+
+            expect(via_proxy( proxy, url ).headers['Content-Type']).to eq 'application/binary'
+        end
     end
 
     describe '#initialize' do
@@ -89,31 +120,31 @@ describe Arachni::HTTP::ProxyServer do
             end
         end
 
-        # describe ':concurrency' do
-        #     it 'sets the HTTP request concurrency' do
-        #         sleep_url = @url + 'sleep'
-        #
-        #         proxy = described_class.new( concurrency: 2 )
-        #         proxy.start_async
-        #         time = Time.now
-        #         threads = []
-        #         2.times do
-        #             threads << Thread.new { via_proxy( proxy, sleep_url ) }
-        #         end
-        #         threads.each(&:join)
-        #         expect((Time.now - time).to_i).to eq(5)
-        #
-        #         proxy = described_class.new( concurrency: 1 )
-        #         proxy.start_async
-        #         time = Time.now
-        #         threads = []
-        #         2.times do
-        #             threads << Thread.new { via_proxy( proxy, sleep_url ) }
-        #         end
-        #         threads.each(&:join)
-        #         expect((Time.now - time).to_i).to eq(10)
-        #     end
-        # end
+        describe ':concurrency' do
+            it 'sets the HTTP request concurrency' do
+                sleep_url = @url + 'sleep'
+
+                proxy = described_class.new( concurrency: 2 )
+                proxy.start_async
+                time = Time.now
+                threads = []
+                2.times do
+                    threads << Thread.new { via_proxy( proxy, sleep_url ) }
+                end
+                threads.each(&:join)
+                expect((Time.now - time).to_i).to eq(5)
+
+                proxy = described_class.new( concurrency: 1 )
+                proxy.start_async
+                time = Time.now
+                threads = []
+                2.times do
+                    threads << Thread.new { via_proxy( proxy, sleep_url ) }
+                end
+                threads.each(&:join)
+                expect((Time.now - time).to_i).to eq(10)
+            end
+        end
 
         describe ':request_handler' do
             it 'sets a block to handle each HTTP request before the request is forwarded to the origin server' do

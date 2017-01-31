@@ -7,6 +7,7 @@ Factory.define :report_data do
     end
 
     {
+        seed:     Arachni::Utilities.random_seed,
         options:  Arachni::Options.to_hash,
         sitemap:  { Arachni::Options.url => 200 },
         issues:   issues,

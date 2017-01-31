@@ -39,6 +39,12 @@ describe Arachni::Page::DOM do
         expect(subject).to eq(Arachni::RPC::Serializer.deep_clone( subject ))
     end
 
+    it 'Marshaling ignores the page' do
+        expect(subject.page).to be_kind_of Arachni::Page
+        dom = Marshal.load( Marshal.dump( subject ) )
+        expect(dom.page).to be_nil
+    end
+
     describe '#to_rpc_data' do
         let(:data) { subject.to_rpc_data }
 
@@ -48,7 +54,7 @@ describe Arachni::Page::DOM do
             end
         end
 
-        %w(data_flow_sinks execution_flow_sinks).each do |attribute|
+        %w(cookies data_flow_sinks execution_flow_sinks cookies).each do |attribute|
             it "includes '#{attribute}'" do
                 expect(data[attribute]).to eq(subject.send(attribute).map(&:to_rpc_data))
             end
@@ -63,7 +69,7 @@ describe Arachni::Page::DOM do
         let(:restored) { described_class.from_rpc_data data }
         let(:data) { Arachni::RPC::Serializer.rpc_data( subject ) }
 
-        %w(url transitions digest skip_states data_flow_sinks
+        %w(url cookies transitions digest skip_states data_flow_sinks
             execution_flow_sinks).each do |attribute|
             it "restores '#{attribute}'" do
                 expect(restored.send( attribute )).to eq(subject.send( attribute ))
@@ -223,6 +229,12 @@ describe Arachni::Page::DOM do
         it 'returns a hash with DOM data' do
             data = {
                 url:         'http://test/dom',
+                cookies:     [
+                    Arachni::Element::Cookie.new(
+                        url:    'http://test/dom',
+                        inputs: { 'name' => 'val' }
+                    )
+                ],
                 skip_states: Arachni::Support::LookUp::HashSet.new.tap { |h| h << 0 },
                 transitions: [
                     { element:  :stuffed },
@@ -236,15 +248,17 @@ describe Arachni::Page::DOM do
             data[:transitions].each do |t|
                 empty_dom.push_transition t
             end
+            empty_dom.cookies = data[:cookies]
             empty_dom.skip_states = data[:skip_states]
             empty_dom.data_flow_sinks = data[:data_flow_sinks]
             empty_dom.execution_flow_sinks = data[:execution_flow_sinks]
 
             expect(empty_dom.to_h).to eq({
-                url:                 data[:url],
-                transitions:         data[:transitions].map(&:to_hash),
-                digest:              empty_dom.digest,
-                skip_states:         data[:skip_states],
+                url:                  data[:url],
+                cookies:              data[:cookies].map(&:to_hash),
+                transitions:          data[:transitions].map(&:to_hash),
+                digest:               empty_dom.digest,
+                skip_states:          data[:skip_states],
                 data_flow_sinks:      data[:data_flow_sinks].map(&:to_hash),
                 execution_flow_sinks: data[:execution_flow_sinks].map(&:to_hash)
             })

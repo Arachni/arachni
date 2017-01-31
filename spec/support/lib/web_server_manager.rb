@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,6 +17,8 @@ class WebServerManager
         @lib     = "#{support_path}/servers/"
         @servers = {}
         @consumed_ports = Set.new
+
+        @address = Socket.gethostbyname( Socket.gethostname ).first
 
         Dir.glob( File.join( @lib + '**', '*.rb' ) ) do |path|
             {} while @consumed_ports.include?( (port = Arachni::Utilities.available_port) )
@@ -54,7 +56,7 @@ class WebServerManager
     end
 
     def address_for( name )
-        @address || '127.0.0.2'
+        @address
     end
 
     def port_for( name )

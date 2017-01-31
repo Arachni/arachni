@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -79,23 +79,27 @@ class ElementLocator
         if attributes['id']
             attrs['id'] = attributes['id']
 
+        # If we have our own attribute trust it more than the rest,
+        # 'class' attributes and others can change dynamically.
+        elsif attributes[ARACHNI_ID]
+            attrs[ARACHNI_ID] = attributes[ARACHNI_ID]
+
         # Alternatively, exclude data attributes (except from ours ) to prevent
         # issues and use whatever other attributes are available.
         else
             attrs = attributes.reject do |k, v|
-                k = k.to_s
-                k.start_with?( 'data-' ) && k != ARACHNI_ID
+                k.to_s.start_with?( 'data-' )
             end
         end
 
-        "#{tag_name}#{attrs.map { |k, v| "[#{k}=#{v.inspect}]"}.join}"
+        "#{tag_name}#{attrs.map { |k, v| "[#{k}=\"#{v.escape_double_quote}\"]"}.join}"
     end
 
     # @return   [String]
     #   Locator as an HTML opening tag.
     def to_s
         "<#{tag_name}#{' ' if attributes.any?}" <<
-            attributes.map { |k, v| "#{k}=#{v.inspect}" }.join( ' ' ) << '>'
+            attributes.map { |k, v| "#{k}=\"#{v.escape_double_quote}\"" }.join( ' ' ) << '>'
     end
     alias :inspect :to_s
 

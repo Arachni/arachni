@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -19,6 +19,8 @@ class XML < Base
     Dir.glob( lib ).each { |f| require f }
 
     include Arachni::Element::Capabilities::Auditable
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
     include Arachni::Element::Capabilities::Submittable
     include Arachni::Element::Capabilities::Analyzable
     include Arachni::Element::Capabilities::WithSource
@@ -87,17 +89,11 @@ class XML < Base
         { self.action => self.inputs }
     end
 
-    # @param   (see .encode)
-    # @return  (see .encode)
-    #
     # @see .encode
     def encode( *args )
         self.class.encode( *args )
     end
 
-    # @param   (see .decode)
-    # @return  (see .decode)
-    #
     # @see .decode
     def decode( *args )
         self.class.decode( *args )

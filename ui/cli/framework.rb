@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -39,6 +39,23 @@ class Framework
         @show_command_screen = nil
         @cleanup_handler     = nil
 
+        if Signal.list.include?( 'USR1' )
+            # Step into a pry session for debugging.
+            trap( 'USR1' ) do
+                Thread.new do
+                    require 'pry'
+
+                    mute
+                    clear_screen
+
+                    pry
+
+                    clear_screen
+                    unmute
+                end
+            end
+        end
+
         trap( 'INT' ) do
             hide_command_screen
             clear_screen
@@ -54,8 +71,8 @@ class Framework
     def run
         print_status 'Initializing...'
 
-        # Won't work properly on MS Windows.
-        get_user_command if !Arachni.windows?
+        # Won't work properly on MS Windows or when running in background.
+        get_user_command if !Arachni.windows? && !@daemon_friendly
 
         begin
             # We may need to kill the audit so put it in a thread.
@@ -121,7 +138,7 @@ class Framework
         browser_cluster = statistics[:browser_cluster]
 
         refresh_line nil, unmute
-        refresh_info( "Audited #{statistics[:audited_pages]} pages.", unmute )
+        refresh_info( "Audited #{statistics[:audited_pages]} page snapshots.", unmute )
 
         if @framework.options.scope.page_limit
             refresh_info( 'Audit limited to a max of ' <<
@@ -389,6 +406,7 @@ class Framework
     def parse_options
         parser = OptionParser.new
 
+        parser.daemon_friendly
         parser.authorized_by
         parser.output
         parser.scope
@@ -409,6 +427,8 @@ class Framework
 
         @timeout         = parser.get_timeout
         @timeout_suspend = parser.timeout_suspend?
+
+        @daemon_friendly = parser.daemon_friendly?
 
         if options.checks.any?
             begin

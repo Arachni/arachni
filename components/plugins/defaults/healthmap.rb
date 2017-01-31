@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -63,6 +63,8 @@ class Arachni::Plugins::HealthMap < Arachni::Plugin::Base
 
         merged['issue_percentage'] =
             ( ( merged['with_issues'].to_f / merged['total'].to_f ) * 100 ).round
+
+        merged['map'] = merged['map'].sort_by { h.values.first }
 
         merged
     end

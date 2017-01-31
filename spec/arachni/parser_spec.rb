@@ -20,8 +20,52 @@ describe Arachni::Parser do
         Arachni::HTTP::Client.reset
     end
 
-    subject(:response) { @response }
+    let(:document) { described_class.parse response.body }
+    let(:response) { @response }
     subject { Arachni::Parser.new( response ) }
+    let(:from_response) { Arachni::Parser.new( response ) }
+    let(:from_document) { Arachni::Parser.new( document ) }
+
+    describe '#initialize' do
+        context 'Arachni::Parser::Document' do
+            subject { from_document }
+
+            it 'sets it as #document' do
+                expect(subject.document).to eq document
+            end
+        end
+
+        context 'Arachni::HTTP::Response' do
+            subject { from_response }
+
+            it 'parses it' do
+                expect(subject.body).to eq response.body
+            end
+        end
+
+        context 'Array of Arachni::HTTP::Response' do
+            subject do
+                described_class.new(
+                    [response,
+                    Arachni::HTTP::Client.get( @url, mode: :sync )]
+                )
+            end
+
+            it 'parses the first' do
+                expect(subject.body).to eq response.body
+            end
+        end
+    end
+
+    describe '#response=' do
+        subject { described_class.new( document ) }
+
+        it 'sets the response' do
+            expect(subject.response).to be_nil
+            subject.response = response
+            expect(subject.response).to eq response
+        end
+    end
 
     describe '#url' do
         it 'holds the effective URL of the response' do
@@ -36,6 +80,27 @@ describe Arachni::Parser do
         end
     end
 
+    describe '#body' do
+        context 'when the body has been explicitly set' do
+            it 'returns it' do
+                subject.body = 'blah'
+                expect(subject.body). to eq 'blah'
+            end
+        end
+
+        context 'when the parser was initialized from an HTTP::Response' do
+            it 'returns the response body' do
+                expect(from_response.body). to eq response.body
+            end
+        end
+
+        context 'when the parser was initialized from a Document' do
+            it 'returns nil' do
+                expect(from_document.body). to be_nil
+            end
+        end
+    end
+
     describe '#body=' do
         let(:response) do
             Arachni::HTTP::Response.new(
@@ -46,7 +111,7 @@ describe Arachni::Parser do
         end
 
         it 'overrides the body of the HTTP response for the parsing process' do
-            subject.body = '<a href="/?name2=val2">Stuff</a>'
+            subject.body = '<html><div><a href="/?name2=val2">Stuff</a></div></html>'
             expect(subject.links.size).to eq(1)
             expect(subject.links.first.inputs).to eq({ 'name2' => 'val2' })
         end
@@ -142,39 +207,54 @@ describe Arachni::Parser do
     end
 
     describe '#text?' do
-        context 'when the response is text based' do
-            it { expect(subject.text?).to be_truthy }
+        context 'when the parser was initialized from an HTTP::Response' do
+            context 'when the response is text based' do
+                it { expect(subject.text?).to be_truthy }
+            end
+
+            context 'when the response is not text based' do
+                let(:response) do
+                    Arachni::HTTP::Response.new( url: @url, headers: {
+                        'Content-Type' => 'bin/stuff'
+                    })
+                end
+                it { expect(subject.text?).to be_falsey }
+            end
         end
 
-        context 'when the response is not text based' do
-            let(:response) do
-                 Arachni::HTTP::Response.new( url: @url, headers: {
-                    'Content-Type' => 'bin/stuff'
-                })
+        context 'when the parser was initialized from a Document' do
+            it 'returns true' do
+                expect(from_document).to be_text
             end
-            it { expect(subject.text?).to be_falsey }
         end
     end
 
-    describe '#doc' do
-        context 'when the response is text based' do
-            it 'returns the parsed document' do
-                subject.document.class == Nokogiri::HTML::Document
+    describe '#document' do
+        context 'when the parser was initialized with an HTTP::Response' do
+            context 'when the response is text based' do
+                it 'returns the parsed document' do
+                    subject.document.class == Nokogiri::HTML::Document
+                end
+            end
+
+            context 'when the response is not text based' do
+                let(:response) do
+                    Arachni::HTTP::Response.new( url: @url, headers: {
+                        'Content-Type' => 'bin/stuff'
+                    })
+                end
+
+                it 'returns nil' do
+                    expect(subject.document).to be_nil
+                end
             end
         end
 
-        context 'when the response is not text based' do
-            let(:response) do
-                Arachni::HTTP::Response.new( url: @url, headers: {
-                    'Content-Type' => 'bin/stuff'
-                })
-            end
-
-            it 'returns nil' do
-                expect(subject.document).to be_nil
+        context 'when the parser was initialized with a Document' do
+            it 'returns it' do
+                expect(from_document.document). to eq document
             end
         end
-
     end
 
     describe '#links' do
@@ -283,7 +363,7 @@ describe Arachni::Parser do
                 responses << Arachni::HTTP::Client.get( @opts.url + 'with_nonce', mode: :sync )
                 responses << Arachni::HTTP::Client.get( @opts.url + 'with_nonce', mode: :sync )
 
-                parser = Arachni::Parser.new( responses, @opts )
+                parser = Arachni::Parser.new( responses )
                 expect(parser.forms.map { |f| f.nonce_name }.sort).to eq(%w(nonce nonce2).sort)
             end
         end
@@ -385,6 +465,25 @@ describe Arachni::Parser do
     end
 
     describe '#paths' do
+        context 'when it includes mailto: links' do
+            let(:response) do
+                Arachni::HTTP::Response.new(
+                    url: @opts.url,
+                    body: '
+                <html>
+                    <body>
+                        <a href="' + @opts.url + '/test2/param/myvalue"></a>
+                        <a href="mailto:name@address.com"></a>
+                    </body>
+                </html>'
+                )
+            end
+
+            it 'ignores them' do
+                expect(subject.paths).to eq([@opts.url + 'test2/param/myvalue'])
+            end
+        end
+
         context 'when an error occurs' do
             it 'returns an empty array' do
                 allow(described_class).to receive(:extractors){ raise }
@@ -395,8 +494,8 @@ describe Arachni::Parser do
 
     context 'without base' do
         describe '#base' do
-            it 'returns nil' do
-                expect(subject.base).to eq(nil)
+            it 'returns the response URL' do
+                expect(subject.base).to eq(subject.response.url)
             end
         end
 
@@ -502,6 +601,16 @@ describe Arachni::Parser do
             subject.response.request.headers['X-Custom-Header'] = 'My-stuff'
             expect(subject.headers.find { |h| h.name == 'X-Custom-Header' }).to be_truthy
         end
+
+        it "excludes #{Arachni::HTTP::Client::SEED_HEADER_NAME}" do
+            subject.response.request.headers[Arachni::HTTP::Client::SEED_HEADER_NAME] = 'My-stuff'
+            expect(subject.headers.find { |h| h.name == Arachni::HTTP::Client::SEED_HEADER_NAME }).to be_falsey
+        end
+
+        it 'excludes Content-Type' do
+            subject.response.request.headers['Content-Length'] = '123'
+            expect(subject.headers.find { |h| h.name == 'Content-Length' }).to be_falsey
+        end
     end
 
     describe '#link_vars' do
@@ -533,4 +642,35 @@ describe Arachni::Parser do
         end
     end
 
+    describe '.markup?' do
+        context 'when dealing with markup' do
+            it 'returns true' do
+                expect(described_class.markup?( '<stuff></stuff>' )).to be_truthy
+            end
+        end
+
+        context 'when not dealing with markup' do
+            it 'returns false' do
+                expect(described_class.markup?( 'stuff' )).to be_falsey
+            end
+
+            context 'but includes markup' do
+                it 'returns false' do
+                    s = { test: '<stuff></stuff>' }.to_json
+                    expect(described_class.markup?( s )).to be_falsey
+
+                    expect(described_class.markup?( 'blah <stuff></stuff>' )).to be_falsey
+                end
+
+                context 'and begins with a doctype' do
+                    it 'returns false' do
+                        s = { test: '<stuff></stuff>' }.to_json
+                        s = "<!DOCTYPE html>#{s}"
+
+                        expect(described_class.markup?( s )).to be_falsey
+                    end
+                end
+            end
+        end
+    end
 end

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,14 +9,12 @@
 # Extracts paths from frames.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2
 class Arachni::Parser::Extractors::Frames < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'frame' )
+        return [] if !check_for?( 'frame' )
 
-        document.css( 'frame', 'iframe' ).
-            map { |a| a.attributes['src'].content rescue next }
+        document.nodes_by_names( ['frame', 'iframe'] ).map { |n| n['src'] }
     end
 
 end

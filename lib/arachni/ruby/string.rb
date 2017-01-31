@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -13,8 +13,8 @@ require 'zlib'
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class String
 
-    HAS_HTML_TAG_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
-    BINARY_CACHE       = Arachni::Support::Cache::LeastRecentlyPushed.new( 10_000 )
+    HAS_HTML_TAG_CACHE = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
+    BINARY_CACHE       = Arachni::Support::Cache::LeastRecentlyPushed.new( 1_000 )
 
     # @param    [Regexp]    regexp
     #   Regular expression with named captures.
@@ -52,6 +52,10 @@ class String
     #   Updated copy of self.
     def sub_in_groups( regexp, substitutions )
         dup.sub_in_groups!( regexp, substitutions )
+    end
+
+    def escape_double_quote
+        gsub( '"', '\"' )
     end
 
     # @param    [Regexp]    regexp
@@ -163,6 +167,7 @@ class String
     end
 
     def recode!
+        force_encoding( 'utf-8' )
         encode!( 'utf-8', invalid: :replace, undef: :replace )
         self
     end
@@ -174,8 +179,7 @@ class String
     def binary?
         # Stolen from YAML.
         BINARY_CACHE.fetch self do
-            (encoding == Encoding::ASCII_8BIT ||
-                index("\x00") ||
+            ( index("\x00") ||
                 count("\x00-\x7F", "^ -~\t\r\n").fdiv(length) > 0.3)
         end
     end

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -107,7 +107,8 @@ interactions in order to become visible, this plugin will not be able to submit 
                 ),
                 Options::String.new( :parameters,
                     required:    true,
-                    description: 'Form parameters to submit. ( username=user&password=pass )'
+                    description: 'Form parameters to submit -- special characters' +
+                                 ' need to be URL encoded.( username=user&password=pass )'
                 ),
                 Options::String.new( :check,
                     required:    true,

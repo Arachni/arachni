@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>1.4</td>
+        <td>1.5</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -38,7 +38,7 @@
     </tr>
     <tr>
         <th>Copyright</th>
-        <td>2010-2016 Tasos Laskos</td>
+        <td>2010-2017 <a href="http://www.sarosys.com">Sarosys LLC</a></td>
     </tr>
     <tr>
         <th>License</th>
@@ -555,6 +555,9 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 - Metrics (`metrics`) -- Captures metrics about multiple aspects of the scan and the web application.
 - Restrict to DOM state (`restrict_to_dom_state`) -- Restricts the audit to a single page's DOM
     state, based on a URL fragment.
+- Webhook notify (`webhook_notify`) -- Sends a webhook payload over HTTP at the end of the scan.
+- Rate limiter (`rate_limiter`) -- Rate limits HTTP requests.
+- Page dump (`page_dump`) -- Dumps page data to disk as YAML.
 
 ##### Defaults
 

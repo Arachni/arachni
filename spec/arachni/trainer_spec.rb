@@ -65,6 +65,7 @@ describe Arachni::Trainer do
     end
 
     before( :each ) do
+        Arachni::ElementFilter.reset
         Arachni::Options.reset
 
         @page = Arachni::Page.from_url( @url )
@@ -75,45 +76,125 @@ describe Arachni::Trainer do
 
     describe 'HTTP requests with "train" set to' do
         describe 'nil' do
-            it 'skips the Trainer' do
-                expect(@framework.pages.size).to eq(0)
+            context 'and is not buffered' do
+                it 'skips the Trainer' do
+                    expect(@framework.pages.size).to eq(0)
 
-                Arachni::HTTP::Client.request( @url + '/elems' )
-                @framework.run
+                    Arachni::HTTP::Client.request( @url + '/elems' )
+                    @framework.run
 
-                expect(@framework.pages.size).to eq(0)
+                    expect(@framework.pages.size).to eq(0)
+                end
+            end
+
+            context 'and is buffered' do
+                it 'skips the Trainer' do
+                    expect(@framework.pages.size).to eq(0)
+
+                    Arachni::HTTP::Client.request(
+                        @url + '/elems',
+                        on_body: proc {}
+                    )
+                    @framework.run
+
+                    expect(@framework.pages.size).to eq(0)
+                end
             end
         end
         describe 'false' do
-            it 'skips the Trainer' do
-                expect(@framework.pages.size).to eq(0)
+            context 'and is not buffered' do
+                it 'skips the Trainer' do
+                    expect(@framework.pages.size).to eq(0)
 
-                Arachni::HTTP::Client.request( @url + '/elems', train: false )
-                @framework.run
+                    Arachni::HTTP::Client.request( @url + '/elems', train: false )
+                    @framework.run
 
-                expect(@framework.pages.size).to eq(0)
+                    expect(@framework.pages.size).to eq(0)
+                end
+            end
+
+            context 'and is buffered' do
+                it 'skips the Trainer' do
+                    expect(@framework.pages.size).to eq(0)
+
+                    Arachni::HTTP::Client.request(
+                        @url + '/elems',
+                        train:   false,
+                        on_body: proc {}
+                    )
+                    @framework.run
+
+                    expect(@framework.pages.size).to eq(0)
+                end
             end
         end
+
         describe 'true' do
-            it 'passes the response to the Trainer' do
-                expect(@framework.pages.size).to eq(0)
-
-                Arachni::HTTP::Client.request( @url + '/elems', train: true )
-
-                expect(@trainer).to receive(:push)
-                @framework.run
-            end
-
-            context 'when a redirection leads to new elements' do
+            context 'and is not buffered' do
                 it 'passes the response to the Trainer' do
                     expect(@framework.pages.size).to eq(0)
 
-                    Arachni::HTTP::Client.request( @url + '/train/redirect', train: true )
-                    @framework.run
+                    Arachni::HTTP::Client.request( @url + '/elems', train: true )
 
-                    page = @framework.pages.first
-                    expect(page.links.first.inputs.include?( 'msg' )).to be_truthy
+                    expect(@trainer).to receive(:push)
+                    @framework.run
                 end
+
+                context 'when a redirection leads to new elements' do
+                    it 'passes the response to the Trainer' do
+                        expect(@framework.pages.size).to eq(0)
+
+                        Arachni::HTTP::Client.request( @url + '/train/redirect', train: true )
+                        @framework.run
+
+                        page = @framework.pages.first
+                        expect(page.links.first.inputs.include?( 'msg' )).to be_truthy
+                    end
+                end
+            end
+
+            context 'and is buffered' do
+                it 'is ignored' do
+                    expect(@framework.pages.size).to eq(0)
+
+                    Arachni::HTTP::Client.request(
+                        @url + '/elems',
+                        train:   true,
+                        on_body: proc {}
+                    )
+
+                    expect(@trainer).to_not receive(:analyze)
+                    @framework.run
+                end
+
+                # it 'passes the response to the Trainer' do
+                #     expect(@framework.pages.size).to eq(0)
+                #
+                #     Arachni::HTTP::Client.request(
+                #         @url + '/elems',
+                #         train:   true,
+                #         on_body: proc {}
+                #     )
+                #
+                #     expect(@trainer).to receive(:analyze)
+                #     @framework.run
+                # end
+                #
+                # context 'when a redirection leads to new elements' do
+                #     it 'passes the response to the Trainer' do
+                #         expect(@framework.pages.size).to eq(0)
+                #
+                #         Arachni::HTTP::Client.request(
+                #             @url + '/train/redirect',
+                #             train:   true,
+                #             on_body: proc {}
+                #         )
+                #         @framework.run
+                #
+                #         page = @framework.pages.first
+                #         expect(page.links.first.inputs.include?( 'msg' )).to be_truthy
+                #     end
+                # end
             end
         end
     end

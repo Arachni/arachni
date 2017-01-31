@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -9,27 +9,21 @@
 # Extracts meta refresh URLs.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.2.1
 class Arachni::Parser::Extractors::MetaRefresh < Arachni::Parser::Extractors::Base
 
     def run
-        return [] if !includes?( 'http-equiv' )
+        return [] if !check_for?( 'http-equiv' )
 
-        document.search( "//meta[
-                translate(
-                    @http-equiv,
-                        'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
-                        'abcdefghijklmnopqrstuvwxyz'
-                    ) = 'refresh'
-            ]" ).map do |url|
-            begin
-                _, url = url['content'].split( ';', 2 )
-                next if !url
-                unquote( url.split( '=', 2 ).last.strip )
-            rescue
-                next
+        document.nodes_by_attribute_name_and_value( 'http-equiv', 'refresh' ).
+            map do |url|
+                begin
+                    _, url = url['content'].split( ';', 2 )
+                    next if !url
+                    unquote( url.split( '=', 2 ).last.strip )
+                rescue
+                    next
+                end
             end
-        end
     end
 
     def unquote( str )

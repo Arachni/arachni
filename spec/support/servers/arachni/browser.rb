@@ -89,6 +89,86 @@ get '/open-new-window' do
 HTML
 end
 
+get '/Content-Security-Policy' do
+    headers['Content-Security-Policy'] = "default-src 'self'"
+
+    <<HTML
+<html>
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Date' do
+    headers['Date'] = 'Thu, 29 Sep 2016 09:57:11 GMT'
+
+    <<HTML
+<html>
+<script src="/Date/asset"></script>
+
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Date/asset' do
+    headers['Date'] = 'Thu, 29 Sep 2016 09:57:11 GMT'
+    ''
+end
+
+get '/Etag' do
+    etag '1'
+
+    <<HTML
+<html>
+<script src="/Etag/asset"></script>
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Etag/asset' do
+    etag '1'
+    ''
+end
+
+get '/Last-Modified' do
+    headers['Last-Modified'] = 'Wed, 21 Oct 2015 07:28:00 GMT'
+
+    <<HTML
+<html>
+<script src="/Last-Modified/asset"></script>
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Last-Modified/asset' do
+    headers['Last-Modified'] = 'Wed, 21 Oct 2015 07:28:00 GMT'
+    ''
+end
+
+get '/Cache-Control' do
+    headers['Cache-Control'] = 'public, max-age=300'
+
+    <<HTML
+<html>
+<script src="/Cache-Control/asset"></script>
+    <body>
+    </body>
+</html>
+HTML
+end
+
+get '/Cache-Control/asset' do
+    headers['Cache-Control'] = 'public, max-age=300'
+    ''
+end
+
 get '/If-None-Match' do
     etag '1'
 
@@ -245,7 +325,7 @@ get '/load_delay' do
 HTML
 end
 
-get '/snapshot_id/default' do
+get '/event_digest/default' do
     <<-EOHTML
     <html>
         <body>
@@ -347,7 +427,7 @@ get '/each_element_with_events/form/action/regular' do
     EOHTML
 end
 
-get '/snapshot_id/form/default' do
+get '/event_digest/form/default' do
     <<-EOHTML
     <html>
         <body>
@@ -387,6 +467,64 @@ get '/fire_event/form/disabled_inputs' do
             <textarea name="name" ></textarea>
             <input disabled id="email"/>
             <input/>
+        </fom>
+
+        <div id="container-name">
+        </div>
+        <div id="container-email">
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
+get '/fire_event/form/submit_button' do
+    <<-EOHTML
+<html>
+    <script>
+        function submitForm() {
+            document.getElementById("container-name").innerHTML =
+                document.getElementsByName("name")[0].value;
+
+            document.getElementById("container-email").innerHTML =
+                document.getElementById("email").value;
+        }
+    </script>
+
+    <body>
+        <form>
+            <textarea name="name" ></textarea>
+            <input id="email"/>
+            <button onclick="submitForm();return false;" type="submit"/>
+        </fom>
+
+        <div id="container-name">
+        </div>
+        <div id="container-email">
+        </div>
+    </body>
+</html>
+    EOHTML
+end
+
+get '/fire_event/form/submit_input' do
+    <<-EOHTML
+<html>
+    <script>
+        function submitForm() {
+            document.getElementById("container-name").innerHTML =
+                document.getElementsByName("name")[0].value;
+
+            document.getElementById("container-email").innerHTML =
+                document.getElementById("email").value;
+        }
+    </script>
+
+    <body>
+        <form>
+            <textarea name="name" ></textarea>
+            <input id="email"/>
+            <input onclick="submitForm();return false;" type="submit"/>
         </fom>
 
         <div id="container-name">
@@ -474,7 +612,16 @@ get '/test.png' do
     200
 end
 
-Arachni::Browser::Javascript::EVENTS_PER_ELEMENT[:input].each do |event|
+[
+    :onselect,
+    :onchange,
+    :onfocus,
+    :onblur,
+    :onkeydown,
+    :onkeypress,
+    :onkeyup,
+    :oninput
+].each do |event|
     get "/fire_event/input/#{event}" do
         <<-EOHTML
 <html>
@@ -609,6 +756,22 @@ get '/ever-changing-via-js' do
                 document.write( new Date() );
             </script>
         </div>
+    </body>
+</html>
+HTML
+end
+
+get '/ever-changing-dom' do
+    <<HTML
+<html>
+    <head>
+        <title>My title!</title>
+    </head>
+
+    <body>
+        <a href="#{Time.now.to_i}" onclick="doStuff()">
+            Blah
+        </a>
     </body>
 </html>
 HTML
@@ -771,7 +934,7 @@ get '/with-ajax' do
             get_ajax.send();
 
             post_ajax = new XMLHttpRequest();
-            post_ajax.open( "POST", "/post-ajax", true );
+            post_ajax.open( "POST", "/post-ajax?post-query=blah", true );
             post_ajax.send( "post-name=post-value" );
         </script>
     <head>
@@ -914,6 +1077,93 @@ get '/dom-cookies-values' do
             cookiesHaveValue('stuff2');
             cookiesHaveValue('stuff3');
             cookiesHaveValue('stuff4');
+        </script>
+    </html>
+HTML
+end
+
+get '/dom-cookies-names-substring' do
+    cookies['http_only_cookie'] = 'stuff1'
+
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
+
+    <<HTML
+    <html>
+        <script>
+            function getCookie( cname ) {
+                var name = cname + '=';
+                var ca = document.cookie.split(';');
+
+                for( var i = 0; i < ca.length; i++ ) {
+                    var c = ca[i].trim();
+
+                    if( c.indexOf( name ) == 0 ) {
+                        return c.substring( name.length, c.length )
+                    }
+                }
+
+                return '';
+            }
+
+            getCookie('http_only_cookie_substring');
+            getCookie('js_cookie1_substring');
+            getCookie('js_cookie2_substring');
+            getCookie('other_path_substring');
+        </script>
+    </html>
+HTML
+end
+
+get '/dom-cookies-values-substring' do
+    cookies['http_only_cookie'] = 'stuff1'
+
+    response.set_cookie(
+        :js_cookie1,
+        value: 'stuff2'
+    )
+    response.set_cookie(
+        :js_cookie2,
+        value: 'stuff3'
+    )
+
+    response.set_cookie(
+        :js_cookie3,
+        value: 'blah'
+    )
+
+    response.set_cookie(
+        :other_path,
+        value: 'stuff4',
+        path: '/blah/'
+    )
+    <<HTML
+    <html>
+        <script>
+            function cookiesHaveValue( value ) {
+                return document.cookie.indexOf( value ) != -1;
+            }
+
+            cookiesHaveValue('stuff1_substring');
+            cookiesHaveValue('stuff2_substring');
+            cookiesHaveValue('stuff3_substring');
+            cookiesHaveValue('stuff4_substring');
         </script>
     </html>
 HTML
@@ -1144,6 +1394,27 @@ get '/trigger_events/with_new_timers/:delay' do |delay|
     <body>
 
         <div id="my-div" onclick="addFormAfterDelay();">
+            Test
+        </div>
+    </body>
+</html>
+HTML
+end
+
+get '/trigger_events/with_new_elements' do
+    <<HTML
+<html>
+    <head>
+        <script>
+            function addElement() {
+                document.getElementById( "my-div" ).innerHTML = "<a href='#blah'>Blah</a>";
+                document.getElementsByTagName('a')[0].addEventListener( 'click', function() {} );
+            }
+        </script>
+    <head>
+
+    <body>
+        <div id="my-div" onclick="addElement();">
             Test
         </div>
     </body>

@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -31,6 +31,9 @@ class Form < Base
     include Capabilities::Auditable
     include Capabilities::Submittable
     include Capabilities::Mutable
+
+    include Arachni::Element::Capabilities::Auditable::Buffered
+    include Arachni::Element::Capabilities::Auditable::LineBuffered
 
     # {Form} error namespace.
     #
@@ -196,8 +199,6 @@ class Form < Base
     #    </form>
     #    HTML
     #
-    #    f = Form.from_document( 'http://stuff.com', html_form ).first
-    #
     #    p f.field_type_for 'text-input'
     #    #=> :text
     #
@@ -219,17 +220,11 @@ class Form < Base
         field_type_for( name ) == :fake
     end
 
-    # @param   (see .encode)
-    # @return  (see .encode)
-    #
     # @see .encode
     def encode( str )
         self.class.encode( str )
     end
 
-    # @param   (see .decode)
-    # @return  (see .decode)
-    #
     # @see .decode
     def decode( str )
         self.class.decode( str )
@@ -254,34 +249,25 @@ class Form < Base
         #
         # @return   [Array<Form>]
         def from_response( response, ignore_scope = false )
-            from_document( response.url, response.body, ignore_scope )
+            from_parser( Arachni::Parser.new( response ), ignore_scope )
         end
 
         # Extracts forms from an HTML document.
         #
-        # @param    [String]    url
-        #   URL of the document -- used for path normalization purposes.
-        # @param    [String, Nokogiri::HTML::Document]    document
+        # @param    [Arachni::Parser]    parser
         #
         # @return   [Array<Form>]
-        def from_document( url, document, ignore_scope = false )
-            if !document.is_a?( Nokogiri::HTML::Document )
-                document = document.to_s
+        def from_parser( parser, ignore_scope = false )
+            return [] if parser.body && !in_html?( parser.body )
 
-                return [] if !in_html?( document )
+            base_url = to_absolute( parser.base, parser.url )
 
-                document = Arachni::Parser.parse( document )
-            end
-
-            base_url = (document.search( '//base[@href]' )[0]['href'] rescue url)
-            base_url = to_absolute( base_url, url )
-
-            document.search( '//form' ).map do |node|
+            parser.document.nodes_by_name( :form ).map do |node|
                 next if !(forms = from_node( base_url, node, ignore_scope ))
                 next if forms.empty?
 
                 forms.each do |form|
-                    form.url = url.freeze
+                    form.url = parser.url
                     form
                 end
             end.flatten.compact
@@ -308,9 +294,10 @@ class Form < Base
             # we keep track of this here and create a new form for each choice.
             multiple_choice_submits = {}
 
-            %w(textarea input select button).each do |attr|
-                options[attr] ||= []
-                node.css( attr ).each do |elem|
+            %w(textarea input select button).each do |tag|
+                options[tag] ||= []
+
+                node.nodes_by_name( tag ).each do |elem|
                     elem_attrs = attributes_to_hash( elem.attributes )
                     elem_attrs[:type] = elem_attrs[:type].to_sym if elem_attrs[:type]
 
@@ -318,7 +305,7 @@ class Form < Base
                     next if !name
 
                     # Handle the easy stuff first...
-                    if elem.name != 'select'
+                    if elem.name != :select
                         options[:inputs][name] = elem_attrs
 
                         if elem_attrs[:type] == :submit
@@ -336,12 +323,14 @@ class Form < Base
                         next
                     end
 
+                    children = elem.nodes_by_name( 'option' )
+
                     # If the select has options figure out which to use.
-                    if elem.children.css('option').any?
-                        elem.children.css('option').each do |child|
+                    if children.any?
+                        children.each do |child|
                             h = attributes_to_hash( child.attributes )
                             h[:type]    = :select
-                            h[:value] ||= child.text
+                            h[:value] ||= child.text.strip
 
                             if too_big?( h[:value] )
                                 h[:value] = ''

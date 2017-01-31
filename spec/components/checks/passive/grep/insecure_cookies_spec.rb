@@ -8,8 +8,8 @@ describe name_from_filename do
     end
 
     def issue_count
-        2
+        3
     end
 
-    easy_test { expect(issues.map { |i| i.vector.name }.sort).to eq %w(cookie cookie2).sort }
+    easy_test { expect(issues.map { |i| i.vector.name }.sort).to eq %w(cookie cookie2 jscookie).sort }
 end

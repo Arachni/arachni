@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -20,12 +20,12 @@ class Arachni::Checks::MixedResource < Arachni::Check::Base
 
         print_status 'Checking...'
 
-        page.document.css( 'script' ).each do |script|
+        page.document.nodes_by_name( 'script' ).each do |script|
             url = script.attributes['src'].to_s
             log_resource( url ) if insecure_script?( script )
         end
 
-        page.document.css( 'link' ).each do |script|
+        page.document.nodes_by_name( 'link' ).each do |script|
             url = script.attributes['href'].to_s
             log_resource( url ) if insecure_link?( script )
         end
@@ -65,7 +65,7 @@ class Arachni::Checks::MixedResource < Arachni::Check::Base
             description: %q{Looks for resources served over HTTP when the HTML code is server over HTTPS.},
             elements:    [ Element::Body ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.4',
+            version:     '0.1.5',
 
             issue:       {
                 name:            %q{Mixed Resource},

@@ -11,7 +11,7 @@ describe Arachni::Element::Cookie::DOM do
     it_should_behave_like 'auditable_dom'
 
     def auditable_extract_parameters( page )
-        Hash[[page.document.css('#container').text.split( '=' )]]
+        Hash[[Nokogiri::HTML(page.body).css('#container').text.split( '=' )]]
     end
 
     def run

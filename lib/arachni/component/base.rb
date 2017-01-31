@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -32,6 +32,8 @@ class Base
     end
 
     class <<self
+        include Arachni::Component::Output
+
         def fullname
             @fullname ||= info[:name]
         end

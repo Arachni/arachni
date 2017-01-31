@@ -33,6 +33,20 @@ get '/login' do
             <input name='username' value='' />
             <input name='password' type='password' value='' />
             <input name='token' type='hidden' value='secret!' />
+            <input name='submit_me' type='hidden' value='submitted' />
+        </form>
+    HTML
+end
+
+get '/login/submit_input' do
+    cookies[:preserve] = 'this'
+
+    <<-HTML
+        <form method='post' name='login_form' action="/login">
+            <input name='username' value='' />
+            <input name='password' type='password' value='' />
+            <input name='token' type='hidden' value='secret!' />
+            <input name='submit_me' type='submit' value='submitted' />
         </form>
     HTML
 end
@@ -48,7 +62,9 @@ end
 
 post '/login' do
     if params['username'] == 'john' && params['password'] == 'doe' &&
-        params['token'] == 'secret!' && cookies[:preserve] == 'this'
+        params['token'] == 'secret!' && cookies[:preserve] == 'this' &&
+        params['submit_me'] == 'submitted'
+
         cookies[:success] = true
         redirect '/redirect/1'
     else

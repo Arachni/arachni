@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -12,8 +12,9 @@ require 'pony'
 # of the scan over SMTP.
 #
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
-# @version 0.1.5
 class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
+
+    TRIES = 5
 
     def run
         wait_while_framework_running
@@ -34,8 +35,8 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 address:              options[:server_address],
                 port:                 options[:server_port],
                 enable_starttls_auto: options[:tls],
-                user_name:            options[:username],
-                password:             options[:password],
+                user_name:            !options[:username].empty? ? options[:username] : nil,
+                password:             !options[:password].empty? ? options[:password] : nil,
                 authentication:       !options[:authentication].empty? ? options[:authentication].to_sym : nil,
                 domain:               options[:domain]
             }
@@ -57,9 +58,25 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
 
         print_status 'Sending the notification...'
 
-        Pony.mail( opts )
+        sent      = false
+        exception = nil
+        TRIES.times do |i|
+            begin
+                Pony.mail( opts )
+                sent = true
+                break
+            rescue => e
+                exception = e
+                print_bad "Attempt ##{i} failed, retrying..."
+            end
+        end
 
-        print_status 'Done.'
+        if sent
+            print_status 'Done.'
+        else
+            print_error "Failed after #{TRIES} tries."
+            print_exception exception
+        end
     end
 
     def self.info
@@ -67,7 +84,7 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
             name:        'E-mail notify',
             description: %q{Sends a notification (and optionally a report) over SMTP at the end of the scan.},
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.6',
+            version:     '0.1.7',
             options:     [
                 Options::String.new( :to,
                     required:    true,
@@ -111,8 +128,8 @@ class Arachni::Plugins::EmailNotify < Arachni::Plugin::Base
                 ),
                 Options::MultipleChoice.new( :report,
                     description: 'Report format to send as an attachment.',
-                    default:     'txt',
-                    choices:     ['txt', 'xml', 'html', 'json', 'yaml', 'marshal', 'afr', 'none']
+                    default:     'afr',
+                    choices:     ['xml', 'html', 'json', 'yaml', 'marshal', 'afr', 'none']
                 )
             ]
 

@@ -11,5 +11,7 @@ describe name_from_filename do
         current_check.formats.size
     end
 
-    easy_test
+    easy_test do
+        expect(issues.find { |issue| issue.remarks.empty? }).to be_nil
+    end
 end

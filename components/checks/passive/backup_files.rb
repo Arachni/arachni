@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -11,12 +11,33 @@
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Arachni::Checks::BackupFiles < Arachni::Check::Base
 
+    IGNORE_MIME_TYPES = {
+        image: %w(
+            gif bmp tif tiff jpg jpeg jpe pjpeg png ico psd xcf 3dm max svg eps
+            drw ai
+        ),
+        video: %w(asf rm mpg mpeg mpe 3gp 3g2  avi flv mov mp4 swf vob wmv),
+        audio: %w(aif mp3 mpa ra wav wma mid m4a ogg flac),
+        font:  %w(ttf otf woff fon fnt)
+    }
+
+    IGNORE_EXTENSIONS = Set.new( IGNORE_MIME_TYPES.values.flatten )
+
     def self.formats
         @formats ||= read_file( 'formats.txt' )
     end
 
     def run
         return if page.code != 200
+
+        ct = page.response.headers.content_type.to_s
+        IGNORE_MIME_TYPES.each do |type, _|
+            return if ct.start_with?( "#{type}/" )
+        end
+
+        return if IGNORE_EXTENSIONS.include?(
+            page.parsed_url.resource_extension.to_s.downcase
+        )
 
         resource = page.parsed_url.without_query
         return if audited?( resource )
@@ -31,15 +52,27 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
         extension  = page.parsed_url.resource_extension.to_s
 
         self.class.formats.each do |format|
-            url = up_to_path + format.gsub( '[name]', name ).
-                gsub( '[extension]', extension )
+            # Add format to the Issue remarks and some helpful message to let
+            # the user know how Arachni got to the resulting filename.
+            filename = format.gsub( '[name]', name ).gsub( '[extension]', extension )
+            url = up_to_path + filename
 
             # If there's no extension we'll end up with '..' in URLs.
-            url.gsub!('..', '.')
+            url.gsub!( '..', '.' )
 
             next if audited?( url )
 
-            log_remote_file_if_exists( url )
+            remark = 'Identified by converting the original filename of ' <<
+                "'#{page.parsed_url.resource_name}' to '#{filename}' using " <<
+                "format '#{format}'."
+
+            log_remote_file_if_exists(
+                url,
+                false,
+                remarks: {
+                    check: [ remark ]
+                }
+            )
             audited( url )
         end
 
@@ -52,7 +85,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
             description:      %q{Tries to identify backup files.},
             elements:         [ Element::Server ],
             author:           'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:          '0.3.2',
+            version:          '0.3.3',
             exempt_platforms: Arachni::Platform::Manager::FRAMEWORKS,
 
             issue:       {

@@ -1,5 +1,140 @@
 # ChangeLog
 
+## 1.5 _(January 31, 2017)_
+
+- Executables
+    - `arachni_rpcd_monitor` -- Brought up to date with Dispatcher refactoring.
+    - New
+        - `arachni_reproduce` -- Reproduces the issues in the given report.
+- Options
+    - `url` -- Raise error on addresses starting with `127.` because
+        PhantomJS 2.1.1 doesn't proxy any loopback connections.
+    - `--http-cookie-string` -- Updated to only accept `Set-Cookie` formatted
+        cookies instead of `Cookie` ones.
+    - `--browser-cluster-job-timeout`
+        - Repurposed to apply to communication requests for Selenium rather than
+            the entire job.
+        - Lowered to `10` seconds.
+    - New
+        - `--http-authentication-type`
+            - `auto` -- Default
+            - `basic`
+            - `digest`
+            - `digest_ie`
+            - `negotiate`
+            - `ntlm`
+        - `--scope-dom-event-limit` -- Limits the amount of DOM events to be
+            triggered for each DOM depth.
+        - `--daemon-friendly` -- Disables status screen.
+- `UI`
+    - `CLI`
+        - `Framework` -- Trap `USR1` signal and go into a `pry` session for debugging.
+- `URI`
+    - `.fast_parse` --- Ignore `data:` URIs.
+- `HTTP`
+    - `ProxyServer`
+        - Fixed state of abruptly closed SSL interceptor connections leading to
+            frozen browser operations.
+        - Added support for configurable concurrency of origin requests to keep
+            the amount of `Thread`s low.
+        - Added support for `Connection: Upgrade` requests by tunneling WebSocket
+            connections.
+    - `Client`
+        - Added `X-Arachni-Scan-Seed` header that includes the random scan seed.
+        - `Dynamic404Handler`
+            - Added more training scenarios for when:
+                - Dashes are used as routing separators.
+                - Directory name prepending and appending is ignored.
+            - Updated to not dismiss redirects but follow the location.
+- `Browser`
+    - Updated engine to PhantomJS 2.1.1.
+    - Remove `Content-Security-Policy` to allow the Arachni JS env to run.
+    - `#snapshot_id` -- Moved to browser-side `DOMMonitor` for better performance.
+    - `#capture` -- Extract query parameters from `POST` requests.
+    - `#capture_snapshot` -- Deduplicate based on DOM URL and transitions as well.
+    - `ElementLocator` -- Fixed bug causing broken CSS selectors with UTF8 characters.
+    - `Javascript`
+        - `#dom_elements_with_events`
+            - Moved code to browser-side `DOMMonitor`.
+            - Updated it to return results in batches, in order to keep RAM
+                usage under control when processing large pages with thousands
+                of elements with events.
+- `BrowserCluster`
+    - `Worker`
+        - `#run_job` -- Retry 5 times on job time-outs.
+- `Element`
+    - `Capabilities`
+        - `Auditable`
+            - New
+                - `Buffered` -- Reads audit responses in chunks.
+                - `LineBuffered` -- Reads audit responses in chunks of lines.
+    - `DOM`
+        - `Capabilities`
+            - `Submittable`, `Auditable` -- Switched from `Proc` to class methods
+                for callbacks, in order to avoid keeping contexts in memory.
+- Session -- Allow for a submit input to be specified when the login needs to be
+    triggered by clicking it, rather than just triggering the submit event on
+    the form.
+- REST API
+    - Added `GET /scans/:id/summary` to return scan progress data without
+        `issues`, `errors` and `sitemap`.
+- Report
+    - Added `#seed` attribute that includes the random scan seed.
+- Plugins
+    - New
+        - `webhook_notify` -- Sends a webhook payload over HTTP at the end of the scan.
+        - `rate_limiter` -- Rate limits HTTP requests.
+        - `page_dump` -- Dumps page data to disk as YAML.
+    - `proxy` -- `bind_address` default switched to `127.0.0.1`, `0.0.0.0` breaks
+        SSL interception on MS Windows.
+    - `metrics`
+        - Fixed division by 0 error when no requests have been performed.
+        - Added:
+            - HTTP
+                - Request time-outs
+                - Responses per second
+            - Browser cluster
+                - Timed-out jobs
+                - Seconds per job
+                - Total job time
+                - Job count
+    - `email_notify`
+        - Retry on error.
+        - Default to `afr` as a report format.
+- Checks
+    - Active
+        - `xss` -- Only check HTML responses to avoid FPs.
+        - `xss_event`
+            - Replaced full parsing of responses with SAX.
+            - Only check HTML responses to avoid FPs.
+        - `xss_script_context`
+            - Replaced full parsing of responses with SAX.
+            - Only check HTML responses to avoid FPs.
+        - `xss_tag`
+            - Replaced full parsing of responses with SAX.
+            - Only check HTML responses to avoid FPs.
+        - `unvalidated_redirect`, `unvalidated_redirect_dom`, `xss`, `xss_dom`,
+            `xss_dom_script_context`, `xss_script_context` -- Replaced `Proc`s
+                with class methods for `BrowserCluster` job callbacks.
+        - `unvalidated_redirect` -- Added prepended payload to the default value.
+        - `sql_injection` -- Added more error signatures for HSQLDB, Java and SQLite.
+        - `csrf` -- Removed heuristics that try to match tokens based on format;
+            now only uses a nonce check.
+        - `path_traversal` -- Increased maximum traversals to 8.
+    - Passive
+        - `backup_files`
+            - Ignore media files to avoid FPs when dealing with galleries and the like.
+            - Added issue remark explaining how the original resource name was manipulated.
+        - `backup_directories` -- Added issue remark explaining how the original
+            resource name was manipulated.
+        - `xst` -- Run once for each protocol, not just for the first page.
+- Path extractors
+    - `data_url` -- Extract from all elements, not just links.
+- Reporters
+    - `xml`
+        - Replaced unsupported null-bytes with a placeholder.
+        - Made `issues/issue/page/dom/data_flow_sinks/data_flow_sink/frame/line` nil-able.
+
 ## 1.4 _(February 7, 2016)_
 
 - Native MS Windows compatibility.
@@ -95,6 +230,7 @@
                 there's no way to verify SSNs.
             - `http_only_cookies`, `insecure_cookies` -- Only check current page
                 cookies, don't let the CookieJar ones sneak in.
+            - `insecure_cookies` -- Check JS cookies too.
 - Plugins
     - `proxy`
         - Removed injection of control toolbar to each response.

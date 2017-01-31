@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -99,7 +99,7 @@ module Output
     # @param    [String]    str
     def print_error( str = '' )
         print_color( "[-] #{caller_location}", 31, str, $stderr )
-        log_error( "#{caller_location}#{str}" )
+        log_error( "#{caller_location} #{str}" )
     end
 
     # Prints the backtrace of an exception as error messages.
@@ -204,7 +204,14 @@ module Output
     def print_debug( str = '', level = 1 )
         return if !debug?( level )
 
-        print_color( "[#{'!' * level}] #{caller_location}", 36, str, $stderr )
+        # Let's keep track of how much time went by from the last debug call
+        # of the same level.
+        @level_time ||= {}
+        diff = @level_time[level] ? Time.now - @level_time[level] : 0.0
+        diff = diff.round(1)
+        @level_time[level] = Time.now
+
+        print_color( "[#{@level_time[level]} - #{diff}] [#{'!' * level}] #{caller_location}", 36, str, $stderr )
     end
 
     def caller_location

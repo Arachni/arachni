@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -18,7 +18,10 @@ class PluginFormatters::UncommonHeaders < Arachni::Plugin::Formatter
 
                 xml.headers {
                     headers.each do |name, value|
-                        xml.header name: name, value: value
+                        xml.header(
+                            name:  Arachni::Reporters::XML.replace_nulls( name ),
+                            value: Arachni::Reporters::XML.replace_nulls( value )
+                        )
                     end
                 }
             }

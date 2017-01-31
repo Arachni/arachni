@@ -89,6 +89,50 @@ describe Arachni::Support::Signature do
             signature = described_class.new( string_with_noise )
             expect(signature.refine!( string_with_noise ).object_id).to eq(signature.object_id)
         end
+
+        it 'resets #hash' do
+            signature = described_class.new( string_with_noise )
+
+            ph = signature.hash
+
+            signature.refine!( string_with_noise )
+            h = signature.hash
+
+            expect(ph).not_to eq h
+        end
+    end
+
+    describe '#<<' do
+        it 'pushes new data to the signature' do
+            string = string_with_noise
+            d1 = string.lines[0..-3].join
+            d2 = string.lines[-2..-1].join
+
+            signature = described_class.new( d1 )
+            t1 = signature.tokens.dup
+
+            signature << d2
+
+            t2 = signature.tokens.dup
+
+            expect(t1).to be_subset t2
+        end
+
+        it 'returns self' do
+            signature = described_class.new( string_with_noise )
+            expect((signature << string_with_noise ).object_id).to eq(signature.object_id)
+        end
+
+        it 'resets #hash' do
+            signature = described_class.new( string_with_noise )
+
+            ph = signature.hash
+
+            signature << string_with_noise
+            h = signature.hash
+
+            expect(ph).not_to eq h
+        end
     end
 
     describe '#differences' do
@@ -104,6 +148,20 @@ describe Arachni::Support::Signature do
             expect(signature3.differences( signature4 ).round(3)).to eq(0.286)
             expect(signature4.differences( signature4 )).to eq(0)
             expect(signature1.differences( signature3 ).round(3)).to eq(0.778)
+        end
+    end
+
+    describe '#empty?' do
+        context 'when the signature is empty' do
+            subject { described_class.new( '' ) }
+
+            expect_it { to be_empty }
+        end
+
+        context 'when the signature is not empty' do
+            subject { described_class.new( string_with_noise ) }
+
+            expect_it { to_not be_empty }
         end
     end
 

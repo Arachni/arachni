@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2016 Tasos Laskos <tasos.laskos@arachni-scanner.com>
+    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -17,11 +17,11 @@ class PluginFormatters::VectorCollector < Arachni::Plugin::Formatter
                 xml.vector {
                     xml.class_ vector['class']
                     xml.type vector['type']
-                    xml.url vector['url']
-                    xml.action vector['action']
+                    xml.url Arachni::Reporters::XML.replace_nulls( vector['url'] )
+                    xml.action Arachni::Reporters::XML.replace_nulls( vector['action'] )
 
                     if vector['source']
-                        xml.source vector['source']
+                        xml.source Arachni::Reporters::XML.replace_nulls( vector['source'] )
                     end
 
                     if vector['method']
@@ -31,7 +31,10 @@ class PluginFormatters::VectorCollector < Arachni::Plugin::Formatter
                     if vector['inputs']
                         xml.inputs {
                             vector['inputs'].each do |k, v|
-                                xml.input( name: k, value: v )
+                                xml.input(
+                                    name:  Arachni::Reporters::XML.replace_nulls( k ),
+                                    value: Arachni::Reporters::XML.replace_nulls( v )
+                                )
                             end
                         }
                     end

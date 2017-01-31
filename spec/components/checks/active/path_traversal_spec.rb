@@ -15,22 +15,22 @@ describe name_from_filename do
     def issue_count_per_element_per_platform
         {
             unix:    {
-                Element::Form         => 224,
-                Element::Link         => 224,
-                Element::Cookie       => 112,
-                Element::Header       => 56,
+                Element::Form         => 288,
+                Element::Link         => 288,
+                Element::Cookie       => 144,
+                Element::Header       => 72,
                 Element::LinkTemplate => 16,
-                Element::JSON         => 168,
-                Element::XML          => 112
+                Element::JSON         => 216,
+                Element::XML          => 144
             },
             windows: {
-                Element::Form         => 672,
-                Element::Link         => 672,
-                Element::Cookie       => 336,
-                Element::Header       => 168,
+                Element::Form         => 864,
+                Element::Link         => 864,
+                Element::Cookie       => 432,
+                Element::Header       => 216,
                 Element::LinkTemplate => 48,
-                Element::JSON         => 504,
-                Element::XML          => 336
+                Element::JSON         => 648,
+                Element::XML          => 432
             },
             java:    {
                 Element::Form         => 16,
