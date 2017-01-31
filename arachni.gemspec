@@ -37,8 +37,7 @@ Gem::Specification.new do |s|
 
     s.executables       = Dir.glob( 'bin/*' ).map { |e| File.basename e }
 
-    s.extra_rdoc_files  = %w(README.md ACKNOWLEDGMENTS.md LICENSE.md
-                            AUTHORS.md CHANGELOG.md CONTRIBUTORS.md)
+    s.extra_rdoc_files  = %w(README.md LICENSE.md CHANGELOG.md)
 
     s.rdoc_options      = [ '--charset=UTF-8' ]
 
