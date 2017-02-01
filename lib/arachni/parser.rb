@@ -237,16 +237,10 @@ class Parser
     #   `nil` if the response data wasn't {#text? text-based} or the response
     #   couldn't be parsed.
     def document
+        return @document if @document
         return if !text?
 
-        if from_document?
-            @document
-        else
-            @document = self.class.parse(
-                body,
-                whitelist: WHITELIST
-            )
-        end
+        @document = self.class.parse( body, filter: true )
     end
 
     # @note It will include common request headers as well headers from the HTTP
