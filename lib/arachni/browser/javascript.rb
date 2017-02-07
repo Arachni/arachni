@@ -303,13 +303,6 @@ class Javascript
         dom_monitor.timeouts
     end
 
-    # @return   [Array<Array>]
-    #   Arguments for JS `setInterval` calls.
-    def intervals
-        return [] if !supported?
-        dom_monitor.intervals
-    end
-
     # @param    [HTTP::Request]     request
     #   Request to process.
     # @param    [HTTP::Response]    response

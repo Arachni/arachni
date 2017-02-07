@@ -285,13 +285,6 @@ describe Arachni::Browser::Javascript do
         end
     end
 
-    describe '#intervals' do
-        it 'keeps track of setInterval() timers' do
-            @browser.load( @dom_monitor_url + 'interval-tracker' )
-            expect(subject.intervals).to eq(subject.dom_monitor.intervals)
-        end
-    end
-
     describe '#has_sinks?' do
         context 'when there are execution-flow sinks' do
             it 'returns true' do

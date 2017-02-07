@@ -6,6 +6,7 @@
     - `#document` -- Updated to lazy parse the document.
 - `Browser`
     - `Javascript`
+        - `DOMMonitor` -- Don't track `setInterval()`s since we're not using them.
         - `TaintTracer`
             - `add_trace_to_function()` -- Catch and return on error.
 
