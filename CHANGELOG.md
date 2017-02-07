@@ -4,6 +4,10 @@
 
 - `Parser`
     - `#document` -- Updated to lazy parse the document.
+- `Browser`
+    - `Javascript`
+        - `TaintTracer`
+            - `add_trace_to_function()` -- Catch and return on error.
 
 ## 1.5 _(January 31, 2017)_
 
