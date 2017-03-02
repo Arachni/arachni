@@ -9,6 +9,8 @@
         - `DOMMonitor` -- Don't track `setInterval()`s since we're not using them.
         - `TaintTracer`
             - `add_trace_to_function()` -- Catch and return on error.
+- Path extractors
+    - `scripts` -- Fixed `nil` error.
 
 ## 1.5 _(January 31, 2017)_
 
