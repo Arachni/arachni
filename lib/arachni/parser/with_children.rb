@@ -20,7 +20,7 @@ module WithChildren
 
     def text
         txt = children.find { |n| n.is_a? Parser::Nodes::Text }
-        return if !txt
+        return '' if !txt
 
         txt.value
     end

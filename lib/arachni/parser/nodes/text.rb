@@ -17,7 +17,7 @@ class Text < Base
     include WithValue
 
     def text
-        @value
+        @value.to_s
     end
 
     def to_html( indentation = 2, level = 0 )
