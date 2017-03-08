@@ -53,7 +53,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'concurrent-ruby-ext', '1.0.2'
 
     # For compressing/decompressing system state archives.
-    s.add_dependency 'rubyzip',             '1.1.6'
+    s.add_dependency 'rubyzip',             '1.2.1'
 
     # HTTP proxy server
     s.add_dependency 'http_parser.rb',      '0.6.0'
