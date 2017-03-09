@@ -109,7 +109,7 @@ module Signature
     #       {Element::Capabilities::Submittable#platforms applicable platforms}
     #       for the {Element::Capabilities::Submittable#action resource} to be audited.
     # @param  [Hash]    opts
-    #   Options as described in {Arachni::Check::Auditor::OPTIONS} and
+    #   Options as described in {Arachni::Element::Auditable::OPTIONS} and
     #   {SIGNATURE_OPTIONS}.
     #
     # @return   [Bool]

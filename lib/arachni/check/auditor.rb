@@ -307,27 +307,6 @@ module Auditor
         Element::LinkTemplate::DOM, Element::UIInput::DOM, Element::UIForm::DOM
     ]
 
-    # Default audit options.
-    OPTIONS = {
-
-        # Elements to audit.
-        #
-        # If no elements have been passed to audit methods, candidates will be
-        # determined by {#each_candidate_element}.
-        elements:     ELEMENTS_WITH_INPUTS,
-
-        dom_elements: DOM_ELEMENTS_WITH_INPUTS,
-
-        # If set to `true` the HTTP response will be analyzed for new elements.
-        # Be careful when enabling it, there'll be a performance penalty.
-        #
-        # If set to `false`, no training is going to occur.
-        #
-        # If set to `nil`, when the Auditor submits a form with original or
-        # sample values this option will be overridden to `true`
-        train:        nil
-    }
-
     # @return   [Arachni::Page]
     #   Page object to be audited.
     attr_reader :page
@@ -487,21 +466,15 @@ module Auditor
 
     # Passes each element prepared for audit to the block.
     #
-    # If no element types have been specified in `opts`, it will use the elements
-    # from the check's {Base.info} hash.
-    #
-    # If no elements have been specified in `opts` or {Base.info}, it will use the
-    # elements in {OPTIONS}.
-    #
-    # @param  [Array]    types
-    #   Element types to audit (see {OPTIONS}`[:elements]`).
+    # It will use the elements from the check's {Base.info} hash.
+    # If no elements have been specified it will use {ELEMENTS_WITH_INPUTS}.
     #
     # @yield       [element]
-    #   Each candidate DOM element.
-    # @yieldparam [Arachni::Capabilities::Auditable::DOM]
-    def each_candidate_element( types = [], &block )
-        types = self.class.info[:elements] if types.empty?
-        types = OPTIONS[:elements]         if types.empty?
+    #   Each candidate element.
+    # @yieldparam [Arachni::Element]
+    def each_candidate_element( &block )
+        types = self.class.elements
+        types = ELEMENTS_WITH_INPUTS if types.empty?
 
         types.each do |elem|
             elem = elem.type
@@ -538,21 +511,15 @@ module Auditor
 
     # Passes each element prepared for audit to the block.
     #
-    # If no element types have been specified in `opts`, it will use the elements
-    # from the check's {Base.info} hash.
-    #
-    # If no elements have been specified in `opts` or {Base.info}, it will use the
-    # elements in {OPTIONS}.
-    #
-    # @param  [Array]    types
-    #   Element types to audit (see {OPTIONS}`[:elements]`).
+    # It will use the elements from the check's {Base.info} hash.
+    # If no elements have been specified it will use {DOM_ELEMENTS_WITH_INPUTS}.
     #
     # @yield       [element]
     #   Each candidate element.
-    # @yieldparam [Arachni::Element]
-    def each_candidate_dom_element( types = [], &block )
-        types = self.class.info[:elements]    if types.empty?
-        types = OPTIONS[:dom_elements]        if types.empty?
+    # @yieldparam [Arachni::Element::DOM]
+    def each_candidate_dom_element( &block )
+        types = self.class.elements
+        types = DOM_ELEMENTS_WITH_INPUTS if types.empty?
 
         types.each do |elem|
             elem = elem.type
@@ -589,15 +556,13 @@ module Auditor
     #
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
-    # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable#audit
     # @see #audit_signature
     def audit( payloads, opts = {}, &block )
-        opts = OPTIONS.merge( opts )
         if !block_given?
             audit_signature( payloads, opts )
         else
-            each_candidate_element( opts[:elements] ) do |e|
+            each_candidate_element do |e|
                 e.audit( payloads, opts, &block )
                 audited( e.coverage_id )
             end
@@ -609,11 +574,9 @@ module Auditor
     #
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
-    # @see OPTIONS
     # @see Arachni::Element::Capabilities::Auditable#buffered_audit
     def buffered_audit( payloads, opts = {}, &block )
-        opts = OPTIONS.merge( opts )
-        each_candidate_element( opts[:elements] ) do |e|
+        each_candidate_element do |e|
             e.buffered_audit( payloads, opts, &block )
             audited( e.coverage_id )
         end
@@ -624,11 +587,9 @@ module Auditor
     #
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
-    # @see OPTIONS
     # @see Arachni::Element::Capabilities::Analyzable::Signature
     def audit_signature( payloads, opts = {} )
-        opts = OPTIONS.merge( opts )
-        each_candidate_element( opts[:elements] )do |e|
+        each_candidate_element do |e|
             e.signature_analysis( payloads, opts )
             audited( e.coverage_id )
         end
@@ -638,11 +599,9 @@ module Auditor
     #
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
-    # @see OPTIONS
     # @see Arachni::Element::Capabilities::Analyzable::Differential
     def audit_differential( opts = {}, &block )
-        opts = OPTIONS.merge( opts )
-        each_candidate_element( opts[:elements] ) do |e|
+        each_candidate_element do |e|
             e.differential_analysis( opts, &block )
             audited( e.coverage_id )
         end
@@ -652,11 +611,9 @@ module Auditor
     #
     # Uses {#each_candidate_element} to decide which elements to audit.
     #
-    # @see OPTIONS
     # @see Arachni::Element::Capabilities::Analyzable::Timeout
     def audit_timeout( payloads, opts = {} )
-        opts = OPTIONS.merge( opts )
-        each_candidate_element( opts[:elements] ) do |e|
+        each_candidate_element do |e|
             e.timeout_analysis( payloads, opts )
             audited( e.coverage_id )
         end
