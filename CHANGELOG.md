@@ -11,6 +11,8 @@
             - `add_trace_to_function()` -- Catch and return on error.
 - Path extractors
     - `scripts` -- Fixed `nil` error.
+- Plugins
+    - `metrics` -- Fixed type error due to race condition.
 
 ## 1.5 _(January 31, 2017)_
 
