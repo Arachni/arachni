@@ -224,7 +224,6 @@ describe Arachni::Platform::List do
         context 'with valid platforms' do
             it 'returns a copy of self including the given platforms' do
                 platforms << :unix
-                platforms.merge( [:php, :unix] ).to_a.sort == [:unix, :php].sort
                 expect(platforms.to_a).to eq([:unix])
             end
         end
