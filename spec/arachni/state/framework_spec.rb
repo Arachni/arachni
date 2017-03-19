@@ -741,10 +741,10 @@ describe Arachni::State::Framework do
 
             subject.pause( :caller, false )
             subject.paused
-            subject.status == :paused
+            subject.status = :paused
 
             subject.resume( :caller )
-            subject.status == :my_status
+            subject.status = :my_status
         end
 
         context 'when called before a #pause signal has been sent' do
