@@ -8,7 +8,7 @@ describe Arachni::Snapshot do
 
     subject { described_class }
     let(:dump_archive) do
-        @dump_archive = "#{Arachni.tmpdir}/snapshot-#{Arachni::Utilities.generate_token}.afs"
+        @dump_archive = "#{Arachni::Options.paths.tmpdir}/snapshot-#{Arachni::Utilities.generate_token}.afs"
     end
 
     describe '.summary' do

@@ -2,6 +2,7 @@
 
 ## Under development
 
+- `config/write_paths.yml` -- Added configurable temporary directory.
 - `Parser`
     - `#document` -- Updated to lazy parse the document.
 - `Browser`

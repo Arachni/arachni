@@ -149,7 +149,7 @@ class <<self
     end
 
     def get_temporary_directory
-        "#{Arachni.tmpdir}/Arachni_Snapshot_#{Utilities.generate_token}/"
+        "#{Options.paths.tmpdir}/Arachni_Snapshot_#{Utilities.generate_token}/"
     end
 
     def extract( archive, directory )

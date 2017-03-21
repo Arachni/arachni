@@ -14,7 +14,7 @@ describe Arachni::OptionGroups::Paths do
         end
     end
 
-    let(:paths_config_file) { "#{Arachni.tmpdir}/paths-#{Process.pid}.yml" }
+    let(:paths_config_file) { "#{Arachni::Options.paths.tmpdir}/paths-#{Process.pid}.yml" }
 
     %w(root arachni components logs checks reporters plugins services
         path_extractors fingerprinters lib support mixins snapshots).each do |method|
@@ -27,6 +27,28 @@ describe Arachni::OptionGroups::Paths do
 
         it { is_expected.to respond_to method }
         it { is_expected.to respond_to "#{method}=" }
+    end
+
+    describe '#tmpdir' do
+        context 'when no tmpdir has been specified via config' do
+            it 'defaults to the OS tmpdir' do
+                expect(subject.tmpdir).to eq Arachni.get_long_win32_filename( Dir.tmpdir )
+            end
+        end
+
+        context "when #{described_class}.config['framework']['tmpdir']" do
+            it 'returns its value' do
+                allow(described_class).to receive(:config) do
+                    {
+                        'framework' => {
+                            'tmpdir' => '/my/tmpdir/'
+                        }
+                    }
+                end
+
+                expect(subject.tmpdir).to eq('/my/tmpdir/')
+            end
+        end
     end
 
     describe '#logs' do

@@ -7,6 +7,7 @@
 =end
 
 require 'fileutils'
+require 'tmpdir'
 
 module Arachni::OptionGroups
 
@@ -73,6 +74,16 @@ class Paths < Arachni::OptionGroup
     # @return   [String]    Root path of the framework.
     def self.root_path
         File.expand_path( File.dirname( __FILE__ ) + '/../../..' ) + '/'
+    end
+
+    def tmpdir
+        if config['framework']['tmpdir'].to_s.empty?
+            # On MS Windows Dir.tmpdir can return the path with a shortname,
+            # better avoid that as it can be insonsistent with other paths.
+            Arachni.get_long_win32_filename( Dir.tmpdir )
+        else
+            Arachni.get_long_win32_filename( config['framework']['tmpdir'] )
+        end
     end
 
     def config
