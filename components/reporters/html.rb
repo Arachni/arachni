@@ -404,7 +404,7 @@ access unauthorized pages.
 
         TemplateScope.global_data = global_data
 
-        tmpdir = "#{Arachni.tmpdir}/#{generate_token}/"
+        tmpdir = "#{Arachni::Options.paths.tmpdir}/#{generate_token}/"
 
         FileUtils.rm_rf tmpdir
         FileUtils.mkdir_p tmpdir

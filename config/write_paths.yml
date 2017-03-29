@@ -13,3 +13,7 @@ framework:
     # Default directory for scan snapshots generated either by the CLI
     # or by RPC Instances.
     snapshots:
+    # Directory for temporary files -- like for excess workload that's been
+    # offloaded to disk etc..
+    # Will default to the OS temporary directory.
+    tmpdir:

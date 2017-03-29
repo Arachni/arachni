@@ -286,7 +286,7 @@ class Response < Message
         redirections = response.redirections.map do |redirect|
             rurl   = URI.to_absolute( redirect.headers['Location'],
                                       response.effective_url )
-            rurl ||= response.effective_url
+            rurl ||= URI.normalize( response.effective_url )
 
             # Broken redirection, skip it...
             next if !rurl
@@ -296,7 +296,7 @@ class Response < Message
                 code:          redirect.code,
                 headers:       redirect.headers
             ))
-        end
+        end.compact
 
         return_code    = response.return_code
         return_message = response.return_message

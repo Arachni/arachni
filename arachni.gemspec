@@ -53,7 +53,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'concurrent-ruby-ext', '1.0.2'
 
     # For compressing/decompressing system state archives.
-    s.add_dependency 'rubyzip',             '1.1.6'
+    s.add_dependency 'rubyzip',             '1.2.1'
 
     # HTTP proxy server
     s.add_dependency 'http_parser.rb',      '0.6.0'
@@ -97,7 +97,7 @@ Gem::Specification.new do |s|
     # Markup parsing, for reports and Element::XML.
     s.add_dependency 'nokogiri',            '1.6.8.1'
     # Really fast and lightweight markup parsing, for pages.
-    s.add_dependency 'ox',                  '2.4.9'
+    s.add_dependency 'ox',                  '2.4.11'
 
     # Outputting data in table format (arachni_rpcd_monitor).
     s.add_dependency 'terminal-table',      '1.4.5'

@@ -28,12 +28,6 @@ module Arachni
             GC.start( full_mark: false )
         end
 
-        def tmpdir
-            # On MS Windows Dir.tmpdir can return the path with a shortname,
-            # better avoid that as it can be insonsistent with other paths.
-            get_long_win32_filename( Dir.tmpdir )
-        end
-
         def null_device
             Gem.win_platform? ? 'NUL' : '/dev/null'
         end

@@ -131,26 +131,6 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         end
     end
 
-    describe '#intervals' do
-        it 'keeps track of setInterval() timers' do
-            load '/intervals'
-
-            expect(subject.intervals).to eq([
-                [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
-                    2000, 'timeout1', 2000
-                ]
-            ])
-
-            sleep 2
-            expect(@browser.cookies.size).to eq(2)
-            expect(@browser.cookies.map { |c| c.to_s }.sort).to eq([
-                'timeout1=post-2000',
-                'timeout=pre'
-            ].sort)
-        end
-    end
-
     describe '#elements_with_events' do
         it 'skips non visible elements' do
             load '/elements_with_events/with-hidden'

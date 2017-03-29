@@ -3,7 +3,7 @@
 <table>
     <tr>
         <th>Version</th>
-        <td>1.5</td>
+        <td>1.5.1</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -611,7 +611,7 @@ You can run `rake spec` to run **all** specs or you can run them selectively usi
 **Please be warned**, the core specs will require a beast of a machine due to the
 necessity to test the Grid/multi-Instance features of the system.
 
-**Note**: _The check specs will take about 90 minutes due to the timing-attack tests._
+**Note**: _The check specs will take many hours to complete due to the timing-attack tests._
 
 ## Bug reports/Feature requests
 

@@ -428,61 +428,40 @@ describe Arachni::Check::Auditor do
         end
 
         it 'sets the auditor' do
-            auditor.each_candidate_element [ Arachni::Link ] do |element|
+            auditor.each_candidate_element do |element|
                 expect(element.auditor).to eq(auditor)
             end
         end
 
-        context 'when types have been provided' do
-            it 'provides those types of elements' do
-                elements = []
-                auditor.each_candidate_element [ Arachni::Link, Arachni::Header ] do |element|
-                    elements << element
-                end
+        it 'provides the types of elements specified by the check' do
+            auditor.class.info[:elements] = [Arachni::Link, Arachni::Form]
 
-                expect(elements).to eq((auditor.page.links | auditor.page.headers).
-                    select { |e| e.inputs.any? })
+            elements = []
+            auditor.each_candidate_element do |element|
+                elements << element
             end
 
-            context 'and are not supported' do
-                it 'raises ArgumentError' do
-                    expect {
-                        auditor.each_candidate_element [Arachni::Link::DOM]
-                    }.to raise_error ArgumentError
-                end
-            end
+            expect(auditor.class.elements).to eq([Arachni::Link, Arachni::Form])
+            expect(elements).to eq((auditor.page.links | auditor.page.forms).
+                select { |e| e.inputs.any? })
         end
-        context 'when types have not been provided' do
-            it 'provides the types of elements specified by the check' do
-                auditor.class.info[:elements] = [Arachni::Link, Arachni::Form]
+
+        context 'and no types are specified by the check' do
+            it 'provides all types of elements but :inputs and :ui_forms'do
+                auditor.class.info[:elements].clear
+
+                expected_elements = Arachni::Page::ELEMENTS
+                expected_elements.delete :ui_inputs
+                expected_elements.delete :ui_forms
 
                 elements = []
                 auditor.each_candidate_element do |element|
                     elements << element
                 end
 
-                expect(auditor.class.elements).to eq([Arachni::Link, Arachni::Form])
-                expect(elements).to eq((auditor.page.links | auditor.page.forms).
+                expect(elements.map { |e| "#{e.type}s".to_sym }.uniq).to eq(Arachni::Page::ELEMENTS)
+                expect(elements).to eq((auditor.page.elements).
                     select { |e| e.inputs.any? })
-            end
-
-            context 'and no types are specified by the check' do
-                it 'provides all types of elements but :inputs and :ui_forms'do
-                    auditor.class.info[:elements].clear
-
-                    expected_elements = Arachni::Page::ELEMENTS
-                    expected_elements.delete :ui_inputs
-                    expected_elements.delete :ui_forms
-
-                    elements = []
-                    auditor.each_candidate_element do |element|
-                        elements << element
-                    end
-
-                    expect(elements.map { |e| "#{e.type}s".to_sym }.uniq).to eq(Arachni::Page::ELEMENTS)
-                    expect(elements).to eq((auditor.page.elements).
-                        select { |e| e.inputs.any? })
-                end
             end
         end
     end
@@ -504,54 +483,33 @@ describe Arachni::Check::Auditor do
             end
         end
 
-        context 'when types have been provided' do
-            it 'provides those types of elements' do
-                elements = []
-                auditor.each_candidate_dom_element [ Arachni::Link::DOM ] do |element|
-                    elements << element
-                end
+        it 'provides the types of elements specified by the check' do
+            auditor.class.info[:elements] = [Arachni::Form::DOM]
+            expect(auditor.class.elements).to eq([Arachni::Form::DOM])
 
-                expect(elements).to be_any
-                expect(elements).to eq(auditor.page.links.select { |l| l.dom }.map(&:dom))
+            elements = []
+            auditor.each_candidate_dom_element do |element|
+                elements << element
             end
 
-            context 'and are not supported' do
-                it 'raises ArgumentError' do
-                    expect {
-                        auditor.each_candidate_dom_element [Arachni::Link]
-                    }.to raise_error ArgumentError
-                end
-            end
+            expect(elements).to eq(auditor.page.forms.map(&:dom))
         end
-        context 'when types have not been provided' do
-            it 'provides the types of elements specified by the check' do
-                auditor.class.info[:elements] = [Arachni::Form::DOM]
-                expect(auditor.class.elements).to eq([Arachni::Form::DOM])
+
+        context 'and no types are specified by the check' do
+            it 'provides all types of elements'do
+                auditor.class.info[:elements].clear
 
                 elements = []
                 auditor.each_candidate_dom_element do |element|
                     elements << element
                 end
 
-                expect(elements).to eq(auditor.page.forms.map(&:dom))
-            end
-
-            context 'and no types are specified by the check' do
-                it 'provides all types of elements'do
-                    auditor.class.info[:elements].clear
-
-                    elements = []
-                    auditor.each_candidate_dom_element do |element|
-                        elements << element
-                    end
-
-                    expect(elements).to eq(
-                        (auditor.page.links.select { |l| l.dom } |
-                            auditor.page.forms | auditor.page.cookies |
-                            auditor.page.link_templates | auditor.page.ui_inputs |
-                            auditor.page.ui_forms).map(&:dom)
-                    )
-                end
+                expect(elements).to eq(
+                    (auditor.page.links.select { |l| l.dom } |
+                        auditor.page.forms | auditor.page.cookies |
+                        auditor.page.link_templates | auditor.page.ui_inputs |
+                        auditor.page.ui_forms).map(&:dom)
+                )
             end
         end
     end
@@ -874,99 +832,20 @@ describe Arachni::Check::Auditor do
                 end
 
                 auditor.audit( @seed ){}
-                expect($audit_called).to eq(auditor.page.elements.map(&:class))
+                expect($audit_called).to eq(auditor.class.elements)
             end
         end
 
         context 'when called without a block' do
             it 'delegates to #audit_signature' do
-                expect(auditor).to receive(:audit_signature).with( @seed, described_class::OPTIONS )
-                auditor.audit( @seed )
+                opts = { stuff: :here }
+
+                expect(auditor).to receive(:audit_signature).with( @seed, opts )
+                auditor.audit( @seed, opts )
             end
         end
 
         context 'when called with options' do
-            describe ':elements' do
-
-                before { auditor.load_page_from( @url + '/elem_combo' ) }
-
-                describe 'Arachni::Element::Link' do
-                    it 'audits links' do
-                        auditor.audit( @seed,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Element::Link ]
-                         )
-                        @framework.http.run
-                        expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.first
-                        expect(issue.vector.class).to eq(Arachni::Element::Link)
-                        expect(issue.vector.affected_input_name).to eq('link_input')
-                    end
-                end
-                describe 'Arachni::Element::Form' do
-                    it 'audits forms' do
-                        auditor.audit( @seed,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Element::Form ]
-                         )
-                        @framework.http.run
-                        expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.first
-                        expect(issue.vector.class).to eq(Arachni::Element::Form)
-                        expect(issue.vector.affected_input_name).to eq('form_input')
-                    end
-                end
-                describe 'Arachni::Element::Cookie' do
-                    it 'audits cookies' do
-                        auditor.audit( @seed,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Element::Cookie ]
-                         )
-                        @framework.http.run
-                        expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.first
-                        expect(issue.vector.class).to eq(Arachni::Element::Cookie)
-                        expect(issue.vector.affected_input_name).to eq('cookie_input')
-                    end
-                    it 'maintains the session while auditing cookies' do
-                        auditor.load_page_from( @url + '/session' )
-                        auditor.audit( @seed,
-                                        format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                                        elements: [ Arachni::Element::Cookie ]
-                        )
-                        @framework.http.run
-                        expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.first
-                        expect(issue.vector.class).to eq(Arachni::Element::Cookie)
-                        expect(issue.vector.affected_input_name).to eq('vulnerable')
-                    end
-
-                end
-                describe 'Arachni::Element::Header' do
-                    it 'audits headers' do
-                        auditor.audit( @seed,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
-                            elements: [ Arachni::Element::Header ]
-                         )
-                        @framework.http.run
-                        expect(Arachni::Data.issues.size).to eq(1)
-                        issue = Arachni::Data.issues.first
-                        expect(issue.vector.class).to eq(Arachni::Element::Header)
-                        expect(issue.vector.affected_input_name).to eq('Referer')
-                    end
-                end
-
-                context 'when using default options' do
-                    it 'audits all element types' do
-                        auditor.audit( @seed,
-                            format: [ Arachni::Check::Auditor::Format::STRAIGHT ]
-                         )
-                        @framework.http.run
-                        expect(Arachni::Data.issues.size).to eq(4)
-                    end
-                end
-            end
-
             describe ':train' do
                 context 'default' do
                     it 'parses the responses of forms submitted with their default values and feed any new elements back to the framework to be audited' do
@@ -1061,7 +940,7 @@ describe Arachni::Check::Auditor do
             end
 
             auditor.audit_signature( 'seed' )
-            expect($audit_signature_called).to eq(auditor.page.elements.map(&:class))
+            expect($audit_signature_called).to eq(auditor.class.elements)
         end
     end
 
@@ -1080,7 +959,7 @@ describe Arachni::Check::Auditor do
             end
 
             auditor.audit_differential( { false: '0', pairs: { '1' => '2' } } )
-            expect($audit_differential_called).to eq(auditor.page.elements.map(&:class))
+            expect($audit_differential_called).to eq(auditor.class.elements)
         end
     end
 
@@ -1099,7 +978,7 @@ describe Arachni::Check::Auditor do
             end
 
             auditor.audit_timeout( 'seed', timeout: 1 )
-            expect($audit_timeout_called).to eq(auditor.page.elements.map(&:class))
+            expect($audit_timeout_called).to eq(auditor.class.elements)
         end
     end
 

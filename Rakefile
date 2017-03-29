@@ -197,7 +197,6 @@ end
 
 desc 'Generate docs.'
 task :docs do
-
     outdir = "../arachni-docs"
     sh "rm -rf #{outdir}"
     sh "mkdir -p #{outdir}"
@@ -205,47 +204,6 @@ task :docs do
     sh "yardoc -o #{outdir}"
 
     sh "rm -rf .yardoc"
-end
-
-desc 'Generate graphics.'
-task :gfx do
-
-    outdir = 'gfx/compiled'
-    srcdir = 'gfx/source'
-
-    sh 'mkdir -p ~/.fonts'
-    sh 'cp gfx/font/Beneath_the_Surface.ttf ~/.fonts'
-
-    Dir.glob( "#{srcdir}/*.svg" ).each do |src|
-        sh "inkscape #{src} --export-png=#{outdir}/#{File.basename( src, '.svg' )}.png"
-    end
-
-    cp "#{outdir}/icon.png", "#{outdir}/favicon.ico"
-
-    sh 'rm -f ~/.fonts/Beneath_the_Surface.ttf'
-end
-
-#
-# Simple profiler using perftools[1].
-#
-# To install perftools for Ruby:
-#   gem install perftools.rb
-#
-# [1] https://github.com/tmm1/perftools.rb
-#
-desc 'Profile Arachni.'
-task :profile do
-
-    if !Gem::Specification.find_all_by_name( 'perftools.rb' ).empty?
-        sh "CPUPROFILE_FREQUENCY=500 CPUPROFILE=/tmp/profile.dat " +
-               "RUBYOPT=\"-r`gem which perftools | tail -1`\" " +
-               " ./bin/arachni http://demo.testfire.net && " +
-               "pprof.rb --gif /tmp/profile.dat > profile.gif"
-    else
-        puts 'If you want to run the profiler please install perftools.rb first:'
-        puts '  gem install perftools.rb'
-    end
-
 end
 
 desc 'Remove reporter and log files.'

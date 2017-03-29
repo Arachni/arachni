@@ -412,7 +412,7 @@ describe Arachni::Issue do
                     targets:     {
                         'Generic' => 'all'
                     },
-                    elements:    [:link, :form_dom],
+                    elements:    [:link],
                     shortname:   'test'
                 },
                 trusted:         true,

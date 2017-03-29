@@ -185,42 +185,42 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 
         wait_while_framework_running
 
-        @metrics = process( @metrics )
+        metrics = process( @metrics )
 
         statistics = framework.statistics
 
-        @metrics['browser_cluster']['job_time_outs'] =
+        metrics['browser_cluster']['job_time_outs'] =
             statistics[:browser_cluster][:time_out_count]
 
-        @metrics['browser_cluster']['seconds_per_job'] =
+        metrics['browser_cluster']['seconds_per_job'] =
             statistics[:browser_cluster][:seconds_per_job]
 
-        @metrics['browser_cluster']['total_job_time'] =
+        metrics['browser_cluster']['total_job_time'] =
             statistics[:browser_cluster][:total_job_time]
 
-        @metrics['browser_cluster']['job_count'] =
+        metrics['browser_cluster']['job_count'] =
             statistics[:browser_cluster][:queued_job_count]
 
-        @metrics['http']['requests'] = statistics[:http][:response_count]
+        metrics['http']['requests'] = statistics[:http][:response_count]
 
-        @metrics['http']['request_time_outs']    = statistics[:http][:time_out_count]
-        @metrics['http']['responses_per_second'] = statistics[:http][:total_responses_per_second]
+        metrics['http']['request_time_outs']    = statistics[:http][:time_out_count]
+        metrics['http']['responses_per_second'] = statistics[:http][:total_responses_per_second]
 
-        if @metrics['http']['requests'] > 0
-            @metrics['http']['response_time_average'] =
-                http_response_time_total / @metrics['http']['requests']
+        if metrics['http']['requests'] > 0
+            metrics['http']['response_time_average'] =
+                http_response_time_total / metrics['http']['requests']
 
-            @metrics['http']['response_size_average'] =
-                @metrics['general']['ingress_traffic'] / @metrics['http']['requests']
+            metrics['http']['response_size_average'] =
+                metrics['general']['ingress_traffic'] / metrics['http']['requests']
 
-            @metrics['http']['request_size_average'] =
-                @metrics['general']['egress_traffic'] / @metrics['http']['requests']
+            metrics['http']['request_size_average'] =
+                metrics['general']['egress_traffic'] / metrics['http']['requests']
         end
 
-        @metrics['scan']['duration']      = statistics[:runtime]
-        @metrics['scan']['authenticated'] = !!Arachni::Options.session.check_url
+        metrics['scan']['duration']      = statistics[:runtime]
+        metrics['scan']['authenticated'] = !!Arachni::Options.session.check_url
 
-        register_results @metrics
+        register_results metrics
     end
 
     def find_swf( page )
@@ -254,7 +254,7 @@ class Arachni::Plugins::Metrics < Arachni::Plugin::Base
 Captures metrics about multiple aspects of the scan and the web application.
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.1'
+            version:     '0.1.2'
         }
     end
 

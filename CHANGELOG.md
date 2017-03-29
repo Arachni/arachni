@@ -1,5 +1,20 @@
 # ChangeLog
 
+## 1.5.1 _(March 29, 2017)_
+
+- `config/write_paths.yml` -- Added configurable temporary directory.
+- `Parser`
+    - `#document` -- Updated to lazy parse the document.
+- `Browser`
+    - `Javascript`
+        - `DOMMonitor` -- Don't track `setInterval()`s since we're not using them.
+        - `TaintTracer`
+            - `add_trace_to_function()` -- Catch and return on error.
+- Path extractors
+    - `scripts` -- Fixed `nil` error.
+- Plugins
+    - `metrics` -- Fixed type error due to race condition.
+
 ## 1.5 _(January 31, 2017)_
 
 - Executables

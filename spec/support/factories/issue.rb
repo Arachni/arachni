@@ -27,8 +27,7 @@ Factory.define :issue_data do
                 'Generic' => 'all'
             },
             elements:    [
-                Arachni::Element::Link,
-                Arachni::Element::Form::DOM
+                Arachni::Element::Link
             ],
             shortname:   'test'
         }

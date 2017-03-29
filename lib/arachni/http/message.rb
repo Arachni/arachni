@@ -73,7 +73,7 @@ class Message
 
     def url=( url )
         if @normalize_url || @normalize_url.nil?
-            @url = URI.normalize_url( url ).to_s.freeze
+            @url = URI.normalize( url ).to_s.freeze
         else
             @url = url.to_s.freeze
         end
