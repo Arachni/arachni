@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Under development
+## 1.5.1 _(March 29, 2017)_
 
 - `config/write_paths.yml` -- Added configurable temporary directory.
 - `Parser`
