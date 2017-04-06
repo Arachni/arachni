@@ -14,6 +14,10 @@ describe Arachni::Rest::Server do
         reset_options
     end
 
+    after do
+        FileUtils.rm @afr_path if @afr_path
+    end
+
     def create_scan
         post '/scans',
              url:             scan_url,
@@ -307,6 +311,39 @@ describe Arachni::Rest::Server do
             it 'has content-type application/json' do
                 get url
                 expect(last_response.headers['content-type']).to eq 'application/json'
+            end
+
+            context 'when passed a non-existent id' do
+                let(:id) { non_existent_id }
+
+                it 'returns 404' do
+                    get url
+                    expect(response_code).to eq 404
+                end
+            end
+        end
+
+        describe 'afr' do
+            let(:format) { 'afr' }
+
+            before do
+                @id = create_scan
+            end
+
+            it 'returns scan report as an AFR file' do
+                get url
+
+                @afr_path = "#{Arachni::Options.paths.tmpdir}/#{Process.pid}.afr"
+                IO.write( @afr_path, last_response.body )
+
+                expect do
+                    Arachni::Report.load( @afr_path )
+                end.to_not raise_error
+            end
+
+            it 'has content-type application/octet-stream' do
+                get url
+                expect(last_response.headers['content-type']).to eq 'application/octet-stream'
             end
 
             context 'when passed a non-existent id' do

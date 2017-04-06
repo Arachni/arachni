@@ -136,6 +136,12 @@ class Server < Sinatra::Base
         json scan_for( params[:id] ).progress
     end
 
+    get '/scans/:id/report.afr' do
+        fail_if_not_exists
+        content_type 'application/octet-stream'
+        scan_for( params[:id] ).native_report.to_afr
+    end
+
     get '/scans/:id/report.html.zip' do
         fail_if_not_exists
         content_type 'zip'
