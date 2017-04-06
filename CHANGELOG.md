@@ -1,5 +1,10 @@
 # ChangeLog
 
+## Under development
+
+- `Rest::Server`
+    - Added `/scans/:id/report.afr`.
+
 ## 1.5.1 _(March 29, 2017)_
 
 - `config/write_paths.yml` -- Added configurable temporary directory.
