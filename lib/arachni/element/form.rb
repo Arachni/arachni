@@ -415,11 +415,11 @@ class Form < Base
             DECODE_CACHE.fetch( string ) do
                 # Fast, but could throw error.
                 begin
-                    ::URI.decode_www_form_component string
+                    ::URI.decode_www_form_component string.gsub( '+', '%2B' )
 
                 # Slower, but reliable.
                 rescue ArgumentError
-                    URI.decode( string.gsub( '+', ' ' ) )
+                    URI.decode( string )
                 end
             end
         end
