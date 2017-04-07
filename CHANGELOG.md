@@ -4,6 +4,8 @@
 
 - `Rest::Server`
     - Added `/scans/:id/report.afr`.
+- `Support`
+    - `Database` -- Updated to compress disk data.
 
 ## 1.5.1 _(March 29, 2017)_
 

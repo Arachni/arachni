@@ -37,7 +37,7 @@ class RPC
         distributed_page_queue.buffer.each do |page|
             IO.binwrite(
                 "#{page_queue_directory}/#{page.persistent_hash}",
-                Marshal.dump( page )
+                distributed_page_queue.serialize( page )
             )
         end
 

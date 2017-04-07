@@ -26,6 +26,14 @@ class Base
         @filename_counter = 0
     end
 
+    def serialize( obj )
+        compress( serializer.dump( obj ) )
+    end
+
+    def unserialize( data )
+        serializer.load( decompress( data ) )
+    end
+
     private
 
     # Dumps the object to a unique file and returns its path.
@@ -75,16 +83,16 @@ class Base
         obj
     end
 
-    def serialize( obj )
-        serializer.dump( obj )
-    end
-
-    def unserialize( obj )
-        serializer.load( obj )
-    end
-
     def serializer
         @serializer
+    end
+
+    def compress( string )
+        Zlib::Deflate.deflate string
+    end
+
+    def decompress( string )
+        Zlib::Inflate.inflate string
     end
 
     def get_unique_filename
