@@ -6,6 +6,7 @@
     - Added `/scans/:id/report.afr`.
 - `Support`
     - `Database` -- Updated to compress disk data.
+- `Parser` -- Recode node data to UTF-8.
 
 ## 1.5.1 _(March 29, 2017)_
 

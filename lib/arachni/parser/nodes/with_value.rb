@@ -19,7 +19,7 @@ module WithValue
     end
 
     def value=( v )
-        @value = v.strip.freeze
+        @value = v.recode.strip.freeze
     end
 
 end

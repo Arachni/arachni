@@ -19,7 +19,7 @@ class Attributes < Hash
     end
 
     def []=( name, value )
-        super name.to_s.downcase.freeze, value.freeze
+        super name.to_s.recode.downcase.freeze, value.recode.freeze
     end
 
 end
