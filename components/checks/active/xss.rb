@@ -144,7 +144,7 @@ class Arachni::Checks::Xss < Arachni::Check::Base
 
         return if !proof
 
-        proof
+        proof.to_html
     end
 
     def self.info

@@ -7,6 +7,9 @@
 - `Support`
     - `Database` -- Updated to compress disk data.
 - `Parser` -- Recode node data to UTF-8.
+- Checks
+    - Active
+        - `xss` -- Fixed proof data to return HTML.
 
 ## 1.5.1 _(March 29, 2017)_
 
