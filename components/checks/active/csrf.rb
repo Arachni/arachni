@@ -40,6 +40,11 @@
 class Arachni::Checks::CSRF < Arachni::Check::Base
 
     def run
+        # TODO:
+        #   Check forms that were created dynamically via JS.
+        #   Maybe add a csrf_dom check?
+        return if page.dom.transitions.any?
+
         print_status 'Looking for CSRF candidates...'
         print_status 'Simulating logged-out user.'
 
@@ -95,7 +100,7 @@ checks them for lack of anti-CSRF tokens.
 },
             elements:    [ Element::Form ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4',
+            version:     '0.4.1',
 
             issue:       {
                 name:            %q{Cross-Site Request Forgery},

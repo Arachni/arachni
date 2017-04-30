@@ -10,6 +10,7 @@
 - Checks
     - Active
         - `xss` -- Fixed proof data to return HTML.
+        - `csrf` -- Disabled for pages with DOM transitions due to FPs.
 
 ## 1.5.1 _(March 29, 2017)_
 
