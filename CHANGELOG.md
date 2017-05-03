@@ -2,6 +2,13 @@
 
 ## Under development
 
+- Options
+    - New
+        - `--scope-dom-event-inheritance-limit` -- Limits the amount of inherited events.
+- `Browser`
+    - `Javascript`
+        - `DOMMonitor`
+            - `#elements_with_events` -- Optionally limits event inheritance.
 - `Rest::Server`
     - Added `/scans/:id/report.afr`.
 - `Support`

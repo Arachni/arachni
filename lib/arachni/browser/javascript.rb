@@ -382,6 +382,7 @@ class Javascript
 <script src="#{script_url_for( :taint_tracer )}"></script> #{html_comment}
 <script src="#{script_url_for( :dom_monitor )}"></script> #{html_comment}
 <script>
+#{wrapped_dom_monitor_initializer}
 #{wrapped_taint_tracer_initializer( response )}
 #{js_initialization_signal};
 
@@ -487,6 +488,12 @@ class Javascript
             /\/\* #{token}_code_start \*\/(.*)\/\* #{token}_code_stop \*\//,
             wrapped_custom_code
         )
+    end
+
+    def wrapped_dom_monitor_initializer
+        "/* #{token}_tokenDOMMonitor_initialize_start */ " <<
+            "#{@dom_monitor.stub.function( :initialize, Options.scope.dom_event_inheritance_limit )} " <<
+            "/* #{token}_tokenDOMMonitor_initialize_stop */"
     end
 
     def wrapped_taint_tracer_initializer( response )

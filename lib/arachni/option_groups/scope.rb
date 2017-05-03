@@ -41,6 +41,14 @@ class Scope < Arachni::OptionGroup
     # @note `nil` is infinite -- default is `nil`.
     #
     # @return    [Integer]
+    #   How many elements should inherit the DOM events of their parents.
+    #
+    # @see Browser#trigger_events
+    attr_accessor :dom_event_inheritance_limit
+
+    # @note `nil` is infinite -- default is `nil`.
+    #
+    # @return    [Integer]
     #   How many pages to consider (crawl/audit)?
     #
     # @see Framework#push_to_page_queue
