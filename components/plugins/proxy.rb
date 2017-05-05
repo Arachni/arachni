@@ -199,9 +199,10 @@ class Arachni::Plugins::Proxy < Arachni::Plugin::Base
         res.code = 200
 
         if url.start_with? url_for( :panel )
+            TemplateScope.get.set :pages, prepare_pages_for_inspection
+
             body =  case '/' + res.parsed_url.path.split( '/' )[2..-1].join( '/' )
                         when '/'
-                            TemplateScope.get.set :pages, prepare_pages_for_inspection
                             erb :panel
 
                         when '/vectors.yml'
