@@ -11,6 +11,7 @@
             - `#elements_with_events` -- Optionally limits event inheritance.
 - `Rest::Server`
     - Added `/scans/:id/report.afr`.
+    - Added error handling for when trying to connect to killed instances.
 - `Support`
     - `Database` -- Updated to compress disk data.
 - `Parser` -- Recode node data to UTF-8.

@@ -20,6 +20,15 @@ module InstanceHelpers
 
     def scan_for( id )
         @@instances[id].service
+    rescue => e
+        instances.delete( id ).close
+        session.delete id
+
+        halt 500,
+             json(
+                 error:     "#{e.class}: #{e}",
+                 backtrace: e.backtrace
+             )
     end
 
     def exists?( id )
