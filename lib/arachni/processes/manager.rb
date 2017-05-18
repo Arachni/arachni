@@ -155,13 +155,12 @@ class Manager
 
         options[:ppid]  = Process.pid
 
-        options[:options] ||= {}
-        options[:options]   = Options.to_h.merge( options[:options] )
-
+        arachni_options = Options.to_h.merge( options.delete(:options) || {} )
         # Paths are not included in RPC nor Hash representations as they're
         # considered local, in this case though they're necessary to provide
         # the same environment the processes.
-        options[:options][:paths] = Options.paths.to_h
+        arachni_options[:paths] = Options.paths.to_h
+        encoded_arachni_options = Base64.strict_encode64( Marshal.dump( arachni_options ) )
 
         executable      = "#{Options.paths.executables}/#{executable}.rb"
         encoded_options = Base64.strict_encode64( Marshal.dump( options ) )
@@ -199,6 +198,8 @@ class Manager
                 Framework.reset
                 Reactor.stop
 
+                ENV['arachni_options'] = encoded_arachni_options
+
                 ARGV.replace( argv )
                 load RUNNER
             end
@@ -207,6 +208,9 @@ class Manager
             # it bypasses the OS shell and we can thus count on a 1-to-1 process
             # creation and that the PID we get will be for the actual process.
             pid = Process.spawn(
+                {
+                    'arachni_options' => encoded_arachni_options
+                },
                 RbConfig.ruby,
                 RUNNER,
                 *(argv + [spawn_options])

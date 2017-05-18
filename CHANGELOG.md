@@ -15,6 +15,9 @@
 - `Support`
     - `Database` -- Updated to compress disk data.
 - `Parser` -- Recode node data to UTF-8.
+- `Process`
+    - `Manager`
+        - `#spawn` -- Pass Arachni options via `ENV` rather than `ARGV`.
 - Checks
     - Active
         - `xss` -- Fixed proof data to return HTML.

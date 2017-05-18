@@ -6,7 +6,8 @@ if !$options[:without_arachni]
     require 'arachni'
 
     include Arachni
-    Options.update $options.delete(:options)
+
+    Options.update Marshal.load( Base64.strict_decode64( ENV['arachni_options'] ) )
 else
     if Gem.win_platform?
         require 'Win32API'
