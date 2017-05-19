@@ -95,7 +95,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'rb-readline',         '0.5.1'
 
     # Markup parsing, for reports and Element::XML.
-    s.add_dependency 'nokogiri',            '1.6.8.1'
+    s.add_dependency 'nokogiri',            '1.7.2'
     # Really fast and lightweight markup parsing, for pages.
     s.add_dependency 'ox',                  '2.4.11'
 
