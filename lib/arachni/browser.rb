@@ -7,7 +7,7 @@
 =end
 
 require 'childprocess'
-require 'watir-webdriver'
+require 'watir'
 require_relative 'selenium/webdriver/element'
 require_relative 'processes/manager'
 require_relative 'browser/element_locator'
@@ -57,6 +57,11 @@ class Browser
         # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class Load < Error
         end
+
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@sarosys.com>
+        class MissingExecutable < Error
+        end
+
     end
 
     # How much time to wait for the PhantomJS process to spawn before respawning.
@@ -139,13 +144,27 @@ class Browser
         # @return   [Bool]
         #   `true` if a supported browser is in the OS PATH, `false` otherwise.
         def has_executable?
-            !!executable
+            executable
+            true
+        rescue Error::MissingExecutable
+            false
         end
 
         # @return   [String]
         #   Path to the PhantomJS executable.
         def executable
-            Selenium::WebDriver::PhantomJS.path
+            @path ||= begin
+                path = Selenium::WebDriver::Platform.find_binary('phantomjs')
+                raise Error::MissingExecutable, 'PhantomJS could not be found in PATH.' unless path
+                Selenium::WebDriver::Platform.assert_executable path
+
+                path
+            end
+        end
+
+        # @ private
+        def reset
+            @path = nil
         end
 
         def asset_domains
@@ -1104,7 +1123,8 @@ class Browser
         # For some weird reason the Typhoeus client is very slow for
         # PhantomJS 2.1.1 and causes a boatload of time-outs.
         client = Selenium::WebDriver::Remote::Http::Default.new
-        client.timeout = Options.browser_cluster.job_timeout
+        client.open_timeout = Options.browser_cluster.job_timeout
+        client.read_timeout = Options.browser_cluster.job_timeout
 
         @selenium = Selenium::WebDriver.for(
             :remote,

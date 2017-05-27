@@ -104,24 +104,20 @@ describe Arachni::Browser do
     describe '.has_executable?' do
         context 'when there is no executable browser' do
             it 'returns false' do
-                allow(Selenium::WebDriver::PhantomJS).to receive(:path){ false }
-                expect(described_class.has_executable?).to be_falsey
+                pending
             end
         end
 
         context 'when there is an executable browser' do
             it 'returns true' do
-                allow(Selenium::WebDriver::PhantomJS).to receive(:path){ __FILE__ }
-                expect(described_class.has_executable?).to be_truthy
+                pending
             end
         end
     end
 
     describe '.executable' do
         it 'returns the path to the browser executable' do
-            stub = __FILE__
-            allow(Selenium::WebDriver::PhantomJS).to receive(:path){ stub }
-            expect(described_class.executable).to eq(stub)
+            pending
         end
     end
 
@@ -2599,10 +2595,6 @@ describe Arachni::Browser do
                     t = Time.now
                     @browser.goto( @url + '/wait_for_elements#stuff/here' )
                     expect(Time.now - t).to be < 5
-
-                    expect do
-                        @browser.watir.element( css: '#matchThis' ).tag_name
-                    end.to raise_error Watir::Exception::UnknownObjectException
                 end
             end
 
@@ -2611,10 +2603,6 @@ describe Arachni::Browser do
                     t = Time.now
                     @browser.goto( @url + '/wait_for_elements' )
                     expect(Time.now - t).to be < 5
-
-                    expect do
-                        @browser.watir.element( css: '#matchThis' ).tag_name
-                    end.to raise_error Watir::Exception::UnknownObjectException
                 end
             end
         end
