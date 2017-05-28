@@ -22,3 +22,12 @@ server-status
 WEB-INF (copy)/web.xml
 WEB-INF - Copy/web.xml
 Copy of WEB-INF/web.xml
+README.md
+README
+README.txt
+readme.txt
+CHANGE
+phpinfo.php
+index.php
+index.php.bak
+index.php.old

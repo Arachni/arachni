@@ -178,7 +178,6 @@ module Mutable
         options          = prepare_mutation_options( options )
         generated        = Support::LookUp::HashSet.new
         filled_in_inputs = Options.input.fill( @inputs )
-
         if options[:parameter_values]
             @inputs.keys.each do |name|
                 # Don't let parameter name pollution from an old audit of an
@@ -186,38 +185,233 @@ module Mutable
                 # that option.
                 next if name == EXTRA_NAME
                 next if immutables.include?( name )
-
-                each_formatted_payload(
-                    payload, options[:format], filled_in_inputs[name]
-                ) do |format, formatted_payload|
-
-                    elem = create_and_yield_if_unique(
-                        generated, filled_in_inputs, payload, name,
-                        formatted_payload, format, &block
-                    )
-
-                    next if !elem
-
-                    if options[:with_raw_payloads]
-                        yield_if_unique( elem.with_raw_payload, generated, &block )
+                if Options.audit.with_complex_mutation
+                    if !(Options.audit.with_complex_mutation_trainer)
+                        train = false
+                        if options[:submit]
+                            if options[:submit][:train]
+                                train=true
+                                each_formatted_payload(
+                                    payload, options[:format], filled_in_inputs[name]
+                                ) do |format, formatted_payload|
+                                    elem = create_and_yield_if_unique(
+                                        generated, filled_in_inputs, payload, name,
+                                        formatted_payload, format, &block
+                                    )
+                                
+                                    next if !elem
+                                
+                                    if options[:with_raw_payloads]
+                                        yield_if_unique( elem.with_raw_payload, generated, &block )
+                                    end
+                                
+                                    if options[:with_both_http_methods]
+                                        yield_if_unique( elem.switch_method, generated, &block )
+                                    end
+                                end
+                            end
+                        end
+                        next if train
                     end
-
-                    if options[:with_both_http_methods]
-                        yield_if_unique( elem.switch_method, generated, &block )
+                    if (self.to_s =~ /Element::Header/i) and Options.audit.with_complex_mutation_header
+                        print_debug_level_2 "MUTABLE Element::HEADER"
+                        print_debug_level_2 "Header name: #{name} - Option #{options} - Block #{block}"
+                        value_array = filled_in_inputs[name].split(/[,;=]/)
+                        for value_elem in value_array
+                            formatted_payload=filled_in_inputs[name]
+                            matches = filled_in_inputs[name].scan(value_elem).length
+                            if matches > 1
+                                pos_end=filled_in_inputs[name].length - 1
+                                pos_cour=0
+                                #pos=filled_in_inputs[name].index(value_elem) + value_elem.length
+                                for i in 1..matches         
+                                    formatted_payload=filled_in_inputs[name]
+                                    formatted_payload[pos_cour..pos_end].sub(value_elem, payload)
+                                    formatted_payload=formatted_payload
+                                    print_debug_level_2 "CHOIX 1 payload -> #{formatted_payload}"
+                                    elem = create_and_yield_if_unique(
+                                        generated, filled_in_inputs, payload, name,
+                                        formatted_payload, 2, &block
+                                    )
+                                    pos_cour=filled_in_inputs[name][pos_cour..pos_end].index(value_elem) + value_elem.length
+                                    next if !elem
+                                    
+                                    if options[:with_raw_payloads]
+                                        yield_if_unique( elem.with_raw_payload, generated, &block )
+                                    end
+                                    
+                                    if options[:with_both_http_methods]
+                                        yield_if_unique( elem.switch_method, generated, &block )
+                                    end
+                                end
+                            else
+                                formatted_payload=formatted_payload.sub(value_elem, payload)
+                                print_debug_level_2 "CHOIX 2 payload -> #{formatted_payload}"
+                                elem = create_and_yield_if_unique(
+                                    generated, filled_in_inputs, payload, name,
+                                    formatted_payload, 2, &block
+                                )
+                                next if !elem
+                                
+                                if options[:with_raw_payloads]
+                                    yield_if_unique( elem.with_raw_payload, generated, &block )
+                                end
+                                
+                                if options[:with_both_http_methods]
+                                    yield_if_unique( elem.switch_method, generated, &block )
+                                end
+                                if filled_in_inputs[name] != "1"
+                                    each_formatted_payload(
+                                        payload, options[:format], filled_in_inputs[name]
+                                    ) do |format, formatted_payload|
+                                        elem = create_and_yield_if_unique(
+                                            generated, filled_in_inputs, payload, name,
+                                            formatted_payload, 2, &block
+                                        )
+                                        next if !elem
+                                        
+                                        if options[:with_raw_payloads]
+                                            yield_if_unique( elem.with_raw_payload, generated, &block )
+                                        end
+                                        
+                                        if options[:with_both_http_methods]
+                                            yield_if_unique( elem.switch_method, generated, &block )
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    elsif (self.to_s =~ /Element::Form/i)
+                        print_debug_level_2 "MUTABLE Element::Form"
+                        print_debug_level_2 "Input name: #{name}"
+                        filled_in_inputs_keys = filled_in_inputs.keys
+                        n_filled_in_inputs = filled_in_inputs_keys.length
+                        combi_filled_in_inputs={}
+                        if n_filled_in_inputs == 1
+                            each_formatted_payload(
+                                payload, options[:format], filled_in_inputs[name]
+                            ) do |format, formatted_payload|
+                            
+                                elem = create_and_yield_if_unique_forms(
+                                    generated, filled_in_inputs, payload, name,
+                                    formatted_payload, format, &block
+                                )
+                            
+                                next if !elem
+                            
+                                if options[:with_raw_payloads]
+                                    yield_if_unique( elem.with_raw_payload, generated, &block )
+                                end
+                            
+                                if options[:with_both_http_methods]
+                                    yield_if_unique( elem.switch_method, generated, &block )
+                                end
+                            end
+                        elsif n_filled_in_inputs > 1
+                            combi_filled_in_inputs[name]=filled_in_inputs[name]
+                            each_formatted_payload(
+                                payload, options[:format], combi_filled_in_inputs[name]
+                            ) do |format, formatted_payload|
+                                elem = create_and_yield_if_unique_forms(
+                                    generated, combi_filled_in_inputs, payload, name,
+                                    formatted_payload, format, &block
+                                )
+                            
+                                next if !elem
+                            
+                                if options[:with_raw_payloads]
+                                    yield_if_unique( elem.with_raw_payload, generated, &block )
+                                end
+                            
+                                if options[:with_both_http_methods]
+                                    yield_if_unique( elem.switch_method, generated, &block )
+                                end
+                            end
+                            for i in 2..n_filled_in_inputs
+                                tmp_combis=filled_in_inputs_keys.combination(i).to_a
+                                for tmp_combi in tmp_combis
+                                    if tmp_combi.include?(name)
+                                        #keep combi and create
+                                        combi_filled_in_inputs={}
+                                        for name_combi in tmp_combi
+                                            combi_filled_in_inputs[name_combi]=filled_in_inputs[name_combi]
+                                        end
+                                        #CREATE
+                                        print_debug_level_2 "CREATE COMBI: #{combi_filled_in_inputs}"
+                                        each_formatted_payload(
+                                            payload, options[:format], combi_filled_in_inputs[name]
+                                        ) do |format, formatted_payload|
+                                            elem = create_and_yield_if_unique_forms(
+                                                generated, combi_filled_in_inputs, payload, name,
+                                                formatted_payload, format, &block
+                                            )
+                                        
+                                            next if !elem
+                                        
+                                            if options[:with_raw_payloads]
+                                                yield_if_unique( elem.with_raw_payload, generated, &block )
+                                            end
+                                        
+                                            if options[:with_both_http_methods]
+                                                yield_if_unique( elem.switch_method, generated, &block )
+                                            end
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    else
+                        each_formatted_payload(
+                            payload, options[:format], filled_in_inputs[name]
+                        ) do |format, formatted_payload|
+                            elem = create_and_yield_if_unique(
+                                generated, filled_in_inputs, payload, name,
+                                formatted_payload, format, &block
+                            )
+                        
+                            next if !elem
+                        
+                            if options[:with_raw_payloads]
+                                yield_if_unique( elem.with_raw_payload, generated, &block )
+                            end
+                        
+                            if options[:with_both_http_methods]
+                                yield_if_unique( elem.switch_method, generated, &block )
+                            end
+                        end
+                    end
+                else
+                    each_formatted_payload(
+                        payload, options[:format], filled_in_inputs[name]
+                    ) do |format, formatted_payload|
+                        elem = create_and_yield_if_unique(
+                            generated, filled_in_inputs, payload, name,
+                            formatted_payload, format, &block
+                        )
+                    
+                        next if !elem
+                    
+                        if options[:with_raw_payloads]
+                            yield_if_unique( elem.with_raw_payload, generated, &block )
+                        end
+                    
+                        if options[:with_both_http_methods]
+                            yield_if_unique( elem.switch_method, generated, &block )
+                        end
                     end
                 end
             end
         end
-
+        
         if options[:with_extra_parameter]
             if valid_input_name?( EXTRA_NAME )
                 each_formatted_payload( payload, options[:format] ) do |format, formatted_payload|
-
+        
                     elem = create_and_yield_if_unique(
                         generated, filled_in_inputs.merge( EXTRA_NAME => '' ),
                         payload, EXTRA_NAME, formatted_payload, format, &block
                     )
-
+        
                     next if !elem || !options[:with_both_http_methods]
                     yield_if_unique( elem.switch_method, generated, &block )
                 end
@@ -226,21 +420,21 @@ module Mutable
                                         " #{audit_id}: #{payload.inspect}"
             end
         end
-
+        
         if options[:parameter_names]
             if valid_input_name_data?( payload )
                 elem                     = self.dup.update( filled_in_inputs )
                 elem.affected_input_name = FUZZ_NAME
                 elem[payload]            = FUZZ_NAME_VALUE
                 elem.seed                = payload
-
+        
                 yield_if_unique( elem, generated, &block )
             else
                 print_debug_level_2 'Payload not supported as input name by' <<
                                         " #{audit_id}: #{payload.inspect}"
             end
         end
-
+        
         nil
     end
 
@@ -257,7 +451,12 @@ module Mutable
     def switch_method
         self.dup.tap { |c| c.method = (c.method == :get ? :post : :get) }
     end
-
+    
+    def switch_method_json
+        self.dup.tap { |c| c.method = :post}
+        head_tmp = {'Content-Type' => 'application/json'}
+        self.dup.tap { |c| print_info "PRINT INFO C: #{c}"}  
+    end
     # Injects the `payload` in self's values according to formatting
     # options and returns an array of mutations of self.
     #
@@ -377,6 +576,45 @@ module Mutable
         other
     end
 
+    def create_mutation_forms( inputs, seed, input_name, input_value, format )
+        if !valid_input_value_data?( input_value )
+            print_debug_level_2 "Value not supported by #{audit_id}: #{input_value.inspect}"
+            return
+        end
+
+        if !valid_input_name_data?( input_name )
+            print_debug_level_2 "Name not supported by #{audit_id}: #{input_name.inspect}"
+            return
+        end
+
+        elem                      = self.dup.update( inputs )
+        elem.seed                 = seed
+        elem.inputs               = inputs
+        elem.affected_input_name  = input_name
+        elem.affected_input_value = input_value
+        elem.format               = format
+
+        elem
+    end
+
+    def create_and_yield_if_unique_forms(
+        list, inputs, seed, input_name, input_value,format, &block
+    )
+        # We can check if it's unique prior to actually creating, so do it.
+        return if list.include?(
+            Arachni::Element::Capabilities::Mutable.mutable_id(
+                self.method,
+                inputs,
+                []
+            )
+        )
+        element = create_mutation_forms( inputs, seed, input_name, input_value, format )
+        return if !element
+
+        yield_if_unique( element, list, &block )
+        element
+    end
+    
     def create_mutation( inputs, seed, input_name, input_value, format )
         if !valid_input_value_data?( input_value )
             print_debug_level_2 "Value not supported by #{audit_id}: #{input_value.inspect}"
@@ -390,6 +628,7 @@ module Mutable
 
         elem                      = self.dup.update( inputs )
         elem.seed                 = seed
+        #elem.inputs               = inputs
         elem.affected_input_name  = input_name
         elem.affected_input_value = input_value
         elem.format               = format
@@ -408,7 +647,6 @@ module Mutable
                 []
             )
         )
-
         element = create_mutation( inputs, seed, input_name, input_value, format )
         return if !element
 
@@ -449,9 +687,9 @@ module Mutable
 
         null      = "\0"               if (format & Format::NULL)      != 0
         semicolon = ';'                if (format & Format::SEMICOLON) != 0
-        append    = default_str        if (format & Format::APPEND)    != 0
+        append    = default_str.dup.force_encoding("iso-8859-1").encode("utf-8")        if (format & Format::APPEND)    != 0
         semicolon = append = null = '' if (format & Format::STRAIGHT)  != 0
-
+#        print_info "FORMAT STRE : #{semicolon}#{append}#{payload}#{null}"
         "#{semicolon}#{append}#{payload}#{null}"
     end
 

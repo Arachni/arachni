@@ -109,6 +109,9 @@ Gem::Specification.new do |s|
     # descriptions.
     s.add_dependency 'kramdown',            '1.4.1'
 
+    # Simhash use for compare result of checker 
+    s.add_dependency 'simhash'
+
     # Used to scrub Markdown for XSS etc.
     s.add_dependency 'loofah',              '2.0.3'
 
