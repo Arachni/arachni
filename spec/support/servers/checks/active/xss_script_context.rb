@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 def get_variations( str )
     <<-EOHTML
@@ -14,6 +15,7 @@ get '/' do
         <a href="/link?input=default">Link</a>
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
+        <a href="/nested_cookie">Nested cookie</a>
         <a href="/header">Header</a>
         <a href="/link-template">Link template</a>
     EOHTML
@@ -61,6 +63,22 @@ end
 get "/cookie/straight" do
     cookies['cookie2'] ||= 'default'
     get_variations( cookies['cookie2'] )
+end
+
+get "/nested_cookie" do
+    <<-EOHTML
+        <a href="/nested_cookie/straight">Cookie</a>
+    EOHTML
+end
+
+get "/nested_cookie/straight" do
+    default = 'nested cookie value'
+    cookies['nested_cookie'] ||= "name=#{default}"
+
+    value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+    return if value.start_with?( default )
+
+    get_variations value
 end
 
 get "/header" do

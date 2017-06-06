@@ -259,6 +259,7 @@ Arachni is able to extract and audit the following elements and their inputs:
     - Along with ones that have client-side parameters in their URL fragments, i.e.:
             `http://example.com/#/param/val/param2/val2`
  - Cookies
+    - Also supports nested cookies, containing key-value pairs inside individual cookies.
  - Headers
  - Generic client-side elements which have associated DOM events.
  - AJAX-request parameters.

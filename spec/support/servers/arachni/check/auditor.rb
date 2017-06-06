@@ -12,6 +12,7 @@ end
 
 get '/each_candidate_element' do
     cookies['cookie-input'] = 'blah'
+    cookies['ns_cookie'] = 'name=value'
 
     <<HTML
     <html>

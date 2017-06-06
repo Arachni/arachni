@@ -11,7 +11,7 @@ Factory.define :response do
                 <form> <input name=""/> </form>',
         headers: {
             'res-header-name' => 'res header value',
-            'Set-Cookie'      => 'cookiename=cokie+value'
+            'Set-Cookie'      => ['nscookie=name=value', 'cookiename=cokie+value']
         }
     )
 end

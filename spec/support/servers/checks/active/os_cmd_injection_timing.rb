@@ -10,7 +10,7 @@ REGEXP = {
 }
 
 def exec( platform, str, prefix = nil, postfix = nil )
-    return if !str
+    return if str.to_s.empty?
 
     r = ''
     r << Regexp.escape( prefix ) if prefix
@@ -61,6 +61,7 @@ REGEXP.keys.each do |platform|
             <a href="/#{platform_str}/link?input=default">Link</a>
             <a href="/#{platform_str}/form">Form</a>
             <a href="/#{platform_str}/cookie">Cookie</a>
+            <a href="/#{platform_str}/nested_cookie">Nested cookie</a>
             <a href="/#{platform_str}/header">Header</a>
             <a href="/#{platform_str}/link-template">Link template</a>
             <a href="/#{platform_str}/json">JSON</a>
@@ -122,6 +123,22 @@ REGEXP.keys.each do |platform|
         return if cookies['cookie'].start_with?( default )
 
         get_variations( platform, cookies['cookie'] )
+    end
+
+    get "/#{platform}/nested_cookie" do
+        <<-EOHTML
+            <a href="/#{platform}/nested_cookie/straight">Nested cookie</a>
+        EOHTML
+    end
+
+    get "/#{platform}/nested_cookie/straight" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if value.start_with?( default )
+
+        get_variations( platform, value )
     end
 
     get "/#{platform_str}/header" do

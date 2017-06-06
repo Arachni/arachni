@@ -155,9 +155,9 @@ Injects an HTML element into page inputs and then parses the HTML markup of
 tainted responses to look for proof of vulnerability.
 },
             elements:    [Element::Form, Element::Link, Element::Cookie,
-                          Element::Header, Element::LinkTemplate],
+                 Element::NestedCookie, Element::Header, Element::LinkTemplate],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.4.9',
+            version:     '0.4.10',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS)},

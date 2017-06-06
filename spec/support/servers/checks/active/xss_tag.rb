@@ -1,11 +1,13 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 get '/' do
     <<-EOHTML
         <a href="/link?input=default">Link</a>
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
+        <a href="/nested_cookie">Nested cookie</a>
         <a href="/header">Header</a>
     EOHTML
 end
@@ -107,6 +109,44 @@ get "/cookie/double" do
     return if !cookies['cookie2'].start_with?( default )
 
     "<a href='/' class=\"#{cookies['cookie2']}more-stuff\">Vuln</a>"
+end
+
+get "/nested_cookie" do
+    <<-EOHTML
+        <a href="/nested_cookie/no">Nested cookie</a>
+        <a href="/nested_cookie/single">Nested cookie</a>
+        <a href="/nested_cookie/double">Nested cookie</a>
+    EOHTML
+end
+
+get "/nested_cookie/no" do
+    default = 'nested_cookie value'
+    cookies['nested_cookie'] ||= "name=#{default}"
+
+    value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+    return if !value.start_with?( default )
+
+    "<a href='/' class=#{value}more-stuff>Vuln</a>"
+end
+
+get "/nested_cookie/single" do
+    default = 'nested_cookie value'
+    cookies['nested_cookie'] ||= "name=#{default}"
+
+    value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+    return if !value.start_with?( default )
+
+    "<a href='/' class='#{value}more-stuff'>Vuln</a>"
+end
+
+get "/nested_cookie/double" do
+    default = 'nested_cookie value'
+    cookies['nested_cookie'] ||= "name=#{default}"
+
+    value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+    return if !value.start_with?( default )
+
+    "<a href='/' class=\"#{value}more-stuff\">Vuln</a>"
 end
 
 get "/header" do

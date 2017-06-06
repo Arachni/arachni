@@ -209,6 +209,10 @@ class OptionParser < UI::CLI::OptionParser
             options.audit.cookies = true
         end
 
+        on( '--audit-nested-cookies', 'Audit nested cookies.' ) do
+            options.audit.nested_cookies = true
+        end
+
         on( '--audit-cookies-extensively',
                'Submit all links and forms of the page along with the cookie permutations.',
                '(*WARNING*: This will severely increase the scan-time.)'

@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 def get_variations( str )
     str.to_s.upcase
@@ -24,6 +25,7 @@ get '/' do
         <a href="/link-template">Link template</a>
         <a href="/form">Form</a>
         <a href="/cookie">Cookie</a>
+        <a href="/nested_cookie">Nested cookie</a>
         <a href="/header">Header</a>
 
         <a href="/gotchas">Gotchas</a>
@@ -237,6 +239,44 @@ get '/cookie/append' do
     return if !cookies['cookie2'].start_with?( default )
 
     get_variations( cookies['cookie2'].split( default ).last )
+end
+
+get '/nested_cookie' do
+    <<-EOHTML
+        <a href="/nested_cookie/in_comment">Cookie</a>
+        <a href="/nested_cookie/double_encoded">Cookie</a>
+        <a href="/nested_cookie/append">Cookie</a>
+    EOHTML
+end
+
+get '/nested_cookie/in_comment' do
+    default = 'nested cookie value'
+    cookies['nested_cookie'] ||= "name=#{default}"
+
+    value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name']
+
+    <<-EOHTML
+        <!-- #{value} -->
+    EOHTML
+end
+
+get '/nested_cookie/append' do
+    default = 'nested cookie value'
+    cookies['nested_cookie'] ||= "name=#{default}"
+
+    value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+    return if !value.start_with?( default )
+
+    get_variations( value )
+end
+
+get '/nested_cookie/double_encoded' do
+    default = 'nested cookie value'
+    cookies['nested_cookie'] ||= "name=#{default}"
+
+    value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+
+    get_variations( ::URI.decode( value ) )
 end
 
 get '/header' do

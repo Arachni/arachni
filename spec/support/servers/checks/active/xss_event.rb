@@ -1,6 +1,7 @@
 require 'sinatra'
 require 'sinatra/contrib'
 require_relative '../check_server'
+require_relative '../check_server'
 
 def attributes
     current_check::ATTRIBUTES
@@ -8,7 +9,7 @@ end
 
 def get_variations( str )
     attribute = env['PATH_INFO'].split( '/' ).last
-    [ '', '"', "'" ].map { |q| "<a href='/' #{attribute}=#{q}#{str.to_s.upcase}#{q}>#{attribute}</a>" }.join
+    [ '', '"', "'" ].map { |q| "<a href='#' #{attribute}=#{q}#{str.to_s.upcase}#{q}>#{attribute}</a>" }.join
 end
 
 get '/' do
@@ -16,6 +17,7 @@ get '/' do
         <a href="/link/?input=default">Link</a>
         <a href="/form/">Form</a>
         <a href="/cookie/">Cookie</a>
+        <a href="/nested_cookie/">Nested cookie</a>
         <a href="/header/">Header</a>
     EOHTML
 end
@@ -65,6 +67,24 @@ attributes.each do |attribute|
     end
 end
 
+get "/nested_cookie/" do
+    attributes.map do |attribute|
+        default = 'nested cookie value'
+        cookies["nested_cookie_#{attribute}"] ||= "#{attribute}_name=#{default}"
+
+        <<-EOHTML
+            <a href="#{attribute}">#{attribute}</a>
+        EOHTML
+    end.join
+end
+
+attributes.each do |attribute|
+    get "/nested_cookie/#{attribute}" do
+        value = Arachni::NestedCookie.parse_inputs( cookies["nested_cookie_#{attribute}"] )["#{attribute}_name"]
+        get_variations( value )
+    end
+end
+
 get "/header/" do
     attributes.map do |attribute|
         <<-EOHTML
@@ -78,3 +98,4 @@ attributes.each do |attribute|
         get_variations( env['HTTP_USER_AGENT'] )
     end
 end
+

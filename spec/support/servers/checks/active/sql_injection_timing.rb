@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 REGEXP = {
     mysql: 'sleep\(\s?(\d+)\s?\)',
@@ -10,7 +11,7 @@ REGEXP = {
 }
 
 def get_variations( platform, str )
-    return if !str
+    return if str.to_s.empty?
 
     time = str.scan( Regexp.new( REGEXP[platform] ) ).flatten.first
     return if !time
@@ -40,6 +41,7 @@ REGEXP.keys.each do |platform|
             <a href="/#{platform}/link?input=default">Link</a>
             <a href="/#{platform}/form">Form</a>
             <a href="/#{platform}/cookie">Cookie</a>
+            <a href="/#{platform}/nested_cookie">Nested cookie</a>
             <a href="/#{platform}/header">Header</a>
             <a href="/#{platform}/link-template">Link template</a>
             <a href="/#{platform}/json">JSON</a>
@@ -138,6 +140,22 @@ REGEXP.keys.each do |platform|
         return if !cookies['cookie2'].start_with?( default )
 
         get_variations( platform, cookies['cookie2'] )
+    end
+
+    get "/#{platform}/nested_cookie" do
+        <<-EOHTML
+            <a href="/#{platform}/nested_cookie/append">Nested cookie</a>
+        EOHTML
+    end
+
+    get "/#{platform}/nested_cookie/append" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if !value.start_with?( default )
+
+        get_variations( platform, value )
     end
 
     get "/#{platform}/header" do

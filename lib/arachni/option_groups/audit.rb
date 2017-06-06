@@ -117,6 +117,15 @@ class Audit < Arachni::OptionGroup
     # @note Default is `false`.
     #
     # @return    [Bool]
+    #   Audit nested cookies.
+    #
+    # @see Element::NestedCookie
+    # @see Element::Capabilities::Auditable#audit
+    attr_accessor :nested_cookies
+
+    # @note Default is `false`.
+    #
+    # @return    [Bool]
     #   Like {#cookies} but all cookie audits are submitted along with any other
     #   available element on the page.
     #
@@ -284,7 +293,7 @@ class Audit < Arachni::OptionGroup
     end
     alias :element? :elements?
 
-    [:links, :forms, :cookies, :headers, :cookies_extensively,
+    [:links, :forms, :cookies, :nested_cookies, :headers, :cookies_extensively,
      :with_both_http_methods, :link_doms, :form_doms, :cookie_doms,
      :jsons, :xmls, :ui_inputs, :ui_input_doms, :ui_forms, :ui_form_doms,
      :parameter_values, :parameter_names, :with_extra_parameter].each do |attribute|

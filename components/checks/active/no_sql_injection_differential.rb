@@ -37,9 +37,9 @@ It uses differential analysis to determine how different inputs affect the behav
 of the web application and checks if the displayed behavior is consistent with
 that of a vulnerable application.
 },
-            elements:    [ Element::Link, Element::Form, Element::Cookie ],
+            elements:    [ Element::Link, Element::Form, Element::Cookie, Element::NestedCookie ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1.2',
+            version:     '0.1.3',
             platforms:   [ :nosql ],
 
             issue:       {

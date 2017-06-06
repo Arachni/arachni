@@ -104,6 +104,8 @@ module Auditor
                             audit.form_doms? && page.has_script? && !!page.forms.find(&:dom) },
                     Element::Cookie            =>
                         proc { audit.cookies? && page.cookies.any? },
+                    Element::NestedCookie            =>
+                        proc { audit.nested_cookies? && page.nested_cookies.any? },
                     Element::Cookie::DOM       =>
                         proc { (ignore_dom_depth || page.dom.depth > 0) &&
                             audit.cookie_doms? && page.has_script? && page.cookies.any? },
@@ -117,8 +119,8 @@ module Auditor
                         proc { audit.jsons? && page.jsons.find { |e| e.inputs.any? } },
                     Element::XML               =>
                         proc { audit.xmls? && page.xmls.find { |e| e.inputs.any? } },
-                    Element::UIInput             => false,
-                    Element::UIInput::DOM        =>
+                    Element::UIInput           => false,
+                    Element::UIInput::DOM      =>
                         proc { audit.ui_inputs? && page.ui_inputs.any? },
                     Element::UIForm            => false,
                     Element::UIForm::DOM       =>
@@ -297,8 +299,8 @@ module Auditor
 
     # Non-DOM auditable elements.
     ELEMENTS_WITH_INPUTS = [
-        Element::Link, Element::Form, Element::Cookie, Element::Header,
-        Element::LinkTemplate, Element::JSON, Element::XML
+        Element::Link, Element::Form, Element::Cookie, Element::NestedCookie,
+        Element::Header, Element::LinkTemplate, Element::JSON, Element::XML
     ]
 
     # Auditable DOM elements.
@@ -490,6 +492,9 @@ module Auditor
 
                 when Element::Cookie.type
                     prepare_each_element(page.cookies, &block )
+
+                when Element::NestedCookie.type
+                    prepare_each_element(page.nested_cookies, &block )
 
                 when Element::Header.type
                     prepare_each_element( page.headers, &block )

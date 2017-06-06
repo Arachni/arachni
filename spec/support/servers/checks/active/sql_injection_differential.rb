@@ -1,5 +1,6 @@
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 def default
     'default'
@@ -23,6 +24,7 @@ end
             <a href="/#{platform}/link?input=default">Link</a>
             <a href="/#{platform}/form">Form</a>
             <a href="/#{platform}/cookie">Cookie</a>
+            <a href="/#{platform}/nested_cookie">Nested cookie</a>
             <a href="/#{platform}/header">Header</a>
         EOHTML
     end
@@ -60,5 +62,22 @@ end
         cookies['cookie'] ||= default
         get_result( cookies['cookie'] )
     end
+
+    get "/#{platform}/nested_cookie" do
+        <<-EOHTML
+            <a href="/#{platform}/nested_cookie/straight">Nested cookie</a>
+        EOHTML
+    end
+
+    get "/#{platform}/nested_cookie/straight" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if value.start_with?( default )
+
+        get_result( value )
+    end
+
 end
 

@@ -125,9 +125,9 @@ class Arachni::Checks::XssEvent < Arachni::Check::Base
         {
             name:        'XSS in HTML element event attribute',
             description: %q{Cross-Site Scripting in event tag of HTML element.},
-            elements:    [Element::Form, Element::Link, Element::Cookie, Element::Header],
+            elements:    [Element::Form, Element::Link, Element::Cookie, Element::NestedCookie, Element::Header],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.9',
+            version:     '0.1.10',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in event tag of HTML element},

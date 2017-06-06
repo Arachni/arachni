@@ -223,9 +223,9 @@ class Arachni::Checks::XssScriptContext < Arachni::Check::Base
 Injects JS taint code and check to see if it gets executed as proof of vulnerability.
 },
             elements:    [ Element::Form, Element::Link, Element::Cookie,
-                           Element::Header, Element::LinkTemplate ],
+                           Element::NestedCookie, Element::Header, Element::LinkTemplate ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.2.5',
+            version:     '0.2.6',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in script context},

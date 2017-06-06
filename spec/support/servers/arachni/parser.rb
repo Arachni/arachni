@@ -13,10 +13,16 @@ get '/' do
         :value => "cookie_val2",
         :httponly => false
     })
+
+    response.set_cookie( "ns_cookie", {
+        :value => "name=value",
+        :httponly => false
+    })
 <<EOHTML
 <html>
     <head>
         <meta http-equiv="Set-Cookie" content="http_equiv_cookie_name=http_equiv_cookie_val; secure; httponly">
+<meta http-equiv="Set-Cookie" content="http_equiv_ns_cookie_name=name2=value2; secure; httponly">
     </head>
     <body>
 

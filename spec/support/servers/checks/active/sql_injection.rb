@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 @@errors ||= {}
 if @@errors.empty?
@@ -46,6 +47,7 @@ end
             <a href="/#{platform_str}/link">Link</a>
             <a href="/#{platform_str}/form">Form</a>
             <a href="/#{platform_str}/cookie">Cookie</a>
+            <a href="/#{platform_str}/nested_cookie">Nested cookie</a>
             <a href="/#{platform_str}/header">Header</a>
             <a href="/#{platform_str}/link-template">Link template</a>
             <a href="/#{platform_str}/json">JSON</a>
@@ -130,6 +132,31 @@ end
         return if !cookies['cookie2'].start_with?( default )
 
         get_variations( platform, cookies['cookie2'].split( default ).last )
+    end
+
+    get "/#{platform}/nested_cookie" do
+        <<-EOHTML
+            <a href="/#{platform}/nested_cookie/flip">Nested cookie</a>
+            <a href="/#{platform}/nested_cookie/append">Nested cookie</a>
+        EOHTML
+    end
+
+    get "/#{platform}/nested_cookie/flip" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        inputs = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )
+        inputs.keys.map { |k| get_variations( platform, k ) }.to_s
+    end
+
+    get "/#{platform}/nested_cookie/append" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if !value.start_with?( default )
+
+        get_variations( platform, value.split( default ).last )
     end
 
     get "/#{platform_str}/header" do

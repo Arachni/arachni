@@ -4,8 +4,8 @@ describe name_from_filename do
     include_examples 'check'
 
     def self.elements
-        [ Element::Form, Element::Link, Element::Cookie, Element::Header,
-          Element::LinkTemplate ]
+        [ Element::Form, Element::Link, Element::Cookie, Element::NestedCookie,
+          Element::Header, Element::LinkTemplate ]
     end
 
     def issue_count_per_element
@@ -14,7 +14,8 @@ describe name_from_filename do
             Element::Link         => 32,
             Element::Cookie       => 32,
             Element::Header       => 24,
-            Element::LinkTemplate => 18
+            Element::LinkTemplate => 18,
+            Element::NestedCookie => 32
         }
     end
 

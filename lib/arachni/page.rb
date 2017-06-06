@@ -99,8 +99,8 @@ class Page
     end
 
     ELEMENTS = [
-        :links, :forms, :cookies, :headers, :link_templates, :jsons, :xmls,
-        :ui_inputs, :ui_forms
+        :links, :forms, :cookies, :nested_cookies, :headers, :link_templates,
+        :jsons, :xmls, :ui_inputs, :ui_forms
     ]
 
     METADATA = [ :nonce_name, :skip_dom ]

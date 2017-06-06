@@ -481,14 +481,15 @@ class Framework
             !options.audit.cookies? && !options.audit.headers? &&
             !options.audit.link_templates? && !options.audit.jsons? &&
             !options.audit.xmls? && !options.audit.ui_inputs? &&
-            !options.audit.ui_forms?
+            !options.audit.ui_forms? && !options.audit.nested_cookies?
 
             print_info 'No element audit options were specified, will audit ' <<
-                           'links, forms, cookies, UI inputs, UI forms, JSONs and XMLs.'
+                           'links, forms, cookies, nested_cookies, UI inputs,' <<
+                           ' UI forms, JSONs and XMLs.'
             print_line
 
             options.audit.elements :links, :forms, :cookies, :ui_inputs,
-                                   :ui_forms, :jsons, :xmls
+                                   :ui_forms, :jsons, :xmls, :nested_cookies
         end
     end
 

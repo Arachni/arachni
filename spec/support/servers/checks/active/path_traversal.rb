@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 def default
     "default.html"
@@ -92,9 +93,7 @@ MAPIX=1
 }
 
 def get_variations( system, str )
-    return if !str
-
-    require 'ap'
+    return if str.to_s.empty?
 
     str = str.split( "\0" ).first
     str = str.split( 'file:/' ).last
@@ -129,6 +128,7 @@ OUT.keys.each do |system|
             <a href="/#{system_str}/link?input=default">Link</a>
             <a href="/#{system_str}/form">Form</a>
             <a href="/#{system_str}/cookie">Cookie</a>
+            <a href="/#{system_str}/nested_cookie">Nested cookie</a>
             <a href="/#{system_str}/header">Header</a>
             <a href="/#{system_str}/link-template">Link template</a>
             <a href="/#{system_str}/json">JSON</a>
@@ -218,6 +218,33 @@ OUT.keys.each do |system|
         return if !cookies['cookie1'].include?( "\00." )
 
         get_variations( system, cookies['cookie1'] )
+    end
+
+    get "/#{system}/nested_cookie" do
+        <<-EOHTML
+            <a href="/#{system}/nested_cookie/straight">Nested cookie</a>
+            <a href="/#{system}/nested_cookie/with_null">Nested cookie</a>
+        EOHTML
+    end
+
+    get "/#{system}/nested_cookie/straight" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if value.start_with?( default ) || value.include?( "\0" )
+
+        get_variations( system, value )
+    end
+
+    get "/#{system}/nested_cookie/with_null" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if !value.include?( "\00." )
+
+        get_variations( system, value )
     end
 
     get "/#{system_str}/header" do

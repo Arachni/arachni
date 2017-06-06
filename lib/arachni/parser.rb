@@ -374,6 +374,14 @@ class Parser
         @cookies |= Cookie.from_parser( self )
     end
 
+    # @return   [Array<Element::NestedCookie>]
+    #   Nested cookies from {#cookies_to_be_audited}.
+    def nested_cookies
+        return @nested_cookies.freeze if @nested_cookies
+
+        @nested_cookies = NestedCookie.from_cookies( cookies_to_be_audited )
+    end
+
     # @return   [Array<Element::Cookie>]
     #   Cookies to be audited.
     def cookies_to_be_audited

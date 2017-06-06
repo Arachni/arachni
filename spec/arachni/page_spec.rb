@@ -644,13 +644,14 @@ describe Arachni::Page do
 
     describe '#elements' do
         it 'returns all page elements' do
-            expect(page.elements).to eq(page.links | page.forms | page.cookies | page.headers)
+            expect(page.elements).to eq(page.links | page.forms | page.cookies |
+                                            page.nested_cookies | page.headers)
         end
     end
 
     describe '#elements_within_scope' do
         it 'returns all elements that are within scope' do
-            Arachni::Options.audit.elements :links, :forms, :cookies, :headers
+            Arachni::Options.audit.elements :links, :forms, :cookies, :nested_cookies, :headers
 
             elements = page.elements
             element = elements.pop

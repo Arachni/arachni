@@ -5,6 +5,8 @@
 - Options
     - New
         - `--scope-dom-event-inheritance-limit` -- Limits the amount of inherited events.
+- `Element`
+    - Added `NestedCookie`: Handles key-value pairs inside individual cookies.
 - `Browser`
     - `Javascript`
         - `DOMMonitor`

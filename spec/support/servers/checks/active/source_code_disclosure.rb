@@ -3,6 +3,7 @@ require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 def default
     'default.html'
@@ -46,11 +47,13 @@ OUT.keys.each do |language|
 
     get "/#{language}" do
         cookies['cookie'] ||= default
+        cookies['nested_cookie'] ||= "name=#{default}"
 
         <<-EOHTML
             <a href="/#{language}/link">Link</a>
             <a href="/#{language}/form">Form</a>
             <a href="/#{language}/cookie">Cookie</a>
+            <a href="/#{language}/nested_cookie">Nested cookie</a>
             <a href="/#{language}/header">Header</a>
             <a href="/#{language}/link-template">Link template</a>
             <a href="/#{language}/json">JSON</a>
@@ -127,6 +130,19 @@ OUT.keys.each do |language|
 
     get "/#{language}/cookie/straight.#{ext}" do
         get_variations( language, cookies['cookie'] )
+    end
+
+    get "/#{language}/nested_cookie" do
+        <<-EOHTML
+            <a href="/#{language}/nested_cookie/straight.#{ext}">Nested cookie</a>
+        EOHTML
+    end
+
+    get "/#{language}/nested_cookie/straight.#{ext}" do
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if value.start_with?( default )
+
+        get_variations( language, value )
     end
 
     get "/#{language}/header" do

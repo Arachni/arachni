@@ -762,6 +762,7 @@
             <xs:enumeration value="Arachni::Element::Link::DOM"/>
             <xs:enumeration value="Arachni::Element::Cookie" />
             <xs:enumeration value="Arachni::Element::Cookie::DOM" />
+            <xs:enumeration value="Arachni::Element::NestedCookie" />
             <xs:enumeration value="Arachni::Element::Header" />
             <xs:enumeration value="Arachni::Element::LinkTemplate" />
             <xs:enumeration value="Arachni::Element::LinkTemplate::DOM"/>

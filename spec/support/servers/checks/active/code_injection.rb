@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'json'
 require 'sinatra'
 require 'sinatra/contrib'
+require_relative '../check_server'
 
 REGEXP = {
     php:    'print\s([0-9]+)\s?\*\s?([0-9]+);',
@@ -57,6 +58,7 @@ REGEXP.keys.each do |language|
             <a href="/#{language_str}/link?input=default">Link</a>
             <a href="/#{language_str}/form">Form</a>
             <a href="/#{language_str}/cookie">Cookie</a>
+            <a href="/#{language_str}/nested_cookie">Nested cookie</a>
             <a href="/#{language_str}/header">Header</a>
             <a href="/#{language_str}/link-template">Link template</a>
             <a href="/#{language_str}/json">JSON</a>
@@ -118,6 +120,22 @@ REGEXP.keys.each do |language|
         return if cookies['cookie'].start_with?( default )
 
         get_variations( language, cookies['cookie'] )
+    end
+
+    get "/#{language_str}/nested_cookie" do
+        <<-EOHTML
+            <a href="/#{language_str}/nested_cookie/straight">Nested cookie</a>
+        EOHTML
+    end
+
+    get "/#{language_str}/nested_cookie/straight" do
+        default = 'nested cookie value'
+        cookies['nested_cookie'] ||= "name=#{default}"
+
+        value = Arachni::NestedCookie.parse_inputs( cookies['nested_cookie'] )['name'].to_s
+        return if value.start_with?( default )
+
+        get_variations( language, value )
     end
 
     get "/#{language_str}/header" do

@@ -378,9 +378,35 @@ describe Arachni::Parser do
         end
     end
 
+    describe '#nested_cookies' do
+        it 'returns an array of nested cookies' do
+            expect(subject.nested_cookies.size).to eq(2)
+
+            cookies = subject.nested_cookies.sort_by { |cookie| cookie.name }.reverse
+
+            cookie = cookies.pop
+            expect(cookie.action).to eq(@url)
+            expect(cookie.name).to eq('http_equiv_ns_cookie_name')
+            expect(cookie.inputs).to eq({ "name2" => "value2" })
+            expect(cookie.secure?).to be_truthy
+            expect(cookie.http_only?).to be_truthy
+            expect(cookie.method).to eq(:get)
+            expect(cookie.url).to eq(@url)
+
+            cookie = cookies.pop
+            expect(cookie.action).to eq(@url)
+            expect(cookie.name).to eq('ns_cookie')
+            expect(cookie.inputs).to eq({ 'name' => 'value' })
+            expect(cookie.method).to eq(:get)
+            expect(cookie.secure?).to be_falsey
+            expect(cookie.http_only?).to be_falsey
+            expect(cookie.url).to eq(@url)
+        end
+    end
+
     describe '#cookies' do
         it 'returns an array of cookies' do
-            expect(subject.cookies.size).to eq(3)
+            expect(subject.cookies.size).to eq(5)
 
             cookies = subject.cookies.sort_by { |cookie| cookie.name }.reverse
 
@@ -406,6 +432,24 @@ describe Arachni::Parser do
             expect(cookie.secure?).to be_truthy
             expect(cookie.http_only?).to be_truthy
             expect(cookie.method).to eq(:get)
+            expect(cookie.url).to eq(@url)
+
+            cookie = cookies.pop
+            expect(cookie.action).to eq(@url)
+            expect(cookie.name).to eq('http_equiv_ns_cookie_name')
+            expect(cookie.inputs).to eq({ 'http_equiv_ns_cookie_name' => 'name2=value2' })
+            expect(cookie.method).to eq(:get)
+            expect(cookie.secure?).to be_truthy
+            expect(cookie.http_only?).to be_truthy
+            expect(cookie.url).to eq(@url)
+
+            cookie = cookies.pop
+            expect(cookie.action).to eq(@url)
+            expect(cookie.name).to eq('ns_cookie')
+            expect(cookie.inputs).to eq({ 'ns_cookie' => 'name=value' })
+            expect(cookie.method).to eq(:get)
+            expect(cookie.secure?).to be_falsey
+            expect(cookie.http_only?).to be_falsey
             expect(cookie.url).to eq(@url)
         end
     end

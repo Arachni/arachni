@@ -2,7 +2,7 @@ require 'sinatra'
 require 'sinatra/contrib'
 
 def get_variations( str )
-    return if !str
+    return if str.to_s.empty?
 
     cookies['session'] = str
 end
@@ -28,8 +28,6 @@ get '/' do
         #{greet_user}
         <a href="/link?input=default">Link</a>
         <a href="/form">Form</a>
-        <a href="/cookie">Cookie</a>
-        <a href="/header">Header</a>
         <a href="/link-template">Link template</a>
     EOHTML
 end

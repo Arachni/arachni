@@ -83,9 +83,10 @@ class Arachni::Checks::XssTag < Arachni::Check::Base
         {
             name:        'XSS in HTML tag',
             description: %q{Cross-Site Scripting in HTML tag.},
-            elements:    [ Element::Form, Element::Link, Element::Cookie, Element::Header ],
+            elements:    [ Element::Form, Element::Link, Element::Cookie,
+                           Element::NestedCookie, Element::Header ],
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
-            version:     '0.1.11',
+            version:     '0.1.12',
 
             issue:       {
                 name:            %q{Cross-Site Scripting (XSS) in HTML tag},

@@ -8,8 +8,8 @@ describe name_from_filename do
     end
 
     def self.elements
-        [ Element::Form, Element::Link, Element::Cookie, Element::Header,
-          Element::LinkTemplate, Element::JSON, Element::XML ]
+        [ Element::Form, Element::Link, Element::Cookie, Element::NestedCookie,
+          Element::Header, Element::LinkTemplate, Element::JSON, Element::XML ]
     end
 
     def issue_count_per_element_per_platform
@@ -21,7 +21,8 @@ describe name_from_filename do
                 Element::Header       => 4,
                 Element::LinkTemplate => 8,
                 Element::JSON         => 4,
-                Element::XML          => 8
+                Element::XML          => 8,
+                Element::NestedCookie => 8
             },
             perl:    {
                 Element::Form         => 8,
@@ -30,7 +31,8 @@ describe name_from_filename do
                 Element::Header       => 4,
                 Element::LinkTemplate => 8,
                 Element::JSON         => 4,
-                Element::XML          => 8
+                Element::XML          => 8,
+                Element::NestedCookie => 8
             },
             python:  {
                 Element::Form         => 4,
@@ -39,7 +41,8 @@ describe name_from_filename do
                 Element::Header       => 2,
                 Element::LinkTemplate => 4,
                 Element::JSON         => 2,
-                Element::XML          => 4
+                Element::XML          => 4,
+                Element::NestedCookie => 4
             },
             asp:    {
                 Element::Form         => 8,
@@ -48,7 +51,8 @@ describe name_from_filename do
                 Element::Header       => 4,
                 Element::LinkTemplate => 8,
                 Element::JSON         => 4,
-                Element::XML          => 8
+                Element::XML          => 8,
+                Element::NestedCookie => 8
             },
             ruby:    {
                 Element::Form         => 4,
@@ -57,7 +61,8 @@ describe name_from_filename do
                 Element::Header       => 4,
                 Element::LinkTemplate => 4,
                 Element::JSON         => 4,
-                Element::XML          => 8
+                Element::XML          => 8,
+                Element::NestedCookie => 4
             }
         }
     end
