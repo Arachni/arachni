@@ -32,15 +32,6 @@ module Options
         )
     end
 
-    def skip_responses
-        Options::Bool.new( :skip_responses,
-                           description: "Don't include the bodies of the HTTP " +
-                                            'responses of the issues in the report' +
-                                            ' -- will lead to a greatly decreased report file-size.',
-                           default:     false
-        )
-    end
-
     extend self
 end
 end

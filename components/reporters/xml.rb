@@ -181,8 +181,8 @@ class Arachni::Reporters::XML < Arachni::Reporter::Base
             description:  %q{Exports the audit results as an XML (.xml) file.},
             content_type: 'text/xml',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:      '0.3.7',
-            options:      [ Options.outfile( '.xml' ), Options.skip_responses ]
+            version:      '0.3.8',
+            options:      [ Options.outfile( '.xml' ) ]
         }
     end
 

@@ -440,10 +440,7 @@ access unauthorized pages.
             content_type: 'application/zip',
             author:       'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:      '0.4.4',
-            options:      [
-                Options.outfile( '.html.zip' ),
-                Options.skip_responses
-            ]
+            options:      [ Options.outfile( '.html.zip' ) ]
         }
     end
 
