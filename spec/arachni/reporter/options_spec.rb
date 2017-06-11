@@ -31,18 +31,4 @@ describe Arachni::Reporter::Options do
         end
     end
 
-    describe '#skip_responses' do
-        it 'returns a :skip_responses reporter option' do
-            expect(subject.skip_responses.name).to eq(:skip_responses)
-        end
-
-        it "defaults to 'false'" do
-            expect(subject.skip_responses.default).to eq(false)
-        end
-
-        it 'has a description' do
-            expect(subject.skip_responses.description).to be_truthy
-        end
-    end
-
 end
