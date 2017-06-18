@@ -361,14 +361,16 @@ class Client
         fail ArgumentError, 'URL cannot be empty.' if !url
 
         options     = options.dup
-        cookies     = options.delete( :cookies ) || {}
-        raw_cookies = []
+        cookies     = options.delete( :cookies )     || {}
+        raw_cookies = options.delete( :raw_cookies ) || []
+        raw_cookie_names = Set.new( raw_cookies.map(&:name) )
 
         exception_jail false do
             if !options.delete( :no_cookie_jar )
-                raw_cookies = begin
+                raw_cookies |= begin
                     cookie_jar.for_url( url ).reject do |c|
-                        cookies.include? c.name
+                        cookies.include?( c.name ) ||
+                            raw_cookie_names.include?( c.name )
                     end
                 rescue => e
                     print_error "Could not get cookies for URL '#{url}' from Cookiejar (#{e})."

@@ -12,7 +12,7 @@ def parse( value )
 end
 
 def inputs
-    parse( cookies.to_hash.values.first )
+    parse( env['HTTP_COOKIE'].split( '=', 2 ).last )
 end
 
 set :logging, false

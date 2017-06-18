@@ -16,7 +16,7 @@ module Submittable
 
     def submit( options = {}, &block )
         options                   = options.dup
-        options[:parameters]      = { name => value }
+        options[:raw_cookies]     = [self]
         options[:follow_location] = true if !options.include?( :follow_location )
 
         @auditor ||= options.delete( :auditor )

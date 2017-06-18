@@ -299,7 +299,7 @@ describe Arachni::Element::NestedCookie do
 
                 expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
                 expect(c.to_set_cookie).to eq(
-                    'blah%3Dha%25=name%3Dsome+stuff+%3B; Path=/stuff; Domain=.localhost'
+                    'blah%3Dha%25=name=some+stuff+%3B; Path=/stuff; Domain=.localhost'
                 )
             end
         end
@@ -316,7 +316,7 @@ describe Arachni::Element::NestedCookie do
                 )
 
                 expect(c.to_set_cookie).to eq(
-                    'blah%3Dha%25=name%3Dsome+stuff+%3B; Path=/; Secure; HttpOnly'
+                    'blah%3Dha%25=name=some+stuff+%3B; Path=/; Secure; HttpOnly'
                 )
                 expect(described_class.from_set_cookie( url, c.to_set_cookie ).first).to eq(c)
             end
@@ -331,7 +331,7 @@ describe Arachni::Element::NestedCookie do
                     name:  'blah=ha%',
                     value: 'name=some stuff ;',
                 )
-                expect(c.to_s).to eq('blah%3Dha%25=name%3Dsome+stuff+%3B')
+                expect(c.to_s).to eq('blah%3Dha%25=name=some+stuff+%3B')
             end
         end
 
@@ -359,7 +359,7 @@ describe Arachni::Element::NestedCookie do
                         raw_value: 'name=some stuff ;'
                     )
                     expect(c).to receive(:updated?).at_least(:once) { true }
-                    expect(c.to_s).to eq('blah%3Dha%25=name%3Dsome+stuff+%3B')
+                    expect(c.to_s).to eq('blah%3Dha%25=name=some+stuff+%3B')
                 end
             end
         end
@@ -420,14 +420,14 @@ describe Arachni::Element::NestedCookie do
             expect(cookie.expires).to eq(Time.parse( '2020-08-09 16:59:20 +0300' ))
             expect(cookie.name).to eq('name')
             expect(cookie.raw_name).to eq('name')
-            expect(cookie.value).to eq('coo@ki e2=blah val2@')
+            expect(cookie.value).to eq('coo@ki+e2=blah+val2@')
             expect(cookie.raw_value).to eq('coo%40ki+e2=blah+val2%40')
 
             cookie = cookies.shift
             expect(cookie.action).to eq(url)
             expect(cookie.url).to eq(url)
-            expect(cookie.inputs).to eq({ '_superapp_session' => 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==' })
-            expect(cookie.simple).to eq({ '_superapp_session' => 'MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==' })
+            expect(cookie.inputs).to eq({ 'third_name' => 'third_value' })
+            expect(cookie.simple).to eq({ 'third_name' => 'third_value' })
             expect(cookie.domain).to eq('192.168.1.1')
             expect(cookie.path).to eq('/')
             expect(cookie.secure).to eq(false)
@@ -435,8 +435,8 @@ describe Arachni::Element::NestedCookie do
             expect(cookie.expires).to be_nil
             expect(cookie.name).to eq('name')
             expect(cookie.raw_name).to eq('name')
-            expect(cookie.value).to eq('_superapp_session=MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==')
-            expect(cookie.raw_value).to eq('_superapp_session=MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D')
+            expect(cookie.value).to eq('third_name=third_value')
+            expect(cookie.raw_value).to eq('third_name=third_value')
         end
     end
 
@@ -483,7 +483,7 @@ describe Arachni::Element::NestedCookie do
 
                 cookie = cookies.shift
                 expect(cookie.name).to eq('name')
-                expect(cookie.value).to eq('cookie=val 1')
+                expect(cookie.value).to eq('cookie=val+1')
                 expect(cookie.raw_name).to eq('name')
                 expect(cookie.raw_value).to eq('cookie=val+1')
                 expect(cookie.expired?).to eq(false)
@@ -492,7 +492,7 @@ describe Arachni::Element::NestedCookie do
 
                 cookie = cookies.shift
                 expect(cookie.name).to eq('name')
-                expect(cookie.value).to eq('cookie2 1=val2')
+                expect(cookie.value).to eq('cookie2+1=val2')
                 expect(cookie.raw_name).to eq('name')
                 expect(cookie.raw_value).to eq('cookie2+1=val2')
                 expect(cookie.path).to eq('/')
@@ -524,7 +524,7 @@ describe Arachni::Element::NestedCookie do
                     cookies = described_class.from_headers( 'http://test.com', headers )
                     expect(cookies.size).to eq(1)
                     expect(cookies.first.name).to eq('name')
-                    expect(cookies.first.value).to eq('coo@ki e2=blah val2@')
+                    expect(cookies.first.value).to eq('coo@ki+e2=blah+val2@')
                     expect(cookies.first.raw_name).to eq('name')
                     expect(cookies.first.raw_value).to eq('coo%40ki+e2=blah+val2%40')
                 end
@@ -539,30 +539,12 @@ describe Arachni::Element::NestedCookie do
 
     describe '.from_set_cookie' do
         it 'parses the contents of the Set-Cookie header field into cookies' do
-            sc = "SomeCookie=MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D"
-            c1 = described_class.from_set_cookie( 'http://test.com', sc ).first
-
-            expect(c1).to eq(described_class.from_set_cookie( 'http://test.com', sc ).first)
-
-            sc2 = "SomeCookie=\"MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==\""
-            c2 = described_class.from_set_cookie( 'http://test.com', sc2 ).first
-
-            expect(c1).to eq(c2)
-            expect(c1.name).to eq('SomeCookie')
-            expect(c1.value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA==')
-
-            expect(c1.raw_name).to eq('SomeCookie')
-            expect(c1.raw_value).to eq('MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D')
-
-            expect(c2.raw_name).to eq('SomeCookie')
-            expect(c2.raw_value).to eq('"MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA=="')
-
             sc3 = "name=coo%40ki+e2=blah+val2%40; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Path=/stuff; Domain=.foo.com; HttpOnly"
             cookies = described_class.from_set_cookie( 'http://test.com', sc3 )
             expect(cookies.size).to eq(1)
             cookie = cookies.first
             expect(cookie.name).to eq('name')
-            expect(cookie.value).to eq('coo@ki e2=blah val2@')
+            expect(cookie.value).to eq('coo@ki+e2=blah+val2@')
             expect(cookie.raw_name).to eq('name')
             expect(cookie.raw_value).to eq('coo%40ki+e2=blah+val2%40')
             expect(cookie.path).to eq('/stuff')
@@ -575,7 +557,7 @@ describe Arachni::Element::NestedCookie do
                 'name="cookie=blah stuff"'
             ).first
 
-            expect(cookie.value).to eq('cookie=blah stuff')
+            expect(cookie.value).to eq('cookie=blah+stuff')
             expect(cookie.raw_value).to eq('"cookie=blah stuff"')
         end
 
@@ -586,7 +568,7 @@ describe Arachni::Element::NestedCookie do
                 expect(cookies.size).to eq(1)
                 cookie = cookies.first
                 expect(cookie.name).to eq('name')
-                expect(cookie.value).to eq('coo@ki e2=blah val2@')
+                expect(cookie.value).to eq('coo@ki+e2=blah+val2@')
                 expect(cookie.raw_name).to eq('name')
                 expect(cookie.raw_value).to eq('coo%40ki+e2=blah+val2%40')
                 expect(cookie.path).to eq('/')
@@ -674,7 +656,7 @@ describe Arachni::Element::NestedCookie do
 
             c = cookies.shift
             expect(c.name).to eq('name')
-            expect(c.value).to eq('coo@ki e2=blah val2@')
+            expect(c.value).to eq('coo@ki+e2=blah+val2@')
             expect(c.raw_name).to eq('name')
             expect(c.raw_value).to eq('coo%40ki+e2=blah+val2%40')
 
@@ -697,7 +679,7 @@ describe Arachni::Element::NestedCookie do
                 'name="cookie=blah stuff"'
             ).first
 
-            expect(cookie.value).to eq('cookie=blah stuff')
+            expect(cookie.value).to eq('cookie=blah+stuff')
             expect(cookie.raw_value).to eq('"cookie=blah stuff"')
         end
     end

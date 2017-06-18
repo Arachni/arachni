@@ -136,7 +136,7 @@ class NestedCookie < Base
     end
 
     def value
-        self.inputs.map { |n, v| "#{n}=#{v}" }.join( '&' )
+        self.inputs.map { |n, v| "#{encode( n )}=#{encode( v )}" }.join( '&' )
     end
 
     # @return   [String]
@@ -146,7 +146,7 @@ class NestedCookie < Base
         # along the raw data as set in order to deal with server-side decoding
         # quirks.
         if updated? || !(raw_name || raw_value )
-            "#{encode( name )}=#{encode( value )}"
+            "#{encode( name )}=#{value}"
         else
             "#{raw_name}=#{raw_value}"
         end
