@@ -22,4 +22,10 @@ describe name_from_filename do
         run
         expect(issues).to be_empty
     end
+
+    it 'does not log hosts non-200 pages' do
+        options.url = "#{url}/non-200"
+        run
+        expect(issues).to be_empty
+    end
 end

@@ -24,6 +24,8 @@
     - Active
         - `xss` -- Fixed proof data to return HTML.
         - `csrf` -- Disabled for pages with DOM transitions due to FPs.
+    - Passive
+        - `x_frame_options` -- Ignore non-200 pages.
 - Plugins
     - `proxy` -- Fixed error on login sequence recording.
 
