@@ -84,7 +84,7 @@ class Connection < Arachni::Reactor::Connection
                                 url:     sanitize_url( @parser.request_url, headers ),
                                 method:  method,
                                 body:    @body,
-                                headers: headers
+                                headers: Arachni::HTTP::Client.headers.to_h.merge( headers )
                             )
                         )
 
@@ -296,7 +296,7 @@ class Connection < Arachni::Reactor::Connection
             headers.delete name
         end
 
-        headers
+        headers.to_h
     end
 
     def cleanup_response_headers( headers )
