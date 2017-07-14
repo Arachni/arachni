@@ -52,4 +52,21 @@ describe Arachni::OptionGroups::BrowserCluster do
             end
         end
     end
+
+    describe '#session_storage' do
+        context 'when passed a Hash' do
+            it 'sets it' do
+                subject.session_storage = { 1 => 2 }
+                expect(subject.session_storage).to eq({ 1 => 2 })
+            end
+        end
+
+        context 'when passed anything other than Hash' do
+            it 'raises ArgumentError' do
+                expect do
+                    subject.session_storage = 1
+                end.to raise_error ArgumentError
+            end
+        end
+    end
 end

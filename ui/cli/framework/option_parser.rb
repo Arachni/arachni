@@ -584,6 +584,12 @@ class OptionParser < UI::CLI::OptionParser
             options.browser_cluster.local_storage = ::JSON.load( IO.read( file ) )
         end
 
+        on( '--browser-cluster-session-storage FILE',
+            "Sets the browsers' session storage using the JSON data in FILE."
+        ) do |file|
+            options.browser_cluster.session_storage = ::JSON.load( IO.read( file ) )
+        end
+
         on( '--browser-cluster-wait-for-element PATTERN:CSS',
             'Wait for element matching CSS to appear when visiting a page whose' <<
             ' URL matches the PATTERN.'

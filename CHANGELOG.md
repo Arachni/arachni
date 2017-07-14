@@ -5,6 +5,7 @@
 - Options
     - New
         - `--scope-dom-event-inheritance-limit` -- Limits the amount of inherited events.
+        - `--browser-cluster-session-storage` -- Sets the browsers' session storage.
 - `Element`
     - Added `NestedCookie`: Handles key-value pairs inside individual cookies.
 - `Browser`

@@ -1442,19 +1442,32 @@ class Browser
         end
 
         return if set_cookies.empty? &&
-            Arachni::Options.browser_cluster.local_storage.empty?
+            Options.browser_cluster.local_storage.empty? &&
+            Options.browser_cluster.session_storage.empty?
 
         set_cookie = set_cookies.values.map(&:to_set_cookie)
         print_debug_level_2 "Setting cookies: #{set_cookie}"
 
         body = ''
-        if Arachni::Options.browser_cluster.local_storage.any?
-            body = <<EOJS
+        if Options.browser_cluster.local_storage.any?
+            body << <<EOJS
                 <script>
-                    var data = #{Arachni::Options.browser_cluster.local_storage.to_json};
+                    var data = #{Options.browser_cluster.local_storage.to_json};
 
                     for( prop in data ) {
                         localStorage.setItem( prop, data[prop] );
+                    }
+                </script>
+EOJS
+        end
+
+        if Options.browser_cluster.session_storage.any?
+            body << <<EOJS
+                <script>
+                    var data = #{Options.browser_cluster.session_storage.to_json};
+
+                    for( prop in data ) {
+                        sessionStorage.setItem( prop, data[prop] );
                     }
                 </script>
 EOJS
@@ -1559,7 +1572,7 @@ EOJS
         #
         # Still, it's a nice feature to have when requesting assets or anything
         # else.
-        if request.url == @last_url
+        if !@last_url || request.url == @last_url
             request.headers.delete 'If-None-Match'
             request.headers.delete 'If-Modified-Since'
         end
@@ -1614,7 +1627,11 @@ EOJS
 
         # Prevent PhantomJS from caching the root page, we need to have an
         # associated response.
-        if @last_url == response.url
+        #
+        # Also don't cache when we don't have a @last_url because this could
+        # be driven directly from Selenium/Watir via a plugin and caching it
+        # can ruin the scan.
+        if !@last_url || @last_url == response.url
             response.headers.delete 'Cache-control'
             response.headers.delete 'Etag'
             response.headers.delete 'Date'

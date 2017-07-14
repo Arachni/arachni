@@ -2348,6 +2348,52 @@ describe Arachni::Browser do
             expect(subject.response.headers).not_to include 'Content-Security-Policy'
         end
 
+        context 'when there is no page URL' do
+            it 'does not receive a Date header' do
+                subject.watir.goto "#{@url}/Date"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Date'
+            end
+
+            it 'does not receive an Etag header' do
+                subject.watir.goto "#{@url}/Etag"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Etag'
+            end
+
+            it 'does not receive a Cache-Control header' do
+                subject.watir.goto "#{@url}/Cache-Control"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Cache-Control'
+            end
+
+            it 'does not receive a Last-Modified header' do
+                subject.watir.goto "#{@url}/Last-Modified"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.headers).not_to include 'Last-Modified'
+            end
+
+            it 'does not send If-None-Match request headers' do
+                subject.watir.goto "#{@url}/If-None-Match"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.request.headers).not_to include 'If-None-Match'
+
+                subject.watir.goto "#{@url}/If-None-Match"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.request.headers).not_to include 'If-None-Match'
+            end
+
+            it 'does not send If-Modified-Since request headers' do
+                subject.watir.goto "#{@url}/If-Modified-Since"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.request.headers).not_to include 'If-Modified-Since'
+
+                subject.watir.goto "#{@url}/If-Modified-Since"
+                expect(subject.response.code).to eq(200)
+                expect(subject.response.request.headers).not_to include 'If-Modified-Since'
+            end
+        end
+
         context 'when requesting the page URL' do
             it 'does not receive a Date header' do
                 subject.goto "#{@url}/Date"
@@ -2570,6 +2616,19 @@ describe Arachni::Browser do
             it 'sets the data as local storage' do
                 subject.load @url
                 expect( subject.javascript.run( 'return localStorage.getItem( "name" )' ) ).to eq 'value'
+            end
+        end
+
+        context "with #{Arachni::OptionGroups::BrowserCluster}#session_storage" do
+            before do
+                Arachni::Options.browser_cluster.session_storage = {
+                    'name' => 'value'
+                }
+            end
+
+            it 'sets the data as session storage' do
+                subject.load @url
+                expect( subject.javascript.run( 'return sessionStorage.getItem( "name" )' ) ).to eq 'value'
             end
         end
 
