@@ -93,6 +93,7 @@ class URI
                     *[string, good_characters].compact
                 )
                 s.recode!
+                s.gsub!( '+', '%2B' )
                 s
             end
         end
@@ -104,13 +105,8 @@ class URI
         # @return   [String]
         def decode( string )
             CACHE[__method__].fetch( string ) do
-                s = Addressable::URI.unencode( string )
-
-                if s
-                    s.recode!
-                    s.gsub!( '+', ' ' )
-                end
-
+                s = Addressable::URI.unencode( string.gsub( '+', '%20' ) )
+                s.recode! if s
                 s
             end
         end

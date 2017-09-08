@@ -6,6 +6,9 @@
     - New
         - `--scope-dom-event-inheritance-limit` -- Limits the amount of inherited events.
         - `--browser-cluster-session-storage` -- Sets the browsers' session storage.
+- `URI`
+    - `#encode` -- Fixed encoding order of `+`.
+    - `#decode` -- Fixed decoding order of `+`.
 - `Element`
     - Added `NestedCookie`: Handles key-value pairs inside individual cookies.
 - `Browser`
