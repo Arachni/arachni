@@ -81,6 +81,9 @@ Gem::Specification.new do |s|
 
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc',         '~> 0.2.1.4'
+    
+    # Reactor pattern dependency
+    s.add_dependency 'arachni-reactor',     '0.1.2'
 
     # HTTP client.
     s.add_dependency 'typhoeus',            '1.0.2'
