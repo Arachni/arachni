@@ -18,7 +18,7 @@ class Arachni::Checks::BackupFiles < Arachni::Check::Base
         ),
         video: %w(asf rm mpg mpeg mpe 3gp 3g2  avi flv mov mp4 swf vob wmv),
         audio: %w(aif mp3 mpa ra wav wma mid m4a ogg flac),
-        font:  %w(ttf otf woff fon fnt)
+        font:  %w(ttf otf woff woff2 fon fnt)
     }
 
     IGNORE_EXTENSIONS = Set.new( IGNORE_MIME_TYPES.values.flatten )
