@@ -496,3 +496,4 @@ intern
 extern
 /rails/info/properties
 /rails/info/routes
+.git

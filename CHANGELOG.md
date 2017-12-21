@@ -30,6 +30,7 @@
         - `csrf` -- Disabled for pages with DOM transitions due to FPs.
     - Passive
         - `x_frame_options` -- Ignore non-200 pages.
+        - `common_directories` -- Look for `.git`.
 - Plugins
     - `proxy` -- Fixed error on login sequence recording.
 
