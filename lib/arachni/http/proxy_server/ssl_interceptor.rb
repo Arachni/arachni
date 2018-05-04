@@ -58,7 +58,7 @@ class SSLInterceptor < Connection
             cert            = OpenSSL::X509::Certificate.new
             cert.version    = 2
             cert.serial     = rand( 999999 )
-            cert.not_before = Time.new
+            cert.not_before = Time.new - 600
             cert.not_after  = cert.not_before + (60 * 60 * 24 * 365)
             cert.public_key = req.public_key
             cert.subject    = req.subject
