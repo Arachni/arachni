@@ -612,7 +612,7 @@ describe Arachni::HTTP::Client do
         it "fills in #{Arachni::HTTP::Request}#headers_string" do
             host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
             expect(subject.request( @url, mode: :sync ).request.headers_string).to eq(
-                "GET / HTTP/1.1\r\nHost: #{host}\r\nAccept-Encoding: gzip, " +
+                "GET / HTTP/1.1\r\nHost: #{host}\r\nAuthorization: Basic Og==\r\nAccept-Encoding: gzip, " +
                     "deflate\r\nUser-Agent: Arachni/v#{Arachni::VERSION}\r\nAccept: text/html," +
                     "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n" +
                     "Accept-Language: en-US,en;q=0.8,he;q=0.6\r\n" +
@@ -803,21 +803,21 @@ describe Arachni::HTTP::Client do
                                          response_max_size: 0
                         )
 
-                        expect(r.headers).not_to include 'Content-Type'
+                        expect(r.headers['Content-Type']).to be_empty
                         expect(r.body).to be_empty
 
                         r = subject.request( @url + '/http_response_max_size/without_content_length',
                                          mode: :sync,
                                          response_max_size: 1
                         )
-                        expect(r.headers).not_to include 'Content-Type'
+                        expect(r.headers['Content-Type']).to be_empty
                         expect(r.body).to be_empty
 
                         r = subject.request( @url + '/http_response_max_size/without_content_length',
                                          mode: :sync,
                                          response_max_size: 999999
                         )
-                        expect(r.headers).not_to include 'Content-Type'
+                        expect(r.headers['Content-Type']).to be_empty
                         expect(r.body).to be_empty
 
                         r = subject.request( @url + '/http_response_max_size/without_content_length',
@@ -825,7 +825,7 @@ describe Arachni::HTTP::Client do
                                          response_max_size: 1000000
                         )
 
-                        expect(r.headers).not_to include 'Content-Type'
+                        expect(r.headers['Content-Type']).to be_empty
                         expect(r.body).not_to be_empty
                     end
                 end

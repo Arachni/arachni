@@ -1440,15 +1440,15 @@ describe Arachni::Browser do
                 Arachni::Options.url = @url
                 subject.load @url
 
-                subject.javascript.run( 'window.location = "http://google.com/";' )
+                subject.javascript.run( 'window.location = "http://www.google.com/";' )
                 sleep 1
 
                 page = subject.to_page
 
                 expect(page.code).to eq(0)
-                expect(page.url).to  eq('http://google.com/')
+                expect(page.url).to  eq('http://www.google.com/')
                 expect(page.body).to be_empty
-                expect(page.dom.url).to eq('http://google.com/')
+                expect(page.dom.url).to eq('http://www.google.com/')
             end
         end
     end

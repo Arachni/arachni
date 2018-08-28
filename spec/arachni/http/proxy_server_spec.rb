@@ -202,6 +202,7 @@ describe Arachni::HTTP::ProxyServer do
 
                 expect(request.headers_string.split( "\r\n" ).sort).to eq(
                     ("POST / HTTP/1.1\r\n" <<
+                    "Authorization: Basic Og==\r\n" <<
                     "Host: #{request.parsed_url.host}:#{request.parsed_url.port}\r\n" <<
                     "Accept-Encoding: gzip, deflate\r\n" <<
                     "User-Agent: Typhoeus - https://github.com/typhoeus/typhoeus\r\n" <<

@@ -1,4 +1,5 @@
 require 'sinatra'
+require 'yaml'
 
 get '/' do
     <<-EOHTML
