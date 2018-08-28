@@ -55,6 +55,7 @@ class SAX < Ox::Sax
     end
 
     def text( value )
+        return if value.strip.empty?
         @current_node << Nodes::Text.new( value )
     end
 
