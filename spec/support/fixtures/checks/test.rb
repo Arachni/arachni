@@ -21,7 +21,7 @@ class Arachni::Checks::Test < Arachni::Check::Base
 
     def clean_up
         return if !@ran
-        log_issue( vector: vector )
+        log( vector: vector )
     end
 
     def vector
@@ -36,7 +36,7 @@ class Arachni::Checks::Test < Arachni::Check::Base
         {
             name:        'Test check',
             description: %q{Test description},
-            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com> ',
+            author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
             version:     '0.1',
 
             issue:       {
@@ -48,7 +48,7 @@ class Arachni::Checks::Test < Arachni::Check::Base
                 tags:            ['some', 'tag'],
                 cwe:             '0',
                 severity:        Issue::Severity::HIGH,
-                remedy_guidance: %q{Watch out!.},
+                remedy_guidance: %q{Watch out!},
                 remedy_code:     ''
             }
 
