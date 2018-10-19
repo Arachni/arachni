@@ -22,7 +22,7 @@
     </tr>
     <tr>
         <th>Code Documentation</th>
-        <td><a href="http://rubydoc.info/github/Arachni/arachni">http://rubydoc.info/github/Arachni/arachni</a></td>
+        <td><a href="https://www.rubydoc.info/github/Arachni/arachni">https://www.rubydoc.info/github/Arachni/arachni</a></td>
     </tr>
     <tr>
         <th>Support</th>
@@ -42,7 +42,7 @@
     </tr>
     <tr>
         <th>License</th>
-        <td>Arachni Public Source License v1.0 - (see LICENSE file)</td>
+        <td><a href="https://github.com/Arachni/arachni/blob/master/LICENSE.md">Arachni Public Source License v1.0</a></td>
     </tr>
 </table>
 
@@ -144,7 +144,7 @@ In addition to the monitoring of the vanilla DOM and JavaScript environments,
 Arachni's browsers also hook into popular frameworks to make the logged data
 easier to digest:
 
-- [JQuery](http://jquery.com/)
+- [JQuery](https://jquery.com/)
 - [AngularJS](https://angularjs.org/)
 - More to come...
 
@@ -615,7 +615,7 @@ necessity to test the Grid/multi-Instance features of the system.
 
 ## Bug reports/Feature requests
 
-Submit bugs using [GitHub Issues](http://github.com/Arachni/arachni/issues) and
+Submit bugs using [GitHub Issues](https://github.com/Arachni/arachni/issues) and
 get support via the [Support Portal](http://support.arachni-scanner.com).
 
 ## Contributing
@@ -637,4 +637,4 @@ need to follow in order to contribute code:
 
 ## License
 
-Arachni Public Source License v1.0 -- please see the _LICENSE_ file for more information.
+[Arachni Public Source License v1.0](LICENSE.md)
