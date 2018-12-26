@@ -51,7 +51,7 @@ Arachni discovered that the affected page returned a RFC 1918 compliant private
 IP address and therefore could be revealing sensitive information.
 
 _This finding typically requires manual verification to ensure the context is
-correct, as any private IP address within the HTML body will trigger it.
+correct, as any private IP address within the HTML body will trigger it._
 },
                 references: {
                     'WebAppSec' => 'http://projects.webappsec.org/w/page/13246936/Information%20Leakage'
