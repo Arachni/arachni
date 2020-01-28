@@ -1,3 +1,7 @@
+# Archived
+
+This project is no longer maintained, for details please read: https://www.arachni-scanner.com/blog/arachni-is-no-longer-maintained/?preview=true
+
 # Arachni - Web Application Security Scanner Framework
 
 <table>
