@@ -43,22 +43,22 @@ describe Arachni::Browser::Javascript::DOMMonitor do
         expect(javascript.run( "return document.getElementById('my-button')._arachni_events")).to eq([
             [
                 'click',
-                'function (my_button_click) {}'
+                'function( my_button_click ){}'
             ],
             [
                 'click',
-                'function (my_button_click2) {}'
+                'function( my_button_click2 ){}'
             ],
             [
                 'onmouseover',
-                'function (my_button_onmouseover) {}'
+                'function( my_button_onmouseover ){}'
             ]
         ])
 
         expect(javascript.run( "return document.getElementById('my-button2')._arachni_events")).to eq([
             [
                 'click',
-                'function (my_button2_click) {}'
+                'function( my_button2_click ){}'
             ]
         ])
 
@@ -107,15 +107,15 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
             expect(subject.timeouts).to eq([
                 [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
+                    "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
                     1000, 'timeout1', 1000
                 ],
                 [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
+                    "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
                     1500, 'timeout2', 1500
                 ],
                 [
-                    "function (name, value) {\n            document.cookie = name + \"=post-\" + value;\n        }",
+                    "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
                     2000, 'timeout3', 2000
                 ]
             ])
@@ -140,7 +140,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                     'tag_name' => 'button',
                     'events' => {
                         'click' =>  [
-                            'function (my_button_click) {}',
+                            'function( my_button_click ){}',
                             'handler_1()'
                         ]
                     },
@@ -162,10 +162,10 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                         'events'     =>
                             {
                                 'click' => [
-                                    'function (parent_click) {}',
-                                    'function (child_click) {}',
-                                    'function (window_click) {}',
-                                    'function (document_click) {}'
+                                    'function( parent_click ){}',
+                                    'function( child_click ){}',
+                                    'function( window_click ){}',
+                                    'function( document_click ){}'
                                 ]
                             },
                         'attributes' => { 'id' => 'child-span' }
@@ -183,7 +183,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                         "tag_name"   => "button",
                         "events"     => {
                             "click"=> [
-                                "function (e) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
+                                "function( e ) {\n\t\t\t\t// Discard the second event of a jQuery.event.trigger() and\n\t\t\t\t// when an event is called after a page has unloaded\n\t\t\t\treturn typeof jQuery !== core_strundefined && (!e || jQuery.event.triggered !== e.type) ?\n\t\t\t\t\tjQuery.event.dispatch.apply( eventHandle.elem, arguments ) :\n\t\t\t\t\tundefined;\n\t\t\t}"
                             ]
                         },
                         "attributes" => {
@@ -234,17 +234,17 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                             'tag_name'   => 'button',
                             'events'     => {
                                 'click' => [
-                                    'function (my_button_click) {}',
-                                    'function (my_button_click2) {}'
+                                    'function( my_button_click ){}',
+                                    'function( my_button_click2 ){}'
                                 ],
-                                'mouseover' => ['function (my_button_onmouseover) {}']
+                                'mouseover' => ['function( my_button_onmouseover ){}']
                             },
                             'attributes' => { 'id' => 'my-button' }
                         },
                         {
                             'tag_name'   => 'button',
                             'events'     => {
-                                'click' => ['function (my_button2_click) {}']
+                                'click' => ['function( my_button2_click ){}']
                             },
                             'attributes' => { 'id' => 'my-button2' }
                         }
@@ -261,7 +261,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                            "tag_name"   => "div",
                            "events"     => {
                                "click" => [
-                                   "function (parent_click) {}"
+                                   "function( parent_click ){}"
                                ]
                            },
                            "attributes" => { "id" => "parent" } },
@@ -269,9 +269,9 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                            "tag_name"   => "button",
                            "events"     => {
                                "click" => [
-                                   "function (parent_click) {}",
-                                   "function (window_click) {}",
-                                   "function (document_click) {}"
+                                   "function( parent_click ){}",
+                                   "function( window_click ){}",
+                                   "function( document_click ){}"
                                ]
                            },
                            "attributes" => { "id" => "parent-button" }
@@ -279,7 +279,7 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                         {
                            "tag_name"   => "div",
                            "events"     => {
-                               "click" => ["function (child_click) {}"]
+                               "click" => ["function( child_click ){}"]
                            },
                            "attributes" => { "id" => "child" }
                         },
@@ -287,10 +287,10 @@ describe Arachni::Browser::Javascript::DOMMonitor do
                            "tag_name"   => "button",
                            "events"     => {
                                "click" => [
-                                   "function (parent_click) {}",
-                                   "function (child_click) {}",
-                                   "function (window_click) {}",
-                                   "function (document_click) {}"
+                                   "function( parent_click ){}",
+                                   "function( child_click ){}",
+                                   "function( window_click ){}",
+                                   "function( document_click ){}"
                                ]
                            },
                            "attributes" => { "id" => "child-button" }

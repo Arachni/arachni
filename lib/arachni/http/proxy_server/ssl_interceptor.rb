@@ -16,6 +16,7 @@ class SSLInterceptor < Connection
 
     include TLS
 
+    CA_PASSPHRASE = 'interceptor'
     CA_CERTIFICATE = File.dirname( __FILE__ ) + '/ssl-interceptor-cacert.pem'
     CA_KEY         = File.dirname( __FILE__ ) + '/ssl-interceptor-cakey.pem'
 
@@ -43,9 +44,9 @@ class SSLInterceptor < Connection
 
         if @role == :server
             ca     = OpenSSL::X509::Certificate.new( File.read( CA_CERTIFICATE ) )
-            ca_key = OpenSSL::PKey::RSA.new( File.read( CA_KEY ) )
+            ca_key = OpenSSL::PKey::RSA.new( File.read( CA_KEY ), CA_PASSPHRASE )
 
-            keypair = OpenSSL::PKey::RSA.new( 1024 )
+            keypair = OpenSSL::PKey::RSA.new( 2048 )
 
             req            = OpenSSL::X509::Request.new
             req.version    = 0
@@ -53,7 +54,7 @@ class SSLInterceptor < Connection
                 "CN=#{@origin_host}/subjectAltName=#{@origin_host}/O=Arachni/OU=Proxy/L=Athens/ST=Attika/C=GR"
             )
             req.public_key = keypair.public_key
-            req.sign( keypair, OpenSSL::Digest::SHA1.new )
+            req.sign( keypair, OpenSSL::Digest::SHA256.new )
 
             cert            = OpenSSL::X509::Certificate.new
             cert.version    = 2
@@ -78,7 +79,7 @@ class SSLInterceptor < Connection
                                      true
                 )
             ]
-            cert.sign( ca_key, OpenSSL::Digest::SHA1.new )
+            cert.sign( ca_key, OpenSSL::Digest::SHA256.new )
 
             @ssl_context = OpenSSL::SSL::SSLContext.new
             @ssl_context.cert = cert

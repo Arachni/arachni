@@ -54,13 +54,13 @@ class BrowserCluster < Arachni::OptionGroup
         local_storage:       {},
         session_storage:     {},
         wait_for_elements:   {},
-        pool_size:           6,
+        pool_size:           4,
         # Not actually a timeout for the job anymore, sets a timeout for Selenium
         # communication HTTP requests.
         # Name hijacked for compatibility, but should probably change in the
         # future.
-        job_timeout:         10,
-        worker_time_to_live: 100,
+        job_timeout:         60,
+        worker_time_to_live: 250,
         ignore_images:       false,
         screen_width:        1600,
         screen_height:       1200

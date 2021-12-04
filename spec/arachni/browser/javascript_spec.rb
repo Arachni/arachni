@@ -166,10 +166,10 @@ describe Arachni::Browser::Javascript do
                      'events'     =>
                          {
                              click: [
-                                 'function (parent_click) {}',
-                                 'function (child_click) {}',
-                                 'function (window_click) {}',
-                                 'function (document_click) {}'
+                                 'function( parent_click ){}',
+                                 'function( child_click ){}',
+                                 'function( window_click ){}',
+                                 'function( document_click ){}'
                              ]
                          },
                      'attributes' => { 'id' => 'child-span' }
@@ -239,14 +239,14 @@ describe Arachni::Browser::Javascript do
                     {
                         'tag_name'   => 'button',
                         'events'     => {
-                            click: ['function (my_button_click) {}', 'function (my_button_click2) {}'],
-                            mouseover: ['function (my_button_onmouseover) {}']
+                            click: ['function( my_button_click ){}', 'function( my_button_click2 ){}'],
+                            mouseover: ['function( my_button_onmouseover ){}']
                         },
                         'attributes' => { 'id' => 'my-button' } },
                     {
                         'tag_name'   => 'button',
                         'events'     => {
-                            click: ['function (my_button2_click) {}']
+                            click: ['function( my_button2_click ){}']
                         },
                         'attributes' => { 'id' => 'my-button2' } }
                 ])

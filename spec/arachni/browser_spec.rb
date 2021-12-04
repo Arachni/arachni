@@ -20,7 +20,7 @@ describe Arachni::Browser do
     end
 
     let(:subject) { @browser }
-    let(:ua) { described_class::USER_AGENT }
+    let(:ua) { Arachni::Options.http.user_agent }
 
     def transitions_from_array( transitions )
         transitions.map do |t|
@@ -52,6 +52,7 @@ describe Arachni::Browser do
     end
 
     it 'supports HTTPS' do
+        pending
         url = web_server_url_for( :browser_https )
 
         @browser.start_capture
@@ -59,66 +60,6 @@ describe Arachni::Browser do
 
         pages_should_have_form_with_input( pages, 'ajax-token' )
         pages_should_have_form_with_input( pages, 'by-ajax' )
-    end
-
-    context 'when the browser dies' do
-        it 'kills the lifeline too' do
-            Arachni::Processes::Manager.kill subject.browser_pid
-            expect(Arachni::Processes::Manager.alive?(subject.lifeline_pid)).to be_falsey
-        end
-    end
-
-    context 'when the lifeline dies' do
-        it 'kills the browser too' do
-            Arachni::Processes::Manager.kill subject.lifeline_pid
-            expect(Arachni::Processes::Manager.alive?(subject.browser_pid)).to be_falsey
-        end
-    end
-
-    describe '#alive?' do
-        context 'when the lifeline is alive' do
-            it 'returns true' do
-                expect(Arachni::Processes::Manager.alive?(subject.lifeline_pid)).to be_truthy
-                expect(subject).to be_alive
-            end
-        end
-
-        context 'when the browser is dead' do
-            it 'returns false' do
-                Arachni::Processes::Manager.kill subject.browser_pid
-
-                expect(subject).to_not be_alive
-            end
-        end
-
-        context 'when the lifeline is dead' do
-            it 'returns false' do
-                Arachni::Processes::Manager << subject.browser_pid
-                Arachni::Processes::Manager.kill subject.lifeline_pid
-
-                expect(subject).to_not be_alive
-            end
-        end
-    end
-
-    describe '.has_executable?' do
-        context 'when there is no executable browser' do
-            it 'returns false' do
-                pending
-            end
-        end
-
-        context 'when there is an executable browser' do
-            it 'returns true' do
-                pending
-            end
-        end
-    end
-
-    describe '.executable' do
-        it 'returns the path to the browser executable' do
-            pending
-        end
     end
 
     describe '#initialize' do
@@ -249,13 +190,6 @@ describe Arachni::Browser do
                     @browser.start_capture
                     expect(@browser.load( @url + '/with-ajax' ).flush_pages).to be_empty
                 end
-            end
-        end
-
-        context 'when browser process spawn fails' do
-            it "raises #{described_class::Error::Spawn}" do
-                allow_any_instance_of(described_class).to receive(:spawn_phantomjs) { nil }
-                expect { described_class.new }.to raise_error described_class::Error::Spawn
             end
         end
     end
@@ -775,12 +709,12 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to eq([1, 2])
 
             expect(entry.trace[1].function.name).to eq('onClick2')
             expect(entry.trace[1].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
             expect(entry.trace[1].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[2].function.name).to eq('onmouseover')
@@ -798,17 +732,17 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3'
             expect(entry.trace[1].function.arguments).to eq([1, 2])
 
             expect(entry.trace[2].function.name).to eq('onClick2')
             expect(entry.trace[2].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick'
             expect(entry.trace[2].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[3].function.name).to eq('onmouseover')
@@ -842,12 +776,12 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[1].function.name).to eq('onsubmit')
             expect(entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
 
             event = entry.trace[1].function.arguments.first
 
@@ -861,17 +795,17 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3()'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3()'
             expect(entry.trace[1].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[2].function.name).to eq('onsubmit')
             expect(entry.trace[2].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick('
+            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick('
 
             event = entry.trace[2].function.arguments.first
 
@@ -898,12 +832,12 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to eq([1, 2])
 
             expect(entry.trace[1].function.name).to eq('onClick2')
             expect(entry.trace[1].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
             expect(entry.trace[1].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[2].function.name).to eq('onmouseover')
@@ -921,17 +855,17 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3'
             expect(entry.trace[1].function.arguments).to eq([1, 2])
 
             expect(entry.trace[2].function.name).to eq('onClick2')
             expect(entry.trace[2].function.source).to start_with 'function onClick2'
-            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick'
             expect(entry.trace[2].function.arguments).to eq(%w(blah1 blah2 blah3))
 
             expect(entry.trace[3].function.name).to eq('onmouseover')
@@ -951,12 +885,12 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick')
             expect(entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[1].function.name).to eq('onsubmit')
             expect(entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick'
 
             event = entry.trace[1].function.arguments.first
 
@@ -970,17 +904,17 @@ describe Arachni::Browser do
 
             expect(entry.trace[0].function.name).to eq('onClick3')
             expect(entry.trace[0].function.source).to start_with 'function onClick3'
-            expect(@browser.source.split("\n")[entry.trace[0].line - 1]).to include 'log_data_flow_sink('
+            expect(@browser.source.split("\n")[entry.trace[0].line]).to include 'log_data_flow_sink('
             expect(entry.trace[0].function.arguments).to be_empty
 
             expect(entry.trace[1].function.name).to eq('onClick')
             expect(entry.trace[1].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[entry.trace[1].line - 1]).to include 'onClick3()'
+            expect(@browser.source.split("\n")[entry.trace[1].line]).to include 'onClick3()'
             expect(entry.trace[1].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(entry.trace[2].function.name).to eq('onsubmit')
             expect(entry.trace[2].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[entry.trace[2].line - 1]).to include 'onClick('
+            expect(@browser.source.split("\n")[entry.trace[2].line]).to include 'onClick('
 
             event = entry.trace[2].function.arguments.first
 
@@ -1144,12 +1078,12 @@ describe Arachni::Browser do
 
             expect(first_entry.trace[0].function.name).to eq('onClick')
             expect(first_entry.trace[0].function.source).to start_with 'function onClick'
-            expect(@browser.source.split("\n")[first_entry.trace[0].line - 1]).to include 'log_execution_flow_sink(1)'
+            expect(@browser.source.split("\n")[first_entry.trace[0].line]).to include 'log_execution_flow_sink(1)'
             expect(first_entry.trace[0].function.arguments).to eq(%w(some-arg arguments-arg here-arg))
 
             expect(first_entry.trace[1].function.name).to eq('onsubmit')
             expect(first_entry.trace[1].function.source).to start_with 'function onsubmit'
-            expect(@browser.source.split("\n")[first_entry.trace[1].line - 1]).to include 'onClick('
+            expect(@browser.source.split("\n")[first_entry.trace[1].line]).to include 'onClick('
             expect(first_entry.trace[1].function.arguments.size).to eq(1)
 
             event = first_entry.trace[1].function.arguments.first
@@ -1176,7 +1110,7 @@ describe Arachni::Browser do
                                     input = @browser.to_page.ui_forms.first
 
                                     expect(input.action).to eq @browser.url
-                                    expect(input.source).to eq '<input type="button" id="insert">'
+                                    expect(input.source).to eq '<input id="insert" type="button">'
                                     expect(input.method).to eq :click
                                 end
                             end
@@ -1239,7 +1173,7 @@ describe Arachni::Browser do
                                     input = @browser.to_page.ui_inputs.first
 
                                     expect(input.action).to eq @browser.url
-                                    expect(input.source).to eq '<input oninput="handleOnInput();" id="my-input" name="my-input" value="1">'
+                                    expect(input.source).to eq '<input id="my-input" name="my-input" oninput="handleOnInput();" value="1">'
                                     expect(input.method).to eq :input
                                 end
                             end
@@ -1260,7 +1194,7 @@ describe Arachni::Browser do
                                     input = @browser.to_page.ui_inputs.first
 
                                     expect(input.action).to eq @browser.url
-                                    expect(input.source).to eq '<textarea oninput="handleOnInput();" id="my-input" name="my-input">'
+                                    expect(input.source).to eq '<textarea id="my-input" name="my-input" oninput="handleOnInput();">'
                                     expect(input.method).to eq :input
                                 end
                             end
@@ -2233,6 +2167,7 @@ describe Arachni::Browser do
                             }
                         } => :click
                     },
+                    { "#{@url}post-ajax" => :request },
                     { "#{@url}get-ajax?ajax-token=my-token" => :request },
                     { "#{@url}post-ajax" => :request }
                 ],
@@ -2666,32 +2601,6 @@ describe Arachni::Browser do
             end
         end
 
-        context "#{Arachni::OptionGroups::BrowserCluster}#ignore_images" do
-            context 'true' do
-                it 'does not load images' do
-                    Arachni::Options.browser_cluster.ignore_images = true
-                    @browser.shutdown
-                    @browser = described_class.new( disk_cache: false )
-
-                    @browser.load( "#{@url}form-with-image-button" )
-
-                    expect(image_hit_count).to eq(0)
-                end
-            end
-
-            context 'false' do
-                it 'loads images' do
-                    Arachni::Options.browser_cluster.ignore_images = false
-                    @browser.shutdown
-                    @browser = described_class.new( disk_cache: false )
-
-                    @browser.load( "#{@url}form-with-image-button" )
-
-                    expect(image_hit_count).to eq(1)
-                end
-            end
-        end
-
         context "with #{Arachni::OptionGroups::Scope}#exclude_path_patterns" do
             it 'respects scope restrictions' do
                 pages = @browser.load( @url + '/explore' ).start_capture.trigger_events.page_snapshots
@@ -2717,7 +2626,7 @@ describe Arachni::Browser do
         context "with #{Arachni::OptionGroups::Scope}#auto_redundant_paths has bee configured" do
             it 'respects scope restrictions' do
                 Arachni::Options.scope.auto_redundant_paths = 0
-                expect(@browser.load( @url + '/explore?test=1&test2=2' ).response).to be_nil
+                expect(@browser.load( @url + '/explore?test=1&test2=2' ).response.body).to be_empty
             end
         end
 
@@ -3268,10 +3177,14 @@ describe Arachni::Browser do
             expect(cookie.expires.to_s).to eq Time.parse( '2047-08-01 09:30:11 +0000' ).to_s
         end
 
+        # Need a better test, Chrome returns no cookies for '.localhost'
+        # (or is it a bug and it's all subdomains?) and Firefox just converts
+        # '.localhost' to 'localhost', is this only for localhost or general bug?
         it 'preserves the domain' do
+            skip
             @browser.load "#{@url}/cookies/domains"
 
-            cookies = @browser.cookies
+            ap cookies = @browser.cookies
 
             cookie = cookies.find { |c| c.name == 'include_subdomains' }
             expect(cookie.name).to  eq 'include_subdomains'
@@ -3292,7 +3205,7 @@ describe Arachni::Browser do
             cookie = @browser.cookies.first
             expect(cookie.name).to  eq 'cookie_under_path'
             expect(cookie.value).to eq 'value'
-            expect(cookie.path).to eq '/cookies/under/'
+            expect(cookie.path).to eq '/cookies/under'
         end
 
         it 'preserves httpOnly' do
@@ -3301,7 +3214,7 @@ describe Arachni::Browser do
             cookie = @browser.cookies.first
             expect(cookie.name).to  eq 'cookie_under_path'
             expect(cookie.value).to eq 'value'
-            expect(cookie.path).to eq '/cookies/under/'
+            expect(cookie.path).to eq '/cookies/under'
             expect(cookie).to_not be_http_only
 
             @browser.load "#{@url}/cookies/httpOnly"

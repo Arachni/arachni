@@ -258,7 +258,7 @@ class Framework
 
             # Only accept the empty/toggle-screen command when the command
             # screen is not shown.
-            return if !command_screen_shown? && !command.empty?
+            next if !command_screen_shown? && !command.empty?
 
             case command
 

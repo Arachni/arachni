@@ -166,6 +166,7 @@ class Javascript
         end
 
         t = Time.now
+
         while !ready?
             sleep 0.1
 

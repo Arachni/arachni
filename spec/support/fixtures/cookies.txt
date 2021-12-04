@@ -5,7 +5,7 @@
 another-domain.com	FALSE	/	FALSE	second_name	second_value
 
 # with expiry date as seconds since epoch
-.blah-domain	TRUE	/	FALSE	1596981560	coo%40ki+e2	blah+val2%40
+.blah-domain	TRUE	/	FALSE	2596981560	coo%40ki+e2	blah+val2%40
 
 # with expiry date of 0
 192.168.1.1	FALSE	/	FALSE	0	_superapp_session	MzE4OjEzNzU0Mzc0OTc4NDI6MmY3YzkxMTkwZDE5MTRmNjBlYjY4OGQ5ZjczMTU1ZTQzNGM2Y2IwNA%3D%3D

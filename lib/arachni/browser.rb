@@ -9,6 +9,7 @@
 require 'childprocess'
 require 'watir'
 require_relative 'selenium/webdriver/element'
+require_relative 'selenium/webdriver/remote/typhoeus'
 require_relative 'processes/manager'
 require_relative 'browser/element_locator'
 require_relative 'browser/javascript'
@@ -85,12 +86,6 @@ class Browser
         /src\s*=\s*['"]?(.*?)?['"]?[\s>]/i,
     ]
 
-    # Unfortunately, we can't expose the HTTP user-agent for client-side
-    # stuff, because Selenium needs to know that we're using a Webkit-based
-    # browser in order to use the right JS code to trigger events etc.
-    USER_AGENT = 'Mozilla/5.0 AppleWebKit/538.1 (KHTML, like Gecko) ' <<
-        "Arachni/#{Arachni::VERSION} Safari/538.1"
-
     # @return   [Array<Page::DOM::Transition>]
     attr_reader :transitions
 
@@ -129,14 +124,6 @@ class Browser
     # @see #skip_state?
     attr_reader :skip_states
 
-    # @return   [Integer]
-    #   PID of the lifeline process managing the browser process.
-    attr_reader :lifeline_pid
-
-    # @return   [Integer]
-    #   PID of the browser process.
-    attr_reader :browser_pid
-
     attr_reader :last_url
 
     class <<self
@@ -154,10 +141,9 @@ class Browser
         #   Path to the PhantomJS executable.
         def executable
             @path ||= begin
-                path = Selenium::WebDriver::Platform.find_binary('phantomjs')
-                raise Error::MissingExecutable, 'PhantomJS could not be found in PATH.' unless path
+                path = Selenium::WebDriver::Platform.find_binary('google-chrome')
+                raise Error::MissingExecutable, 'Chrome could not be found in PATH.' unless path
                 Selenium::WebDriver::Platform.assert_executable path
-
                 path
             end
         end
@@ -364,7 +350,7 @@ class Browser
                     ).until { @selenium.find_element( :css, css ) }
 
                     print_info "#{css.inspect} appeared for: #{url}"
-                rescue Selenium::WebDriver::Error::TimeOutError
+                rescue Selenium::WebDriver::Error::TimeoutError
                     print_bad "#{css.inspect} did not appear for: #{url}"
                 end
 
@@ -396,26 +382,30 @@ class Browser
     def shutdown
         print_debug 'Shutting down...'
 
-        print_debug_level_2 'Killing process.'
-        if @kill_process
-            begin
-                @kill_process.close
-            rescue => e
-                print_debug_exception e
+        if @selenium
+            print_debug_level_2 'Quiting Selenium...'
+            # So freaking hacky but @selenium.quit freezes for some reason.
+            @selenium.instance_eval do
+                bridge.quit
+
+                @service.instance_eval do
+                    Processes::Manager.kill @process.pid
+                end
             end
+
+            print_debug_level_2 '...done.'
         end
 
-        print_debug_level_2 'Shutting down proxy...'
-        @proxy.shutdown rescue Reactor::Error::NotRunning
-        print_debug_level_2 '...done.'
+        if @proxy
+            print_debug_level_2 'Shutting down proxy...'
+            @proxy.shutdown rescue Reactor::Error::NotRunning
+            print_debug_level_2 '...done.'
+        end
 
-        @proxy        = nil
-        @kill_process = nil
-        @watir        = nil
-        @selenium     = nil
-        @lifeline_pid = nil
-        @browser_pid  = nil
-        @browser_url  = nil
+        @proxy       = nil
+        @watir       = nil
+        @selenium    = nil
+        @browser_url = nil
 
         print_debug '...shutdown complete.'
     end
@@ -1059,7 +1049,6 @@ class Browser
     end
 
     def load_delay
-        #(intervals + timeouts).map { |t| t[1] }.max
         @javascript.timeouts.compact.map { |t| t[1].to_i }.max
     end
 
@@ -1120,25 +1109,31 @@ class Browser
     def selenium
         return @selenium if @selenium
 
-        # For some weird reason the Typhoeus client is very slow for
-        # PhantomJS 2.1.1 and causes a boatload of time-outs.
-        client = Selenium::WebDriver::Remote::Http::Default.new
-        client.open_timeout = Options.browser_cluster.job_timeout
-        client.read_timeout = Options.browser_cluster.job_timeout
+        start_proxy
 
-        @selenium = Selenium::WebDriver.for(
-            :remote,
+        proxy_uri = URI( @proxy.url )
 
-            # We need to spawn our own PhantomJS process because Selenium's
-            # way sometimes gives us zombies.
-            url:                  spawn_browser,
-            desired_capabilities: capabilities,
-            http_client:          client
+        @selenium = Selenium::WebDriver::Chrome::Driver.new(
+            capabilities: Selenium::WebDriver::Chrome::Options.new(
+                emulation: {
+                    userAgent: Arachni::Options.http.user_agent
+                },
+                args: [
+                        "--headless",
+                        "--proxy-server=#{proxy_uri.host}:#{proxy_uri.port}",
+                        '--allow-running-insecure-content',
+                        '--disable-web-security',
+                        '--reduce-security-for-testing',
+                        '--ignore-certificate-errors'
+                ]
+            ),
+            http_client: Selenium::WebDriver::Remote::Http::Typhoeus.new
         )
     end
 
     def alive?
-        @lifeline_pid && Processes::Manager.alive?( @lifeline_pid )
+        # @lifeline_pid && Processes::Manager.alive?( @lifeline_pid )
+        true
     end
 
     def inspect
@@ -1233,106 +1228,106 @@ class Browser
         Options.input.value_for_name( name )
     end
 
-    def spawn_browser
-        if !spawn_phantomjs
-            fail Error::Spawn, 'Could not start the browser process.'
-        end
-
-        @browser_url
-    end
-
-    def spawn_phantomjs
-        return @browser_url if @browser_url
-
-        print_debug 'Spawning PhantomJS...'
-
-        ChildProcess.posix_spawn = true
-
-        port   = nil
-        output = ''
-
-        10.times do |i|
-            # Clear output of previous attempt.
-            output = ''
-            done   = false
-            port   = Utilities.available_port
-
-            start_proxy
-
-            print_debug_level_2 "Attempt ##{i}, chose port number #{port}"
-
-            begin
-                with_timeout BROWSER_SPAWN_TIMEOUT do
-                    print_debug_level_2 "Spawning process: #{self.class.executable}"
-
-                    r, w  = IO.pipe
-                    ri, @kill_process = IO.pipe
-
-                    @lifeline_pid = Processes::Manager.spawn(
-                        :browser,
-                        executable: self.class.executable,
-                        without_arachni: true,
-                        fork: false,
-                        new_pgroup: true,
-                        stdin: ri,
-                        stdout: w,
-                        stderr: w,
-                        port: port,
-                        proxy_url: @proxy.url
-                    )
-
-                    w.close
-                    ri.close
-
-                    print_debug_level_2 'Process spawned, waiting for WebDriver server...'
-
-                    # Wait for PhantomJS to initialize.
-                     while !output.include?( 'running on port' )
-                         begin
-                             output << r.readpartial( 8192 )
-                         # EOF or something, take a breather before retrying.
-                         rescue
-                             sleep 0.05
-                         end
-                     end
-
-                    @browser_pid = output.scan( /^PID: (\d+)/ ).flatten.first.to_i
-
-                    print_debug_level_2 '...WebDriver server is up.'
-                    done = true
-                end
-            rescue Timeout::Error
-                print_debug 'Spawn timed-out.'
-            end
-
-            if !output.empty?
-                print_debug_level_2 output
-            end
-
-            if done
-                print_debug 'PhantomJS is ready.'
-                break
-            end
-
-            print_debug_level_2 'Killing process.'
-
-            # Kill everything.
-            shutdown
-        end
-
-        # Something went really bad, the browser couldn't be spawned even
-        # after our valiant efforts.
-        #
-        # Bail out for now and count on the BrowserCluster to retry to boot
-        # another process ass needed.
-        if !@lifeline_pid
-            log_error 'Could not spawn browser process.'
-            log_error output
-            return
-        end
-
-        @browser_url = "http://127.0.0.1:#{port}"
-    end
+    # def spawn_browser
+    #     if !spawn_phantomjs
+    #         fail Error::Spawn, 'Could not start the browser process.'
+    #     end
+    #
+    #     @browser_url
+    # end
+    #
+    # def spawn_phantomjs
+    #     return @browser_url if @browser_url
+    #
+    #     print_debug 'Spawning PhantomJS...'
+    #
+    #     ChildProcess.posix_spawn = true
+    #
+    #     port   = nil
+    #     output = ''
+    #
+    #     10.times do |i|
+    #         # Clear output of previous attempt.
+    #         output = ''
+    #         done   = false
+    #         port   = Utilities.available_port
+    #
+    #         start_proxy
+    #
+    #         print_debug_level_2 "Attempt ##{i}, chose port number #{port}"
+    #
+    #         begin
+    #             with_timeout BROWSER_SPAWN_TIMEOUT do
+    #                 print_debug_level_2 "Spawning process: #{self.class.executable}"
+    #
+    #                 r, w  = IO.pipe
+    #                 ri, @kill_process = IO.pipe
+    #
+    #                 @lifeline_pid = Processes::Manager.spawn(
+    #                     :browser,
+    #                     executable: self.class.executable,
+    #                     without_arachni: true,
+    #                     fork: false,
+    #                     new_pgroup: true,
+    #                     stdin: ri,
+    #                     stdout: w,
+    #                     stderr: w,
+    #                     port: port,
+    #                     proxy_url: @proxy.url
+    #                 )
+    #
+    #                 w.close
+    #                 ri.close
+    #
+    #                 print_debug_level_2 'Process spawned, waiting for WebDriver server...'
+    #
+    #                 # Wait for PhantomJS to initialize.
+    #                  while !output.include?( 'running on port' )
+    #                      begin
+    #                          output << r.readpartial( 8192 )
+    #                      # EOF or something, take a breather before retrying.
+    #                      rescue
+    #                          sleep 0.05
+    #                      end
+    #                  end
+    #
+    #                 @browser_pid = output.scan( /^PID: (\d+)/ ).flatten.first.to_i
+    #
+    #                 print_debug_level_2 '...WebDriver server is up.'
+    #                 done = true
+    #             end
+    #         rescue Timeout::Error
+    #             print_debug 'Spawn timed-out.'
+    #         end
+    #
+    #         if !output.empty?
+    #             print_debug_level_2 output
+    #         end
+    #
+    #         if done
+    #             print_debug 'PhantomJS is ready.'
+    #             break
+    #         end
+    #
+    #         print_debug_level_2 'Killing process.'
+    #
+    #         # Kill everything.
+    #         shutdown
+    #     end
+    #
+    #     # Something went really bad, the browser couldn't be spawned even
+    #     # after our valiant efforts.
+    #     #
+    #     # Bail out for now and count on the BrowserCluster to retry to boot
+    #     # another process ass needed.
+    #     if !@lifeline_pid
+    #         log_error 'Could not spawn browser process.'
+    #         log_error output
+    #         return
+    #     end
+    #
+    #     @browser_url = "http://127.0.0.1:#{port}"
+    # end
 
     def start_proxy
         print_debug 'Booting up...'
@@ -1508,43 +1503,6 @@ EOJS
         @selenium.manage.window.resize_to( @width, @height )
     end
 
-    # # Firefox driver, only used for debugging.
-    # def firefox
-    #     profile = Selenium::WebDriver::Firefox::Profile.new
-    #     profile.proxy = Selenium::WebDriver::Proxy.new http: @proxy.address,
-    #                                                    ssl: @proxy.address
-    #     [:firefox, profile: profile]
-    # end
-    #
-    # # Chrome driver, only used for debugging.
-    # def chrome
-    #     [ :chrome, switches: [ "--proxy-server=#{@proxy.address}" ] ]
-    # end
-
-    def capabilities
-        Selenium::WebDriver::Remote::Capabilities.phantomjs(
-            # Selenium tries to be helpful by including screenshots for errors
-            # in the JSON response. That's not gonna fly in this use case as
-            # parsing lots of massive JSON responses at the same time will
-            # have a significant impact on performance.
-            takes_screenshot: false,
-
-            # Needs to include the string Webkit:
-            #   https://github.com/ariya/phantomjs/issues/14198
-            #
-            # Default is:
-            #   Mozilla/5.0 (Unknown; Linux x86_64) AppleWebKit/538.1 (KHTML, like Gecko) PhantomJS/2.1.1 Safari/538.1
-            'phantomjs.page.settings.userAgent'                   =>
-                USER_AGENT,
-            'phantomjs.page.customHeaders.X-Arachni-Browser-Auth' =>
-                auth_token,
-            'phantomjs.page.settings.resourceTimeout'             =>
-                Options.http.request_timeout,
-            'phantomjs.page.settings.loadImages'                  =>
-                !Options.browser_cluster.ignore_images
-        )
-    end
-
     def flush_request_transitions
         @request_transitions.dup
     ensure
@@ -1562,8 +1520,8 @@ EOJS
     def request_handler( request, response )
         request.performer = self
 
-        return if request.headers['X-Arachni-Browser-Auth'] != auth_token
-        request.headers.delete 'X-Arachni-Browser-Auth'
+        # return if request.headers['X-Arachni-Browser-Auth'] != auth_token
+        # request.headers.delete 'X-Arachni-Browser-Auth'
 
         print_debug_level_2 "Request: #{request.url}"
 

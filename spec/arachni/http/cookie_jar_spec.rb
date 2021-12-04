@@ -142,7 +142,7 @@ describe Arachni::HTTP::CookieJar do
                         expect(subject).to be_empty
 
                         Arachni::Options.url = 'http://test.com'
-                        subject.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2020 23:53:46 GMT; HttpOnly' )
+                        subject.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2030 23:53:46 GMT; HttpOnly' )
                         expect(subject.cookies.first.name).to eq('some_param')
                         expect(subject.cookies.first.value).to eq('9e4ca2cc0f18a49f7c1881f78bebf7df')
                     end
@@ -153,7 +153,7 @@ describe Arachni::HTTP::CookieJar do
                         expect(subject).to be_empty
 
                         Arachni::Options.url = 'http://test.com'
-                        subject.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2020 23:53:46 GMT; HttpOnly' )
+                        subject.update( 'some_param=9e4ca2cc0f18a49f7c1881f78bebf7df; path=/; expires=Wed, 02-Oct-2030 23:53:46 GMT; HttpOnly' )
                         expect(subject.cookies.first.name).to eq('some_param')
                         expect(subject.cookies.first.value).to eq('9e4ca2cc0f18a49f7c1881f78bebf7df')
                     end

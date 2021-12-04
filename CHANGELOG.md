@@ -11,7 +11,7 @@
     - `#decode` -- Fixed decoding order of `+`.
 - `Element`
     - Added `NestedCookie`: Handles key-value pairs inside individual cookies.
-- `Browser`
+- `Browser` -- Replaced PhantomJS with headless Chrome.
     - `Javascript`
         - `DOMMonitor`
             - `#elements_with_events` -- Optionally limits event inheritance.

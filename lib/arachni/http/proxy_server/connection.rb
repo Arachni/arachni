@@ -140,10 +140,6 @@ class Connection < Arachni::Reactor::Connection
             if @options[:request_handler].call( request, response )
                 print_debug_level_3 '-- Handler approves, running...'
 
-                # Even though it's a blocking request, force it to go through
-                # the HTTP::Client in order to handle cookie update and
-                # fingerprinting handlers.
-                HTTP::Client.queue( request )
                 response = request.run
 
                 print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"
@@ -153,7 +149,6 @@ class Connection < Arachni::Reactor::Connection
         else
             print_debug_level_3 '-- Running...'
 
-            HTTP::Client.queue( request )
             response = request.run
 
             print_debug_level_3 "-- ...completed in #{response.time}: #{response.status_line}"

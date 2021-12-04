@@ -251,11 +251,11 @@ class HTTP < Arachni::OptionGroup
     attr_accessor :ssl_version
 
     set_defaults(
-        user_agent:             "Arachni/v#{Arachni::VERSION}",
-        request_timeout:        10_000,
+        user_agent:             "Mozilla/5.0 (Gecko) Arachni/v#{Arachni::VERSION}",
+        request_timeout:        20_000,
         request_redirect_limit: 5,
-        request_concurrency:    20,
-        request_queue_size:     100,
+        request_concurrency:    10,
+        request_queue_size:     50,
         request_headers:        {},
         response_max_size:      500_000,
         cookies:                {},

@@ -137,19 +137,10 @@ describe Arachni::HTTP::Client do
 
     describe Arachni::OptionGroups::HTTP do
         describe '#request_concurrency' do
-            context 'Integer' do
-                it 'uses it as a max_concurrency' do
-                    @opts.http.request_concurrency = 34
-                    subject.reset
-                    expect(subject.max_concurrency).to eq(34)
-                end
-            end
-            context 'nil' do
-                it 'uses a default max concurrency setting' do
-                    @opts.http.request_concurrency = nil
-                    subject.reset
-                    expect(subject.max_concurrency).to eq(Arachni::HTTP::Client::MAX_CONCURRENCY)
-                end
+            it 'uses it as a max_concurrency' do
+                @opts.http.request_concurrency = 34
+                subject.reset
+                expect(subject.max_concurrency).to eq(34)
             end
         end
 
@@ -329,7 +320,7 @@ describe Arachni::HTTP::Client do
         it 'provides access to default headers' do
             headers = subject.headers
             expect(headers['Accept']).to eq('text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
-            expect(headers['User-Agent']).to eq('Arachni/v' + Arachni::VERSION)
+            expect(headers['User-Agent']).to include 'Arachni/v' + Arachni::VERSION
         end
 
         context "when #{Arachni::OptionGroups::HTTP}#request_headers is set" do
@@ -568,18 +559,15 @@ describe Arachni::HTTP::Client do
 
     describe '#original_max_concurrency' do
         it 'returns the original max concurrency' do
-            expect(subject.original_max_concurrency).to eq(20)
+            expect(subject.original_max_concurrency).to eq(10)
             expect(subject.original_max_concurrency).to eq(subject.max_concurrency)
 
-            subject.max_concurrency = 10
-            expect(subject.original_max_concurrency).to eq(20)
+            subject.max_concurrency = 5
+            expect(subject.original_max_concurrency).to eq(10)
         end
     end
 
     describe '#max_concurrency' do
-        it 'defaults to 20' do
-            expect(subject.max_concurrency).to eq(20)
-        end
         it 'respects the http_request_concurrency option' do
             @opts.http.request_concurrency = 50
             subject.reset

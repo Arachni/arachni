@@ -1,0 +1,10 @@
+[Sat Dec  4 14:26:16 2021] [status]  Starting the RPC Server...
+[Sat Dec  4 14:26:16 2021] [status]  Populating the pool with 1  Instances.
+[Sat Dec  4 14:26:16 2021] [status]  Instance added to pool -- PID: 2621412 - Port: 40771 - Owner: dispatcher
+[Sat Dec  4 14:26:16 2021] [status]  Waiting for Instances to come on-line.
+[Sat Dec  4 14:26:17 2021] [status]  Instances are on-line.
+[Sat Dec  4 14:26:17 2021] [status]  Initializing grid node...
+[Sat Dec  4 14:26:17 2021] [status]  Node ready.
+[Sat Dec  4 14:26:17 2021] [info]  Updated neighbours:
+[Sat Dec  4 14:26:17 2021] [info]  <empty>
+[Sat Dec  4 14:26:17 2021] [status]  Ready

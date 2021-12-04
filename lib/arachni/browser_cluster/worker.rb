@@ -72,12 +72,12 @@ class Worker < Arachni::Browser
         # If we can't respawn, then bail out.
         return if browser_respawn_if_necessary.nil?
 
-        tries = 0
+        time = Time.now
         begin
 
-            time = Time.now
-
-            @job.configure_and_run( self )
+            Timeout.timeout Options.browser_cluster.job_timeout do
+                @job.configure_and_run( self )
+            end
 
             @job.time = Time.now - time
 
@@ -87,34 +87,19 @@ class Worker < Arachni::Browser
             print_debug "WebDriver error while processing job: #{@job}"
             print_debug_exception e
 
-            browser_respawn
-
         # This can be thrown by a Selenium call somewhere down the line,
         # catch it here and retry the entire job.
         rescue Timeout::Error => e
 
-            tries += 1
-            if !@shutdown && tries <= TRIES
-                print_info "Retrying (#{tries}/#{TRIES}) due to time out: #{@job}"
-                print_debug_exception e
-
-                browser_respawn
-                reset
-
-                retry
-            end
-
             @job.timed_out!( Time.now - time )
 
-            print_bad "Job timed-out #{TRIES} times: #{@job}"
-            master.increment_time_out_count
+            print_debug "Job timed-out: #{@job}"
+            print_debug_exception e
 
-            # Could have left us with a broken browser.
-            browser_respawn
+            master.increment_time_out_count
         end
 
         decrease_time_to_live
-        browser_respawn_if_necessary
 
     # Something went horribly wrong, cleanup.
     rescue => e

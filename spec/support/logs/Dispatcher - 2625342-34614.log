@@ -1,0 +1,24 @@
+[Sat Dec  4 14:32:08 2021] [status]  Starting the RPC Server...
+[Sat Dec  4 14:32:08 2021] [status]  Populating the pool with 5  Instances.
+[Sat Dec  4 14:32:08 2021] [status]  Instance added to pool -- PID: 2625344 - Port: 7380 - Owner: dispatcher
+[Sat Dec  4 14:32:08 2021] [status]  Instance added to pool -- PID: 2625347 - Port: 25747 - Owner: dispatcher
+[Sat Dec  4 14:32:08 2021] [status]  Instance added to pool -- PID: 2625350 - Port: 62724 - Owner: dispatcher
+[Sat Dec  4 14:32:08 2021] [status]  Instance added to pool -- PID: 2625353 - Port: 7222 - Owner: dispatcher
+[Sat Dec  4 14:32:08 2021] [status]  Instance added to pool -- PID: 2625356 - Port: 37881 - Owner: dispatcher
+[Sat Dec  4 14:32:08 2021] [status]  Waiting for Instances to come on-line.
+[Sat Dec  4 14:32:10 2021] [status]  Instances are on-line.
+[Sat Dec  4 14:32:10 2021] [status]  Initializing grid node...
+[Sat Dec  4 14:32:10 2021] [status]  Node ready.
+[Sat Dec  4 14:32:10 2021] [info]  Updated neighbours:
+[Sat Dec  4 14:32:10 2021] [info]  <empty>
+[Sat Dec  4 14:32:10 2021] [status]  Ready
+[Sat Dec  4 14:32:13 2021] [status]  Adding neighbour: 127.0.0.1:40715
+[Sat Dec  4 14:32:13 2021] [info]  Updated neighbours:
+[Sat Dec  4 14:32:13 2021] [info]  ---- 127.0.0.1:40715
+[Sat Dec  4 14:32:13 2021] [status]  Advertising: 127.0.0.1:40715
+[Sat Dec  4 14:32:15 2021] [status]  Adding neighbour: 127.0.0.1:49620
+[Sat Dec  4 14:32:15 2021] [info]  Updated neighbours:
+[Sat Dec  4 14:32:15 2021] [info]  ---- 127.0.0.1:40715
+[Sat Dec  4 14:32:15 2021] [info]  ---- 127.0.0.1:49620
+[Sat Dec  4 14:32:15 2021] [status]  Instance dispatched -- PID: 2625353 - Port: 7222 - Owner: 127.0.0.1:41191
+[Sat Dec  4 14:32:15 2021] [status]  Instance added to pool -- PID: 2625412 - Port: 1164 - Owner: dispatcher

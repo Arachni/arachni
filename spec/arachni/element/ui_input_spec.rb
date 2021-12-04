@@ -57,7 +57,7 @@ describe Arachni::Element::UIInput do
 
                 context 'with events' do
                     let(:url) { "#{super()}/with_events" }
-                    let(:source) { '<input type="text" id="my-input" value="stuff">' }
+                    let(:source) { '<input id="my-input" type="text" value="stuff">' }
 
                     it 'returns array of elements' do
                         input = described_class.from_browser( @browser, page ).first

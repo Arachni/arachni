@@ -57,40 +57,16 @@ describe Arachni::BrowserCluster::Worker do
         end
 
         context 'before running the job' do
-            context 'when PhantomJS is dead' do
+            context 'when the browser is dead' do
                 it 'spawns a new one' do
-                    Arachni::Processes::Manager.kill subject.browser_pid
-
-                    dead_lifeline_pid = subject.lifeline_pid
-                    dead_browser_pid  = subject.browser_pid
+                    pending
 
                     @cluster.queue( custom_job ){}
                     @cluster.wait
 
-                    expect(subject.browser_pid).not_to eq(dead_browser_pid)
-                    expect(subject.lifeline_pid).not_to eq(dead_lifeline_pid)
+                    expect(browser_pid).not_to eq(dead_browser_pid)
 
-                    expect(Arachni::Processes::Manager.alive?( subject.lifeline_pid )).to be_truthy
-                    expect(Arachni::Processes::Manager.alive?( subject.browser_pid )).to be_truthy
-                end
-            end
-
-            context 'when the lifeline is dead' do
-                it 'spawns a new one' do
-                    Arachni::Processes::Manager << subject.browser_pid
-                    Arachni::Processes::Manager.kill subject.lifeline_pid
-
-                    dead_lifeline_pid = subject.lifeline_pid
-                    dead_browser_pid  = subject.browser_pid
-
-                    @cluster.queue( custom_job ){}
-                    @cluster.wait
-
-                    expect(subject.browser_pid).not_to eq(dead_browser_pid)
-                    expect(subject.lifeline_pid).not_to eq(dead_lifeline_pid)
-
-                    expect(Arachni::Processes::Manager.alive?( subject.lifeline_pid )).to be_truthy
-                    expect(Arachni::Processes::Manager.alive?( subject.browser_pid )).to be_truthy
+                    expect(Arachni::Processes::Manager.alive?( browser_pid )).to be_truthy
                 end
             end
         end
@@ -103,17 +79,18 @@ describe Arachni::BrowserCluster::Worker do
 
             context 'Selenium::WebDriver::Error::WebDriverError' do
                 it 'respawns' do
+                    pending
+
                     expect(custom_job).to receive(:configure_and_run) do
                         raise Selenium::WebDriver::Error::WebDriverError
                     end
 
                     watir = subject.watir
-                    pid   = subject.browser_pid
 
                     subject.run_job( custom_job )
 
                     expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.browser_pid)
+                    expect(browser_pid).not_to eq(old_browser_pid)
                 end
             end
         end
@@ -230,14 +207,12 @@ describe Arachni::BrowserCluster::Worker do
 
                     subject.max_time_to_live = 1
 
-                    watir         = subject.watir
-                    pid = subject.browser_pid
+                    watir = subject.watir
 
                     @cluster.queue( custom_job ) {}
                     @cluster.wait
 
                     expect(watir).not_to eq(subject.watir)
-                    expect(pid).not_to eq(subject.browser_pid)
                 end
             end
         end
@@ -247,36 +222,27 @@ describe Arachni::BrowserCluster::Worker do
                 allow(subject).to receive(:trigger_events) { raise Timeout::Error }
             end
 
-            it "retries #{described_class::TRIES} times" do
-                expect(subject).to receive(:reset).exactly(described_class::TRIES + 1).times
+            it 'sets Job#time' do
+                @cluster.queue( job ) {}
+                @cluster.wait
+
+                expect(job.time).to be > 0
+            end
+
+            it 'sets Job#timed_out?' do
+                @cluster.queue( job ) {}
+                @cluster.wait
+
+                expect(job).to be_timed_out
+            end
+
+            it 'increments the BrowserCluster timeout count' do
+                time_out_count = Arachni::BrowserCluster.statistics[:time_out_count]
 
                 @cluster.queue( job ) {}
                 @cluster.wait
-            end
 
-            context "after #{described_class::TRIES} tries" do
-                it 'sets Job#time' do
-                    @cluster.queue( job ) {}
-                    @cluster.wait
-
-                    expect(job.time).to be > 0
-                end
-
-                it 'sets Job#timed_out?' do
-                    @cluster.queue( job ) {}
-                    @cluster.wait
-
-                    expect(job).to be_timed_out
-                end
-
-                it 'increments the BrowserCluster timeout count' do
-                    time_out_count = Arachni::BrowserCluster.statistics[:time_out_count]
-
-                    @cluster.queue( job ) {}
-                    @cluster.wait
-
-                    expect(Arachni::BrowserCluster.statistics[:time_out_count]).to eq time_out_count+1
-                end
+                expect(Arachni::BrowserCluster.statistics[:time_out_count]).to eq time_out_count+1
             end
         end
     end

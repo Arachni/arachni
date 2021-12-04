@@ -14,6 +14,38 @@ module Arachni::OptionGroups
 # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
 class Scope < Arachni::OptionGroup
 
+    EXCLUDE_MIME_TYPES = {
+      # Media
+      image:       %w(
+            gif bmp tif tiff jpg jpeg jpe pjpeg png ico psd xcf 3dm max svg eps
+            drw ai
+        ),
+      video:       %w(asf rm mpg mpeg mpe 3gp 3g2  avi flv mov mp4 swf vob wmv),
+      audio:       %w(aif mp3 mpa ra wav wma mid m4a ogg flac),
+
+      # Generic data
+      archive:     %w(zip zipx tar gz 7z rar bz2),
+      disk:        %w(bin cue dmg iso mdf vcd raw),
+
+      # Executables -- or thereabouts.
+      application: %w(exe apk app jar pkg deb rpm msi),
+
+      # Assets
+      #
+      # The browsers will not check the scope for asset files, so these shouldn't
+      # mess with it, they should only narrow down the audit.
+      font:        %w(ttf otf woff woff2 fon fnt),
+      stylesheet:  %w(css),
+      script:      %w(js),
+
+      # Documents
+      #
+      # Allow rtf, ps, xls, doc, ppt, ppts since they can contain greppable text.
+      document:    %w(pdf docx xlsx pptx odt odp),
+    }
+
+    EXCLUDE_FILE_EXTENSIONS = Set.new( EXCLUDE_MIME_TYPES.values.flatten.uniq )
+
     # @note `nil` is infinite -- default is `nil`.
     #
     # @return    [Integer]
@@ -154,8 +186,8 @@ class Scope < Arachni::OptionGroup
 
     set_defaults(
         redundant_path_patterns:  {},
-        dom_depth_limit:          5,
-        exclude_file_extensions:  Set.new,
+        dom_depth_limit:          4,
+        exclude_file_extensions:  EXCLUDE_FILE_EXTENSIONS,
         exclude_path_patterns:    [],
         exclude_content_patterns: [],
         include_path_patterns:    [],

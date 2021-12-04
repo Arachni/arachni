@@ -51,16 +51,6 @@ describe Arachni::Browser::Javascript::Proxy do
         end
     end
 
-    describe '#js_object' do
-        it 'returns the JS-side object of the proxied object' do
-            expect(subject.js_object).to eq("_#{@javascript.token}ProxyTest")
-
-            js_object = @javascript.run( "return #{subject.js_object}" )
-            expect(js_object).to include 'my_property'
-            expect(js_object['my_function']).to start_with 'function ('
-        end
-    end
-
     describe '#function?' do
         context 'when dealing with setters' do
             context 'for existing properties' do

@@ -14,20 +14,20 @@ describe Arachni::OptionGroups::HTTP do
     end
 
     describe '#user_agent' do
-        it "defaults to Arachni/v#{Arachni::VERSION}" do
-            expect(subject.user_agent).to eq('Arachni/v' + Arachni::VERSION.to_s)
+        it "defaults to Mozilla/5.0 (Gecko) Arachni/v#{Arachni::VERSION}" do
+            expect(subject.user_agent).to eq('Mozilla/5.0 (Gecko) Arachni/v' + Arachni::VERSION.to_s)
         end
     end
 
     describe '#request_concurrency' do
-        it 'defaults to 20' do
-            expect(subject.request_concurrency).to eq(20)
+        it 'defaults to 10' do
+            expect(subject.request_concurrency).to eq(10)
         end
     end
 
     describe '#request_timeout' do
-        it 'defaults to 10000' do
-            expect(subject.request_timeout).to eq(10000)
+        it 'defaults to 20000' do
+            expect(subject.request_timeout).to eq(20000)
         end
     end
 

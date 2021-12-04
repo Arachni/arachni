@@ -40,6 +40,7 @@ RSpec.configure do |config|
     config.add_formatter :documentation
     config.include PageHelpers
     config.alias_example_to :expect_it
+    config.filter_run_including focus: true
 
     config.mock_with :rspec do |mocks|
         mocks.yield_receiver_to_any_instance_implementation_blocks = true

@@ -173,7 +173,7 @@ describe Arachni::Element::UIForm do
 
             context 'as <input type="button">' do
                 let(:url) { "#{super()}/input-button" }
-                let(:source) { '<input type="button" id="insert" value="Insert into DOM">' }
+                let(:source) { '<input id="insert" type="button" value="Insert into DOM">' }
 
                 context 'without inputs' do
                     let(:url) { "#{super()}/without-inputs" }
