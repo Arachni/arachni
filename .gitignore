@@ -14,3 +14,5 @@ TODO
 coverage/
 .env
 .bundle/
+*.afs
+*.afr
