@@ -42,7 +42,8 @@ class Parser
     CACHE_SIZES = {
         parse:          50,
         parse_xml:      50,
-        parse_fragment: 100
+        parse_fragment: 100,
+        html?:          100_000
     }
 
     CACHE = {}
@@ -113,7 +114,25 @@ class Parser
             end
         end
 
+        def html?( string )
+            CACHE[__method__].fetch string do
+                begin
+                    _html? string
+                rescue => e
+                    false
+                end
+            end
+        end
+
         private
+
+        def _html?( string )
+            parse( string ).traverse do |n|
+                return true if n.is_a? Nodes::Element
+            end
+
+            false
+        end
 
         def push_parse_pool
             @push_parse_pool ||= Concurrent::CachedThreadPool.new
