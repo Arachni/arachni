@@ -50,10 +50,15 @@ class BrowserCluster < Arachni::OptionGroup
     #   Screen height.
     attr_accessor :screen_height
 
+    # @return   [Bool]
+    #   Shall we wait for the max timer to fire on the page?
+    attr_accessor :wait_for_timers
+
     set_defaults(
         local_storage:       {},
         session_storage:     {},
         wait_for_elements:   {},
+        wait_for_timers:     false,
         pool_size:           4,
         # Not actually a timeout for the job anymore, sets a timeout for Selenium
         # communication HTTP requests.
@@ -65,6 +70,10 @@ class BrowserCluster < Arachni::OptionGroup
         screen_width:        1600,
         screen_height:       1200
     )
+
+    def wait_for_timers?
+        !!@wait_for_timers
+    end
 
     def local_storage=( data )
         data ||= {}

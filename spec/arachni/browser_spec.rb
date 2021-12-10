@@ -1026,11 +1026,11 @@ describe Arachni::Browser do
 
         it "assigns the proper #{Arachni::Page::DOM}#digest" do
             @browser.load( @url )
-            expect(@browser.to_page.dom.digest).to eq(32000153)
+            expect(@browser.to_page.dom.digest).to eq(-2125129228)
 
             # expect(@browser.to_page.dom.instance_variable_get(:@digest)).to eq(
-            #     '<HTML><HEAD><SCRIPT src=http://' <<
-            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=http://' <<
+            #     '<HTML><HEAD><SCRIPT src=https://' <<
+            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=https://' <<
             #     'javascript.browser.arachni/' <<
             #     'taint_tracer.js><SCRIPT src=http://javascript.' <<
             #     'browser.arachni/dom_monitor.js><SCRIPT><TITLE><BODY><' <<
@@ -1434,21 +1434,40 @@ describe Arachni::Browser do
         context 'when new timers are introduced' do
             let(:url) { "#{@url}/trigger_events/with_new_timers/3000" }
 
-            it 'waits for them' do
-                @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
-                pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
-            end
+            context "when #{Arachni::OptionGroups::BrowserCluster}#wait_for_timers is" do
+                context 'true' do
+                    before do
+                        Arachni::Options.browser_cluster.wait_for_timers = true
+                    end
 
-            context 'when a new timer exceeds Options.http.request_timeout' do
-                let(:url) { "#{@url}/trigger_events/with_new_timers/#{Arachni::Options.http.request_timeout + 5000}" }
+                    it 'waits for them' do
+                        @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+                        pages_should_have_form_with_input [@browser.to_page], 'by-ajax'
+                    end
 
-                it 'waits for Options.http.request_timeout' do
-                    t = Time.now
+                    context 'when a new timer exceeds Options.http.request_timeout' do
+                        let(:url) { "#{@url}/trigger_events/with_new_timers/#{Arachni::Options.http.request_timeout + 5000}" }
 
-                    @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
-                    pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
+                        it 'waits for Options.http.request_timeout' do
+                            t = Time.now
 
-                    expect(Time.now - t).to be <= Arachni::Options.http.request_timeout
+                            @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+                            pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
+
+                            expect(Time.now - t).to be <= Arachni::Options.http.request_timeout
+                        end
+                    end
+                end
+
+                context 'false' do
+                    before do
+                        Arachni::Options.browser_cluster.wait_for_timers = false
+                    end
+
+                    it 'waits for them' do
+                        @browser.fire_event @browser.selenium.find_element( id: 'my-div' ), :click
+                        pages_should_not_have_form_with_input [@browser.to_page], 'by-ajax'
+                    end
                 end
             end
         end
@@ -2507,12 +2526,34 @@ describe Arachni::Browser do
         end
 
         context 'when the page has JS timeouts' do
-            it 'waits for them to complete' do
-                time = Time.now
-                subject.goto "#{@url}load_delay"
-                waited = Time.now - time
+            context "when #{Arachni::OptionGroups::BrowserCluster}#wait_for_timers is" do
+                context 'true' do
+                    before do
+                        Arachni::Options.browser_cluster.wait_for_timers = true
+                    end
 
-                expect(waited).to be >= subject.load_delay / 1000.0
+                    it 'waits for them to complete' do
+                        time = Time.now
+                        subject.goto "#{@url}load_delay"
+                        waited = Time.now - time
+
+                        expect(waited).to be >= subject.load_delay / 1000.0
+                    end
+                end
+
+                context 'false' do
+                    before do
+                        Arachni::Options.browser_cluster.wait_for_timers = false
+                    end
+
+                    it 'does not waits for them to complete' do
+                        time = Time.now
+                        subject.goto "#{@url}load_delay"
+                        waited = Time.now - time
+
+                        expect(waited).to be < subject.load_delay / 1000.0
+                    end
+                end
             end
         end
 

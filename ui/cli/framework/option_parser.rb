@@ -599,6 +599,13 @@ class OptionParser < UI::CLI::OptionParser
                 css
         end
 
+        on( '--browser-cluster-wait-for-timers',
+            'Wait for the maximum setTimeout() on each page.',
+            "(Default: #{options.browser_cluster.wait_for_timers})"
+        ) do
+            options.browser_cluster.wait_for_timers = true
+        end
+
         on( '--browser-cluster-pool-size SIZE', Integer,
             'Amount of browser workers to keep in the pool and put to work.',
             "(Default: #{options.browser_cluster.pool_size})"

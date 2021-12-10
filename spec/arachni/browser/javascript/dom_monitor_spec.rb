@@ -68,12 +68,12 @@ describe Arachni::Browser::Javascript::DOMMonitor do
     describe '#digest' do
         it 'returns a string digest of the current DOM tree' do
             load '/digest'
-            expect(subject.digest).to eq(1754753071)
+            expect(subject.digest).to eq(-1011738060)
 
-            # expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
-            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascri' <<
+            # expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=https://' <<
+            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=https://javascri' <<
             #     'pt.browser.arachni/' <<'taint_tracer.js><SCRIPT src' <<
-            #     '=http://javascript.browser.arachni/dom_monitor.js><SCRIPT>' <<
+            #     '=https://javascript.browser.arachni/dom_monitor.js><SCRIPT>' <<
             #     '<BODY onload=void();><DIV id=my-id-div><DIV class=my-class' <<
             #     '-div><STRONG><EM><I><B><STRONG><SCRIPT><SCRIPT type=text/' <<
             #     'javascript><A href=#stuff>')
@@ -81,53 +81,77 @@ describe Arachni::Browser::Javascript::DOMMonitor do
 
         it 'does not include <p> elements' do
             load '/digest/p'
-            expect(subject.digest).to eq(422148765)
+            expect(subject.digest).to eq(-22431432)
 
-            # expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
-            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascript' <<
-            #     '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
+            # expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=https://' <<
+            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=https://javascript' <<
+            #     '.browser.arachni/taint_tracer.js><SCRIPT src=https://' <<
             #     'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><STRONG>')
         end
 
         it "does not include 'data-arachni-id' attributes" do
             load '/digest/data-arachni-id'
-            expect(subject.digest).to eq(822535290)
+            expect(subject.digest).to eq(2050210901)
 
-            # expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=http://' <<
-            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=http://javascript' <<
-            #     '.browser.arachni/taint_tracer.js><SCRIPT src=http://' <<
+            # expect(subject.digest).to eq('<HTML><HEAD><SCRIPT src=https://' <<
+            #     'javascript.browser.arachni/polyfills.js><SCRIPT src=https://javascript' <<
+            #     '.browser.arachni/taint_tracer.js><SCRIPT src=https://' <<
             #     'javascript.browser.arachni/dom_monitor.js><SCRIPT><BODY><DIV ' <<
             #     'id=my-id-div><DIV class=my-class-div>')
         end
     end
 
     describe '#timeouts' do
-        it 'keeps track of setTimeout() timers' do
-            load '/timeouts'
+        context "when #{Arachni::OptionGroups::BrowserCluster}#wait_for_timers is" do
+            context 'true' do
+                before do
+                    Arachni::Options.browser_cluster.wait_for_timers = true
+                end
 
-            expect(subject.timeouts).to eq([
-                [
-                    "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
-                    1000, 'timeout1', 1000
-                ],
-                [
-                    "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
-                    1500, 'timeout2', 1500
-                ],
-                [
-                    "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
-                    2000, 'timeout3', 2000
-                ]
-            ])
+                it 'keeps track of setTimeout() timers' do
+                    load '/timeouts'
 
-            expect(@browser.load_delay).to eq(2000)
-            expect(@browser.cookies.size).to eq(4)
-            expect(@browser.cookies.map { |c| c.to_s }.sort).to eq([
-                'timeout3=post-2000',
-                'timeout2=post-1500',
-                'timeout1=post-1000',
-                'timeout=pre'
-            ].sort)
+                    expect(subject.timeouts).to eq([
+                                                     [
+                                                       "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
+                                                       1000, 'timeout1', 1000
+                                                     ],
+                                                     [
+                                                       "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
+                                                       1500, 'timeout2', 1500
+                                                     ],
+                                                     [
+                                                       "function( name, value ){\n            document.cookie = name + \"=post-\" + value\n        }",
+                                                       2000, 'timeout3', 2000
+                                                     ]
+                                                   ])
+
+                    expect(@browser.load_delay).to eq(2000)
+                    expect(@browser.cookies.size).to eq(4)
+                    expect(@browser.cookies.map { |c| c.to_s }.sort).to eq([
+                                                                             'timeout3=post-2000',
+                                                                             'timeout2=post-1500',
+                                                                             'timeout1=post-1000',
+                                                                             'timeout=pre'
+                                                                           ].sort)
+                end
+            end
+
+            context 'false' do
+                before do
+                    Arachni::Options.browser_cluster.wait_for_timers = false
+                end
+
+                it 'does not keeps track of setTimeout() timers' do
+                    load '/timeouts'
+
+                    expect(@browser.cookies.size).to eq(1)
+                    expect(@browser.cookies.map { |c| c.to_s }.sort).to eq([
+                        'timeout=pre'
+                    ].sort)
+                end
+            end
+
         end
     end
 

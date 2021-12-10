@@ -32,9 +32,10 @@ describe Arachni::Browser::Javascript do
                 allow(subject).to receive(:ready?) { false }
 
                 subject.wait_till_ready
+                passed = (Time.now - t).floor
 
-                expect(Time.now - t).to be > 5
-                expect(Time.now - t).to be < 6
+                expect(passed).to be >= 5
+                expect(passed).to be <= 6
             end
         end
     end

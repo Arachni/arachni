@@ -375,7 +375,11 @@ class Browser
 
     def wait_till_ready
         @javascript.wait_till_ready
-        wait_for_timers
+
+        if Options.browser_cluster.wait_for_timers?
+            wait_for_timers
+        end
+
         wait_for_pending_requests
     end
 
@@ -621,7 +625,9 @@ class Browser
 
         notify_on_fire_event( element, event )
 
-        pre_timeouts = javascript.timeouts
+        if Options.browser_cluster.wait_for_timers?
+            pre_timeouts = javascript.timeouts
+        end
 
         begin
             transition = Page::DOM::Transition.new( locator, event, options ) do
@@ -688,13 +694,15 @@ class Browser
 
             print_debug_level_2 "[done in #{transition.time}s]: #{event} (#{options}) #{locator}"
 
-            delay = (javascript.timeouts - pre_timeouts).compact.map { |t| t[1].to_i }.max
-            if delay
-                print_debug_level_2 "Found new timers with max #{delay}ms."
-                delay = [Options.http.request_timeout, delay].min / 1000.0
+            if Options.browser_cluster.wait_for_timers?
+                delay = (javascript.timeouts - pre_timeouts).compact.map { |t| t[1].to_i }.max
+                if delay
+                    print_debug_level_2 "Found new timers with max #{delay}ms."
+                    delay = [Options.http.request_timeout, delay].min / 1000.0
 
-                print_debug_level_2 "Will wait for #{delay}s."
-                sleep delay
+                    print_debug_level_2 "Will wait for #{delay}s."
+                    sleep delay
+                end
             end
 
             transition
@@ -1113,18 +1121,28 @@ class Browser
 
         proxy_uri = URI( @proxy.url )
 
-        @selenium = Selenium::WebDriver::Chrome::Driver.new(
+        dir = "#{Options.paths.tmpdir}/Arachni_Chrome_#{self.object_id}/"
+        FileUtils.rm_rf dir
+        FileUtils.mkdir dir
+        at_exit do
+            FileUtils.rm_rf dir
+        end
+
+        @selenium = Selenium::WebDriver.for(
+            :chrome,
             capabilities: Selenium::WebDriver::Chrome::Options.new(
                 emulation: {
                     userAgent: Arachni::Options.http.user_agent
                 },
                 args: [
-                        "--headless",
-                        "--proxy-server=#{proxy_uri.host}:#{proxy_uri.port}",
                         '--allow-running-insecure-content',
                         '--disable-web-security',
                         '--reduce-security-for-testing',
-                        '--ignore-certificate-errors'
+                        '--ignore-certificate-errors',
+                        '--disable-plugins',
+                        "--user-data-dir=#{dir}",
+                        "--proxy-server=#{proxy_uri.host}:#{proxy_uri.port}",
+                        "--headless"
                 ]
             ),
             http_client: Selenium::WebDriver::Remote::Http::Typhoeus.new
@@ -1138,8 +1156,6 @@ class Browser
 
     def inspect
         s = "#<#{self.class} "
-        s << "pid=#{@lifeline_pid} "
-        s << "browser_pid=#{@browser_pid} "
         s << "last-url=#{@last_url.inspect} "
         s << "transitions=#{@transitions.size}"
         s << '>'

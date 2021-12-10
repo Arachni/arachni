@@ -3,9 +3,17 @@
 ## Under development
 
 - Options
+    - Scope
+        - `--scope-dom-depth-limit` -- Changed default from `5` to `4`.
+    - Browser cluster
+        - `--browser-cluster-pool-size` -- Changed default from `5` to `4`.
+    - HTTP
+       - `--http-max-concurrency` -- Changed default from `20` to `10`.
     - New
         - `--scope-dom-event-inheritance-limit` -- Limits the amount of inherited events.
         - `--browser-cluster-session-storage` -- Sets the browsers' session storage.
+        - `--browser-cluster-wait-for-timers` -- Wait for the maximum `setTimeout()`
+           -- Used to be hardcoded to `true`, now defaults to `false`.
 - `URI`
     - `#encode` -- Fixed encoding order of `+`.
     - `#decode` -- Fixed decoding order of `+`.

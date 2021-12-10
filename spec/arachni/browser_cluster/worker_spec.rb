@@ -22,6 +22,7 @@ describe Arachni::BrowserCluster::Worker do
         )
     end
     let(:custom_job) { Factory[:custom_job] }
+    let(:another_custom_job) { Factory[:custom_job] }
     let(:sleep_job) { Factory[:sleep_job] }
     let(:subject) { @cluster.workers.first }
 
@@ -210,6 +211,7 @@ describe Arachni::BrowserCluster::Worker do
                     watir = subject.watir
 
                     @cluster.queue( custom_job ) {}
+                    @cluster.queue( another_custom_job ) {}
                     @cluster.wait
 
                     expect(watir).not_to eq(subject.watir)

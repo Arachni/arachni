@@ -240,7 +240,7 @@ describe Arachni::Element::UIForm do
 
             context 'as <input type="submit">' do
                 let(:url) { "#{super()}/input-submit" }
-                let(:source) { '<input type="submit" id="insert" value="Insert into DOM">' }
+                let(:source) { '<input id="insert" type="submit" value="Insert into DOM">' }
 
                 context 'without inputs' do
                     let(:url) { "#{super()}/without-inputs" }

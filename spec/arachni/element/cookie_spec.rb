@@ -460,7 +460,7 @@ describe Arachni::Element::Cookie do
             expect(cookie.path).to eq('/')
             expect(cookie.secure).to eq(false)
             expect(cookie.session?).to eq(false)
-            expect(cookie.expires).to eq(Time.parse( '2020-08-09 16:59:20 +0300' ))
+            expect(cookie.expires).to eq(Time.parse( '2052-04-17 18:46:00 +0300' ))
             expect(cookie.name).to eq('coo@ki e2')
             expect(cookie.raw_name).to eq('coo%40ki+e2')
             expect(cookie.value).to eq('blah val2@')
