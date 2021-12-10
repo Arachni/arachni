@@ -3,7 +3,9 @@ Gemfile.lock
 *.gem
 /tmp
 /logs/
+/snapshots/
 /spec/logs/
+/spec/support/logs/
 /private.pem
 error.log
 /lib/arachni/ui/web/server/db/*
