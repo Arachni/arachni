@@ -185,6 +185,8 @@ class Scope < Arachni::OptionGroup
     attr_accessor :url_rewrites
 
     set_defaults(
+        directory_depth_limit:    10,
+        auto_redundant_paths:     15,
         redundant_path_patterns:  {},
         dom_depth_limit:          4,
         exclude_file_extensions:  EXCLUDE_FILE_EXTENSIONS,

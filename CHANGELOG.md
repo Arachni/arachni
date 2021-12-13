@@ -5,6 +5,8 @@
 - Options
     - Scope
         - `--scope-dom-depth-limit` -- Changed default from `5` to `4`.
+        - `--scope-auto-redundant` -- Changed default from `inf` to `15`.
+        - `--scope-directory-depth-limit` -- Changed default from `inf` to `10`.
     - Browser cluster
         - `--browser-cluster-pool-size` -- Changed default from `5` to `4`.
     - HTTP
