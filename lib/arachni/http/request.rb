@@ -832,7 +832,13 @@ class Request < Message
     def client_run
         # Set #on_complete so that the #response will be set.
         on_complete {}
-        to_typhoeus.run
+
+        treq = self.to_typhoeus
+
+        hydra = (Thread.current[:client_run_hydra] ||= Typhoeus::Hydra.new)
+        hydra.queue treq
+        hydra.run
+
         self.response
     end
 
