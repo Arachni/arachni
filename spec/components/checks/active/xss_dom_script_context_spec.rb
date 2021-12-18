@@ -56,11 +56,11 @@ describe name_from_filename do
                     expect(trace.first.function.source).to start_with 'function handleSubmit()'
                     expect(trace.first.function.name).to start_with 'handleSubmit'
 
-                when Element::LinkTemplate::DOM
-                    expect(trace.first.url).to eq issue.page.dom.url
-
-                when Element::Link::DOM
-                    expect(trace.first.url).to eq issue.page.dom.url
+                # when Element::LinkTemplate::DOM
+                #     expect(trace.first.url).to eq issue.page.dom.url
+                #
+                # when Element::Link::DOM
+                #     expect(trace.first.url).to eq issue.page.dom.url
 
                 when Element::Cookie::DOM
                     expect(trace.first.url).to eq issue.page.dom.url
