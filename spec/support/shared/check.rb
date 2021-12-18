@@ -52,6 +52,7 @@ shared_examples_for 'check' do
     after( :each ) do
         @issues.clear
         process_kill_reactor
+        framework.clean_up
         framework.reset
     end
 
