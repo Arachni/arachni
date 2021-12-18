@@ -148,7 +148,7 @@ class Worker < Arachni::Browser
 
         # Keep checking to see if any of the 'done' criteria are true.
         kill_check = Thread.new do
-            while alive? && wait && @job
+            while wait && @job
                 print_debug_level_2 "Waiting for job to complete: #{job}"
                 sleep 0.1
             end
@@ -236,12 +236,12 @@ class Worker < Arachni::Browser
     end
 
     def browser_respawn_if_necessary
-        return false if !time_to_die? && alive?
+        return false if !time_to_die?
         browser_respawn
     end
 
     def browser_respawn
-        print_debug "Re-spawning browser (TTD?: #{time_to_die?} - alive?: #{alive?}) ..."
+        print_debug "Re-spawning browser (TTD?: #{time_to_die?}) ..."
         @time_to_live = @max_time_to_live
 
         browser_shutdown

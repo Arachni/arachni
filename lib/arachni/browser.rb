@@ -383,37 +383,6 @@ class Browser
         wait_for_pending_requests
     end
 
-    def shutdown
-        print_debug 'Shutting down...'
-
-        if @selenium
-            print_debug_level_2 'Quiting Selenium...'
-            # So freaking hacky but @selenium.quit freezes for some reason.
-            @selenium.instance_eval do
-                bridge.quit
-
-                @service.instance_eval do
-                    Processes::Manager.kill @process.pid
-                end
-            end
-
-            print_debug_level_2 '...done.'
-        end
-
-        if @proxy
-            print_debug_level_2 'Shutting down proxy...'
-            @proxy.shutdown rescue Reactor::Error::NotRunning
-            print_debug_level_2 '...done.'
-        end
-
-        @proxy       = nil
-        @watir       = nil
-        @selenium    = nil
-        @browser_url = nil
-
-        print_debug '...shutdown complete.'
-    end
-
     # @return   [String]
     #   Current URL, noralized via #{Arachni::URI.}
     def url
@@ -1142,6 +1111,7 @@ class Browser
                         '--disable-plugins',
                         "--user-data-dir=#{dir}",
                         "--proxy-server=#{proxy_uri.host}:#{proxy_uri.port}",
+                        "--buid=46464646",
                         "--headless"
                 ]
             ),
@@ -1149,9 +1119,40 @@ class Browser
         )
     end
 
-    def alive?
-        # @lifeline_pid && Processes::Manager.alive?( @lifeline_pid )
-        true
+    def shutdown
+        print_debug 'Shutting down...'
+
+        if @selenium
+            @selenium.close
+
+            print_debug_level_2 'Quiting Selenium...'
+            # So freaking hacky but @selenium.quit freezes if we don't detach first.
+            @selenium.instance_eval do
+                bridge.quit
+
+                @service.instance_eval do
+                    Process.detach @process.pid
+                    @process.stop
+                end
+            end
+
+            @selenium.quit rescue Errno::ECONNREFUSED
+            # @selenium.quit rescue Selenium::WebDriver::Error::WebDriverError
+            print_debug_level_2 '...done.'
+
+        end
+
+        if @proxy
+            print_debug_level_2 'Shutting down proxy...'
+            @proxy.shutdown rescue Reactor::Error::NotRunning
+            print_debug_level_2 '...done.'
+        end
+
+        @proxy    = nil
+        @watir    = nil
+        @selenium = nil
+
+        print_debug '...shutdown complete.'
     end
 
     def inspect
@@ -1244,107 +1245,6 @@ class Browser
         Options.input.value_for_name( name )
     end
 
-    # def spawn_browser
-    #     if !spawn_phantomjs
-    #         fail Error::Spawn, 'Could not start the browser process.'
-    #     end
-    #
-    #     @browser_url
-    # end
-    #
-    # def spawn_phantomjs
-    #     return @browser_url if @browser_url
-    #
-    #     print_debug 'Spawning PhantomJS...'
-    #
-    #     ChildProcess.posix_spawn = true
-    #
-    #     port   = nil
-    #     output = ''
-    #
-    #     10.times do |i|
-    #         # Clear output of previous attempt.
-    #         output = ''
-    #         done   = false
-    #         port   = Utilities.available_port
-    #
-    #         start_proxy
-    #
-    #         print_debug_level_2 "Attempt ##{i}, chose port number #{port}"
-    #
-    #         begin
-    #             with_timeout BROWSER_SPAWN_TIMEOUT do
-    #                 print_debug_level_2 "Spawning process: #{self.class.executable}"
-    #
-    #                 r, w  = IO.pipe
-    #                 ri, @kill_process = IO.pipe
-    #
-    #                 @lifeline_pid = Processes::Manager.spawn(
-    #                     :browser,
-    #                     executable: self.class.executable,
-    #                     without_arachni: true,
-    #                     fork: false,
-    #                     new_pgroup: true,
-    #                     stdin: ri,
-    #                     stdout: w,
-    #                     stderr: w,
-    #                     port: port,
-    #                     proxy_url: @proxy.url
-    #                 )
-    #
-    #                 w.close
-    #                 ri.close
-    #
-    #                 print_debug_level_2 'Process spawned, waiting for WebDriver server...'
-    #
-    #                 # Wait for PhantomJS to initialize.
-    #                  while !output.include?( 'running on port' )
-    #                      begin
-    #                          output << r.readpartial( 8192 )
-    #                      # EOF or something, take a breather before retrying.
-    #                      rescue
-    #                          sleep 0.05
-    #                      end
-    #                  end
-    #
-    #                 @browser_pid = output.scan( /^PID: (\d+)/ ).flatten.first.to_i
-    #
-    #                 print_debug_level_2 '...WebDriver server is up.'
-    #                 done = true
-    #             end
-    #         rescue Timeout::Error
-    #             print_debug 'Spawn timed-out.'
-    #         end
-    #
-    #         if !output.empty?
-    #             print_debug_level_2 output
-    #         end
-    #
-    #         if done
-    #             print_debug 'PhantomJS is ready.'
-    #             break
-    #         end
-    #
-    #         print_debug_level_2 'Killing process.'
-    #
-    #         # Kill everything.
-    #         shutdown
-    #     end
-    #
-    #     # Something went really bad, the browser couldn't be spawned even
-    #     # after our valiant efforts.
-    #     #
-    #     # Bail out for now and count on the BrowserCluster to retry to boot
-    #     # another process ass needed.
-    #     if !@lifeline_pid
-    #         log_error 'Could not spawn browser process.'
-    #         log_error output
-    #         return
-    #     end
-    #
-    #     @browser_url = "http://127.0.0.1:#{port}"
-    # end
-
     def start_proxy
         print_debug 'Booting up...'
 
@@ -1366,7 +1266,7 @@ class Browser
     def start_webdriver
         print_debug_level_2 'Starting WebDriver...'
         @watir = ::Watir::Browser.new( selenium )
-        print_debug_level_2 "... started WebDriver at: #{@browser_url}"
+        print_debug_level_2 "... started WebDriver."
 
         print_debug '...boot-up completed.'
     end
