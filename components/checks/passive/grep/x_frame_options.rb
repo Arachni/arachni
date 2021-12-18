@@ -12,7 +12,8 @@ class Arachni::Checks::XFrameOptions < Arachni::Check::Base
     def run
         return if audited?( page.parsed_url.host ) ||
             page.response.headers.empty? ||
-            page.response.headers['X-Frame-Options'] || page.code != 200
+            !page.response.headers['X-Frame-Options'].to_s.empty? || page.code != 200
+
         audited( page.parsed_url.host )
 
         log(
