@@ -601,7 +601,7 @@ describe Arachni::HTTP::Client do
             host = "#{Arachni::URI(@url).host}:#{Arachni::URI(@url).port}"
             expect(subject.request( @url, mode: :sync ).request.headers_string).to eq(
                 "GET / HTTP/1.1\r\nHost: #{host}\r\nAuthorization: Basic Og==\r\nAccept-Encoding: gzip, " +
-                    "deflate\r\nUser-Agent: Arachni/v#{Arachni::VERSION}\r\nAccept: text/html," +
+                    "deflate\r\nUser-Agent: #{Arachni::Options.http.user_agent}\r\nAccept: text/html," +
                     "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n" +
                     "Accept-Language: en-US,en;q=0.8,he;q=0.6\r\n" +
                     "X-Arachni-Scan-Seed: #{Arachni::Utilities.random_seed}\r\n\r\n"

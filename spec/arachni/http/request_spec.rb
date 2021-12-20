@@ -325,7 +325,7 @@ describe Arachni::HTTP::Request do
             expect(described_class.new( url: @url ).run.request.headers_string).to eq(
                 "GET / HTTP/1.1\r\nHost: #{host}\r\nAuthorization: Basic Og==\r\n" +
                     "Accept-Encoding: gzip, deflate\r\n" +
-                    "User-Agent: Arachni/v#{Arachni::VERSION}\r\nAccept: text/html," +
+                    "User-Agent: #{Arachni::Options.http.user_agent}\r\nAccept: text/html," +
                     "application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8\r\n" +
                     "Accept-Language: en-US,en;q=0.8,he;q=0.6\r\n\r\n"
             )
