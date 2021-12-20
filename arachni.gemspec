@@ -43,7 +43,8 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'awesome_print',       '1.6.1'
 
-    s.add_dependency 'rack',                '1.6.4'
+    s.add_dependency 'rack',                '2.2.3'
+    s.add_dependency 'rack-test'
 
     # Don't specify version, messes with the packages since they always grab the
     # latest one.
@@ -76,8 +77,8 @@ Gem::Specification.new do |s|
     s.add_dependency 'puma',                '3.12.0'
 
     # REST API
-    s.add_dependency 'sinatra',             '1.4.6'
-    s.add_dependency 'sinatra-contrib',     '1.4.6'
+    s.add_dependency 'sinatra',             '2.1.0'
+    s.add_dependency 'sinatra-contrib',     '2.1.0'
 
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc',         '~> 0.2.1.4'
