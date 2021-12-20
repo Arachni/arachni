@@ -54,7 +54,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'concurrent-ruby-ext', '1.0.5'
 
     # For compressing/decompressing system state archives.
-    s.add_dependency 'rubyzip',             '1.2.2'
+    s.add_dependency 'rubyzip',             '>= 1.3.0'
 
     # HTTP proxy server
     s.add_dependency 'http_parser.rb',      '0.6.0'
@@ -74,7 +74,7 @@ Gem::Specification.new do |s|
     end
 
     # Web server
-    s.add_dependency 'puma',                '3.12.0'
+    s.add_dependency 'puma',                '>= 4.3.9'
 
     # REST API
     s.add_dependency 'sinatra',             '2.1.0'
@@ -87,7 +87,7 @@ Gem::Specification.new do |s|
     s.add_dependency 'typhoeus',            '1.3.0'
 
     # Fallback URI parsing and encoding utilities.
-    s.add_dependency 'addressable',         '2.5.2'
+    s.add_dependency 'addressable',         '>= 2.8.0'
 
     # E-mail plugin.
     s.add_dependency 'pony',                '1.12'
@@ -109,10 +109,10 @@ Gem::Specification.new do |s|
 
     # Markdown to HTML conversion, used by the HTML report for component
     # descriptions.
-    s.add_dependency 'kramdown',            '1.17.0'
+    s.add_dependency 'kramdown',            '>= 2.3.0'
 
     # Used to scrub Markdown for XSS etc.
-    s.add_dependency 'loofah',              '2.2.2'
+    s.add_dependency 'loofah',              '>= 2.3.1'
 
     s.post_install_message = <<MSG
 

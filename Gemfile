@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'rake', '11.3.0'
+gem 'rake', '>= 12.3.3'
 gem 'pry'
 
 group :docs do
