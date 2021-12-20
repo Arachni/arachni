@@ -1,5 +1,5 @@
 =begin
-    Copyright 2010-2017 Sarosys LLC <http://www.sarosys.com>
+    Copyright 2010-2022 Ecsypno LLC <http://www.ecsypno.com>
 
     This file is part of the Arachni Framework project and is subject to
     redistribution and commercial restrictions. Please see the Arachni Framework
@@ -59,7 +59,7 @@ class Browser
         class Load < Error
         end
 
-        # @author Tasos "Zapotek" Laskos <tasos.laskos@sarosys.com>
+        # @author Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>
         class MissingExecutable < Error
         end
 
