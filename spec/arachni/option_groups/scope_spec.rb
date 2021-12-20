@@ -54,12 +54,7 @@ describe Arachni::OptionGroups::Scope do
         end
         describe 'when #auto_redundant_paths has been disabled' do
             it 'returns false' do
-                subject.auto_redundant_paths = nil
-                expect(subject.auto_redundant?).to be_falsey
-            end
-        end
-        describe 'by default' do
-            it 'returns false' do
+                subject.auto_redundant_paths = 0
                 expect(subject.auto_redundant?).to be_falsey
             end
         end

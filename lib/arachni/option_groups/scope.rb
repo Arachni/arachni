@@ -243,7 +243,7 @@ class Scope < Arachni::OptionGroup
     end
 
     def auto_redundant?
-        !!@auto_redundant_paths
+        @auto_redundant_paths.to_i > 0
     end
 
     def auto_redundant_counter
