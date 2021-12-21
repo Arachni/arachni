@@ -52,7 +52,6 @@ describe Arachni::Browser do
     end
 
     it 'supports HTTPS' do
-        pending
         url = web_server_url_for( :browser_https )
 
         @browser.start_capture
@@ -2666,8 +2665,10 @@ describe Arachni::Browser do
 
         context "with #{Arachni::OptionGroups::Scope}#auto_redundant_paths has bee configured" do
             it 'respects scope restrictions' do
-                Arachni::Options.scope.auto_redundant_paths = 0
-                expect(@browser.load( @url + '/explore?test=1&test2=2' ).response.body).to be_empty
+                Arachni::Options.scope.auto_redundant_paths = 1
+                Arachni::URI( @url + '/explore?test=2&test2=3' ).scope.auto_redundant?( true )
+
+                expect(@browser.load( @url + '/explore?test=4&test2=5' ).response.body).to be_empty
             end
         end
 

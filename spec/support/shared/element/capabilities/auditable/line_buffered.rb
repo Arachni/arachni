@@ -109,7 +109,7 @@ shared_examples_for 'line_buffered_auditable' do
                 called = nil
 
                 allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:out?).and_return(true)
-                allow_any_instance_of(Arachni::Page::Scope).to receive(:out?).and_return(true)
+                # allow_any_instance_of(Arachni::Page::Scope).to receive(:out?).and_return(true)
 
                 auditable.line_buffered_audit( 'stuff',
                                                format: [ Arachni::Check::Auditor::Format::STRAIGHT ],
@@ -127,7 +127,7 @@ shared_examples_for 'line_buffered_auditable' do
                     called = nil
 
                     allow_any_instance_of(Arachni::HTTP::Response::Scope).to receive(:out?).and_return(true)
-                    allow_any_instance_of(Arachni::Page::Scope).to receive(:out?).and_return(true)
+                    # allow_any_instance_of(Arachni::Page::Scope).to receive(:out?).and_return(true)
                     allow_any_instance_of(Arachni::URI).to receive(:seed_in_host?).and_return(true)
 
                     auditable.line_buffered_audit( 'stuff',

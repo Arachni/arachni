@@ -9,9 +9,7 @@ group :docs do
 end
 
 group :spec do
-    gem 'simplecov', require: false, group: :test
-
-    gem 'rspec', '2.99.0'
+    gem 'rspec'
     gem 'faker'
 end
 
