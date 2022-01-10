@@ -733,16 +733,17 @@ class OptionParser < UI::CLI::OptionParser
         validate_report_path
         validate_snapshot_save_path
         validate_session
-        validate_scope
+        validate_browser
         validate_url
     end
 
-    def validate_scope
+    def validate_browser
         if options.browser_cluster.pool_size > 0 &&
           options.scope.dom_depth_limit > 0 &&
           !Browser.has_executable?
 
-            print_bad ""
+            print_bad "Missing chromedriver but configured for a DOM scan."
+            print_info "Please install a compatible chromedriver and Chrome version."
             exit 1
         end
     end
