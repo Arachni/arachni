@@ -733,7 +733,18 @@ class OptionParser < UI::CLI::OptionParser
         validate_report_path
         validate_snapshot_save_path
         validate_session
+        validate_scope
         validate_url
+    end
+
+    def validate_scope
+        if options.browser_cluster.pool_size > 0 &&
+          options.scope.dom_depth_limit > 0 &&
+          !Browser.has_executable?
+
+            print_bad ""
+            exit 1
+        end
     end
 
     def validate_url

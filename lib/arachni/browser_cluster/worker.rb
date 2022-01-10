@@ -93,7 +93,7 @@ class Worker < Arachni::Browser
 
             @job.timed_out!( Time.now - time )
 
-            print_debug "Job timed-out: #{@job}"
+            print_bad "Job timed-out: #{@job}"
             print_debug_exception e
 
             master.increment_time_out_count

@@ -141,7 +141,7 @@ class Browser
         #   Path to the PhantomJS executable.
         def executable
             @path ||= begin
-                path = Selenium::WebDriver::Platform.find_binary('google-chrome')
+                path = Selenium::WebDriver::Platform.find_binary('chromedriver')
                 raise Error::MissingExecutable, 'Chrome could not be found in PATH.' unless path
                 Selenium::WebDriver::Platform.assert_executable path
                 path
