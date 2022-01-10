@@ -142,7 +142,7 @@ class Browser
         def executable
             @path ||= begin
                 path = Selenium::WebDriver::Platform.find_binary('chromedriver')
-                raise Error::MissingExecutable, 'chromeriver could not be found in PATH.' unless path
+                raise Error::MissingExecutable, 'chromedriver could not be found in PATH.' unless path
                 Selenium::WebDriver::Platform.assert_executable path
                 path
             end
