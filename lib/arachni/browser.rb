@@ -1117,6 +1117,11 @@ class Browser
             ),
             http_client: Selenium::WebDriver::Remote::Http::Typhoeus.new
         )
+
+    rescue Selenium::WebDriver::Error::WebDriverError => e
+        print_error "Please ensure that chromedriver and Chrome are the same" <<
+                      " version and in your PATH."
+        raise e
     end
 
     def shutdown
