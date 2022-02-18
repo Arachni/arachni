@@ -646,7 +646,8 @@ class URI
         @query_parameters ||= begin
             q.split( '&' ).inject( {} ) do |h, pair|
                 name, value = pair.split( '=', 2 )
-                h[::URI.decode( name.to_s )] = ::URI.decode( value.to_s )
+                h[::URI.decode_www_form_component( name.to_s )] =
+                  ::URI.decode_www_form_component( value.to_s )
                 h
             end
         end

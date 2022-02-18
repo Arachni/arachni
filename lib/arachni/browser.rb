@@ -1788,7 +1788,7 @@ EOJS
     end
 
     def normalize_watir_url( url )
-        normalize_url( ::URI.encode( url, ';' ) ).gsub( '%3B', '%253B' )
+        normalize_url( url.gsub( ';', '%3B' )  ).gsub( '%3B', '%253B' )
     end
 
 end
