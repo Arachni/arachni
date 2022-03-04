@@ -1,6 +1,6 @@
 # ChangeLog
 
-## Under development
+## 1.6.0 _(March 4, 2022)_
 
 - Options
     - Scope
