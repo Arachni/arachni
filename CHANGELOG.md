@@ -1,5 +1,9 @@
 # ChangeLog
 
+## Under development
+
+ - `Browser#eelenium` -- Disable sandbox.
+
 ## 1.6.0 _(March 4, 2022)_
 
 - Options

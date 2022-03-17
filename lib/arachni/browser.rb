@@ -1108,6 +1108,7 @@ class Browser
                         '--disable-web-security',
                         '--reduce-security-for-testing',
                         '--ignore-certificate-errors',
+                        '--no-sandbox',
                         '--disable-plugins',
                         "--user-data-dir=#{dir}",
                         "--proxy-server=#{proxy_uri.host}:#{proxy_uri.port}",
