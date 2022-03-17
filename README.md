@@ -1,9 +1,40 @@
+# Experimental/unstable branch -- used for development/integration
+
+This branch is where all development takes place, once its code has been tested and
+is considered stable, it is then merged into the `master` branch and released.
+
+Do not be confused by the version of this branch, `2.0dev` is a placeholder
+which simply means _next release_.
+
+## Nightlies
+
+For self-contained, nightly snapshot packages take a look at:
+http://downloads.arachni-scanner.com/nightlies/
+
+## Source
+
+To run from source you first need to setup a
+[development environment](https://github.com/Arachni/arachni/wiki/Development-environment).
+
+**After** you've setup a [development environment](https://github.com/Arachni/arachni/wiki/Development-environment),
+run the following to checkout the source code of the `experimental` branch and
+resolve its dependencies:
+
+    git clone git://github.com/Arachni/arachni.git
+    cd arachni
+    git checkout experimental
+    bundle install --without prof # to resolve dev dependencies
+
+Then you can run Arachni using the the executables under `bin/`.<br/>
+If you get an error when trying to run Arachni, use `bundle exec` like so:
+`bundle exec <executable>`.
+
 # Arachni - Web Application Security Scanner Framework
 
 <table>
     <tr>
         <th>Version</th>
-        <td>1.6.0</td>
+        <td>2.0dev</td>
     </tr>
     <tr>
         <th>Homepage</th>
@@ -112,27 +143,27 @@ you with its findings.
 
 ### General
 
- - Cookie-jar/cookie-string support.
- - Custom header support.
- - SSL support with fine-grained options.
- - User Agent spoofing.
- - Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
- - Proxy authentication.
- - Site authentication (SSL-based, form-based, Cookie-Jar, Basic-Digest, NTLMv1, Kerberos and others).
- - Automatic log-out detection and re-login during the scan (when the initial
-    login was performed via the `autologin`, `login_script` or `proxy` plugins).
- - Custom 404 page detection.
- - UI abstraction:
+- Cookie-jar/cookie-string support.
+- Custom header support.
+- SSL support with fine-grained options.
+- User Agent spoofing.
+- Proxy support for SOCKS4, SOCKS4A, SOCKS5, HTTP/1.1 and HTTP/1.0.
+- Proxy authentication.
+- Site authentication (SSL-based, form-based, Cookie-Jar, Basic-Digest, NTLMv1, Kerberos and others).
+- Automatic log-out detection and re-login during the scan (when the initial
+  login was performed via the `autologin`, `login_script` or `proxy` plugins).
+- Custom 404 page detection.
+- UI abstraction:
     - [Command-line Interface](https://github.com/Arachni/arachni/wiki/Executables).
     - [Web User Interface](https://github.com/Arachni/arachni-ui-web).
- - Pause/resume functionality.
- - Hibernation support -- Suspend to and restore from disk.
- - High performance asynchronous HTTP requests.
+- Pause/resume functionality.
+- Hibernation support -- Suspend to and restore from disk.
+- High performance asynchronous HTTP requests.
     - With adjustable concurrency.
     - With the ability to auto-detect server health and adjust its concurrency
-        automatically.
- - Support for custom default input values, using pairs of patterns (to be matched
-    against input names) and values to be used to fill in matching inputs.
+      automatically.
+- Support for custom default input values, using pairs of patterns (to be matched
+  against input names) and values to be used to fill in matching inputs.
 
 ### Integrated browser environment
 
@@ -155,27 +186,27 @@ with a great deal of information regarding the state of the page at the time.
 
 Relevant information include:
 
- - Page DOM, as HTML code.
-     - With a list of DOM transitions required to restore the state of the
-         page to the one at the time it was logged.
- - Original DOM (i.e. prior to the action that caused the page to be logged),
-     as HTML code.
-     - With a list of DOM transitions.
- - Data-flow sinks -- Each sink is a JS method which received a tainted argument.
-     - Parent object of the method (ex.: `DOMWindow`).
-     - Method signature (ex.: `decodeURIComponent()`).
-     - Arguments list.
-         - With the identified taint located recursively in the included objects.
-     - Method source code.
-     - JS stacktrace.
- - Execution flow sinks -- Each sink is a successfully executed JS payload,
-     as injected by the security checks.
-     - Includes a JS stacktrace.
- - JavaScript stack-traces include:
-     - Method names.
-     - Method locations.
-     - Method source codes.
-     - Argument lists.
+- Page DOM, as HTML code.
+    - With a list of DOM transitions required to restore the state of the
+      page to the one at the time it was logged.
+- Original DOM (i.e. prior to the action that caused the page to be logged),
+  as HTML code.
+    - With a list of DOM transitions.
+- Data-flow sinks -- Each sink is a JS method which received a tainted argument.
+    - Parent object of the method (ex.: `DOMWindow`).
+    - Method signature (ex.: `decodeURIComponent()`).
+    - Arguments list.
+        - With the identified taint located recursively in the included objects.
+    - Method source code.
+    - JS stacktrace.
+- Execution flow sinks -- Each sink is a successfully executed JS payload,
+  as injected by the security checks.
+    - Includes a JS stacktrace.
+- JavaScript stack-traces include:
+    - Method names.
+    - Method locations.
+    - Method source codes.
+    - Argument lists.
 
 In essence, you have access to roughly the same information that your favorite
 debugger (for example, FireBug) would provide, as if you had set a breakpoint to
@@ -189,15 +220,15 @@ consuming in a high-performance fashion.
 
 Configuration options include:
 
- - Adjustable pool-size, i.e. the amount of browser workers to utilize.
- - Timeout for each job.
- - Worker TTL counted in jobs -- Workers which exceed the TTL have their browser
-     process respawned.
- - Ability to disable loading images.
- - Adjustable screen width and height.
-     - Can be used to analyze responsive and mobile applications.
- - Ability to wait until certain elements appear in the page.
- - Configurable local storage data.
+- Adjustable pool-size, i.e. the amount of browser workers to utilize.
+- Timeout for each job.
+- Worker TTL counted in jobs -- Workers which exceed the TTL have their browser
+  process respawned.
+- Ability to disable loading images.
+- Adjustable screen width and height.
+    - Can be used to analyze responsive and mobile applications.
+- Ability to wait until certain elements appear in the page.
+- Configurable local storage data.
 
 ### Coverage
 
@@ -212,28 +243,28 @@ order to provide coverage for a full set of possible scenarios.
 By inspecting all possible pages and their states (when using client-side code)
 Arachni is able to extract and audit the following elements and their inputs:
 
- - Forms
+- Forms
     - Along with ones that require interaction via a real browser due to DOM events.
- - User-interface Forms
+- User-interface Forms
     - Input and button groups which don't belong to an HTML `<form>` element but
-        are instead associated via JS code.
- - User-interface Inputs
+      are instead associated via JS code.
+- User-interface Inputs
     - Orphan `<input>` elements with associated DOM events.
- - Links
+- Links
     - Along with ones that have client-side parameters in their fragment, i.e.:
-        `http://example.com/#/?param=val&param2=val2`
+      `http://example.com/#/?param=val&param2=val2`
     - With support for rewrite rules.
- - LinkTemplates -- Allowing for extraction of arbitrary inputs from generic paths,
-    based on user-supplied templates -- useful when rewrite rules are not available.
+- LinkTemplates -- Allowing for extraction of arbitrary inputs from generic paths,
+  based on user-supplied templates -- useful when rewrite rules are not available.
     - Along with ones that have client-side parameters in their URL fragments, i.e.:
-            `http://example.com/#/param/val/param2/val2`
- - Cookies
+      `http://example.com/#/param/val/param2/val2`
+- Cookies
     - Also supports nested cookies, containing key-value pairs inside individual cookies.
- - Headers
- - Generic client-side elements which have associated DOM events.
- - AJAX-request parameters.
- - JSON request data.
- - XML request data.
+- Headers
+- Generic client-side elements which have associated DOM events.
+- AJAX-request parameters.
+- JSON request data.
+- XML request data.
 
 ### Open [distributed architecture](https://github.com/Arachni/arachni/wiki/Distributed-components)
 
@@ -247,7 +278,7 @@ Both approaches allow you to:
 
 - Remotely monitor and manage scans.
 - Perform multiple scans at the same time -- Each scan is compartmentalized to
-    its own OS process to take advantage of:
+  its own OS process to take advantage of:
     - Multi-core/SMP architectures.
     - OS-level scheduling/restrictions.
     - Sandboxed failure propagation.
@@ -261,51 +292,51 @@ Both approaches allow you to:
     - Uses JSON to format messages.
 - Stateful scan monitoring.
     - Unique sessions automatically only receive updates when polling for progress,
-        rather than full data.
+      rather than full data.
 
 #### [RPC API](https://github.com/Arachni/arachni/wiki/RPC-API)
 
 - High-performance/low-bandwidth [communication protocol](https://github.com/Arachni/arachni-rpc).
     - `MessagePack` serialization for performance, efficiency and ease of
-        integration with 3rd party systems.
+      integration with 3rd party systems.
 - Grid:
     - Self-healing.
     - Scale up/down by hot-plugging/hot-unplugging nodes.
         - Can scale up infinitely by adding nodes to increase scan capacity.
     - _(Always-on)_ Load-balancing -- All Instances are automatically provided
-        by the least burdened Grid member.
+      by the least burdened Grid member.
         - With optional per-scan opt-out/override.
     - _(Optional)_ High-Performance mode -- Combines the resources of
-        multiple nodes to perform multi-Instance scans.
+      multiple nodes to perform multi-Instance scans.
         - Enabled on a per-scan basis.
 
 ### Scope configuration
 
- - Filters for redundant pages like galleries, catalogs, etc. based on regular
-    expressions and counters.
+- Filters for redundant pages like galleries, catalogs, etc. based on regular
+  expressions and counters.
     - Can optionally detect and ignore redundant pages automatically.
- - URL exclusion filters using regular expressions.
- - Page exclusion filters based on content, using regular expressions.
- - URL inclusion filters using regular expressions.
- - Can be forced to only follow HTTPS paths and not downgrade to HTTP.
- - Can optionally follow subdomains.
- - Adjustable page count limit.
- - Adjustable redirect limit.
- - Adjustable directory depth limit.
- - Adjustable DOM depth limit.
- - Adjustment using URL-rewrite rules.
- - Can read paths from multiple user supplied files (to both restrict and extend
-    the scope).
+- URL exclusion filters using regular expressions.
+- Page exclusion filters based on content, using regular expressions.
+- URL inclusion filters using regular expressions.
+- Can be forced to only follow HTTPS paths and not downgrade to HTTP.
+- Can optionally follow subdomains.
+- Adjustable page count limit.
+- Adjustable redirect limit.
+- Adjustable directory depth limit.
+- Adjustable DOM depth limit.
+- Adjustment using URL-rewrite rules.
+- Can read paths from multiple user supplied files (to both restrict and extend
+  the scope).
 
 ### Audit
 
- - Can audit:
+- Can audit:
     - Forms
         - Can automatically refresh nonce tokens.
         - Can submit them via the integrated browser environment.
-     - User-interface Forms
+    - User-interface Forms
         - Input and button groups which don't belong to an HTML `<form>` element
-            but are instead associated via JS code.
+          but are instead associated via JS code.
     - User-interface Inputs
         - Orphan `<input>` elements with associated DOM events.
     - Links
@@ -318,13 +349,13 @@ Both approaches allow you to:
     - Generic client-side DOM elements.
     - JSON request data.
     - XML request data.
- - Can ignore binary/non-text pages.
- - Can audit elements using both `GET` and `POST` HTTP methods.
- - Can inject both raw and HTTP encoded payloads.
- - Can submit all links and forms of the page along with the cookie
-    permutations to provide extensive cookie-audit coverage.
- - Can exclude specific input vectors by name.
- - Can include specific input vectors by name.
+- Can ignore binary/non-text pages.
+- Can audit elements using both `GET` and `POST` HTTP methods.
+- Can inject both raw and HTTP encoded payloads.
+- Can submit all links and forms of the page along with the cookie
+  permutations to provide extensive cookie-audit coverage.
+- Can exclude specific input vectors by name.
+- Can include specific input vectors by name.
 
 ### Components
 
@@ -515,7 +546,7 @@ Passive checks look for the existence of files, folders and signatures.
 
 - Standard output
 - [HTML](http://www.arachni-scanner.com/reports/report.html/)
-    ([zip](http://www.arachni-scanner.com/reports/report.html.zip)) (`html`).
+  ([zip](http://www.arachni-scanner.com/reports/report.html.zip)) (`html`).
 - [XML](http://www.arachni-scanner.com/reports/report.xml) (`xml`).
 - [Text](http://www.arachni-scanner.com/reports/report.txt) (`text`).
 - [JSON](http://www.arachni-scanner.com/reports/report.json) (`json`)
@@ -530,32 +561,32 @@ Plugins add extra functionality to the system in a modular fashion, this way the
 core remains lean and makes it easy for anyone to add arbitrary functionality.
 
 - Passive Proxy  (`proxy`) -- Analyzes requests and responses between the web app and
-    the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit.
+  the browser assisting in AJAX audits, logging-in and/or restricting the scope of the audit.
 - Form based login (`autologin`).
 - Script based login (`login_script`).
 - Dictionary attacker for HTTP Auth (`http_dicattack`).
 - Dictionary attacker for form based authentication (`form_dicattack`).
 - Cookie collector (`cookie_collector`) -- Keeps track of cookies while establishing a timeline of changes.
 - WAF (Web Application Firewall) Detector (`waf_detector`) -- Establishes a baseline of
-    normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes.
+  normal behavior and uses rDiff analysis to determine if malicious inputs cause any behavioral changes.
 - BeepNotify (`beep_notify`) -- Beeps when the scan finishes.
 - EmailNotify (`email_notify`) -- Sends a notification (and optionally a report) over SMTP at
-    the end of the scan.
+  the end of the scan.
 - VectorFeed (`vector_feed`) -- Reads in vector data from which it creates elements to be
-    audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
-    Useful for unit-testing or a gazillion other things.
+  audited. Can be used to perform extremely specialized/narrow audits on a per vector/element basis.
+  Useful for unit-testing or a gazillion other things.
 - Script (`script`) -- Loads and runs an external Ruby script under the scope of a plugin,
-    used for debugging and general hackery.
+  used for debugging and general hackery.
 - Uncommon headers (`uncommon_headers`) -- Logs uncommon headers.
 - Content-types (`content_types`) -- Logs content-types of server responses aiding in the
-    identification of interesting (possibly leaked) files.
+  identification of interesting (possibly leaked) files.
 - Vector collector (`vector_collector`) -- Collects information about all seen input vectors
-    which are within the scan scope.
+  which are within the scan scope.
 - Headers collector (`headers_collector`) -- Collects response headers based on specified criteria.
 - Exec (`exec`) -- Calls external executables at different scan stages.
 - Metrics (`metrics`) -- Captures metrics about multiple aspects of the scan and the web application.
 - Restrict to DOM state (`restrict_to_dom_state`) -- Restricts the audit to a single page's DOM
-    state, based on a URL fragment.
+  state, based on a URL fragment.
 - Webhook notify (`webhook_notify`) -- Sends a webhook payload over HTTP at the end of the scan.
 - Rate limiter (`rate_limiter`) -- Rate limits HTTP requests.
 - Page dump (`page_dump`) -- Dumps page data to disk as YAML.
@@ -565,7 +596,7 @@ core remains lean and makes it easy for anyone to add arbitrary functionality.
 Default plugins will run for every scan and are placed under `/plugins/defaults/`.
 
 - AutoThrottle (`autothrottle`) -- Dynamically adjusts HTTP throughput during the scan for
-    maximum bandwidth utilization.
+  maximum bandwidth utilization.
 - Healthmap (`healthmap`) -- Generates sitemap showing the health of each crawled/audited URL
 
 ###### Meta
@@ -574,12 +605,12 @@ Plugins under `/plugins/defaults/meta/` perform analysis on the scan results
 to determine trustworthiness or just add context information or general insights.
 
 - TimingAttacks (`timing_attacks`) -- Provides a notice for issues uncovered by timing attacks
-    when the affected audited pages returned unusually high response times to begin with.
-    It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
+  when the affected audited pages returned unusually high response times to begin with.
+  It also points out the danger of DoS attacks against pages that perform heavy-duty processing.
 - Discovery (`discovery`) -- Performs anomaly detection on issues logged by discovery
-    checks and warns of the possibility of false positives where applicable.
+  checks and warns of the possibility of false positives where applicable.
 - Uniformity (`uniformity`) -- Reports inputs that are uniformly vulnerable across a number
-    of pages hinting to the lack of a central point of input sanitization.
+  of pages hinting to the lack of a central point of input sanitization.
 
 ### Trainer subsystem
 
@@ -629,10 +660,10 @@ need to follow in order to contribute code:
 
 * Fork the project.
 * Start a feature branch based on the [experimental](https://github.com/Arachni/arachni/tree/experimental)
-    branch (`git checkout -b <feature-name> experimental`).
+  branch (`git checkout -b <feature-name> experimental`).
 * Add specs for your code.
 * Run the spec suite to make sure you didn't break anything (`rake spec:core`
-    for the core libs or `rake spec` for everything).
+  for the core libs or `rake spec` for everything).
 * Commit and push your changes.
 * Issue a pull request and wait for your code to be reviewed.
 
