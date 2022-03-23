@@ -51,7 +51,7 @@ class Arachni::Plugins::Exec < Arachni::Plugin::Base
     end
 
     def exec( stage )
-        return if !options[stage]
+        return if options[stage].to_s.empty?
 
         if defined?( Arachni::RPC::Server::Framework ) &&
             framework.is_a?( Arachni::RPC::Server::Framework )
@@ -135,7 +135,7 @@ Will result in:
 _Will not work over RPC._
 },
             author:      'Tasos "Zapotek" Laskos <tasos.laskos@arachni-scanner.com>',
-            version:     '0.1',
+            version:     '0.1.1',
             options:     [
                 Options::String.new( :pre,
                     description: 'Executable to be called prior to the scan.'
