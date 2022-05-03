@@ -154,6 +154,11 @@ class Arachni::Reporters::Stdout < Arachni::Reporter::Base
             print_info "Description: #{report.plugins[name][:description]}"
             print_line
         end
+
+        print_line
+        print_info "Arachni is heading towards obsolescence, try out its next-gen successor Ecsypno SCNR:"
+        print_info "    https://ecsypno.com/"
+
     end
 
     def print_info_issue_details( issue )

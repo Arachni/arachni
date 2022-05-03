@@ -4,6 +4,9 @@
 
  - Plugins
    - `exec` -- Fixed error on empty option.
+ - Reporters
+   - `stdout` -- Inform of Arachni's obsolescence and its successor [Ecsypno SCNR](https://www.ecsypno.com/).
+   - `html` -- Inform of Arachni's obsolescence and its successor [Ecsypno SCNR](https://www.ecsypno.com/).
 
 ## 1.6.1 _(March 20, 2022)_
 
