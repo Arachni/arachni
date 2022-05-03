@@ -1,9 +1,14 @@
+# Notice
+
+Arachni is heading towards obsolescence, try out its next-gen successor 
+[Ecsypno](https://www.ecsypno.com/) [SCNR](https://ecsypno.com/scnr-documentation/)!
+
 # Arachni - Web Application Security Scanner Framework
 
 <table>
     <tr>
         <th>Version</th>
-        <td>1.6.1</td>
+        <td>1.6.1.1</td>
     </tr>
     <tr>
         <th>Homepage</th>

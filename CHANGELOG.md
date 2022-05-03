@@ -1,6 +1,6 @@
 # ChangeLog
 
-## _Under development_
+## 1.6.1.1 (May 3, 2022)
 
  - Plugins
    - `exec` -- Fixed error on empty option.
