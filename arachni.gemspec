@@ -77,8 +77,8 @@ Gem::Specification.new do |s|
     s.add_dependency 'puma',                '>= 4.3.9'
 
     # REST API
-    s.add_dependency 'sinatra',             '2.1.0'
-    s.add_dependency 'sinatra-contrib',     '2.1.0'
+    s.add_dependency 'sinatra',             '2.2.0'
+    s.add_dependency 'sinatra-contrib',     '2.2.0'
 
     # RPC client/server implementation.
     s.add_dependency 'arachni-rpc',         '~> 0.2.1.4'
