@@ -113,7 +113,8 @@ class Manager
         :django,
         :aspx_mvc,
         :jsf,
-        :cherrypy
+        :cherrypy,
+        :adobeaem
     ]
 
     PLATFORM_NAMES = {
@@ -172,7 +173,8 @@ class Manager
         rails:    'Ruby on Rails',
         aspx_mvc: 'ASP.NET MVC',
         jsf:      'JavaServer Faces',
-        cherrypy: 'CherryPy'
+        cherrypy: 'CherryPy',
+        adobeaem: 'Adobe AEM'
     }
 
     PLATFORM_CACHE_SIZE = 500
