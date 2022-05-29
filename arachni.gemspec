@@ -43,7 +43,7 @@ Gem::Specification.new do |s|
 
     s.add_dependency 'awesome_print',       '1.6.1'
 
-    s.add_dependency 'rack',                '2.2.3'
+    s.add_dependency 'rack',                '2.2.3.1'
     s.add_dependency 'rack-test'
 
     # Don't specify version, messes with the packages since they always grab the

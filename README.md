@@ -8,7 +8,7 @@ Arachni is heading towards obsolescence, try out its next-gen successor
 <table>
     <tr>
         <th>Version</th>
-        <td>1.6.1.2</td>
+        <td>1.6.1.3</td>
     </tr>
     <tr>
         <th>Homepage</th>

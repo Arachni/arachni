@@ -1,5 +1,9 @@
 # ChangeLog
 
+## 1.6.1.3 (May 29, 2022)
+
+- Updated Rack version.
+
 ## 1.6.1.2 (May 3, 2022)
 
 - Updated Sinatra version.
