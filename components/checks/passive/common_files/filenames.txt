@@ -22,3 +22,10 @@ server-status
 WEB-INF (copy)/web.xml
 WEB-INF - Copy/web.xml
 Copy of WEB-INF/web.xml
+security.txt
+.well-known/gpc.json
+.well-known/security.txt
+.well-known/matrix/server
+.well-known/matrix/client
+.well-known/openid-configuration
+.well-known/apple-app-site-association
