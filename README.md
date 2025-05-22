@@ -1,6 +1,6 @@
 # Notice
 
-Arachni is heading towards obsolescence, try out its next-gen successor 
+Arachni has become obsolete, try out its next-gen successor 
 [Ecsypno](https://www.ecsypno.com/) [Codename SCNR](https://ecsypno.com/pages/codename-scnr)!
 
 # Arachni - Web Application Security Scanner Framework
