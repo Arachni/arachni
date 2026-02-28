@@ -1,6 +1,6 @@
 # License
 
-Copyright 2010-2022 [Ecsypno](http://www.ecsypno.com).
+Copyright 2010-2025 [Ecsypno](http://www.ecsypno.com).
 
 ```
                     Arachni Public Source License
