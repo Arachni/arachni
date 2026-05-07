@@ -128,7 +128,7 @@ via a social engineering attack.
 There are 3 things that are required for a CSRF attack to occur:
 
 1. The form must perform some sort of sensitive action.
-2. The victim (the administrator the example above) must have an active session.
+2. The victim (the administrator in the example above) must have an active session.
 3. Most importantly, all parameter values must be **known** or **guessable**.
 
 Arachni discovered that all parameters within the form were known or predictable
